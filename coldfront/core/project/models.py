@@ -134,8 +134,8 @@ We do not have information about your research. Please provide a detailed descri
         project_review_query = self.projectreview_set.order_by("-created")
         if project_review_query:
             return project_review_query.first()
-        else:
-            return None
+
+        return None
 
     @property
     def latest_grant(self):
@@ -146,8 +146,7 @@ We do not have information about your research. Please provide a detailed descri
         grant_query = self.grant_set.order_by("-modified")
         if grant_query:
             return grant_query.first()
-        else:
-            return None
+        return None
 
     @property
     def latest_publication(self):
@@ -158,8 +157,7 @@ We do not have information about your research. Please provide a detailed descri
         publication_query = self.publication_set.order_by("-created")
         if publication_query:
             return publication_query.first()
-        else:
-            return None
+        return None
 
     @property
     def needs_review(self):

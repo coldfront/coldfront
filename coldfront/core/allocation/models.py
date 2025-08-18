@@ -224,12 +224,11 @@ class Allocation(TimeStampedModel):
         resources = self.resources.select_related("resource_type")
         if len(resources) == 1:
             return resources.first()
-        else:
-            parent = resources.order_by(*ALLOCATION_RESOURCE_ORDERING).first()
-            if parent:
-                return parent
-            # Fallback
-            return resources.first()
+        parent = resources.order_by(*ALLOCATION_RESOURCE_ORDERING).first()
+        if parent:
+            return parent
+        # Fallback
+        return resources.first()
 
     def get_attribute(self, name, expand=True, typed=True, extra_allocations=[]):
         """
@@ -247,11 +246,9 @@ class Allocation(TimeStampedModel):
         if attr:
             if expand:
                 return attr.expanded_value(extra_allocations=extra_allocations, typed=typed)
-            else:
-                if typed:
-                    return attr.typed_value()
-                else:
-                    return attr.value
+            if typed:
+                return attr.typed_value()
+            return attr.value
         return None
 
     def set_usage(self, name, value):
@@ -291,11 +288,9 @@ class Allocation(TimeStampedModel):
         attr = self.allocationattribute_set.filter(allocation_attribute_type__name=name).all()
         if expand:
             return [a.expanded_value(typed=typed, extra_allocations=extra_allocations) for a in attr]
-        else:
-            if typed:
-                return [a.typed_value() for a in attr]
-            else:
-                return [a.value for a in attr]
+        if typed:
+            return [a.typed_value() for a in attr]
+        return [a.value for a in attr]
 
     def get_attribute_set(self, user):
         """
@@ -359,8 +354,7 @@ class Allocation(TimeStampedModel):
             for res in self.get_resources_as_list:
                 if res.get_attribute(name="eula"):
                     return res.get_attribute(name="eula")
-        else:
-            return None
+        return None
 
     def add_user(self, user, signal_sender=None):
         """
@@ -422,8 +416,7 @@ class Allocation(TimeStampedModel):
                         f"Cannot remove user={str(user)} for allocation pk={self.pk} - AllocationUser not found."
                     )
                     return
-                else:
-                    raise
+                raise
         allocation_user.status = AllocationUserStatusChoice.objects.get(name="Removed")
         allocation_user.save()
         allocation_remove_user.send(sender=signal_sender, allocation_user_pk=allocation_user.pk)
@@ -799,8 +792,7 @@ class AllocationChangeRequest(TimeStampedModel):
 
         if self.allocation.resources.count() == 1:
             return self.allocation.resources.first()
-        else:
-            return self.allocation.resources.filter(is_allocatable=True).first()
+        return self.allocation.resources.filter(is_allocatable=True).first()
 
     def __str__(self):
         return "%s (%s)" % (self.get_parent_resource.name, self.allocation.project.pi)

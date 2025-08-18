@@ -114,7 +114,8 @@ indent-width = 4
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I", "S308"]
+select = ["E4", "E7", "E9", "F", "I", "S308", "RET"]
+ignore = ["RET504"]
 
 [tool.ruff.format]
 indent-style = "space"
