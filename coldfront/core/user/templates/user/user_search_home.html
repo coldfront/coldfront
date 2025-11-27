@@ -1,32 +1,28 @@
 {% extends "common/base.html" %}
 {% load crispy_forms_tags %}
 {% load common_tags %}
-
-
 {% block content %}
-<div class="row">
-  <div class="col">
-    <form method="post" action="/search-ldap" id="post-form">
-    {% csrf_token %}
-    {{ user_search_form|crispy }}
-    <button id="search-button" type="submit" class="btn btn-success btn-block"><i class="fas fa-search" aria-hidden="true"></i> Search</button>
-    </form>
-  </div>
-</div>
-
-<br>
-
-<div class="row">
-  <div class="col" id="search_results">
-    <div id="search_results_inner"></div>
-  </div>
-</div>
+    <div class="row">
+        <div class="col">
+            <form method="post" action="/search-ldap" id="post-form">
+                {% csrf_token %}
+                {{ user_search_form|crispy }}
+                <button id="search-button" type="submit" class="btn btn-success btn-block">
+                    <i class="fas fa-search" aria-hidden="true"></i> Search
+                </button>
+            </form>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col" id="search_results">
+            <div id="search_results_inner"></div>
+        </div>
+    </div>
 {% endblock %}
-
-
 {% block javascript %}
-  {{ block.super }}
-<script>
+    {{ block.super }}
+    <script>
   $("#navbar-main > ul > li.active").removeClass("active");
   $("#navbar-admin").addClass("active");
   $("#navbar-user-search").addClass("active");
@@ -78,5 +74,5 @@
   $(document).ready(function(){
       $('[data-toggle="popover"]').popover();
   });
-</script>
+    </script>
 {% endblock %}

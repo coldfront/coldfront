@@ -25,11 +25,17 @@ jobs:
       - name: Install the project
         run: uv sync --locked --dev
 
-      - name: Check for lint violations
+      - name: Check for lint violations (ruff)
         run: uv run ruff check
 
-      - name: Check formatting
+      - name: Check for lint violations (djlint)
+        run: uv run djlint . --lint
+
+      - name: Check formatting (ruff)
         run: uv run ruff format --check
+
+      - name: Check formatting (djlint)
+        run: uv run djlint . --check
 
       - name: Check licence with reuse
         run: uv run reuse lint

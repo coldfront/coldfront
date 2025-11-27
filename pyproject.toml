@@ -80,6 +80,7 @@ pg = [
 [dependency-groups]
 dev = [
     "django-sslserver>=0.22",
+    "djlint>=1.36.4",
     "factory-boy>=3.3.3",
     "faker>=37.1.0",
     "pytest-django>=4.11.1",
@@ -112,3 +113,6 @@ select = ["E4", "E7", "E9", "F", "I", "S308"]
 [tool.ruff.format]
 indent-style = "space"
 docstring-code-format = true
+
+[tool.djlint]
+ignore="H006,H021,H023,H029,H030,H031"

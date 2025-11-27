@@ -1,36 +1,36 @@
 {% load static %}
 <div class="row">
-  <div class="col">
-    <div id="chartAllocations" style="min-height: 270px;"></div>
-    <div id="chartResources" style="min-height: 270px;"></div>
-  </div>
-  <div class="col">
-    <div class="table-responsive">
-      <table id="resource-table" class="table table-bordered table-condensed table-hover">
-        <thead>
-          <tr>
-            <th scope="col">Resource Name (Type)</th>
-            <th scope="col">Active Allocation Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for resource, resource_allocation_count in allocations_count_by_resource.items %}
-            <tr>
-              <td>{{resource.name}} <strong>({{resource.resource_type.name}})</strong></td>
-              <td>{{resource_allocation_count}}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+    <div class="col">
+        <div id="chartAllocations" style="min-height: 270px;"></div>
+        <div id="chartResources" style="min-height: 270px;"></div>
     </div>
-  </div>
+    <div class="col">
+        <div class="table-responsive">
+            <table id="resource-table"
+                   class="table table-bordered table-condensed table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Resource Name (Type)</th>
+                        <th scope="col">Active Allocation Count</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resource, resource_allocation_count in allocations_count_by_resource.items %}
+                        <tr>
+                            <td>
+                                {{ resource.name }} <strong>({{ resource.resource_type.name }})</strong>
+                            </td>
+                            <td>{{ resource_allocation_count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 <!-- End Allocation Charts -->
-
 {{ allocations_chart_data|json_script:"allocations-chart-data" }}
 {{ resources_chart_data|json_script:"resources-chart-data" }}
-
-
 <script>
   $(document).ready(function () {
     drawAllocations();

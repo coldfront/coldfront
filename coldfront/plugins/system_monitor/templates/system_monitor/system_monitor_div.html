@@ -1,44 +1,48 @@
-
 {% load static %}
 <!-- Start System Monitor -->
-
 <div class="col">
-  <h3 class="text-center">{{system_monitor_panel_title}}</h3>
-  <hr> {% if last_updated %}
-  <div class="row">
-    {% if settings.SYSTEM_MONITOR_DISPLAY_XDMOD_LINK %}
-    <a target="_blank" href="{{settings.SYSTEM_MONITOR_DISPLAY_XDMOD_LINK}}"><img style="max-width: 100px" src="{% static 'coldfront/plugins/system_monitor/images/xdmod.png' %}" alt=""> <i class="fa fa-external-link" aria-hidden="true"></i></a> {% endif %}
-  </div>
-  <div class="row">
-    <div class="col-lg-6">
-      <div id="chartUtilization" style="min-height: 270px;width: 100%;"></div>
-    </div>
-    <div class="col-lg-6">
-      <div id="chartJobs" style="min-height: 270px;width: 100%;"></div>
-    </div>
-  </div>
-  <div class="row">
-    {% if settings.SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK %}
-    <div class="col">
-      {% if settings.SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK %}
-      <a target="_blank" href="{{settings.SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK}}">More status info <i class="fa fa-external-link" aria-hidden="true"></i></a>
-      <br> {% endif %}
-    </div>
+    <h3 class="text-center">{{ system_monitor_panel_title }}</h3>
+    <hr>
+    {% if last_updated %}
+        <div class="row">
+            {% if settings.SYSTEM_MONITOR_DISPLAY_XDMOD_LINK %}
+                <a target="_blank"
+                   href="{{ settings.SYSTEM_MONITOR_DISPLAY_XDMOD_LINK }}">
+                    <img style="max-width: 100px"
+                         src="{% static 'coldfront/plugins/system_monitor/images/xdmod.png' %}"
+                         alt="">
+                    <i class="fa fa-external-link" aria-hidden="true"></i></a>
+            {% endif %}
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div id="chartUtilization" style="min-height: 270px;width: 100%;"></div>
+            </div>
+            <div class="col-lg-6">
+                <div id="chartJobs" style="min-height: 270px;width: 100%;"></div>
+            </div>
+        </div>
+        <div class="row">
+            {% if settings.SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK %}
+                <div class="col">
+                    {% if settings.SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK %}
+                        <a target="_blank"
+                           href="{{ settings.SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK }}">More status info <i class="fa fa-external-link" aria-hidden="true"></i></a>
+                        <br>
+                    {% endif %}
+                </div>
+            {% endif %}
+            <div class="flex-nowrap align-self-end">Last Updated: {{ last_updated }}</div>
+        </div>
+    {% else %}
+        <div class="col alert alert-danger" role="alert">
+            <i class="fa fa-info-circle"></i> Error getting system information.
+        </div>
     {% endif %}
-    <div class="flex-nowrap align-self-end">
-      Last Updated: {{last_updated}}
-    </div>
-  </div>
-  {% else %}
-  <div class="col alert alert-danger" role="alert"><i class="fa fa-info-circle"></i> Error getting system information.</div>
-  {% endif %}
 </div>
-
 <!-- End System Monitor -->
-
-{{ utilization_data|json_script:"utilization-data"}}
+{{ utilization_data|json_script:"utilization-data" }}
 {{ jobs_data|json_script:"jobs-data" }}
-
 <script>
     
     $(document).ready(function() {
