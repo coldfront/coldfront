@@ -518,7 +518,7 @@ Project Detail
   </div>
 </div>
 <!-- End Admin Messages -->
-{{ guage_data|json_script:"guage-data" }}
+{{ gauge_data|json_script:"gauge-data" }}
 
 <script>
   function getCookie(name) {
@@ -540,8 +540,8 @@ Project Detail
   $(document).ready(function(){
     $('[data-toggle="popover"]').popover();
 
-    var guage_data = JSON.parse(document.getElementById('guage-data').textContent);
-    drawGauges(guage_data);
+    var gauge_data = JSON.parse(document.getElementById('gauge-data').textContent);
+    drawGauges(gauge_data);
 
     $('#publication-table').DataTable({
       "aLengthMenu": [
@@ -599,12 +599,12 @@ Project Detail
     });
   });
 
-  function drawGauges(guage_data) {
-    var arrayLength = guage_data.length;
+  function drawGauges(gauge_data) {
+    var arrayLength = gauge_data.length;
     for (var i = 0; i < arrayLength; i++) {
       c3.generate({
         bindto: '#gauge-' + i,
-        data: guage_data[i],
+        data: gauge_data[i],
         legend: {
           item: {
             onclick: function (id) { }
