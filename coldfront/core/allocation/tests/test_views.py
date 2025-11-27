@@ -21,6 +21,7 @@ from coldfront.core.test_helpers.factories import (
     AllocationFactory,
     AllocationStatusChoiceFactory,
     AllocationUserFactory,
+    AllocationUserStatusChoiceFactory,
     ProjectFactory,
     ProjectStatusChoiceFactory,
     ProjectUserFactory,
@@ -43,6 +44,7 @@ class AllocationViewBaseTest(TestCase):
         pi_user = UserFactory()
         pi_user.userprofile.is_pi = True
         AllocationStatusChoiceFactory(name="New")
+        AllocationUserStatusChoiceFactory(name="Removed")
         cls.project = ProjectFactory(pi=pi_user, status=ProjectStatusChoiceFactory(name="Active"))
         cls.allocation = AllocationFactory(project=cls.project)
         cls.allocation.resources.add(ResourceFactory(name="holylfs07/tier1"))
@@ -51,7 +53,7 @@ class AllocationViewBaseTest(TestCase):
         cls.allocation_user = allocation_user.user
         ProjectUserFactory(project=cls.project, user=allocation_user.user)
         # create project user that isn't an allocationuser
-        proj_nonallocation_user = ProjectUserFactory()
+        proj_nonallocation_user = ProjectUserFactory(project=cls.project)
         cls.proj_nonallocation_user = proj_nonallocation_user.user
         cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
         manager_role = ProjectUserRoleChoiceFactory(name="Manager")
@@ -296,8 +298,12 @@ class AllocationCreateViewTest(AllocationViewBaseTest):
         self.client.force_login(self.pi_user)
         self.post_data = {
             "justification": "test justification",
-            "quantity": "1",
-            "resource": f"{self.allocation.resources.first().pk}",
+            "quantity": 10,
+            "resource": self.allocation.resources.first().pk,
+            "project": self.project.pk,
+            "is_changeable": True,
+            "users": [self.proj_nonallocation_user.pk],
+            "allocation_account": [],
         }
 
     def test_allocationcreateview_access(self):
@@ -313,6 +319,9 @@ class AllocationCreateViewTest(AllocationViewBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Allocation requested.")
         self.assertEqual(len(self.project.allocation_set.all()), 2)
+        new_allocation = self.project.allocation_set.last()
+        self.assertEqual(len(new_allocation.resources.all()), 1)
+        self.assertEqual(len(new_allocation.allocationuser_set.all()), 1)
 
     def test_allocationcreateview_post_zeroquantity(self):
         """Test POST to the AllocationCreateView"""
@@ -322,13 +331,27 @@ class AllocationCreateViewTest(AllocationViewBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Allocation requested.")
         self.assertEqual(len(self.project.allocation_set.all()), 2)
+        new_allocation = self.project.allocation_set.last()
+        self.assertEqual(len(new_allocation.resources.all()), 1)
+        self.assertEqual(len(new_allocation.allocationuser_set.all()), 1)
 
 
 class AllocationAddUsersViewTest(AllocationViewBaseTest):
     """Tests for the AllocationAddUsersView"""
 
-    def setUp(self):
-        self.url = f"/allocation/{self.allocation.pk}/add-users"
+    @classmethod
+    def setUpTestData(cls):
+        """Setup POST data"""
+        super().setUpTestData()
+        cls.post_data = {
+            "userform-0-selected": True,
+            "userform-TOTAL_FORMS": "1",
+            "userform-INITIAL_FORMS": "1",
+            "userform-MIN_NUM_FORMS": "0",
+            "userform-MAX_NUM_FORMS": "1",
+            "end_date_extension": 0,
+        }
+        cls.url = f"/allocation/{cls.allocation.pk}/add-users"
 
     def test_allocationaddusersview_access(self):
         """Test access to AllocationAddUsersView"""
@@ -347,15 +370,90 @@ class AllocationAddUsersViewTest(AllocationViewBaseTest):
         user_response = self.client.get(self.url)
         self.assertTrue(no_permission in str(user_response.content))
 
+    def test_allocationaddusersview_post_user(self):
+        """Test that posting to AllocationAddUsersView as unpriviliged user fails"""
+        self.client.force_login(self.allocation_user, backend=BACKEND)
+        self.assertEqual(len(self.allocation.allocationuser_set.all()), 1)
+        response = self.client.post(self.url, data=self.post_data, follow=True)
+        self.assertEqual(response.status_code, 403)
+
+    def test_allocationaddusersview_post_pi(self):
+        """Test that posting to AllocationAddUsersView as a PI works"""
+        self.client.force_login(self.pi_user, backend=BACKEND)
+        self.assertEqual(len(self.allocation.allocationuser_set.all()), 1)
+        response = self.client.post(self.url, data=self.post_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Added 1 user to allocation.")
+        self.assertEqual(len(self.allocation.allocationuser_set.all()), 2)
+
+    def test_allocationaddusersview_post_admin(self):
+        """Test that posting to AllocationAddUsersView as a superuser works"""
+        self.client.force_login(self.admin_user, backend=BACKEND)
+        self.assertEqual(len(self.allocation.allocationuser_set.all()), 1)
+        response = self.client.post(self.url, data=self.post_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Added 1 user to allocation.")
+        self.assertEqual(len(self.allocation.allocationuser_set.all()), 2)
+
 
 class AllocationRemoveUsersViewTest(AllocationViewBaseTest):
     """Tests for the AllocationRemoveUsersView"""
 
-    def setUp(self):
-        self.url = f"/allocation/{self.allocation.pk}/remove-users"
+    @classmethod
+    def setUpTestData(cls):
+        """Setup POST data"""
+        super().setUpTestData()
+        cls.post_data = {
+            "userform-0-selected": True,
+            "userform-TOTAL_FORMS": "1",
+            "userform-INITIAL_FORMS": "1",
+            "userform-MIN_NUM_FORMS": "0",
+            "userform-MAX_NUM_FORMS": "1",
+            "end_date_extension": 0,
+        }
+        cls.url = f"/allocation/{cls.allocation.pk}/remove-users"
 
     def test_allocationremoveusersview_access(self):
+        """Test access to AllocationRemoveUsersView"""
         self.allocation_access_tstbase(self.url)
+        no_permission = "You do not have permission to remove users from allocation."
+
+        self.client.force_login(self.admin_user, backend=BACKEND)
+        admin_response = self.client.get(self.url)
+        self.assertTrue(no_permission not in str(admin_response.content))
+
+        self.client.force_login(self.pi_user, backend=BACKEND)
+        pi_response = self.client.get(self.url)
+        self.assertTrue(no_permission not in str(pi_response.content))
+
+        self.client.force_login(self.allocation_user, backend=BACKEND)
+        user_response = self.client.get(self.url)
+        self.assertTrue(no_permission in str(user_response.content))
+
+    def test_allocationremoveusersview_post_user(self):
+        """Test that posting to AllocationRemoveUsersView as unpriviliged user fails"""
+        self.client.force_login(self.allocation_user, backend=BACKEND)
+        self.assertEqual(len(self.allocation.allocationuser_set.all()), 1)
+        response = self.client.post(self.url, data=self.post_data, follow=True)
+        self.assertEqual(response.status_code, 403)
+
+    def test_allocationremoveusersview_post_pi(self):
+        """Test that posting to AllocationRemoveUsersView as a PI works"""
+        self.client.force_login(self.pi_user, backend=BACKEND)
+        self.assertTrue(self.allocation.allocationuser_set.filter(status__name="Active").exists())
+        response = self.client.post(self.url, data=self.post_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Removed 1 user from allocation.")
+        self.assertEqual(len(self.allocation.allocationuser_set.filter(status__name="Removed")), 1)
+
+    def test_allocationremoveusersview_post_admin(self):
+        """Test that posting to AllocationRemoveUsersView as a superuser works"""
+        self.client.force_login(self.admin_user, backend=BACKEND)
+        self.assertTrue(self.allocation.allocationuser_set.filter(status__name="Active").exists())
+        response = self.client.post(self.url, data=self.post_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Removed 1 user from allocation.")
+        self.assertEqual(len(self.allocation.allocationuser_set.filter(status__name="Removed")), 1)
 
 
 class AllocationChangeListViewTest(AllocationViewBaseTest):

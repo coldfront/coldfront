@@ -16,6 +16,7 @@ from django.utils import timezone
 from coldfront.core.allocation.models import (
     Allocation,
     AllocationStatusChoice,
+    AllocationUser,
 )
 from coldfront.core.project.models import Project
 from coldfront.core.test_helpers.factories import (
@@ -24,6 +25,8 @@ from coldfront.core.test_helpers.factories import (
     AllocationAttributeTypeFactory,
     AllocationFactory,
     AllocationStatusChoiceFactory,
+    AllocationUserFactory,
+    AllocationUserStatusChoiceFactory,
     ProjectFactory,
     ResourceFactory,
     UserFactory,
@@ -43,6 +46,66 @@ class AllocationModelTests(TestCase):
         """test that allocation str method returns correct string"""
         allocation_str = "%s (%s)" % (self.allocation.get_parent_resource.name, self.allocation.project.pi)
         self.assertEqual(str(self.allocation), allocation_str)
+
+
+class AllocationModelUserMethodTests(TestCase):
+    """tests for Allocation model add_user, and remove_user methods"""
+
+    @classmethod
+    def setUpTestData(cls):
+        """Set up project to test model properties and methods"""
+        active_ausc = AllocationUserStatusChoiceFactory(name="Active")
+        removed_ausc = AllocationUserStatusChoiceFactory(name="Removed")
+        cls.allocation = AllocationFactory(status=AllocationStatusChoiceFactory(name="Active"))
+        cls.allocation.resources.add(ResourceFactory(name="holylfs07/tier1"))
+        cls.user = UserFactory()
+        cls.allocation_user_active = AllocationUserFactory(allocation=cls.allocation, status=active_ausc)
+        cls.allocation_user_removed = AllocationUserFactory(allocation=cls.allocation, status=removed_ausc)
+
+    @patch("coldfront.core.allocation.signals.allocation_activate_user.send")
+    def test_active_allocation_add_user(self, mock):
+        """Test that allocation add_user method activates the given user and sends the allocation_activate_user signal"""
+        self.allocation.add_user(user=self.user, signal_sender="test")
+        self.assertEqual(mock.call_args.kwargs.get("sender"), "test")
+        self.allocation.add_user(user=self.allocation_user_active.user, signal_sender="test")
+        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_active.pk)
+        self.allocation.add_user(user=self.allocation_user_removed.user, signal_sender="test")
+        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_removed.pk)
+
+        self.assertEqual(AllocationUser.objects.get(user__pk=self.user.pk).status.name, "Active")
+        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_active.pk).status.name, "Active")
+        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_removed.pk).status.name, "Active")
+
+    @patch("coldfront.core.allocation.signals.allocation_activate_user.send")
+    def test_inactive_allocation_add_user(self, mock):
+        """Test that allocation add_user method activates the given user and the allocation_activate_user signal is not sent"""
+        self.allocation.status = AllocationStatusChoiceFactory(name="Pending")
+        self.allocation.save()
+
+        self.allocation.add_user(user=self.user, signal_sender="test")
+        mock.assert_not_called()
+        self.allocation.add_user(user=self.allocation_user_active.user, signal_sender="test")
+        mock.assert_not_called()
+        self.allocation.add_user(user=self.allocation_user_removed.user, signal_sender="test")
+        mock.assert_not_called()
+
+        self.assertEqual(AllocationUser.objects.get(user__pk=self.user.pk).status.name, "Active")
+        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_active.pk).status.name, "Active")
+        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_removed.pk).status.name, "Active")
+
+    @patch("coldfront.core.allocation.signals.allocation_remove_user.send")
+    def test_remove_user(self, mock):
+        """Test that allocation remove_user method removes the given user and sends the allocation_remove_user signal"""
+        self.allocation.remove_user(user=self.user, signal_sender="test")
+        mock.assert_not_called()
+        self.allocation.remove_user(user=self.allocation_user_active.user, signal_sender="test")
+        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_active.pk)
+        self.allocation.remove_user(user=self.allocation_user_removed.user, signal_sender="test")
+        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_removed.pk)
+
+        self.assertFalse(AllocationUser.objects.filter(user__pk=self.user.pk).exists())
+        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_active.pk).status.name, "Removed")
+        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_removed.pk).status.name, "Removed")
 
 
 class AllocationModelCleanMethodTests(TestCase):
