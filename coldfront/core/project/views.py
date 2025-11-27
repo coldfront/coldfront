@@ -72,13 +72,10 @@ from coldfront.core.user.utils import CombinedUserSearch
 from coldfront.core.utils.common import get_domain_url, import_from_settings
 from coldfront.core.utils.mail import send_email, send_email_template
 
-EMAIL_ENABLED = import_from_settings("EMAIL_ENABLED", False)
 ALLOCATION_ENABLE_ALLOCATION_RENEWAL = import_from_settings("ALLOCATION_ENABLE_ALLOCATION_RENEWAL", True)
 ALLOCATION_DEFAULT_ALLOCATION_LENGTH = import_from_settings("ALLOCATION_DEFAULT_ALLOCATION_LENGTH", 365)
 
-if EMAIL_ENABLED:
-    EMAIL_DIRECTOR_EMAIL_ADDRESS = import_from_settings("EMAIL_DIRECTOR_EMAIL_ADDRESS")
-    EMAIL_SENDER = import_from_settings("EMAIL_SENDER")
+EMAIL_DIRECTOR_EMAIL_ADDRESS = import_from_settings("EMAIL_DIRECTOR_EMAIL_ADDRESS")
 
 PROJECT_CODE = import_from_settings("PROJECT_CODE", False)
 PROJECT_CODE_PADDING = import_from_settings("PROJECT_CODE_PADDING", False)
@@ -522,6 +519,16 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
         # project signals
         project_archive.send(sender=self.__class__, project_obj=project)
 
+        # send email to project members
+        email_recipients = project.get_user_emails()
+
+        send_email_template(
+            "Project has been archived",
+            "email/project_archived.txt",
+            {"project": project},
+            email_recipients,
+        )
+
         for allocation in project.allocation_set.filter(status__name="Active"):
             allocation.status = allocation_status_expired
             allocation.end_date = end_date
@@ -833,75 +840,8 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
         )
 
         added_users_count = 0
-        if formset.is_valid() and allocation_formset.is_valid():
-            project_user_active_status_choice = ProjectUserStatusChoice.objects.get(name="Active")
-            allocation_user_active_status_choice = AllocationUserStatusChoice.objects.get(name="Active")
-            if ALLOCATION_EULA_ENABLE:
-                allocation_user_pending_status_choice = AllocationUserStatusChoice.objects.get(name="PendingEULA")
-
-            allocations_selected_objs = Allocation.objects.filter(
-                pk__in=[
-                    allocation_form.cleaned_data.get("pk")
-                    for allocation_form in allocation_formset
-                    if allocation_form.cleaned_data.get("selected")
-                ]
-            )
-            for form in formset:
-                user_form_data = form.cleaned_data
-                if user_form_data["selected"]:
-                    added_users_count += 1
-
-                    # Will create local copy of user if not already present in local database
-                    user_obj, _ = User.objects.get_or_create(username=user_form_data.get("username"))
-                    user_obj.first_name = user_form_data.get("first_name")
-                    user_obj.last_name = user_form_data.get("last_name")
-                    user_obj.email = user_form_data.get("email")
-                    user_obj.save()
-
-                    role_choice = user_form_data.get("role")
-                    # Is the user already in the project?
-                    if project_obj.projectuser_set.filter(user=user_obj).exists():
-                        project_user_obj = project_obj.projectuser_set.get(user=user_obj)
-                        project_user_obj.role = role_choice
-                        project_user_obj.status = project_user_active_status_choice
-                        project_user_obj.save()
-                    else:
-                        project_user_obj = ProjectUser.objects.create(
-                            user=user_obj,
-                            project=project_obj,
-                            role=role_choice,
-                            status=project_user_active_status_choice,
-                        )
-
-                    # project signals
-                    project_activate_user.send(sender=self.__class__, project_user_pk=project_user_obj.pk)
-
-                    for allocation in allocations_selected_objs:
-                        has_eula = allocation.get_eula()
-                        user_status_choice = allocation_user_active_status_choice
-                        if allocation.allocationuser_set.filter(user=user_obj).exists():
-                            allocation_user_obj = allocation.allocationuser_set.get(user=user_obj)
-                            if (
-                                ALLOCATION_EULA_ENABLE
-                                and has_eula
-                                and (allocation_user_obj.status != allocation_user_active_status_choice)
-                            ):
-                                user_status_choice = allocation_user_pending_status_choice
-                            allocation_user_obj.status = user_status_choice
-                            allocation_user_obj.save()
-                        else:
-                            if ALLOCATION_EULA_ENABLE and has_eula:
-                                user_status_choice = allocation_user_pending_status_choice
-                            allocation_user_obj = AllocationUser.objects.create(
-                                allocation=allocation, user=user_obj, status=user_status_choice
-                            )
-                        if user_status_choice == allocation_user_active_status_choice:
-                            allocation_activate_user.send(
-                                sender=self.__class__, allocation_user_pk=allocation_user_obj.pk
-                            )
-
-            messages.success(request, "Added {} users to project.".format(added_users_count))
-        else:
+        redirect = HttpResponseRedirect(reverse("project-detail", kwargs={"pk": pk}))
+        if not (formset.is_valid() and allocation_formset.is_valid()):
             if not formset.is_valid():
                 for error in formset.errors:
                     messages.error(request, error)
@@ -909,8 +849,90 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
             if not allocation_formset.is_valid():
                 for error in allocation_formset.errors:
                     messages.error(request, error)
+            return redirect
 
-        return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": pk}))
+        project_user_active_status_choice = ProjectUserStatusChoice.objects.get(name="Active")
+        allocation_user_active_status_choice = AllocationUserStatusChoice.objects.get(name="Active")
+        if ALLOCATION_EULA_ENABLE:
+            allocation_user_pending_status_choice = AllocationUserStatusChoice.objects.get(name="PendingEULA")
+
+        allocations_selected_objs = Allocation.objects.filter(
+            pk__in=[
+                allocation_form.cleaned_data.get("pk")
+                for allocation_form in allocation_formset
+                if allocation_form.cleaned_data.get("selected")
+            ]
+        )
+        for form in formset:
+            user_form_data = form.cleaned_data
+            if not user_form_data["selected"]:
+                continue
+
+            added_users_count += 1
+
+            user_obj, _ = User.objects.update_or_create(
+                username=user_form_data.get("username"),
+                defaults={
+                    "first_name": user_form_data.get("first_name"),
+                    "last_name": user_form_data.get("last_name"),
+                    "email": user_form_data.get("email"),
+                },
+            )
+
+            role_choice = user_form_data.get("role")
+            project_user_obj, _created = ProjectUser.objects.update_or_create(
+                project=project_obj,
+                user=user_obj,
+                defaults={
+                    "role": role_choice,
+                    "status": project_user_active_status_choice,
+                },
+            )
+            email_context = {
+                "user": user_obj,
+                "project": project_obj,
+                "allocations": [],
+            }
+
+            # project signals
+            project_activate_user.send(sender=self.__class__, project_user_pk=project_user_obj.pk)
+
+            for allocation in allocations_selected_objs:
+                has_eula = allocation.get_eula()
+                user_status_choice = allocation_user_active_status_choice
+
+                # TODO: clean up
+                if allocation.allocationuser_set.filter(user=user_obj).exists():
+                    allocation_user_obj = allocation.allocationuser_set.get(user=user_obj)
+                    if (
+                        ALLOCATION_EULA_ENABLE
+                        and has_eula
+                        and (allocation_user_obj.status != allocation_user_active_status_choice)
+                    ):
+                        user_status_choice = allocation_user_pending_status_choice
+                    allocation_user_obj.status = user_status_choice
+                    allocation_user_obj.save()
+                else:
+                    if ALLOCATION_EULA_ENABLE and has_eula:
+                        user_status_choice = allocation_user_pending_status_choice
+                    allocation_user_obj = AllocationUser.objects.create(
+                        allocation=allocation, user=user_obj, status=user_status_choice
+                    )
+
+                if user_status_choice == allocation_user_active_status_choice:
+                    email_context["allocations"].append(allocation)
+                    allocation_activate_user.send(sender=self.__class__, allocation_user_pk=allocation_user_obj.pk)
+
+            send_email_template(
+                "You have been added to a project",
+                "email/user_added_to_project.txt",
+                email_context,
+                [user_obj.email],
+            )
+
+        messages.success(request, "Added {} users to project.".format(added_users_count))
+
+        return redirect
 
 
 class ProjectRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -1213,45 +1235,42 @@ class ProjectReviewView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         project_review_form = ProjectReviewForm(project_obj.pk, request.POST)
 
         project_review_status_choice = ProjectReviewStatusChoice.objects.get(name="Pending")
+        redirect = HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
 
-        if project_review_form.is_valid():
-            form_data = project_review_form.cleaned_data
-            project_review_obj = ProjectReview.objects.create(
-                project=project_obj,
-                reason_for_not_updating_project=form_data.get("reason"),
-                status=project_review_status_choice,
-            )
-
-            project_obj.force_review = False
-            project_obj.save()
-
-            domain_url = get_domain_url(self.request)
-            project_review_list_url = "{}{}".format(domain_url, reverse("project-review-list"))
-            project_url = "{}{}".format(domain_url, reverse("project-detail", kwargs={"pk": project_obj.pk}))
-
-            email_context = {
-                "project": project_obj,
-                "project_url": project_url,
-                "project_review": project_review_obj,
-                "project_review_list_url": project_review_list_url,
-            }
-
-            if EMAIL_ENABLED:
-                send_email_template(
-                    "New project review has been submitted",
-                    "email/new_project_review.txt",
-                    email_context,
-                    EMAIL_SENDER,
-                    [
-                        EMAIL_DIRECTOR_EMAIL_ADDRESS,
-                    ],
-                )
-
-            messages.success(request, "Project reviewed successfully.")
-            return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
-        else:
+        if not project_review_form.is_valid():
             messages.error(request, "There was an error in processing  your project review.")
-            return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
+            return redirect
+
+        form_data = project_review_form.cleaned_data
+        project_review_obj = ProjectReview.objects.create(
+            project=project_obj,
+            reason_for_not_updating_project=form_data.get("reason"),
+            status=project_review_status_choice,
+        )
+
+        project_obj.force_review = False
+        project_obj.save()
+
+        domain_url = get_domain_url(self.request)
+        project_review_list_url = "{}{}".format(domain_url, reverse("project-review-list"))
+        project_url = "{}{}".format(domain_url, reverse("project-detail", kwargs={"pk": project_obj.pk}))
+
+        email_context = {
+            "project": project_obj,
+            "project_url": project_url,
+            "project_review": project_review_obj,
+            "project_review_list_url": project_review_list_url,
+        }
+
+        send_email_template(
+            "New project review has been submitted",
+            "email/new_project_review.txt",
+            email_context,
+            [EMAIL_DIRECTOR_EMAIL_ADDRESS],
+        )
+
+        messages.success(request, "Project reviewed successfully.")
+        return redirect
 
 
 class ProjectReviewListView(LoginRequiredMixin, UserPassesTestMixin, ListView):

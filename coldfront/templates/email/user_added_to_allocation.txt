@@ -1,0 +1,15 @@
+Dear {{user.first_name}} {{user.last_name}},
+
+You have been added to an allocation under the {{allocation.project.title}} project in ColdFront.
+
+You can access the allocation here:
+{% with resource=allocation.resources.all|first %}{{resource.name}}{% endwith %} ({{center_base_url}}{% url 'allocation-detail' allocation.pk %})
+
+If you are a student or collaborator under this project, you are receiving this notice as a courtesy. If you would like
+to opt out of future notifications, instructions can be found here: {{ opt_out_instruction_url }}
+
+If you believe you have been sent this email in error, please contact
+the project PI at {{allocation.project.pi.email}}.
+
+Thank you,
+{{ signature }}

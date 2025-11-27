@@ -93,6 +93,7 @@ if INVOICE_ENABLED:
 ALLOCATION_ACCOUNT_ENABLED = import_from_settings("ALLOCATION_ACCOUNT_ENABLED", False)
 ALLOCATION_ACCOUNT_MAPPING = import_from_settings("ALLOCATION_ACCOUNT_MAPPING", {})
 
+EMAIL_SENDER = import_from_settings("EMAIL_SENDER")
 EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT = import_from_settings("EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT", False)
 EMAIL_ALLOCATION_EULA_CONFIRMATIONS = import_from_settings("EMAIL_ALLOCATION_EULA_CONFIRMATIONS", False)
 EMAIL_ALLOCATION_EULA_CONFIRMATIONS_CC_MANAGERS = import_from_settings(
@@ -868,71 +869,63 @@ class AllocationAddUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
 
         users_added_count = 0
 
-        if formset.is_valid():
-            allocation_user_active_status_choice = AllocationUserStatusChoice.objects.get(name="Active")
-            if ALLOCATION_EULA_ENABLE:
-                allocation_user_pending_status_choice = AllocationUserStatusChoice.objects.get(name="PendingEULA")
+        redirect = HttpResponseRedirect(reverse("allocation-detail", kwargs={"pk": pk}))
 
-            for form in formset:
-                user_form_data = form.cleaned_data
-                if user_form_data["selected"]:
-                    users_added_count += 1
-
-                    user_obj = get_user_model().objects.get(username=user_form_data.get("username"))
-
-                    if allocation_obj.allocationuser_set.filter(user=user_obj).exists():
-                        allocation_user_obj = allocation_obj.allocationuser_set.get(user=user_obj)
-                        if ALLOCATION_EULA_ENABLE and not user_obj.userprofile.is_pi and allocation_obj.get_eula():
-                            allocation_user_obj.status = allocation_user_pending_status_choice
-                            send_email_template(
-                                f"Agree to EULA for {allocation_obj.get_parent_resource.__str__()}",
-                                "email/allocation_agree_to_eula.txt",
-                                {
-                                    "resource": allocation_obj.get_parent_resource,
-                                    "url": build_link(
-                                        reverse("allocation-review-eula", kwargs={"pk": allocation_obj.pk}),
-                                        domain_url=get_domain_url(self.request),
-                                    ),
-                                },
-                                self.request.user.email,
-                                [user_obj],
-                            )
-                        else:
-                            allocation_user_obj.status = allocation_user_active_status_choice
-                        allocation_user_obj.save()
-                    else:
-                        if ALLOCATION_EULA_ENABLE and not user_obj.userprofile.is_pi and allocation_obj.get_eula():
-                            allocation_user_obj = AllocationUser.objects.create(
-                                allocation=allocation_obj, user=user_obj, status=allocation_user_pending_status_choice
-                            )
-                            send_email_template(
-                                f"Agree to EULA for {allocation_obj.get_parent_resource.__str__()}",
-                                "email/allocation_agree_to_eula.txt",
-                                {
-                                    "resource": allocation_obj.get_parent_resource,
-                                    "url": build_link(
-                                        reverse("allocation-review-eula", kwargs={"pk": allocation_obj.pk}),
-                                        domain_url=get_domain_url(self.request),
-                                    ),
-                                },
-                                self.request.user.email,
-                                [user_obj],
-                            )
-                        else:
-                            allocation_user_obj = AllocationUser.objects.create(
-                                allocation=allocation_obj, user=user_obj, status=allocation_user_active_status_choice
-                            )
-
-                    if allocation_user_obj.status == allocation_user_active_status_choice:
-                        allocation_activate_user.send(sender=self.__class__, allocation_user_pk=allocation_user_obj.pk)
-
-            user_plural = "user" if users_added_count == 1 else "users"
-            messages.success(request, f"Added {users_added_count} {user_plural} to allocation.")
-        else:
+        if not formset.is_valid():
             for error in formset.errors:
                 messages.error(request, error)
+            return redirect
 
-        return HttpResponseRedirect(reverse("allocation-detail", kwargs={"pk": pk}))
+        allocation_user_active_status_choice = AllocationUserStatusChoice.objects.get(name="Active")
+        if ALLOCATION_EULA_ENABLE:
+            allocation_user_pending_status_choice = AllocationUserStatusChoice.objects.get(name="PendingEULA")
+
+        for form in formset:
+            user_form_data = form.cleaned_data
+            if not user_form_data["selected"]:
+                continue
+
+            users_added_count += 1
+
+            user_obj = get_user_model().objects.get(username=user_form_data.get("username"))
+
+            is_pending_eula = ALLOCATION_EULA_ENABLE and not user_obj.userprofile.is_pi and allocation_obj.get_eula()
+            allocation_user_status = (
+                allocation_user_pending_status_choice if is_pending_eula else allocation_user_active_status_choice
+            )
+
+            allocation_user_obj, _created = AllocationUser.objects.update_or_create(
+                allocation=allocation_obj, user=user_obj, defaults={"status": allocation_user_status}
+            )
+
+            if is_pending_eula:
+                send_email_template(
+                    f"Agree to EULA for {allocation_obj.get_parent_resource.__str__()}",
+                    "email/allocation_agree_to_eula.txt",
+                    {
+                        "resource": allocation_obj.get_parent_resource,
+                        "url": build_link(
+                            reverse("allocation-review-eula", kwargs={"pk": allocation_obj.pk}),
+                            domain_url=get_domain_url(self.request),
+                        ),
+                    },
+                    [user_obj.email],
+                    sender=self.request.user.email,
+                )
+
+            if allocation_user_obj.status == allocation_user_active_status_choice:
+                send_email_template(
+                    "You have been added to an allocation",
+                    "email/user_added_to_allocation.txt",
+                    {"user": user_obj, "allocation": allocation_obj},
+                    [user_obj.email],
+                )
+                allocation_activate_user.send(sender=self.__class__, allocation_user_pk=allocation_user_obj.pk)
+
+        user_plural = "user" if users_added_count == 1 else "users"
+        messages.success(request, f"Added {users_added_count} {user_plural} to allocation.")
+
+        return redirect
 
 
 class AllocationRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
