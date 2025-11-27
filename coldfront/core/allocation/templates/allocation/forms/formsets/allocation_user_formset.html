@@ -1,0 +1,52 @@
+{{ formset.management_form }}
+<div class="table-responsive">
+  <table class="table table-sm table-hover">
+    <thead>
+      <tr>
+        <th>
+          <input type="checkbox" class="check selectAll">
+        </th>
+        <th scope="col">#</th>
+        <th scope="col">Username</th>
+        <th scope="col">First Name</th>
+        <th scope="col">Last Name</th>
+        <th scope="col">Email</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for form in formset %}
+        {% with instance_user=form.instance.user initial_user=form.initial.user %}
+        <tr>
+          <td>{{ form.selected }}</td>
+          <td>{{ forloop.counter }}</td>
+          <td>{% firstof instance_user.username initial_user.username %}</td>
+          <td>{% firstof instance_user.first_name initial_user.first_name %}</td>
+          <td>{% firstof instance_user.last_name initial_user.last_name %}</td>
+          <td>{% firstof instance_user.email initial_user.email %}</td>
+        </tr>
+        {% endwith %}
+        {% for hidden_field in form.hidden_fields %}
+          {{ hidden_field }}
+        {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+ $(".selectAll").on("click", function () {
+     $(this)
+         .parent()
+         .closest("table")
+         .find("input[type=checkbox]")
+         .prop('checked', $(this).prop('checked'));
+ });
+
+ $("input[type=checkbox]:not(.selectAll)").on("click", function (ele) {
+     $(this)
+         .parent()
+         .closest("table")
+         .find("input[type=checkbox].selectAll")
+         .prop('checked', false);
+ });
+</script>

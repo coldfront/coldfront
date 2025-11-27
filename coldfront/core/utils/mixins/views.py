@@ -6,10 +6,13 @@ import re
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.views.generic.detail import BaseDetailView
 
+from coldfront.core.allocation.models import Allocation
 from coldfront.core.project.models import Project
 
 
@@ -33,6 +36,33 @@ class SnakeCaseTemplateNameMixin:
         model_name = self.model.__name__
 
         return ["{}/{}{}.html".format(app_label, to_snake(model_name), self.template_name_suffix)]
+
+
+class AllocationInContextView(BaseDetailView):
+    model = Allocation
+    context_object_name = "allocation"
+
+    def get_success_url(self):
+        """Return the URL to redirect to after processing a valid form."""
+        if self.success_url:
+            url = self.success_url.format(**self.object.__dict__)
+        else:
+            try:
+                url = self.object.get_absolute_url()
+            except AttributeError:
+                raise ImproperlyConfigured(
+                    "No URL to redirect to.  Either provide a url or define a get_absolute_url method on the Model."
+                )
+        return url
+
+    def get(self, request, *args, **kwargs):
+        self.allocation = self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.allocation = self.get_object()
+        self.object = self.allocation
+        return super().post(request, *args, **kwargs)
 
 
 class ProjectInContextMixin:

@@ -84,7 +84,7 @@ Allocation Change Detail
               <tr>
                   <th scope="row" class="text-nowrap">Requested End Date Extension:</th>
                   <td>
-                    {{allocation_change_form.end_date_extension}}
+                    {{form.end_date_extension}}
                   </td>
               </tr>
             {% endif %}
@@ -120,7 +120,7 @@ Allocation Change Detail
       <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Attributes</h3>
     </div>
     <div class="card-body">
-      {% if attribute_changes %}
+      {% if formset %}
         <div class="table-responsive">
           <table class="table table-bordered table-sm">
             <thead>
@@ -134,14 +134,17 @@ Allocation Change Detail
             </thead>
             <tbody>
               {% for form in formset %}
+                {% for hidden_field in form.hidden_fields %}
+                  {{hidden_field}}
+                {% endfor %}
                 <tr>
-                  <td>{{form.name.value}}</td>
+                  <td>{{form.instance.allocation_attribute.allocation_attribute_type}}</td>
                   {% if allocation_change.status.name == 'Pending' %}
-                    <td>{{form.value.value}}</td>
+                    <td>{{form.instance.allocation_attribute.value}}</td>
                     {% if request.user.is_superuser %}
                       <td>
                         {{form.new_value}}
-                        <a href="{% url 'allocation-attribute-change-delete' form.change_pk.value %}" class="float-right confirm-delete">
+                        <a href="{% url 'allocation-attribute-change-delete' form.id.value %}" class="float-right confirm-delete">
                           <i class="far fa-trash-alt fa-lg"></i>
                         </a>
                       </td>
@@ -170,7 +173,10 @@ Allocation Change Detail
     </div>
   </div>
 
-  <p class="card-text text-justify">{{allocation_change_form.justification | as_crispy_field}}</p>
+  <p class="card-text text-justify">{{form.justification | as_crispy_field}}</p>
+  {% for hidden_field in form.hidden_fields %}
+  {{hidden_field}}
+  {% endfor %}
 
   <hr/>
 
@@ -183,7 +189,7 @@ Allocation Change Detail
 
           
             {% csrf_token %}
-            {{note_form.notes | as_crispy_field}}
+            {{form.notes | as_crispy_field}}
             <div style="float: right;">
               {% if allocation_change.status.name == 'Pending' %}
                 <button type="submit" name="action" value="approve" class="btn btn-success mr-1">Approve</button>

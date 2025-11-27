@@ -98,6 +98,7 @@ Request Allocation Change
         <div class="card-header">
           <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Attributes</h3>
         </div>
+        {{ formset.management_form }}
         <div class="card-body">
           <div class="table-responsive">
             <table class="table table-bordered table-sm">
@@ -110,20 +111,26 @@ Request Allocation Change
               </thead>
               <tbody>
                 {% for form in formset %}
-                    <tr>
-                      <td>{{form.name.value}}</td>
-                      <td>{{form.value.value}}</td>
-                      <td>{{form.new_value}}</td>
-                    </tr>
+                  <tr>
+                    <td>{{form.initial.allocation_attribute.allocation_attribute_type.name}}</td>
+                    <td>{{form.new_value.value}}</td>
+                    <td>{{form.new_value}}</td>
+                  </tr>
+                  {% for hidden_field in form.hidden_fields %}
+                    {{hidden_field}}
+                  {% endfor %}
                 {% endfor %}
               </tbody>
             </table>
           </div>
-          {{ formset.management_form }}
         </div>
       </div>
     {% endif %}
 
+      <!-- {{form}} -->
+      <!-- {% for hidden_field in form.hidden_fields %}
+           {{hidden_field}}
+           {% endfor %} -->
     <div>
       {{form.justification | as_crispy_field }}
       <input class="btn btn-success" type="submit" value="Submit" />

@@ -18,7 +18,6 @@ Renew Allocation
       {% csrf_token %}
 
       {{ formset.management_form }}
-
       {% if formset %}
         <div class="table-responsive">
           <table class="table table-sm">
@@ -36,12 +35,19 @@ Renew Allocation
               {% for form in formset %}
                 <tr>
                   <td>{{ forloop.counter }}</td>
-                  <td>{{ form.username.value }}</td>
-                  <td>{{ form.first_name.value }}</td>
-                  <td>{{ form.last_name.value }}</td>
-                  <td>{{ form.email.value }}</td>
+
+                  {% with user=form.instance.user %}
+                  <td>{{ user }}</td>
+
+                  <td>{{ user.first_name }}</td>
+                  <td>{{ user.last_name }}</td>
+                  <td>{{ user.email }}</td>
+                  {% endwith %}
                   <td>{{ form.user_status }}</td>
                 </tr>
+                {% for hidden_field in form.hidden_fields %}
+                  {{hidden_field}}
+                {% endfor %}
               {% endfor %}
             </tbody>
           </table>

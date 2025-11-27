@@ -16,12 +16,13 @@ Delete Allocation Invoice Note
   <div class="card-body">
     <form action="{% url 'allocation-delete-invoice-note' allocation.pk %}" method="post">
       {% csrf_token %}
+      {{ formset.management_form }}
       <div class="table-responsive">
         <table class="table table-sm table-hover">
           <thead>
             <tr>
               <th>
-                <input type="checkbox" class="check" id="selectAll">
+                <input type="checkbox" class="check selectAll">
               </th>
               <th scope="col">Note</th>
               <th scope="col">Author</th>
@@ -30,19 +31,23 @@ Delete Allocation Invoice Note
           <tbody>
             {% for form in formset %}
               <tr>
-                <td>{{ form.selected }}</td>
+                <td>{{ form.DELETE }}</td>
                 <td>{{ form.note.value }}</td>
-                <td>{{ form.author.value }}</td>
+                <td>{{ form.instance.author }}</td>
               </tr>
+              {% for hidden_field in form.hidden_fields %}
+                {{ hidden_field }}
+              {% endfor %}
             {% endfor %}
           </tbody>
         </table>
       </div>
-      {{ formset.management_form }}
       <div>
         <button type="submit" class="btn btn-danger">Delete</button>
-        <a class="btn btn-secondary" href="{% url 'allocation-invoice-detail' allocation.pk %}" role="button"><i
-            class="fas fa-long-arrow-left" aria-hidden="true"></i> Cancel</a>
+        <a class="btn btn-secondary" href="{% url 'allocation-invoice-detail' allocation.pk %}" role="button">
+            <i class="fas fa-long-arrow-left" aria-hidden="true"></i>
+            Cancel
+        </a>
         <br>
       </div>
     </form>
@@ -50,14 +55,20 @@ Delete Allocation Invoice Note
 </div>
 
 <script>
-  $("#selectAll").click(function () {
-    $("input[name^='noteform-']").prop('checked', $(this).prop('checked'));
-  });
-  $("input[name^='noteform-']").click(function (ele) {
-    var id = $(this).attr('id');
-    if (id != "selectAll") {
-      $("#selectAll").prop('checked', false);
-    }
-  });
+ $(".selectAll").on("click", function () {
+     $(this)
+         .parent()
+         .closest("table")
+         .find("input[type=checkbox]")
+         .prop('checked', $(this).prop('checked'));
+ });
+
+ $("input[type=checkbox]:not(.selectAll)").on("click", function (ele) {
+     $(this)
+         .parent()
+         .closest("table")
+         .find("input[type=checkbox].selectAll")
+         .prop('checked', false);
+ });
 </script>
 {% endblock %}

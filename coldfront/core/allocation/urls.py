@@ -21,8 +21,8 @@ urlpatterns = [
         allocation_views.AllocationChangeDeleteAttributeView.as_view(),
         name="allocation-attribute-change-delete",
     ),
-    path("<int:pk>/add-users", allocation_views.AllocationAddUsersView.as_view(), name="allocation-add-users"),
-    path("<int:pk>/remove-users", allocation_views.AllocationRemoveUsersView.as_view(), name="allocation-remove-users"),
+    path("<int:pk>/add-users", allocation_views.AllocationUsersAddView.as_view(), name="allocation-add-users"),
+    path("<int:pk>/remove-users", allocation_views.AllocationUsersRemoveView.as_view(), name="allocation-remove-users"),
     path("request-list", allocation_views.AllocationRequestListView.as_view(), name="allocation-request-list"),
     path("change-list", allocation_views.AllocationChangeListView.as_view(), name="allocation-change-list"),
     path("<int:pk>/renew", allocation_views.AllocationRenewView.as_view(), name="allocation-renew"),
@@ -51,17 +51,17 @@ urlpatterns = [
     path("<int:pk>/invoice/", allocation_views.AllocationInvoiceDetailView.as_view(), name="allocation-invoice-detail"),
     path(
         "allocation/<int:pk>/add-invoice-note",
-        allocation_views.AllocationAddInvoiceNoteView.as_view(),
+        allocation_views.AllocationInvoiceNoteCreateView.as_view(),
         name="allocation-add-invoice-note",
     ),
     path(
         "allocation-invoice-note/<int:pk>/update",
-        allocation_views.AllocationUpdateInvoiceNoteView.as_view(),
+        allocation_views.AllocationInvoiceNoteUpdateView.as_view(),
         name="allocation-update-invoice-note",
     ),
     path(
         "allocation/<int:pk>/invoice/delete/",
-        allocation_views.AllocationDeleteInvoiceNoteView.as_view(),
+        allocation_views.AllocationInvoiceNoteDeleteView.as_view(),
         name="allocation-delete-invoice-note",
     ),
     path(

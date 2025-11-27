@@ -21,6 +21,7 @@ from coldfront.core.test_helpers.factories import (
     AllocationFactory,
     AllocationStatusChoiceFactory,
     AllocationUserFactory,
+    AllocationUserStatusChoiceFactory,
     ProjectFactory,
     ProjectStatusChoiceFactory,
     ProjectUserFactory,
@@ -43,6 +44,7 @@ class AllocationViewBaseTest(TestCase):
         pi_user = UserFactory()
         pi_user.userprofile.is_pi = True
         AllocationStatusChoiceFactory(name="New")
+        AllocationUserStatusChoiceFactory(name="Removed")
         cls.project = ProjectFactory(pi=pi_user, status=ProjectStatusChoiceFactory(name="Active"))
         cls.allocation = AllocationFactory(project=cls.project)
         cls.allocation.resources.add(ResourceFactory(name="holylfs07/tier1"))
@@ -58,10 +60,10 @@ class AllocationViewBaseTest(TestCase):
         ProjectUserFactory(user=pi_user, project=cls.project, role=manager_role)
         cls.pi_user = pi_user
         # make a quota TB allocation attribute
-        AllocationAttributeFactory(
+        cls.allocation_attribute = AllocationAttributeFactory(
             allocation=cls.allocation,
             value=100,
-            allocation_attribute_type=AllocationAttributeTypeFactory(name="Storage Quota (TB)"),
+            allocation_attribute_type=AllocationAttributeTypeFactory(name="Storage Quota (TB)", is_changeable=True),
         )
 
     def allocation_access_tstbase(self, url):
@@ -161,8 +163,10 @@ class AllocationChangeViewTest(AllocationViewBaseTest):
         self.client.force_login(self.admin_user, backend=BACKEND)
         self.post_data = {
             "justification": "just a test",
-            "attributeform-0-new_value": "",
-            "attributeform-INITIAL_FORMS": "1",
+            "attributeform-0-new_value": self.allocation_attribute.value,
+            "attributeform-0-allocation_attribute": self.allocation_attribute.pk,
+            "attributeform-0-id": "",
+            "attributeform-INITIAL_FORMS": "0",
             "attributeform-MAX_NUM_FORMS": "1",
             "attributeform-MIN_NUM_FORMS": "0",
             "attributeform-TOTAL_FORMS": "1",
@@ -204,7 +208,8 @@ class AllocationAttributeEditViewTest(AllocationViewBaseTest):
         self.client.force_login(self.admin_user, backend=BACKEND)
         self.url = f"/allocation/{self.allocation.pk}/allocationattribute/edit"
         self.post_data = {
-            "attributeform-0-value": self.allocation.get_attribute("Storage Quota (TB)"),
+            "attributeform-0-value": self.allocation_attribute.value,
+            "attributeform-0-id": self.allocation_attribute.pk,
             "attributeform-INITIAL_FORMS": "1",
             "attributeform-MAX_NUM_FORMS": "1",
             "attributeform-MIN_NUM_FORMS": "0",
@@ -296,8 +301,9 @@ class AllocationCreateViewTest(AllocationViewBaseTest):
         self.client.force_login(self.pi_user)
         self.post_data = {
             "justification": "test justification",
-            "quantity": "1",
-            "resource": f"{self.allocation.resources.first().pk}",
+            "quantity": 1,
+            "resource": self.allocation.resources.first().pk,
+            "project": self.project.pk,
         }
 
     def test_allocationcreateview_access(self):

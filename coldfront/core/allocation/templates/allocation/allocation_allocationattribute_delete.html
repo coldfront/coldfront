@@ -17,6 +17,7 @@ Delete Allocation Attributes from Allocation
     <div class="card-body">
       <form action="{% url 'allocation-attribute-delete' allocation.pk %}" method="post">
         {% csrf_token %}
+        {{ formset.management_form }}
         <div class="table-responsive">
           <table class="table table-sm table-hover">
             <thead>
@@ -31,15 +32,17 @@ Delete Allocation Attributes from Allocation
             <tbody>
               {% for form in formset %}
                 <tr>
-                  <td>{{ form.selected }}</td>
-                  <td>{{ form.name.value }}</td>
+                  <td>{{ form.DELETE }}</td>
+                  <td>{{ form.instance }}</td>
                   <td>{{ form.value.value }}</td>
                 </tr>
+                {% for hidden_field in form.hidden_fields %}
+                  {{hidden_field}}
+                {% endfor %}
               {% endfor %}
             </tbody>
           </table>
         </div>
-        {{ formset.management_form }}
         <div>
           <button type="submit" class="btn btn-danger"><i class="fas fa-minus" aria-hidden="true"></i> Delete Selected Attributes from
             Allocation</button>
