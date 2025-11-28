@@ -178,6 +178,7 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context["attributes_with_usage"] = attributes_with_usage
         context["attributes"] = attributes
         context["allocation_changes"] = allocation_changes
+        context["display_slurm_help"] = "coldfront.plugins.slurm" in settings.INSTALLED_APPS
 
         # Can the user update the project?
         context["is_allowed_to_update_project"] = allocation_obj.project.has_perm(

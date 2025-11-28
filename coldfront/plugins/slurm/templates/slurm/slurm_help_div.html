@@ -1,0 +1,17 @@
+<div id="slurm_help"></div>
+
+<script>
+  $(document).ready(function () {
+    $.ajax({
+      url: "{% url 'slurm-help' %}",
+      method: "POST",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+        allocation_pk: "{{ allocation.pk }}"
+      },
+      success: function(data) {
+        $('#slurm_help').html(data);
+      }
+    })
+  })
+</script>

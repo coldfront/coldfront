@@ -276,6 +276,10 @@ Allocation Detail
   </div>
 {% endif %}
 
+{% if display_slurm_help %}
+  {% include "slurm/slurm_help_div.html" %}
+{% endif %}
+
 {% if not user_is_pending %}
 <!-- Start Allocation Change Requests -->
 <div class="card mb-3">

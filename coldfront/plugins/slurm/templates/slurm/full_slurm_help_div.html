@@ -1,0 +1,17 @@
+<div id="full_slurm_help"></div>
+
+<script>
+  $(document).ready(function () {
+    $.ajax({
+      url: "{% url 'full-slurm-help' %}",
+      method: "POST",
+      data: {
+        csrfmiddlewaretoken: "{{ csrf_token }}",
+      },
+      success: function(data) {
+        $('#full_slurm_help').before(data);
+        $('#full_slurm_help').remove();
+      }
+    })
+  })
+</script>
