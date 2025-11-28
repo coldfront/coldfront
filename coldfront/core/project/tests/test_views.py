@@ -49,7 +49,7 @@ class ProjectViewTestBase(TestCase):
         """
         # If not logged in, can't see page; redirect to login page.
         utils.test_logged_out_redirect_to_login(self, url)
-        # after login, pi and admin can access create page
+        # If logged in as admin, can access page
         utils.test_user_can_access(self, self.admin_user, url)
 
 
@@ -64,7 +64,7 @@ class ProjectDetailViewTest(ProjectViewTestBase):
 
     def test_projectdetail_access(self):
         """Test project detail page access"""
-        # logged-out user gets redirected, admin can access create page
+        # logged-out user gets redirected, admin can access detail page
         self.project_access_tstbase(self.url)
         # pi and projectuser can access
         utils.test_user_can_access(self, self.pi_user.user, self.url)
@@ -205,8 +205,9 @@ class ProjectAttributeUpdateTest(ProjectViewTestBase):
     def test_project_attribute_update_access(self):
         """Test access to project attribute update page"""
         self.project_access_tstbase(self.url)
+        # pi can access project attribute update page
         utils.test_user_can_access(self, self.pi_user.user, self.url)
-        # project user, pi, and nonproject user cannot access update page
+        # project user and nonproject user cannot access project attribute update page
         utils.test_user_cannot_access(self, self.project_user.user, self.url)
         utils.test_user_cannot_access(self, self.nonproject_user, self.url)
 
@@ -310,6 +311,11 @@ class ProjectRemoveUsersViewTest(ProjectViewTestBase):
     def test_projectremoveusersview_access(self):
         """test access to project remove users page"""
         self.project_access_tstbase(self.url)
+        # pi can access remove users page
+        utils.test_user_can_access(self, self.pi_user.user, self.url)
+        # project user and nonproject user cannot remove users page
+        utils.test_user_cannot_access(self, self.project_user.user, self.url)
+        utils.test_user_cannot_access(self, self.nonproject_user, self.url)
 
 
 class ProjectUpdateViewTest(ProjectViewTestBase):
@@ -322,6 +328,11 @@ class ProjectUpdateViewTest(ProjectViewTestBase):
     def test_projectupdateview_access(self):
         """test access to project update page"""
         self.project_access_tstbase(self.url)
+        # pi can access project update page
+        utils.test_user_can_access(self, self.pi_user.user, self.url)
+        # project user and nonproject user cannot access project update page
+        utils.test_user_cannot_access(self, self.project_user.user, self.url)
+        utils.test_user_cannot_access(self, self.nonproject_user, self.url)
 
 
 class ProjectReviewListViewTest(ProjectViewTestBase):
@@ -334,6 +345,10 @@ class ProjectReviewListViewTest(ProjectViewTestBase):
     def test_projectreviewlistview_access(self):
         """test access to project review list page"""
         self.project_access_tstbase(self.url)
+        # pi, projectuser and nonproject user cannot access review list page
+        utils.test_user_cannot_access(self, self.pi_user.user, self.url)
+        utils.test_user_cannot_access(self, self.project_user.user, self.url)
+        utils.test_user_cannot_access(self, self.nonproject_user, self.url)
 
 
 class ProjectArchivedListViewTest(ProjectViewTestBase):
@@ -346,6 +361,10 @@ class ProjectArchivedListViewTest(ProjectViewTestBase):
     def test_projectarchivedlistview_access(self):
         """test access to project archived list page"""
         self.project_access_tstbase(self.url)
+        # all other users can access archive list page
+        utils.test_user_can_access(self, self.pi_user.user, self.url)
+        utils.test_user_can_access(self, self.project_user.user, self.url)
+        utils.test_user_can_access(self, self.nonproject_user, self.url)
 
 
 class ProjectNoteCreateViewTest(ProjectViewTestBase):
@@ -358,6 +377,10 @@ class ProjectNoteCreateViewTest(ProjectViewTestBase):
     def test_projectnotecreateview_access(self):
         """test access to project note create page"""
         self.project_access_tstbase(self.url)
+        # pi, projectuser and nonproject user cannot access note create page
+        utils.test_user_cannot_access(self, self.pi_user.user, self.url)
+        utils.test_user_cannot_access(self, self.project_user.user, self.url)
+        utils.test_user_cannot_access(self, self.nonproject_user, self.url)
 
 
 class ProjectAddUsersSearchView(ProjectViewTestBase):
@@ -370,6 +393,11 @@ class ProjectAddUsersSearchView(ProjectViewTestBase):
     def test_projectadduserssearchview_access(self):
         """test access to project add users search page"""
         self.project_access_tstbase(self.url)
+        # pi can access add users search page
+        utils.test_user_can_access(self, self.pi_user.user, self.url)
+        # project user and nonproject user cannot access add users search page
+        utils.test_user_cannot_access(self, self.project_user.user, self.url)
+        utils.test_user_cannot_access(self, self.nonproject_user, self.url)
 
 
 class ProjectUserDetailViewTest(ProjectViewTestBase):
@@ -382,3 +410,8 @@ class ProjectUserDetailViewTest(ProjectViewTestBase):
     def test_projectuserdetailview_access(self):
         """test access to project user detail page"""
         self.project_access_tstbase(self.url)
+        # pi can access user detail page
+        utils.test_user_can_access(self, self.pi_user.user, self.url)
+        # project user and nonproject user cannot access user detail page
+        utils.test_user_cannot_access(self, self.project_user.user, self.url)
+        utils.test_user_cannot_access(self, self.nonproject_user, self.url)
