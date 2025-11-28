@@ -139,7 +139,10 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
                     AllocationUser, allocation=allocation_obj, user=self.request.user
                 ).status
                 if allocation_obj.status.name == "Active" and allocation_user_status.name == "PendingEula":
-                    messages.info(self.request, "This allocation is active, but you must agree to the EULA to use it!")
+                    messages.info(
+                        self.request,
+                        "This allocation is active, but you must agree to the EULA to use it!",
+                    )
 
             context["eulas"] = allocation_obj.get_eula()
             context["res"] = allocation_obj.get_parent_resource.pk
@@ -166,7 +169,8 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
                 )
             except ValueError:
                 logger.error(
-                    "Allocation attribute '%s' is not an int but has a usage", attribute.allocation_attribute_type.name
+                    "Allocation attribute '%s' is not an int but has a usage",
+                    attribute.allocation_attribute_type.name,
                 )
                 invalid_attributes.append(attribute)
 
@@ -572,7 +576,10 @@ class AllocationListView(LoginRequiredMixin, ListView):
         order_by = self.request.GET.get("order_by")
         if order_by:
             direction = self.request.GET.get("direction")
-            filter_parameters_with_order_by = filter_parameters + "order_by=%s&direction=%s&" % (order_by, direction)
+            filter_parameters_with_order_by = filter_parameters + "order_by=%s&direction=%s&" % (
+                order_by,
+                direction,
+            )
         else:
             filter_parameters_with_order_by = filter_parameters
 
@@ -614,7 +621,8 @@ class AllocationCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
         if project_obj.needs_review:
             messages.error(
-                request, "You cannot request a new allocation because you have to review your project first."
+                request,
+                "You cannot request a new allocation because you have to review your project first.",
             )
             return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
 
@@ -697,10 +705,20 @@ class AllocationCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             allocation_limit = int(allocation_limit_objs.value)
             allocation_count = project_obj.allocation_set.filter(
                 resources=resource_obj,
-                status__name__in=["Active", "New", "Renewal Requested", "Paid", "Payment Pending", "Payment Requested"],
+                status__name__in=[
+                    "Active",
+                    "New",
+                    "Renewal Requested",
+                    "Paid",
+                    "Payment Pending",
+                    "Payment Requested",
+                ],
             ).count()
             if allocation_count >= allocation_limit:
-                form.add_error(None, format_html("Your project is at the allocation limit allowed for this resource."))
+                form.add_error(
+                    None,
+                    format_html("Your project is at the allocation limit allowed for this resource."),
+                )
                 return self.form_invalid(form)
 
         usernames = form_data.get("users")
@@ -717,7 +735,10 @@ class AllocationCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             allocation_status_obj = AllocationStatusChoice.objects.get(name="New")
 
         allocation_obj = Allocation.objects.create(
-            project=project_obj, justification=justification, quantity=quantity, status=allocation_status_obj
+            project=project_obj,
+            justification=justification,
+            quantity=quantity,
+            status=allocation_status_obj,
         )
 
         if ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT:
@@ -884,6 +905,8 @@ class AllocationAddUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         else:
             for error in formset.errors:
                 messages.error(request, error)
+            for error in formset.non_form_errors():
+                messages.error(request, error)
 
         return redirect(allocation_obj)
 
@@ -986,6 +1009,8 @@ class AllocationRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, Templat
             messages.success(request, f"Removed {remove_users_count} {user_plural} from allocation.")
         else:
             for error in formset.errors:
+                messages.error(request, error)
+            for error in formset.non_form_errors():
                 messages.error(request, error)
 
         return redirect(allocation_obj)
@@ -1092,6 +1117,8 @@ class AllocationAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Tem
             messages.success(request, f"Deleted {attributes_deleted_count} attributes from allocation.")
         else:
             for error in formset.errors:
+                messages.error(request, error)
+            for error in formset.non_form_errors():
                 messages.error(request, error)
 
         return redirect(allocation_obj)
@@ -1211,7 +1238,10 @@ class AllocationRenewView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
             return redirect(allocation_obj)
 
         if allocation_obj.project.needs_review:
-            messages.error(request, "You cannot renew your allocation because you have to review your project first.")
+            messages.error(
+                request,
+                "You cannot renew your allocation because you have to review your project first.",
+            )
             return redirect(allocation_obj.project)
 
         if allocation_obj.expires_in > 60:
@@ -1301,6 +1331,8 @@ class AllocationRenewView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
             if not formset.is_valid():
                 for error in formset.errors:
                     messages.error(request, error)
+                for error in formset.non_form_errors():
+                    messages.error(request, error)
         return redirect(allocation_obj.project)
 
 
@@ -1377,7 +1409,8 @@ class AllocationInvoiceDetailView(LoginRequiredMixin, UserPassesTestMixin, Templ
                 )
             except ValueError:
                 logger.error(
-                    "Allocation attribute '%s' is not an int but has a usage", attribute.allocation_attribute_type.name
+                    "Allocation attribute '%s' is not an int but has a usage",
+                    attribute.allocation_attribute_type.name,
                 )
                 invalid_attributes.append(attribute)
 
@@ -1557,6 +1590,8 @@ class AllocationDeleteInvoiceNoteView(LoginRequiredMixin, UserPassesTestMixin, T
                     note_obj.delete()
         else:
             for error in formset.errors:
+                messages.error(request, error)
+            for error in formset.non_form_errors():
                 messages.error(request, error)
 
         return HttpResponseRedirect(reverse_lazy("allocation-invoice-detail", kwargs={"pk": allocation_obj.pk}))
@@ -1773,6 +1808,8 @@ class AllocationChangeDetailView(LoginRequiredMixin, UserPassesTestMixin, FormVi
         if not allocation_change_form.is_valid() or (allocation_attributes_to_change and not formset.is_valid()):
             for error in allocation_change_form.errors:
                 messages.error(request, error)
+            for error in formset.non_form_errors():
+                messages.error(request, error)
             if allocation_attributes_to_change:
                 attribute_errors = ""
                 for error in formset.errors:
@@ -1912,7 +1949,8 @@ class AllocationChangeView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
         if allocation_obj.project.needs_review:
             messages.error(
-                request, "You cannot request a change to this allocation because you have to review your project first."
+                request,
+                "You cannot request a change to this allocation because you have to review your project first.",
             )
             return redirect(allocation_obj)
 
@@ -1935,7 +1973,8 @@ class AllocationChangeView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             "Paid",
         ]:
             messages.error(
-                request, f'You cannot request a change to an allocation with status "{allocation_obj.status.name}".'
+                request,
+                f'You cannot request a change to an allocation with status "{allocation_obj.status.name}".',
             )
             return redirect(allocation_obj)
 
@@ -1994,6 +2033,8 @@ class AllocationChangeView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             if not form.is_valid() or not formset.is_valid():
                 attribute_errors = ""
                 for error in form.errors:
+                    messages.error(request, error)
+                for error in formset.non_form_errors():
                     messages.error(request, error)
                 for error in formset.errors:
                     if error:
@@ -2141,6 +2182,8 @@ class AllocationAttributeEditView(LoginRequiredMixin, UserPassesTestMixin, FormV
                 if error:
                     attribute_errors += error.get("__all__")
             messages.error(request, attribute_errors)
+            for error in formset.non_form_errors():
+                messages.error(request, error)
             error_redirect = HttpResponseRedirect(reverse("allocation-attribute-edit", kwargs={"pk": pk}))
             return error_redirect
 
