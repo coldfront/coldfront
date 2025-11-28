@@ -49,7 +49,7 @@
             <td>{{allocation.project.title}}</td>
             <td>{{allocation.get_parent_resource}}
               {% if allocation.get_parent_resource.get_ondemand_status == 'Yes' and ondemand_url %}
-              <a href = "{{ondemand_url}}"> {% load static %}  <img src="/static/core/portal/imgs/ondemand.png" alt="ondemand cta" width="25" height="25"></a>
+              <a href="{{ondemand_url}}"> {% load static %}  <img src="/static/core/portal/imgs/ondemand.png" alt="ondemand cta" width="25" height="25"></a>
             {% endif %} 
             </td>
             {%  if allocation.status.name == "Expired" and allocation.expires_in < 0 %}
