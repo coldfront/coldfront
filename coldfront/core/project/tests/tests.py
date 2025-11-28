@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import logging
+import sys
 from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
@@ -379,3 +380,50 @@ class TestInstitution(TestCase):
         self.assertEqual(original_db_project.institution, "Default")
 
         self.assertNotEqual(project.institution, current_db_project.institution)
+
+
+class ProjectAttributeModelCleanMethodTests(TestCase):
+    def _test_clean(self, proj_attr_type_name: str, proj_attr_values: list, expect_validation_error: bool):
+        attribute_type = PAttributeTypeFactory(name=proj_attr_type_name)
+        proj_attr_type = ProjectAttributeTypeFactory(attribute_type=attribute_type)
+        project_attribute = ProjectAttributeFactory(proj_attr_type=proj_attr_type)
+        for value in proj_attr_values:
+            with self.subTest(value=value):
+                if not isinstance(value, str):
+                    raise TypeError("project attribute value must be a string")
+                project_attribute.value = value
+                if expect_validation_error:
+                    with self.assertRaises(ValidationError):
+                        project_attribute.clean()
+                else:
+                    project_attribute.clean()
+
+    def test_expect_int_given_int(self):
+        self._test_clean("Int", ["-1", "0", "1", str(sys.maxsize)], False)
+
+    def test_expect_int_given_float(self):
+        self._test_clean("Int", ["-1.0", "0.0", "1.0", "2e30"], True)
+
+    def test_expect_int_given_garbage(self):
+        self._test_clean("Int", ["foobar", "", " ", "\0", "1j"], True)
+
+    def test_expect_float_given_int(self):
+        self._test_clean("Float", ["-1", "0", "1", str(sys.maxsize)], False)
+
+    def test_expect_float_given_float(self):
+        self._test_clean("Float", ["-1.0", "0.0", "1.0", "2e30"], False)
+
+    def test_expect_float_given_garbage(self):
+        self._test_clean("Float", ["foobar", "", " ", "\0", "1j"], True)
+
+    def test_expect_yes_no_given_yes_no(self):
+        self._test_clean("Yes/No", ["Yes", "No"], False)
+
+    def test_expect_yes_no_given_garbage(self):
+        self._test_clean("Yes/No", ["foobar", "", " ", "\0", "1", "1.0", "2e30", "1j", "yes", "no", "YES", "NO"], True)
+
+    def test_expect_date_given_date(self):
+        self._test_clean("Date", ["1970-01-01"], False)
+
+    def test_expect_date_given_garbage(self):
+        self._test_clean("Date", ["foobar", "", " ", "\0", "1", "1.0", "2e30", "1j"], True)

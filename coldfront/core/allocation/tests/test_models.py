@@ -213,13 +213,11 @@ class AllocationModelCleanMethodTests(TestCase):
 
 
 class AllocationAttributeModelCleanMethodTests(TestCase):
-    def _test_clean(
-        self, allocation_attribute_type_name: str, allocation_attribute_values: list, expect_validation_error: bool
-    ):
-        attribute_type = AAttributeTypeFactory(name=allocation_attribute_type_name)
+    def _test_clean(self, alloc_attr_type_name: str, alloc_attr_values: list, expect_validation_error: bool):
+        attribute_type = AAttributeTypeFactory(name=alloc_attr_type_name)
         allocation_attribute_type = AllocationAttributeTypeFactory(attribute_type=attribute_type)
         allocation_attribute = AllocationAttributeFactory(allocation_attribute_type=allocation_attribute_type)
-        for value in allocation_attribute_values:
+        for value in alloc_attr_values:
             with self.subTest(value=value):
                 if not isinstance(value, str):
                     raise TypeError("allocation attribute value must be a string")

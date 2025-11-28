@@ -39,7 +39,7 @@ class ProjectViewTestBase(TestCase):
         cls.admin_user = UserFactory(is_staff=True, is_superuser=True)
         cls.nonproject_user = UserFactory(is_staff=False, is_superuser=False)
 
-        attributetype = PAttributeTypeFactory(name="string")
+        attributetype = PAttributeTypeFactory(name="Text")
         cls.projectattributetype = ProjectAttributeTypeFactory(attribute_type=attributetype)
 
     def project_access_tstbase(self, url):
