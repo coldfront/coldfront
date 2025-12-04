@@ -1,0 +1,59 @@
+{% if slurm_info %}
+  <div class="col">
+    <div class="card mb-3">
+      <div class="card-header">
+        Submitting Slurm Jobs
+      </div>
+      <div class="card-body">
+        {% for project_pk, info in slurm_info.items %}
+          <div class="card mb-3">
+            <div class="card-header">
+              <h3 class="mb-0"><a href="{% url 'project-detail' project_pk %}">{{ info.project_title }}</a></h3>
+            </div>
+            <div class="card-body">
+              <h4><u>Interactive Jobs</u></h4>
+              <div class="table-responsive">
+                <table class="table table-bordered table-sm">
+                  {% for resources_name, submit_info in info.submit_info.items %}
+                    {% if submit_info %}
+                      <tr>
+                        <th scope="row" class="text-nowrap">{{ resources_name }}</th>
+                        <td>
+                          srun
+                          {% for option, value in submit_info.items %}
+                            {{ option }} {{ value }}
+                          {% endfor %}
+                          &lt;other options&gt;
+                        </td>
+                      </tr>
+                    {% endif %}
+                  {% endfor %}
+                </table>
+              </div>
+              <h4><u>Batch Jobs</u></h4>
+              <div class="row">
+                {% for resources_name, submit_info in info.submit_info.items %}
+                  {% if submit_info %}
+                    <div class="col-4">
+                      <hr>
+                      <strong>{{ resources_name }}</strong>
+                      <hr>
+                      <ul style="list-style-type: none; padding: 0; margin: 0;">
+                        {% for option, value in submit_info.items %}
+                          <li>
+                            #SBATCH {{ option }} {{ value }}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                  <br>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endif %}

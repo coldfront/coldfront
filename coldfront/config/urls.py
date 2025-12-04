@@ -52,6 +52,9 @@ if "coldfront.plugins.iquota" in settings.INSTALLED_APPS:
 if "mozilla_django_oidc" in settings.INSTALLED_APPS:
     urlpatterns.append(path("oidc/", include("mozilla_django_oidc.urls")))
 
+if "coldfront.plugins.slurm" in settings.INSTALLED_APPS:
+    urlpatterns.append(path("slurm/", include("coldfront.plugins.slurm.urls")))
+
 if "django_su.backends.SuBackend" in settings.AUTHENTICATION_BACKENDS:
     urlpatterns.append(path("su/", include("django_su.urls")))
 
