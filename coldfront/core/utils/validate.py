@@ -12,7 +12,12 @@ class AttributeValidator:
     def __init__(self, value):
         self.value = value
 
+    def _raise_if_empty(self):
+        if self.value == "":
+            raise ValidationError(f'Invalid Value "{self.value}". Value cannot be empty.')
+
     def validate_int(self):
+        self._raise_if_empty()
         try:
             validate = validators.Int()
             validate.to_python(self.value)
@@ -20,6 +25,7 @@ class AttributeValidator:
             raise ValidationError(f"Invalid Value {self.value}. Value must be an int.")
 
     def validate_float(self):
+        self._raise_if_empty()
         try:
             validate = validators.Number()
             validate.to_python(self.value)
@@ -27,6 +33,7 @@ class AttributeValidator:
             raise ValidationError(f"Invalid Value {self.value}. Value must be an float.")
 
     def validate_yes_no(self):
+        self._raise_if_empty()
         try:
             validate = validators.OneOf(["Yes", "No"])
             validate.to_python(self.value)

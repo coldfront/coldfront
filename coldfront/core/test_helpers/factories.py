@@ -41,7 +41,10 @@ from coldfront.core.project.models import (
     ProjectUserStatusChoice,
 )
 from coldfront.core.publication.models import PublicationSource
-from coldfront.core.resource.models import Resource, ResourceType
+from coldfront.core.resource.models import (
+    AttributeType as RAttributeType,
+)
+from coldfront.core.resource.models import Resource, ResourceAttribute, ResourceAttributeType, ResourceType
 from coldfront.core.user.models import UserProfile
 
 ### Default values and Faker provider setup ###
@@ -49,7 +52,6 @@ from coldfront.core.user.models import UserProfile
 project_status_choice_names = ["New", "Active", "Archived"]
 project_user_role_choice_names = ["User", "Manager"]
 field_of_science_names = ["Physics", "Chemistry", "Economics", "Biology", "Sociology"]
-attr_types = ["Date", "Int", "Float", "Text", "Boolean"]
 
 fake = Faker()
 
@@ -68,9 +70,8 @@ class ColdfrontProvider(BaseProvider):
 
 
 field_of_science_provider = DynamicProvider(provider_name="fieldofscience", elements=field_of_science_names)
-attr_type_provider = DynamicProvider(provider_name="attr_types", elements=attr_types)
 
-for provider in [ColdfrontProvider, field_of_science_provider, attr_type_provider]:
+for provider in [ColdfrontProvider, field_of_science_provider]:
     factory.Faker.add_provider(provider)
 
 
@@ -186,7 +187,7 @@ class PAttributeTypeFactory(DjangoModelFactory):
         model = PAttributeType
         # django_get_or_create = ('name',)
 
-    name = factory.Faker("attr_type")
+    name = "Text"
 
 
 class ProjectAttributeTypeFactory(DjangoModelFactory):
@@ -237,6 +238,35 @@ class ResourceFactory(DjangoModelFactory):
 
     description = factory.Faker("sentence")
     resource_type = SubFactory(ResourceTypeFactory)
+
+
+### Resource Attribute factories ###
+
+
+class RAttributeTypeFactory(DjangoModelFactory):
+    class Meta:
+        model = RAttributeType
+        django_get_or_create = ("name",)
+
+    name = "Text"
+
+
+class ResourceAttributeTypeFactory(DjangoModelFactory):
+    class Meta:
+        model = ResourceAttributeType
+        django_get_or_create = ("name",)
+
+    name = "Test attribute type"
+    attribute_type = SubFactory(RAttributeTypeFactory)
+
+
+class ResourceAttributeFactory(DjangoModelFactory):
+    class Meta:
+        model = ResourceAttribute
+
+    resource_attribute_type = SubFactory(ResourceAttributeTypeFactory)
+    value = "Test attribute value"
+    resource = SubFactory(ResourceFactory)
 
 
 ### Allocation factories ###

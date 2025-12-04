@@ -25,6 +25,7 @@ from coldfront.core.project.models import (
 )
 from coldfront.core.test_helpers import utils
 from coldfront.core.test_helpers.factories import (
+    AAttributeTypeFactory,
     AllocationAttributeFactory,
     AllocationAttributeTypeFactory,
     AllocationChangeRequestFactory,
@@ -72,10 +73,12 @@ class AllocationViewBaseTest(TestCase):
         ProjectUserFactory(user=pi_user, project=cls.project, role=manager_role)
         cls.pi_user = pi_user
         # make a quota TB allocation attribute
+        attr_type = AAttributeTypeFactory(name="Int")
+        alloc_attr_type = AllocationAttributeTypeFactory(
+            name="Storage Quota (TB)", attribute_type=attr_type, is_changeable=True
+        )
         cls.quota_attribute: AllocationAttribute = AllocationAttributeFactory(
-            allocation=cls.allocation,
-            value=100,
-            allocation_attribute_type=AllocationAttributeTypeFactory(name="Storage Quota (TB)", is_changeable=True),
+            allocation=cls.allocation, value=100, allocation_attribute_type=alloc_attr_type
         )
 
     def allocation_access_tstbase(self, url):
