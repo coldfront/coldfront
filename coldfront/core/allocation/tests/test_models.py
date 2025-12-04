@@ -13,11 +13,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.utils import timezone
 
-from coldfront.core.allocation.models import (
-    Allocation,
-    AllocationStatusChoice,
-    AllocationUser,
-)
+from coldfront.core.allocation.models import Allocation, AllocationStatusChoice, AllocationUser
 from coldfront.core.project.models import Project
 from coldfront.core.test_helpers.factories import (
     AAttributeTypeFactory,

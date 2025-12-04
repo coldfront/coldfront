@@ -212,35 +212,23 @@ class Command(BaseCommand):
         AttributeType.objects.get_or_create(name="Int")
 
         ProjectAttributeType.objects.get_or_create(
-            attribute_type=AttributeType.objects.get(name="Text"),
-            name="Project ID",
-            is_private=False,
+            attribute_type=AttributeType.objects.get(name="Text"), name="Project ID", is_private=False
         )
 
         ProjectAttributeType.objects.get_or_create(
-            attribute_type=AttributeType.objects.get(name="Int"),
-            name="Account Number",
-            is_private=True,
+            attribute_type=AttributeType.objects.get(name="Int"), name="Account Number", is_private=True
         )
 
         ProjectAttribute.objects.get_or_create(
-            proj_attr_type=ProjectAttributeType.objects.get(name="Project ID"),
-            project=project_obj,
-            value=1242021,
+            proj_attr_type=ProjectAttributeType.objects.get(name="Project ID"), project=project_obj, value=1242021
         )
 
         ProjectAttribute.objects.get_or_create(
-            proj_attr_type=ProjectAttributeType.objects.get(name="Account Number"),
-            project=project_obj,
-            value=1756522,
+            proj_attr_type=ProjectAttributeType.objects.get(name="Account Number"), project=project_obj, value=1756522
         )
 
         univ_hpc = Resource.objects.get(name="University HPC")
-        for scavanger in (
-            "Chemistry-scavenger",
-            "Physics-scavenger",
-            "Industry-scavenger",
-        ):
+        for scavanger in ("Chemistry-scavenger", "Physics-scavenger", "Industry-scavenger"):
             resource_obj = Resource.objects.get(name=scavanger)
             univ_hpc.linked_resources.add(resource_obj)
             univ_hpc.save()

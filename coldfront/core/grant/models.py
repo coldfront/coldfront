@@ -113,24 +113,16 @@ class Grant(TimeStampedModel):
     """
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    title = models.CharField(
-        validators=[MinLengthValidator(3), MaxLengthValidator(255)],
-        max_length=255,
-    )
+    title = models.CharField(validators=[MinLengthValidator(3), MaxLengthValidator(255)], max_length=255)
     grant_number = models.CharField(
-        "Grant Number from funding agency",
-        validators=[MinLengthValidator(3), MaxLengthValidator(255)],
-        max_length=255,
+        "Grant Number from funding agency", validators=[MinLengthValidator(3), MaxLengthValidator(255)], max_length=255
     )
     ROLE_CHOICES = (
         ("PI", "Principal Investigator (PI)"),
         ("CoPI", "Co-Principal Investigator (CoPI)"),
         ("SP", "Senior Personnel (SP)"),
     )
-    role = models.CharField(
-        max_length=10,
-        choices=ROLE_CHOICES,
-    )
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
 
     grant_pi_full_name = models.CharField("Grant PI Full Name", max_length=255, blank=True)
     funding_agency = models.ForeignKey(GrantFundingAgency, on_delete=models.CASCADE)

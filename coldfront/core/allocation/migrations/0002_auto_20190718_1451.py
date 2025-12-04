@@ -18,9 +18,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="allocation",
-            name="resources",
-            field=models.ManyToManyField(to="resource.Resource"),
+            model_name="allocation", name="resources", field=models.ManyToManyField(to="resource.Resource")
         ),
         migrations.AddField(
             model_name="allocation",
@@ -31,8 +29,5 @@ class Migration(migrations.Migration):
                 verbose_name="Status",
             ),
         ),
-        migrations.AlterUniqueTogether(
-            name="allocationuser",
-            unique_together={("user", "allocation")},
-        ),
+        migrations.AlterUniqueTogether(name="allocationuser", unique_together={("user", "allocation")}),
     ]

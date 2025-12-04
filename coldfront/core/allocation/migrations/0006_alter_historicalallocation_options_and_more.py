@@ -77,14 +77,10 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterField(
-            model_name="historicalallocation",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalallocation", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalallocationattribute",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalallocationattribute", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
             model_name="historicalallocationattributechangerequest",
@@ -107,8 +103,6 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(db_index=True),
         ),
         migrations.AlterField(
-            model_name="historicalallocationuser",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalallocationuser", name="history_date", field=models.DateTimeField(db_index=True)
         ),
     ]

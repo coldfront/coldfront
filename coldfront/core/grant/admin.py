@@ -15,11 +15,7 @@ class GrantFundingAgencyChoiceAdmin(admin.ModelAdmin):
 
 @admin.register(Grant)
 class GrantAdmin(SimpleHistoryAdmin):
-    readonly_fields = (
-        "project",
-        "created",
-        "modified",
-    )
+    readonly_fields = ("project", "created", "modified")
     fields = (
         "project",
         "title",

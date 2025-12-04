@@ -74,13 +74,9 @@ class Command(BaseCommand):
         )
 
         if self.fetch_expired:
-            allocations = allocations.filter(
-                ~Q(status__name="Active"),
-            )
+            allocations = allocations.filter(~Q(status__name="Active"))
         else:
-            allocations = allocations.filter(
-                status__name="Active",
-            )
+            allocations = allocations.filter(status__name="Active")
 
         if self.filter_user:
             allocations = allocations.filter(project__pi__username=self.filter_user)
@@ -179,13 +175,9 @@ class Command(BaseCommand):
         )
 
         if self.fetch_expired:
-            allocations = allocations.filter(
-                ~Q(status__name="Active"),
-            )
+            allocations = allocations.filter(~Q(status__name="Active"))
         else:
-            allocations = allocations.filter(
-                status__name="Active",
-            )
+            allocations = allocations.filter(status__name="Active")
 
         if self.filter_user:
             allocations = allocations.filter(project__pi__username=self.filter_user)
@@ -276,9 +268,7 @@ class Command(BaseCommand):
 
         allocations = (
             Allocation.objects.prefetch_related("project", "resources", "allocationattribute_set", "allocationuser_set")
-            .filter(
-                status__name="Active",
-            )
+            .filter(status__name="Active")
             .filter(
                 allocationattribute__allocation_attribute_type__name__in=[
                     XDMOD_ACCOUNT_ATTRIBUTE_NAME,
@@ -374,9 +364,7 @@ class Command(BaseCommand):
 
         allocations = (
             Allocation.objects.prefetch_related("project", "resources", "allocationattribute_set", "allocationuser_set")
-            .filter(
-                status__name="Active",
-            )
+            .filter(status__name="Active")
             .filter(
                 allocationattribute__allocation_attribute_type__name__in=[
                     XDMOD_CLOUD_PROJECT_ATTRIBUTE_NAME,

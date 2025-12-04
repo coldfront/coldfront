@@ -15,14 +15,8 @@ class ResearchOutputAdmin(SimpleHistoryAdmin):
     list_display = [
         field.name for field in ResearchOutput._meta.get_fields() if field.name not in _research_output_fields_for_end
     ] + _research_output_fields_for_end
-    list_filter = (
-        "project",
-        "created_by",
-    )
-    ordering = (
-        "project",
-        "-created",
-    )
+    list_filter = ("project", "created_by")
+    ordering = ("project", "-created")
 
     # display the noneditable fields on the "change" form
     readonly_fields = [field.name for field in ResearchOutput._meta.get_fields() if not field.editable]

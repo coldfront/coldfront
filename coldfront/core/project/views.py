@@ -23,10 +23,7 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView
 
-from coldfront.core.allocation.models import (
-    Allocation,
-    AllocationStatusChoice,
-)
+from coldfront.core.allocation.models import Allocation, AllocationStatusChoice
 from coldfront.core.allocation.utils import generate_guauge_data_from_usage
 from coldfront.core.grant.models import Grant
 from coldfront.core.project.forms import (
@@ -53,11 +50,7 @@ from coldfront.core.project.models import (
     ProjectUserRoleChoice,
     ProjectUserStatusChoice,
 )
-from coldfront.core.project.signals import (
-    project_archive,
-    project_new,
-    project_update,
-)
+from coldfront.core.project.signals import project_archive, project_new, project_update
 from coldfront.core.project.utils import determine_automated_institution_choice, generate_project_code
 from coldfront.core.publication.models import Publication
 from coldfront.core.research_output.models import ResearchOutput
@@ -251,11 +244,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
                 self.request.user.is_superuser or self.request.user.has_perm("project.can_view_all_projects")
             ):
                 projects = (
-                    Project.objects.select_related(
-                        "pi",
-                        "field_of_science",
-                        "status",
-                    )
+                    Project.objects.select_related("pi", "field_of_science", "status")
                     .filter(
                         status__name__in=[
                             "New",
@@ -266,11 +255,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
                 )
             else:
                 projects = (
-                    Project.objects.select_related(
-                        "pi",
-                        "field_of_science",
-                        "status",
-                    )
+                    Project.objects.select_related("pi", "field_of_science", "status")
                     .filter(
                         Q(
                             status__name__in=[
@@ -306,11 +291,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
 
         else:
             projects = (
-                Project.objects.select_related(
-                    "pi",
-                    "field_of_science",
-                    "status",
-                )
+                Project.objects.select_related("pi", "field_of_science", "status")
                 .filter(
                     Q(
                         status__name__in=[
@@ -403,11 +384,7 @@ class ProjectArchivedListView(LoginRequiredMixin, ListView):
                 self.request.user.is_superuser or self.request.user.has_perm("project.can_view_all_projects")
             ):
                 projects = (
-                    Project.objects.prefetch_related(
-                        "pi",
-                        "field_of_science",
-                        "status",
-                    )
+                    Project.objects.prefetch_related("pi", "field_of_science", "status")
                     .filter(
                         status__name__in=[
                             "Archived",
@@ -417,11 +394,7 @@ class ProjectArchivedListView(LoginRequiredMixin, ListView):
                 )
             else:
                 projects = (
-                    Project.objects.prefetch_related(
-                        "pi",
-                        "field_of_science",
-                        "status",
-                    )
+                    Project.objects.prefetch_related("pi", "field_of_science", "status")
                     .filter(
                         Q(
                             status__name__in=[
@@ -448,11 +421,7 @@ class ProjectArchivedListView(LoginRequiredMixin, ListView):
 
         else:
             projects = (
-                Project.objects.prefetch_related(
-                    "pi",
-                    "field_of_science",
-                    "status",
-                )
+                Project.objects.prefetch_related("pi", "field_of_science", "status")
                 .filter(
                     Q(
                         status__name__in=[
@@ -865,15 +834,8 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
         formset = formset(request.POST, initial=matches, prefix="userform")
 
         initial_data = self.get_initial_data(project_obj)
-        allocation_formset = formset_factory(
-            ProjectAddUsersToAllocationForm,
-            max_num=len(initial_data),
-        )
-        allocation_formset = allocation_formset(
-            request.POST,
-            initial=initial_data,
-            prefix="allocationform",
-        )
+        allocation_formset = formset_factory(ProjectAddUsersToAllocationForm, max_num=len(initial_data))
+        allocation_formset = allocation_formset(request.POST, initial=initial_data, prefix="allocationform")
 
         added_users_count = 0
         if formset.is_valid() and allocation_formset.is_valid():

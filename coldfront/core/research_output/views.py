@@ -91,10 +91,7 @@ class ResearchOutputDeleteResearchOutputsView(
 
         num_deletions, _ = project_research_outputs.filter(pk__in=posted_research_output_pks).delete()
 
-        msg = "Deleted {} research output{} from project.".format(
-            num_deletions,
-            "" if num_deletions == 1 else "s",
-        )
+        msg = "Deleted {} research output{} from project.".format(num_deletions, "" if num_deletions == 1 else "s")
         messages.success(request, msg)
 
         return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))

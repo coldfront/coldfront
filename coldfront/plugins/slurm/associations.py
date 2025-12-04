@@ -144,13 +144,7 @@ class SlurmCluster(SlurmBase):
 
     def write(self, out):
         self._write(out, "# ColdFront Allocation Slurm associations dump {}\n".format(datetime.datetime.now().date()))
-        self._write(
-            out,
-            "Cluster - '{}':{}\n".format(
-                self.name,
-                self.format_specs(),
-            ),
-        )
+        self._write(out, "Cluster - '{}':{}\n".format(self.name, self.format_specs()))
         if "root" in self.accounts:
             self.accounts["root"].write(out)
         else:
@@ -216,13 +210,7 @@ class SlurmAccount(SlurmBase):
 
     def write(self, out):
         if self.name != "root":
-            self._write(
-                out,
-                "Account - '{}':{}\n".format(
-                    self.name,
-                    self.format_specs(),
-                ),
-            )
+            self._write(out, "Account - '{}':{}\n".format(self.name, self.format_specs()))
 
     def write_users(self, out):
         self._write(out, "Parent - '{}'\n".format(self.name))
@@ -246,10 +234,4 @@ class SlurmUser(SlurmBase):
         return SlurmUser(name, specs=parts[1:])
 
     def write(self, out):
-        self._write(
-            out,
-            "User - '{}':{}\n".format(
-                self.name,
-                self.format_specs(),
-            ),
-        )
+        self._write(out, "User - '{}':{}\n".format(self.name, self.format_specs()))

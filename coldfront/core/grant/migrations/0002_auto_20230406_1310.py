@@ -14,13 +14,9 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="grantfundingagency",
-            name="name",
-            field=models.CharField(max_length=255, unique=True),
+            model_name="grantfundingagency", name="name", field=models.CharField(max_length=255, unique=True)
         ),
         migrations.AlterField(
-            model_name="grantstatuschoice",
-            name="name",
-            field=models.CharField(max_length=64, unique=True),
+            model_name="grantstatuschoice", name="name", field=models.CharField(max_length=64, unique=True)
         ),
     ]

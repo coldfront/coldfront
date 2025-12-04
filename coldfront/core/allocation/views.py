@@ -457,21 +457,11 @@ class AllocationListView(LoginRequiredMixin, ListView):
                 self.request.user.is_superuser or self.request.user.has_perm("allocation.can_view_all_allocations")
             ):
                 allocations = (
-                    Allocation.objects.select_related(
-                        "project",
-                        "project__pi",
-                        "status",
-                    )
-                    .all()
-                    .order_by(order_by)
+                    Allocation.objects.select_related("project", "project__pi", "status").all().order_by(order_by)
                 )
             else:
                 allocations = (
-                    Allocation.objects.select_related(
-                        "project",
-                        "project__pi",
-                        "status",
-                    )
+                    Allocation.objects.select_related("project", "project__pi", "status")
                     .filter(
                         Q(project__status__name__in=["New", "Active"])
                         & Q(project__projectuser__status__name__in=["Active"])
@@ -532,11 +522,7 @@ class AllocationListView(LoginRequiredMixin, ListView):
 
         else:
             allocations = (
-                Allocation.objects.select_related(
-                    "project",
-                    "project__pi",
-                    "status",
-                )
+                Allocation.objects.select_related("project", "project__pi", "status")
                 .filter(
                     Q(allocationuser__user=self.request.user)
                     & Q(allocationuser__status__name__in=["PendingEULA", "Active"])
@@ -1441,10 +1427,7 @@ class AllocationInvoiceDetailView(LoginRequiredMixin, UserPassesTestMixin, Templ
 class AllocationAddInvoiceNoteView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = AllocationUserNote
     template_name = "allocation/allocation_add_invoice_note.html"
-    fields = (
-        "is_private",
-        "note",
-    )
+    fields = ("is_private", "note")
 
     def test_func(self):
         """UserPassesTestMixin Tests"""
@@ -1483,10 +1466,7 @@ class AllocationAddInvoiceNoteView(LoginRequiredMixin, UserPassesTestMixin, Crea
 class AllocationUpdateInvoiceNoteView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = AllocationUserNote
     template_name = "allocation/allocation_update_invoice_note.html"
-    fields = (
-        "is_private",
-        "note",
-    )
+    fields = ("is_private", "note")
 
     def test_func(self):
         """UserPassesTestMixin Tests"""
@@ -2105,13 +2085,9 @@ class AllocationAttributeEditView(LoginRequiredMixin, UserPassesTestMixin, FormV
             return render(request, self.template_name, context)
 
         AllocAttrChangeFormsetFactory = formset_factory(
-            self.formset_class,
-            max_num=len(allocation_attributes_to_change),
+            self.formset_class, max_num=len(allocation_attributes_to_change)
         )
-        formset = AllocAttrChangeFormsetFactory(
-            initial=allocation_attributes_to_change,
-            prefix="attributeform",
-        )
+        formset = AllocAttrChangeFormsetFactory(initial=allocation_attributes_to_change, prefix="attributeform")
         context["formset"] = formset
         context["attributes"] = allocation_attributes_to_change
         return render(request, self.template_name, context)
@@ -2127,13 +2103,10 @@ class AllocationAttributeEditView(LoginRequiredMixin, UserPassesTestMixin, FormV
             return ok_redirect
 
         AllocAttrChangeFormsetFactory = formset_factory(
-            self.formset_class,
-            max_num=len(allocation_attributes_to_change),
+            self.formset_class, max_num=len(allocation_attributes_to_change)
         )
         formset = AllocAttrChangeFormsetFactory(
-            request.POST,
-            initial=allocation_attributes_to_change,
-            prefix="attributeform",
+            request.POST, initial=allocation_attributes_to_change, prefix="attributeform"
         )
         if not formset.is_valid():
             attribute_errors = ""
@@ -2157,9 +2130,7 @@ class AllocationAttributeEditView(LoginRequiredMixin, UserPassesTestMixin, FormV
             allocation_attribute.value = attribute_changes_to_make_pks.get(allocation_attribute.pk)
             allocation_attribute.save()
             allocation_attribute_changed.send(
-                sender=self.__class__,
-                attribute_pk=allocation_attribute.pk,
-                allocation_pk=pk,
+                sender=self.__class__, attribute_pk=allocation_attribute.pk, allocation_pk=pk
             )
 
         return ok_redirect

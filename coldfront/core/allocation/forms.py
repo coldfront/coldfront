@@ -250,11 +250,7 @@ class AllocationChangeForm(forms.Form):
         EXTENSION_CHOICES.append((choice, "{} days".format(choice)))
 
     end_date_extension = forms.TypedChoiceField(
-        label="Request End Date Extension",
-        choices=EXTENSION_CHOICES,
-        coerce=int,
-        required=False,
-        empty_value=0,
+        label="Request End Date Extension", choices=EXTENSION_CHOICES, coerce=int, required=False, empty_value=0
     )
     justification = forms.CharField(
         label="Justification for Changes",

@@ -45,17 +45,11 @@ def add_project(project_obj):
     # if project_code not enabled or None or empty, print appropriate message and bail out to avoid adding it to OpenLDAP
     if not hasattr(project_obj, "project_code"):
         logger.info("Enable project_code to use the project_openldap plugin to add projects into OpenLDAP")
-        logger.info(
-            "Additional message - this issue was encountered with project pk %s",
-            {project_obj.pk},
-        )
+        logger.info("Additional message - this issue was encountered with project pk %s", {project_obj.pk})
         return None
     if project_obj.project_code in [None, ""]:
         logger.WARNING("None or empty project_code value encountered, please run the project code management command")
-        logger.WARNING(
-            "Additional message - this issue was encountered with project pk %s",
-            {project_obj.pk},
-        )
+        logger.WARNING("Additional message - this issue was encountered with project pk %s", {project_obj.pk})
         return None
 
     # 1) first make the OU for the project
@@ -72,10 +66,7 @@ def add_project(project_obj):
 
     logger.info("Adding OpenLDAP project posixgroup entry - DN: %s", posixgroup_dn)
     logger.info("Adding OpenLDAP project posixgroup entry - GID: %s", gid_int)
-    logger.info(
-        "Adding OpenLDAP project posixgroup entry - description: %s",
-        openldap_posixgroup_description,
-    )
+    logger.info("Adding OpenLDAP project posixgroup entry - description: %s", openldap_posixgroup_description)
 
     add_posixgroup_to_openldap(posixgroup_dn, openldap_posixgroup_description, gid_int)
 

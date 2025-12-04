@@ -8,10 +8,7 @@ import logging
 
 from django.core.management.base import BaseCommand, CommandError
 
-from coldfront.core.project.models import (
-    Project,
-    ProjectUser,
-)
+from coldfront.core.project.models import Project, ProjectUser
 
 # OpenLDAP (ldap3) connections formed in utils.py
 from coldfront.core.utils.common import import_from_settings
@@ -66,22 +63,12 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "-a",
-            "--all",
-            help="Check all OpenLDAP projects against Coldfront-django",
-            action="store_true",
+            "-a", "--all", help="Check all OpenLDAP projects against Coldfront-django", action="store_true"
         )
-        parser.add_argument(
-            "-p",
-            "--projectgroup",
-            help="Check specific group in OpenLDAP against Coldfront-django",
-        )
+        parser.add_argument("-p", "--projectgroup", help="Check specific group in OpenLDAP against Coldfront-django")
         parser.add_argument("-s", "--sync", help="Sync changes to OpenLDAP", action="store_true")
         parser.add_argument(
-            "-z",
-            "--writearchive",
-            help="Enable writing to the OpenLDAP archive OU",
-            action="store_true",
+            "-z", "--writearchive", help="Enable writing to the OpenLDAP archive OU", action="store_true"
         )
         parser.add_argument(
             "-d",
@@ -90,16 +77,10 @@ class Command(BaseCommand):
             action="store_true",
         )
         parser.add_argument(
-            "-x",
-            "--skiparchived",
-            help="Skip projects with archived status in Coldfront",
-            action="store_true",
+            "-x", "--skiparchived", help="Skip projects with archived status in Coldfront", action="store_true"
         )
         parser.add_argument(
-            "-e",
-            "--skipnewactive",
-            help="Skip projects with New or Active status in Coldfront",
-            action="store_true",
+            "-e", "--skipnewactive", help="Skip projects with New or Active status in Coldfront", action="store_true"
         )
 
     def local_get_project_by_code(self, project_group):
@@ -163,10 +144,7 @@ class Command(BaseCommand):
                 # create posixgroup
                 self.stdout.write(f"Adding OpenLDAP project archive posixgroup entry - DN: {archive_posixgroup_dn}")
                 add_posixgroup_to_openldap(
-                    archive_posixgroup_dn,
-                    archive_openldap_posixgroup_description,
-                    archive_gid,
-                    write=True,
+                    archive_posixgroup_dn, archive_openldap_posixgroup_description, archive_gid, write=True
                 )
             except Exception as e:
                 self.stdout.write(f"Exception adding {archive_posixgroup_dn} to OpenLDAP: {e}")
@@ -221,14 +199,7 @@ class Command(BaseCommand):
                             f"Exception removing {project.project_code}, DN: {project_ou_dn} in OpenLDAP: {e}"
                         )
 
-    def handle_description_update(
-        self,
-        project,
-        project_dn="",
-        archive_dn="",
-        sync=False,
-        write_to_archive=False,
-    ):
+    def handle_description_update(self, project, project_dn="", archive_dn="", sync=False, write_to_archive=False):
         new_description = construct_project_posixgroup_description(project)  # supply project_obj
 
         if project.status.name in ["New", "Active"]:
@@ -452,11 +423,7 @@ class Command(BaseCommand):
                 # project is in project OU not archive OU - DNs supplied - apart from relative, generated in function
                 if ldapsearch_project_result and not ldapsearch_project_result_archive:
                     self.handle_project_in_openldap_but_not_archive(
-                        project,
-                        project_ou_dn,
-                        project_archive_dn,
-                        sync,
-                        write_to_archive,
+                        project, project_ou_dn, project_archive_dn, sync, write_to_archive
                     )
                     return
                 # project is not in project OU, not in achive OU - supply DN to show expected DN - others generated in function
@@ -545,24 +512,13 @@ class Command(BaseCommand):
         # 5) If sought update the OpenLDAP description for the project
         # finally update the OpenLDAP description if requested, will not check, will update regardless
         if update_description:
-            self.handle_description_update(
-                project,
-                project_dn,
-                project_archive_dn,
-                sync,
-                write_to_archive,
-            )
+            self.handle_description_update(project, project_dn, project_archive_dn, sync, write_to_archive)
         # 5) -- END ---
 
     """ Main loop to loop every Coldfront django project pk """
 
     def loop_all_projects(
-        self,
-        sync=False,
-        write_to_archive=False,
-        update_description=False,
-        skip_archived=False,
-        skip_newactive=False,
+        self, sync=False, write_to_archive=False, update_description=False, skip_archived=False, skip_newactive=False
     ):
         projects = Project.objects.filter(status__name__in=["New", "Active", "Archived"]).order_by("id")
 
@@ -574,12 +530,7 @@ class Command(BaseCommand):
             if hasattr(project, "project_code") and project.project_code:
                 project_code = project.project_code
                 self.sync_check_project(
-                    project_code,
-                    sync,
-                    write_to_archive,
-                    update_description,
-                    skip_archived,
-                    skip_newactive,
+                    project_code, sync, write_to_archive, update_description, skip_archived, skip_newactive
                 )
             else:
                 # won't continue to process so self.stdout.write seperator here
@@ -646,11 +597,7 @@ class Command(BaseCommand):
 
         if self.all:
             self.loop_all_projects(
-                self.sync,
-                self.write_archive,
-                self.update_description,
-                self.skip_archived,
-                self.skip_newactive,
+                self.sync, self.write_archive, self.update_description, self.skip_archived, self.skip_newactive
             )
 
         if not self.filter_group and not self.all:

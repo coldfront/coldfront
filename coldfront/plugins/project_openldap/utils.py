@@ -116,11 +116,7 @@ def add_per_project_ou_to_openldap(project_obj, dn, openldap_ou_description, wri
     try:
         project_code_str = project_obj.project_code
         ou = f"{project_code_str}"
-        conn.add(
-            dn,
-            ["top", "organizationalUnit"],
-            {"ou": ou, "description": openldap_ou_description},
-        )
+        conn.add(dn, ["top", "organizationalUnit"], {"ou": ou, "description": openldap_ou_description})
     except Exception as exc_log:
         logger.error("Project OU: DN to write...")
         logger.error(f"dn - {dn}")
@@ -142,11 +138,7 @@ def add_posixgroup_to_openldap(dn, openldap_description, gid_int, write=True):
         return None
 
     try:
-        conn.add(
-            dn,
-            "posixGroup",
-            {"description": openldap_description, "gidNumber": gid_int},
-        )
+        conn.add(dn, "posixGroup", {"description": openldap_description, "gidNumber": gid_int})
     except Exception as exc_log:
         logger.error("Project posixgroup: DN to write...")
         logger.error(f"dn - {dn}")
@@ -384,9 +376,7 @@ def construct_project_posixgroup_description(project_obj):
         # if title is too long shorten
         if len(project_obj.title) > PROJECT_OPENLDAP_DESCRIPTION_TITLE_LENGTH:
             truncated_title = textwrap.shorten(
-                project_obj.title,
-                PROJECT_OPENLDAP_DESCRIPTION_TITLE_LENGTH,
-                placeholder="...",
+                project_obj.title, PROJECT_OPENLDAP_DESCRIPTION_TITLE_LENGTH, placeholder="..."
             )
             title = truncated_title
         else:

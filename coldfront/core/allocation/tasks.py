@@ -150,10 +150,7 @@ def send_expiry_emails():
                                 )
 
                             if allocation.project.title not in projectdict:
-                                projectdict[allocation.project.title] = (
-                                    project_url,
-                                    allocation.project.pi.username,
-                                )
+                                projectdict[allocation.project.title] = (project_url, allocation.project.pi.username)
 
         if email_receiver_list:
             send_email_template(

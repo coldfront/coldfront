@@ -98,15 +98,8 @@ class UserProjectsManagersView(ListView):
     def get_queryset(self, *args, **kwargs):
         viewed_user = self.viewed_user
 
-        ongoing_projectuser_statuses = (
-            "Active",
-            "Pending - Add",
-            "Pending - Remove",
-        )
-        ongoing_project_statuses = (
-            "New",
-            "Active",
-        )
+        ongoing_projectuser_statuses = ("Active", "Pending - Add", "Pending - Remove")
+        ongoing_project_statuses = ("New", "Active")
 
         qs = (
             ProjectUser.objects.filter(
@@ -114,14 +107,7 @@ class UserProjectsManagersView(ListView):
                 status__name__in=ongoing_projectuser_statuses,
                 project__status__name__in=ongoing_project_statuses,
             )
-            .select_related(
-                "status",
-                "role",
-                "project",
-                "project__status",
-                "project__field_of_science",
-                "project__pi",
-            )
+            .select_related("status", "role", "project", "project__status", "project__field_of_science", "project__pi")
             .only(
                 "status__name",
                 "role__name",
@@ -134,14 +120,8 @@ class UserProjectsManagersView(ListView):
                 "project__pi__email",
             )
             .annotate(
-                is_project_pi=ExpressionWrapper(
-                    Q(user=F("project__pi")),
-                    output_field=BooleanField(),
-                ),
-                is_project_manager=ExpressionWrapper(
-                    Q(role__name="Manager"),
-                    output_field=BooleanField(),
-                ),
+                is_project_pi=ExpressionWrapper(Q(user=F("project__pi")), output_field=BooleanField()),
+                is_project_manager=ExpressionWrapper(Q(role__name="Manager"), output_field=BooleanField()),
             )
             .order_by(
                 "-is_project_pi",
@@ -155,8 +135,7 @@ class UserProjectsManagersView(ListView):
                 Prefetch(
                     lookup="project__projectuser_set",
                     queryset=ProjectUser.objects.filter(
-                        role__name="Manager",
-                        status__name__in=ongoing_projectuser_statuses,
+                        role__name="Manager", status__name__in=ongoing_projectuser_statuses
                     )
                     .exclude(
                         user__pk__in=[
@@ -164,24 +143,13 @@ class UserProjectsManagersView(ListView):
                                 "project__pi__pk"
                             ),  # we assume pi is 'Manager' or can act like one - no need to list twice
                             viewed_user.pk,  # we display elsewhere if the user is a manager of this project
-                        ],
+                        ]
                     )
-                    .select_related(
-                        "status",
-                        "user",
-                    )
-                    .only(
-                        "status__name",
-                        "user__username",
-                        "user__first_name",
-                        "user__last_name",
-                        "user__email",
-                    )
-                    .order_by(
-                        "user__username",
-                    ),
+                    .select_related("status", "user")
+                    .only("status__name", "user__username", "user__first_name", "user__last_name", "user__email")
+                    .order_by("user__username"),
                     to_attr="project_managers",
-                ),
+                )
             )
         )
 

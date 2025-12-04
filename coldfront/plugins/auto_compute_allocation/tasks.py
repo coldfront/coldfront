@@ -40,17 +40,11 @@ def add_auto_compute_allocation(project_obj):
     # if project_code not enabled or None or empty, print appropriate message and stop
     if not hasattr(project_obj, "project_code"):
         logger.info("Enable project_code to use the auto_compute_allocation plugin")
-        logger.info(
-            "Additional message - this issue was encountered with project pk %s",
-            {project_obj.pk},
-        )
+        logger.info("Additional message - this issue was encountered with project pk %s", {project_obj.pk})
         return None
     if project_obj.project_code in [None, ""]:
         logger.info("None or empty project_code value encountered, please run the project code management command")
-        logger.info(
-            "Additional message - this issue was encountered with project pk %s",
-            {project_obj.pk},
-        )
+        logger.info("Additional message - this issue was encountered with project pk %s", {project_obj.pk})
         return None
 
     project_code = project_obj.project_code
@@ -97,9 +91,7 @@ def add_auto_compute_allocation(project_obj):
     try:
         # add the slurm account name
         allocation_auto_compute_attribute_create(
-            allocation_attribute_type_obj_slurm_account_name,
-            allocation_obj,
-            local_slurm_account_name,
+            allocation_attribute_type_obj_slurm_account_name, allocation_obj, local_slurm_account_name
         )
     except Exception as e:
         logger.error("Failed to add slurm account name to auto_compute_allocation: %s", e)
@@ -109,9 +101,7 @@ def add_auto_compute_allocation(project_obj):
         fairshare_value = "Fairshare=parent"
         # use generic function
         allocation_auto_compute_attribute_create(
-            allocation_attribute_type_obj_slurm_user_specs,
-            allocation_obj,
-            fairshare_value,
+            allocation_attribute_type_obj_slurm_user_specs, allocation_obj, fairshare_value
         )
     except Exception as e:
         logger.error("Failed to add fairshare value to auto_compute_allocation: %s", e)
@@ -121,26 +111,20 @@ def add_auto_compute_allocation(project_obj):
         if AUTO_COMPUTE_ALLOCATION_ACCELERATOR_HOURS > 0:
             accelerator_hours_quantity = AUTO_COMPUTE_ALLOCATION_ACCELERATOR_HOURS
             allocation_auto_compute_attribute_create(
-                allocation_attribute_type_obj_accelerator_hours,
-                allocation_obj,
-                accelerator_hours_quantity,
+                allocation_attribute_type_obj_accelerator_hours, allocation_obj, accelerator_hours_quantity
             )
         # 1b) add core hours non-training project - for gauge to appear
         if AUTO_COMPUTE_ALLOCATION_CORE_HOURS > 0:
             core_hours_quantity = AUTO_COMPUTE_ALLOCATION_CORE_HOURS
             allocation_auto_compute_attribute_create(
-                allocation_attribute_type_obj_core_hours,
-                allocation_obj,
-                core_hours_quantity,
+                allocation_attribute_type_obj_core_hours, allocation_obj, core_hours_quantity
             )
         # 1c) add slurm attrs non-training project
         if len(AUTO_COMPUTE_ALLOCATION_SLURM_ATTR_TUPLE) > 0:
             for slurm_attr in AUTO_COMPUTE_ALLOCATION_SLURM_ATTR_TUPLE:
                 new_slurm_attr = slurm_attr.replace(";", ",").replace("'", "")
                 allocation_auto_compute_attribute_create(
-                    allocation_attribute_type_obj_slurm_specs,
-                    allocation_obj,
-                    new_slurm_attr,
+                    allocation_attribute_type_obj_slurm_specs, allocation_obj, new_slurm_attr
                 )
 
     if project_obj.field_of_science.description == "Training":
@@ -148,26 +132,20 @@ def add_auto_compute_allocation(project_obj):
         if AUTO_COMPUTE_ALLOCATION_ACCELERATOR_HOURS_TRAINING > 0:
             accelerator_hours_quantity = AUTO_COMPUTE_ALLOCATION_ACCELERATOR_HOURS_TRAINING
             allocation_auto_compute_attribute_create(
-                allocation_attribute_type_obj_accelerator_hours,
-                allocation_obj,
-                accelerator_hours_quantity,
+                allocation_attribute_type_obj_accelerator_hours, allocation_obj, accelerator_hours_quantity
             )
         # 2b) add core hours training project - for gauge to appear
         if AUTO_COMPUTE_ALLOCATION_CORE_HOURS_TRAINING > 0:
             core_hours_quantity = AUTO_COMPUTE_ALLOCATION_CORE_HOURS_TRAINING
             allocation_auto_compute_attribute_create(
-                allocation_attribute_type_obj_core_hours,
-                allocation_obj,
-                core_hours_quantity,
+                allocation_attribute_type_obj_core_hours, allocation_obj, core_hours_quantity
             )
         # 2c) add slurm attrs training project
         if len(AUTO_COMPUTE_ALLOCATION_SLURM_ATTR_TUPLE_TRAINING) > 0:
             for slurm_attr in AUTO_COMPUTE_ALLOCATION_SLURM_ATTR_TUPLE_TRAINING:
                 new_slurm_attr = slurm_attr.replace(";", ",").replace("'", "")
                 allocation_auto_compute_attribute_create(
-                    allocation_attribute_type_obj_slurm_specs,
-                    allocation_obj,
-                    new_slurm_attr,
+                    allocation_attribute_type_obj_slurm_specs, allocation_obj, new_slurm_attr
                 )
 
     if AUTO_COMPUTE_ALLOCATION_FAIRSHARE_INSTITUTION:

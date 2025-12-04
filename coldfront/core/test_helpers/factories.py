@@ -23,14 +23,10 @@ from coldfront.core.allocation.models import (
     AllocationUserNote,
     AllocationUserStatusChoice,
 )
-from coldfront.core.allocation.models import (
-    AttributeType as AAttributeType,
-)
+from coldfront.core.allocation.models import AttributeType as AAttributeType
 from coldfront.core.field_of_science.models import FieldOfScience
 from coldfront.core.grant.models import GrantFundingAgency, GrantStatusChoice
-from coldfront.core.project.models import (
-    AttributeType as PAttributeType,
-)
+from coldfront.core.project.models import AttributeType as PAttributeType
 from coldfront.core.project.models import (
     Project,
     ProjectAttribute,

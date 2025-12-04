@@ -50,24 +50,16 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterField(
-            model_name="historicalresource",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalresource", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalresourceattribute",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalresourceattribute", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalresourceattributetype",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalresourceattributetype", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalresourcetype",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalresourcetype", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
             model_name="resource",

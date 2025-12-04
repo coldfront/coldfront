@@ -9,10 +9,7 @@ from django.core.management.base import BaseCommand
 from ldap3.core.exceptions import LDAPException
 
 from coldfront.core.utils.common import import_from_settings
-from coldfront.plugins.project_openldap.utils import (
-    PROJECT_OPENLDAP_BIND_USER,
-    ldapsearch_check_ou,
-)
+from coldfront.plugins.project_openldap.utils import PROJECT_OPENLDAP_BIND_USER, ldapsearch_check_ou
 
 """ Coldfront project_openldap plugin - django management command -  project_openldap_check_setup.py """
 
@@ -37,18 +34,8 @@ class Command(BaseCommand):
     help = "Check settings for project_openldap plugin"
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "-a",
-            "--all",
-            help="Check both imports and ldapsearch work",
-            action="store_true",
-        )
-        parser.add_argument(
-            "-i",
-            "--imports",
-            help="Check all imports for the plugin",
-            action="store_true",
-        )
+        parser.add_argument("-a", "--all", help="Check both imports and ldapsearch work", action="store_true")
+        parser.add_argument("-i", "--imports", help="Check all imports for the plugin", action="store_true")
         parser.add_argument("-l", "--ldapsearch", help="Check search to OpenLDAP", action="store_true")
 
     def check_env_var_existence(self, name, expected_value, required=True):
