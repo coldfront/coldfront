@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from django import forms
+from django.forms.widgets import CheckboxSelectMultiple
 from django.utils.html import mark_safe
 
 
@@ -24,3 +25,10 @@ class UserSearchForm(forms.Form):
         help_text="Copy paste usernames separated by space or newline for multiple username searches!",
     )
     search_by = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect(), initial="username_only")
+
+
+class UserModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+    widget = CheckboxSelectMultiple
+
+    def label_from_instance(self, obj):
+        return f"{obj.first_name} {obj.last_name} ({obj.username})"

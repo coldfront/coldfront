@@ -3,10 +3,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from django import forms
+from django.contrib.auth import get_user_model
 from django.db.models.functions import Lower
-from django.shortcuts import get_object_or_404
+from django.forms import ValidationError
 
 from coldfront.core.allocation.models import (
+    Allocation,
     AllocationAccount,
     AllocationAttribute,
     AllocationAttributeType,
@@ -15,57 +17,117 @@ from coldfront.core.allocation.models import (
 from coldfront.core.allocation.utils import get_user_resources
 from coldfront.core.project.models import Project
 from coldfront.core.resource.models import Resource, ResourceType
+from coldfront.core.user.forms import UserModelMultipleChoiceField
 from coldfront.core.utils.common import import_from_settings
 
 ALLOCATION_ACCOUNT_ENABLED = import_from_settings("ALLOCATION_ACCOUNT_ENABLED", False)
 ALLOCATION_CHANGE_REQUEST_EXTENSION_DAYS = import_from_settings("ALLOCATION_CHANGE_REQUEST_EXTENSION_DAYS", [])
+ALLOCATION_ACCOUNT_MAPPING = import_from_settings("ALLOCATION_ACCOUNT_MAPPING", {})
+ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT = import_from_settings(
+    "ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT", True
+)
+INVOICE_ENABLED = import_from_settings("INVOICE_ENABLED", False)
+if INVOICE_ENABLED:
+    INVOICE_DEFAULT_STATUS = import_from_settings("INVOICE_DEFAULT_STATUS", "Pending Payment")
 
 
-class AllocationForm(forms.Form):
+class AllocationForm(forms.ModelForm):
+    class Meta:
+        model = Allocation
+        fields = [
+            "resource",
+            "justification",
+            "quantity",
+            "users",
+            "project",
+            "is_changeable",
+            "allocation_account",
+        ]
+        help_texts = {
+            "justification": "<br/>Justification for requesting this allocation.",
+            "users": "<br/>Select users in your project to add to this allocation.",
+        }
+        widgets = {
+            "status": forms.HiddenInput(),
+            "project": forms.HiddenInput(),
+            "is_changeable": forms.HiddenInput(),
+        }
+
     resource = forms.ModelChoiceField(queryset=None, empty_label=None)
-    justification = forms.CharField(widget=forms.Textarea)
-    quantity = forms.IntegerField(required=True)
-    users = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, required=False)
-    allocation_account = forms.ChoiceField(required=False)
+    users = UserModelMultipleChoiceField(queryset=None, required=False)
+    allocation_account = forms.ModelChoiceField(queryset=None, required=False)
 
     def __init__(self, request_user, project_pk, *args, **kwargs):
+        project_obj = Project.objects.get(pk=project_pk)
+        # Set default initial values
+        initial = {
+            "quantity": 1,
+            "is_changeable": ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT,
+            "project": project_obj,
+        }
+        if kwargs["initial"] is not None:
+            initial.update(kwargs["initial"])
+        kwargs["initial"] = initial
         super().__init__(*args, **kwargs)
-        project_obj = get_object_or_404(Project, pk=project_pk)
+
         self.fields["resource"].queryset = get_user_resources(request_user).order_by(Lower("name"))
-        self.fields["quantity"].initial = 1
-        user_query_set = (
-            project_obj.projectuser_set.select_related("user")
-            .filter(
-                status__name__in=[
-                    "Active",
-                ]
-            )
-            .order_by("user__username")
+        self.fields["users"].queryset = (
+            get_user_model()
+            .objects.filter(projectuser__project=project_obj, projectuser__status__name="Active")
+            .order_by("username")
+            .exclude(pk=project_obj.pi.pk)
         )
-        user_query_set = user_query_set.exclude(user=project_obj.pi)
-        if user_query_set:
-            self.fields["users"].choices = (
-                (user.user.username, "%s %s (%s)" % (user.user.first_name, user.user.last_name, user.user.username))
-                for user in user_query_set
-            )
-            self.fields["users"].help_text = "<br/>Select users in your project to add to this allocation."
-        else:
+        if not self.fields["users"].queryset:
             self.fields["users"].widget = forms.HiddenInput()
 
+        # Set allocation_account choices
         if ALLOCATION_ACCOUNT_ENABLED:
-            allocation_accounts = AllocationAccount.objects.filter(user=request_user)
-            if allocation_accounts:
-                self.fields["allocation_account"].choices = (
-                    ((account.name, account.name)) for account in allocation_accounts
-                )
-
-            self.fields[
-                "allocation_account"
-            ].help_text = '<br/>Select account name to associate with resource. <a href="#Modal" id="modal_link">Click here to create an account name!</a>'
+            self.fields["allocation_account"].queryset = AllocationAccount.objects.filter(user=request_user)
+            if not self.fields["allocation_account"].queryset:
+                self.fields["allocation_account"].widget = forms.HiddenInput()
         else:
             self.fields["allocation_account"].widget = forms.HiddenInput()
 
-        self.fields["justification"].help_text = "<br/>Justification for requesting this allocation."
+    def clean(self):
+        form_data = super().clean()
+        project_obj = form_data.get("project")
+        resource_obj = form_data.get("resource")
+        allocation_account = form_data.get("allocation_account", None)
+
+        # Ensure user has account name if ALLOCATION_ACCOUNT_ENABLED
+        if (
+            ALLOCATION_ACCOUNT_ENABLED
+            and resource_obj.name in ALLOCATION_ACCOUNT_MAPPING
+            and AllocationAttributeType.objects.filter(name=ALLOCATION_ACCOUNT_MAPPING[resource_obj.name]).exists()
+            and not allocation_account
+        ):
+            raise ValidationError(
+                'You need to create an account name. Create it by clicking the link under the "Allocation account" field.',
+                code="user_has_no_account_name",
+            )
+
+        # Ensure this allocaiton wouldn't exceed the limit
+        allocation_limit = resource_obj.get_attribute("allocation_limit", typed=True)
+        if allocation_limit:
+            allocation_count = project_obj.allocation_set.filter(
+                resources=resource_obj,
+                status__name__in=["Active", "New", "Renewal Requested", "Paid", "Payment Pending", "Payment Requested"],
+            ).count()
+            if allocation_count >= allocation_limit:
+                raise ValidationError(
+                    "Your project is at the allocation limit allowed for this resource.",
+                    code="reached_allocation_limit",
+                )
+
+        # Set allocation status
+        if INVOICE_ENABLED and resource_obj.requires_payment:
+            allocation_status_name = INVOICE_DEFAULT_STATUS
+        else:
+            allocation_status_name = "New"
+        form_data["status"] = AllocationStatusChoice.objects.get(name=allocation_status_name)
+        self.instance.status = form_data["status"]
+
+        return form_data
 
 
 class AllocationUpdateForm(forms.Form):
