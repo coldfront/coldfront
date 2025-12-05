@@ -417,7 +417,7 @@ class Allocation(TimeStampedModel):
                 allocation_user = self.allocationuser_set.get(user=user)
             except AllocationUser.DoesNotExist:
                 if ignore_user_not_found:
-                    logger.warn(
+                    logger.warning(
                         f"Cannot remove user={str(user)} for allocation pk={self.pk} - AllocationUser not found."
                     )
                     return

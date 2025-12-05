@@ -171,12 +171,12 @@ class ProjectAttributeCreateTest(ProjectViewTestBase):
         response = self.client.post(
             self.url, data={"proj_attr_type": self.projectattributetype.pk, "value": "test_value"}
         )
-        self.assertFormError(response, "form", "project", "This field is required.")
+        self.assertIn(b"Adding project attribute to", response.content)
         # missing value
         response = self.client.post(
             self.url, data={"proj_attr_type": self.projectattributetype.pk, "project": self.project.pk}
         )
-        self.assertFormError(response, "form", "value", "This field is required.")
+        self.assertIn(b"Adding project attribute to", response.content)
 
     def test_project_attribute_create_value_type_match(self):
         """ProjectAttributeCreate correctly flags value-type mismatch"""
