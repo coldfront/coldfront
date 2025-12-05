@@ -18,9 +18,6 @@ from coldfront.plugins.freeipa.utils import (
     CLIENT_KTNAME,
     FREEIPA_NOOP,
     UNIX_GROUP_ATTRIBUTE_NAME,
-    AlreadyMemberError,
-    NotMemberError,
-    check_ipa_group_error,
 )
 
 logger = logging.getLogger(__name__)
@@ -55,16 +52,7 @@ class Command(BaseCommand):
             raise ValueError("Missing FreeIPA result")
 
     def add_group(self, user, group, status):
-        if self.sync and not self.noop:
-            try:
-                res = api.Command.group_add_member(group, user=[user.username])
-                check_ipa_group_error(res)
-            except AlreadyMemberError:
-                logger.warning("User %s is already a member of group %s", user.username, group)
-            except Exception as e:
-                logger.error("Failed adding user %s to group %s: %s", user.username, group, e)
-            else:
-                logger.info("Added user %s to group %s successfully", user.username, group)
+        self.ipa_batch_args.append({"method": "group_add_member", "params": [[group], {"user": [user.username]}]})
 
         row = [
             "Add",
@@ -76,16 +64,7 @@ class Command(BaseCommand):
         self.writerow(row)
 
     def remove_group(self, user, group, status):
-        if self.sync and not self.noop:
-            try:
-                res = api.Command.group_remove_member(group, user=[user.username])
-                check_ipa_group_error(res)
-            except NotMemberError:
-                logger.warning("User %s is not a member of group %s", user.username, group)
-            except Exception as e:
-                logger.error("Failed removing user %s from group %s: %s", user.username, group, e)
-            else:
-                logger.info("Removed user %s from group %s successfully", user.username, group)
+        self.ipa_batch_args.append({"method": "group_remove_member", "params": [[group], {"user": [user.username]}]})
 
         row = [
             "Remove",
@@ -186,6 +165,40 @@ class Command(BaseCommand):
                 logger.info("User %s should be removed from freeipa group: %s", user.username, g)
                 self.remove_group(user, g, freeipa_status)
 
+    def exec_batch(self):
+        batch_args = []
+
+        for ci, arg in enumerate(self.ipa_batch_args):
+            if len(batch_args) < self.ipa_batch_size:
+                batch_args.append(arg)
+
+            if len(batch_args) < self.ipa_batch_size and ci < len(self.ipa_batch_args) - 1:
+                continue
+
+            result = api.Command.batch(batch_args)
+
+            if len(batch_args) != result["count"]:
+                logger.error("Result count %d does not match batch size %d", result["count"], len(batch_args))
+            if result["count"] > 0:
+                for ri, res in enumerate(result["results"]):
+                    _res = res.get("result", None)
+                    if "error" not in res or res["error"] is None:
+                        logger.info(
+                            "Success %s user=%s group=%s",
+                            batch_args[ri]["method"],
+                            batch_args[ri]["params"][1]["user"][0],
+                            batch_args[ri]["params"][0][0],
+                        )
+                    else:
+                        logger.error(
+                            "Failed %s user=%s group=%s: %s",
+                            batch_args[ri]["method"],
+                            batch_args[ri]["params"][1]["user"][0],
+                            batch_args[ri]["params"][0][0],
+                            res["error"],
+                        )
+            del batch_args[:]
+
     def process_user(self, user):
         if self.filter_user and self.filter_user != user.username:
             return
@@ -255,6 +268,8 @@ class Command(BaseCommand):
         else:
             root_logger.setLevel(logging.WARNING)
 
+        self.ipa_batch_args = []
+        self.ipa_batch_size = 100
         self.noop = FREEIPA_NOOP
         if options["noop"]:
             self.noop = True
@@ -299,6 +314,9 @@ class Command(BaseCommand):
 
         for user in users:
             self.process_user(user)
+
+        if self.sync and not self.noop:
+            self.exec_batch()
 
         if self.disable:
             for user in users:

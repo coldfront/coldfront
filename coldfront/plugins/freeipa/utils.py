@@ -31,7 +31,7 @@ class NotMemberError(ApiError):
 
 try:
     os.environ["KRB5_CLIENT_KTNAME"] = CLIENT_KTNAME
-    api.bootstrap()
+    api.bootstrap(context="cli", in_server=False)
     api.finalize()
     api.Backend.rpcclient.connect()
 except Exception as e:
