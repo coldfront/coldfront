@@ -1,6 +1,6 @@
 # FreeIPA Account Syncing
 
-The [FreeIPA plugin](https://github.com/coldfront/coldfront/tree/master/coldfront/plugins/freeipa) for ColdFront allows for the syncing of unix group membership between ColdFront allocations and FreeIPA.
+The [FreeIPA plugin](https://github.com/ubccr/coldfront/tree/master/coldfront/plugins/freeipa) for ColdFront allows for the syncing of unix group membership between ColdFront allocations and FreeIPA.
 
 ```
 coldfront freeipa_check --help

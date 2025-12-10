@@ -213,7 +213,7 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         messages.error(self.request, "You do not have permission to view all grants.")
 
     def get_grants(self):
-        grants = Grant.objects.select_related("project", "project__pi").all().order_by("-total_amount_awarded")
+        grants = Grant.objects.prefetch_related("project", "project__pi").all().order_by("-total_amount_awarded")
         grants = [
             {
                 "pk": grant.pk,
@@ -272,9 +272,7 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             for form in formset:
                 form_data = form.cleaned_data
                 if form_data["selected"]:
-                    grant = get_object_or_404(
-                        Grant.objects.select_related("project", "project__pi"), pk=form_data["pk"]
-                    )
+                    grant = get_object_or_404(Grant, pk=form_data["pk"])
 
                     row = [
                         grant.title,
@@ -294,7 +292,9 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                     grants_selected_count += 1
 
             if grants_selected_count == 0:
-                grants = Grant.objects.select_related("project", "project__pi").all().order_by("-total_amount_awarded")
+                grants = (
+                    Grant.objects.prefetch_related("project", "project__pi").all().order_by("-total_amount_awarded")
+                )
                 for grant in grants:
                     row = [
                         grant.title,

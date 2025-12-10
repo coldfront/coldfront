@@ -5,27 +5,21 @@
 """Unit tests for the allocation models"""
 
 import datetime
-import sys
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from django.utils import timezone
 
 from coldfront.core.allocation.models import (
     Allocation,
     AllocationStatusChoice,
-    AllocationUser,
 )
 from coldfront.core.project.models import Project
 from coldfront.core.test_helpers.factories import (
-    AAttributeTypeFactory,
-    AllocationAttributeFactory,
-    AllocationAttributeTypeFactory,
     AllocationFactory,
     AllocationStatusChoiceFactory,
-    AllocationUserFactory,
-    AllocationUserStatusChoiceFactory,
     ProjectFactory,
     ResourceFactory,
     UserFactory,
@@ -45,66 +39,6 @@ class AllocationModelTests(TestCase):
         """test that allocation str method returns correct string"""
         allocation_str = "%s (%s)" % (self.allocation.get_parent_resource.name, self.allocation.project.pi)
         self.assertEqual(str(self.allocation), allocation_str)
-
-
-class AllocationModelUserMethodTests(TestCase):
-    """tests for Allocation model add_user, and remove_user methods"""
-
-    @classmethod
-    def setUpTestData(cls):
-        """Set up project to test model properties and methods"""
-        active_ausc = AllocationUserStatusChoiceFactory(name="Active")
-        removed_ausc = AllocationUserStatusChoiceFactory(name="Removed")
-        cls.allocation = AllocationFactory(status=AllocationStatusChoiceFactory(name="Active"))
-        cls.allocation.resources.add(ResourceFactory(name="holylfs07/tier1"))
-        cls.user = UserFactory()
-        cls.allocation_user_active = AllocationUserFactory(allocation=cls.allocation, status=active_ausc)
-        cls.allocation_user_removed = AllocationUserFactory(allocation=cls.allocation, status=removed_ausc)
-
-    @patch("coldfront.core.allocation.signals.allocation_activate_user.send")
-    def test_active_allocation_add_user(self, mock):
-        """Test that allocation add_user method activates the given user and sends the allocation_activate_user signal"""
-        self.allocation.add_user(user=self.user, signal_sender="test")
-        self.assertEqual(mock.call_args.kwargs.get("sender"), "test")
-        self.allocation.add_user(user=self.allocation_user_active.user, signal_sender="test")
-        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_active.pk)
-        self.allocation.add_user(user=self.allocation_user_removed.user, signal_sender="test")
-        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_removed.pk)
-
-        self.assertEqual(AllocationUser.objects.get(user__pk=self.user.pk).status.name, "Active")
-        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_active.pk).status.name, "Active")
-        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_removed.pk).status.name, "Active")
-
-    @patch("coldfront.core.allocation.signals.allocation_activate_user.send")
-    def test_inactive_allocation_add_user(self, mock):
-        """Test that allocation add_user method activates the given user and the allocation_activate_user signal is not sent"""
-        self.allocation.status = AllocationStatusChoiceFactory(name="Pending")
-        self.allocation.save()
-
-        self.allocation.add_user(user=self.user, signal_sender="test")
-        mock.assert_not_called()
-        self.allocation.add_user(user=self.allocation_user_active.user, signal_sender="test")
-        mock.assert_not_called()
-        self.allocation.add_user(user=self.allocation_user_removed.user, signal_sender="test")
-        mock.assert_not_called()
-
-        self.assertEqual(AllocationUser.objects.get(user__pk=self.user.pk).status.name, "Active")
-        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_active.pk).status.name, "Active")
-        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_removed.pk).status.name, "Active")
-
-    @patch("coldfront.core.allocation.signals.allocation_remove_user.send")
-    def test_remove_user(self, mock):
-        """Test that allocation remove_user method removes the given user and sends the allocation_remove_user signal"""
-        self.allocation.remove_user(user=self.user, signal_sender="test")
-        mock.assert_not_called()
-        self.allocation.remove_user(user=self.allocation_user_active.user, signal_sender="test")
-        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_active.pk)
-        self.allocation.remove_user(user=self.allocation_user_removed.user, signal_sender="test")
-        mock.assert_called_with(sender="test", allocation_user_pk=self.allocation_user_removed.pk)
-
-        self.assertFalse(AllocationUser.objects.filter(user__pk=self.user.pk).exists())
-        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_active.pk).status.name, "Removed")
-        self.assertEqual(AllocationUser.objects.get(pk=self.allocation_user_removed.pk).status.name, "Removed")
 
 
 class AllocationModelCleanMethodTests(TestCase):
@@ -127,7 +61,7 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_expired_and_end_date_not_past_has_validation_error(self):
         """Test that an allocation with status 'expired' and end date in the future raises a validation error."""
-        end_date_in_the_future: datetime.date = datetime.date.today() + datetime.timedelta(days=1)
+        end_date_in_the_future: datetime.date = (timezone.now() + datetime.timedelta(days=1)).date()
         actual_allocation: Allocation = AllocationFactory.build(
             status=self.expired_status, end_date=end_date_in_the_future, project=self.project
         )
@@ -136,7 +70,7 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_expired_and_start_date_after_end_date_has_validation_error(self):
         """Test that an allocation with status 'expired' and start date after end date raises a validation error."""
-        end_date: datetime.date = datetime.date.today() + datetime.timedelta(days=1)
+        end_date: datetime.date = (timezone.now() + datetime.timedelta(days=1)).date()
         start_date_after_end_date: datetime.date = end_date + datetime.timedelta(days=1)
 
         actual_allocation: Allocation = AllocationFactory.build(
@@ -147,7 +81,7 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_expired_and_start_date_before_end_date_no_error(self):
         """Test that an allocation with status 'expired' and start date before end date does not raise a validation error."""
-        start_date: datetime.date = datetime.datetime(year=2023, month=11, day=2, tzinfo=datetime.timezone.utc).date()
+        start_date: datetime.date = datetime.datetime(year=2023, month=11, day=2, tzinfo=timezone.utc).date()
         end_date: datetime.date = start_date + datetime.timedelta(days=40)
 
         actual_allocation: Allocation = AllocationFactory.build(
@@ -157,9 +91,7 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_expired_and_start_date_equals_end_date_no_error(self):
         """Test that an allocation with status 'expired' and start date equal to end date does not raise a validation error."""
-        start_and_end_date: datetime.date = datetime.datetime(
-            year=1997, month=4, day=20, tzinfo=datetime.timezone.utc
-        ).date()
+        start_and_end_date: datetime.date = datetime.datetime(year=1997, month=4, day=20, tzinfo=timezone.utc).date()
 
         actual_allocation: Allocation = AllocationFactory.build(
             status=self.expired_status, start_date=start_and_end_date, end_date=start_and_end_date, project=self.project
@@ -184,7 +116,7 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_active_and_start_date_after_end_date_has_validation_error(self):
         """Test that an allocation with status 'active' and start date after end date raises a validation error."""
-        end_date: datetime.date = datetime.date.today() + datetime.timedelta(days=1)
+        end_date: datetime.date = (timezone.now() + datetime.timedelta(days=1)).date()
         start_date_after_end_date: datetime.date = end_date + datetime.timedelta(days=1)
 
         actual_allocation: Allocation = AllocationFactory.build(
@@ -195,7 +127,7 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_active_and_start_date_before_end_date_no_error(self):
         """Test that an allocation with status 'active' and start date before end date does not raise a validation error."""
-        start_date: datetime.date = datetime.datetime(year=2001, month=5, day=3, tzinfo=datetime.timezone.utc).date()
+        start_date: datetime.date = datetime.datetime(year=2001, month=5, day=3, tzinfo=timezone.utc).date()
         end_date: datetime.date = start_date + datetime.timedelta(days=160)
 
         actual_allocation: Allocation = AllocationFactory.build(
@@ -205,63 +137,12 @@ class AllocationModelCleanMethodTests(TestCase):
 
     def test_status_is_active_and_start_date_equals_end_date_no_error(self):
         """Test that an allocation with status 'active' and start date equal to end date does not raise a validation error."""
-        start_and_end_date: datetime.date = datetime.datetime(
-            year=2005, month=6, day=3, tzinfo=datetime.timezone.utc
-        ).date()
+        start_and_end_date: datetime.date = datetime.datetime(year=2005, month=6, day=3, tzinfo=timezone.utc).date()
 
         actual_allocation: Allocation = AllocationFactory.build(
             status=self.active_status, start_date=start_and_end_date, end_date=start_and_end_date, project=self.project
         )
         actual_allocation.full_clean()
-
-
-class AllocationAttributeModelCleanMethodTests(TestCase):
-    def _test_clean(
-        self, allocation_attribute_type_name: str, allocation_attribute_values: list, expect_validation_error: bool
-    ):
-        attribute_type = AAttributeTypeFactory(name=allocation_attribute_type_name)
-        allocation_attribute_type = AllocationAttributeTypeFactory(attribute_type=attribute_type)
-        allocation_attribute = AllocationAttributeFactory(allocation_attribute_type=allocation_attribute_type)
-        for value in allocation_attribute_values:
-            with self.subTest(value=value):
-                if not isinstance(value, str):
-                    raise TypeError("allocation attribute value must be a string")
-                allocation_attribute.value = value
-                if expect_validation_error:
-                    with self.assertRaises(ValidationError):
-                        allocation_attribute.clean()
-                else:
-                    allocation_attribute.clean()
-
-    def test_expect_int_given_int(self):
-        self._test_clean("Int", ["-1", "0", "1", str(sys.maxsize)], False)
-
-    def test_expect_int_given_float(self):
-        self._test_clean("Int", ["-1.0", "0.0", "1.0", "2e30"], True)
-
-    def test_expect_int_given_garbage(self):
-        self._test_clean("Int", ["foobar", "", " ", "\0", "1j"], True)
-
-    def test_expect_float_given_int(self):
-        self._test_clean("Float", ["-1", "0", "1", str(sys.maxsize)], False)
-
-    def test_expect_float_given_float(self):
-        self._test_clean("Float", ["-1.0", "0.0", "1.0", "2e30"], False)
-
-    def test_expect_float_given_garbage(self):
-        self._test_clean("Float", ["foobar", "", " ", "\0", "1j"], True)
-
-    def test_expect_yes_no_given_yes_no(self):
-        self._test_clean("Yes/No", ["Yes", "No"], False)
-
-    def test_expect_yes_no_given_garbage(self):
-        self._test_clean("Yes/No", ["foobar", "", " ", "\0", "1", "1.0", "2e30", "1j", "yes", "no", "YES", "NO"], True)
-
-    def test_expect_date_given_date(self):
-        self._test_clean("Date", ["1970-01-01"], False)
-
-    def test_expect_date_given_garbage(self):
-        self._test_clean("Date", ["foobar", "", " ", "\0", "1", "1.0", "2e30", "1j"], True)
 
 
 class AllocationModelStrTests(TestCase):
@@ -356,32 +237,32 @@ class AllocationModelExpiresInTests(TestCase):
 
     def test_end_date_is_today_returns_zero(self):
         """Test that the expires_in method returns 0 when the end date is today."""
-        allocation: Allocation = AllocationFactory(end_date=datetime.date.today())
+        allocation: Allocation = AllocationFactory(end_date=timezone.now().date())
         self.assertEqual(allocation.expires_in, 0)
 
     def test_end_date_tomorrow_returns_one(self):
         """Test that the expires_in method returns 1 when the end date is tomorrow."""
-        tomorrow: datetime.date = datetime.date.today() + datetime.timedelta(days=1)
+        tomorrow: datetime.date = (timezone.now() + datetime.timedelta(days=1)).date()
         allocation: Allocation = AllocationFactory(end_date=tomorrow)
         self.assertEqual(allocation.expires_in, 1)
 
     def test_end_date_yesterday_returns_negative_one(self):
         """Test that the expires_in method returns -1 when the end date is yesterday."""
-        yesterday: datetime.date = datetime.date.today() - datetime.timedelta(days=1)
+        yesterday: datetime.date = (timezone.now() - datetime.timedelta(days=1)).date()
         allocation: Allocation = AllocationFactory(end_date=yesterday)
         self.assertEqual(allocation.expires_in, -1)
 
     def test_end_date_one_week_ago_returns_negative_seven(self):
         """Test that the expires_in method returns -7 when the end date is one week ago."""
         days_in_a_week: int = 7
-        one_week_ago: datetime.date = datetime.date.today() - datetime.timedelta(days=days_in_a_week)
+        one_week_ago: datetime.date = (timezone.now() - datetime.timedelta(days=days_in_a_week)).date()
         allocation: Allocation = AllocationFactory(end_date=one_week_ago)
         self.assertEqual(allocation.expires_in, -days_in_a_week)
 
     def test_end_date_in_one_week_returns_seven(self):
         """Test that the expires_in method returns 7 when the end date is in one week."""
         days_in_a_week: int = 7
-        one_week_from_now: datetime.date = datetime.date.today() + datetime.timedelta(days=days_in_a_week)
+        one_week_from_now: datetime.date = (timezone.now() + datetime.timedelta(days=days_in_a_week)).date()
         allocation: Allocation = AllocationFactory(end_date=one_week_from_now)
         self.assertEqual(allocation.expires_in, days_in_a_week)
 

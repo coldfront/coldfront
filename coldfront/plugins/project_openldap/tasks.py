@@ -73,14 +73,11 @@ def add_project(project_obj):
     logger.info("Adding OpenLDAP project posixgroup entry - DN: %s", posixgroup_dn)
     logger.info("Adding OpenLDAP project posixgroup entry - GID: %s", gid_int)
     logger.info(
-        "Adding OpenLDAP project posixgroup entry - description: %s",
+        "Adding OpenLDAP project posixgroup entry - GID: %s",
         openldap_posixgroup_description,
     )
 
     add_posixgroup_to_openldap(posixgroup_dn, openldap_posixgroup_description, gid_int)
-
-    # 3) add the PI to the posixgroup
-    add_members_to_openldap_posixgroup(posixgroup_dn, [project_obj.pi.username])
 
 
 # Coldfront archive project action

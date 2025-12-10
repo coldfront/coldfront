@@ -3,7 +3,7 @@
 This document describes upgrading ColdFront. New releases of ColdFront may
 introduce breaking changes so please refer to this document before upgrading.
 
-## [v1.1.7](https://github.com/coldfront/coldfront/releases/tag/v1.1.7)
+## [v1.1.7](https://github.com/ubccr/coldfront/releases/tag/v1.1.7)
 
 This release upgrades to [django-q2](https://github.com/django-q2/django-q2)
 which requires database migrations. We also now use [uv](https://docs.astral.sh/uv/) 
@@ -15,7 +15,7 @@ After upgrading be sure to run any outstanding database migrations:
 $ coldfront migrate
 ```
 
-## [v1.1.4](https://github.com/coldfront/coldfront/releases/tag/v1.1.4)
+## [v1.1.4](https://github.com/ubccr/coldfront/releases/tag/v1.1.4)
 
 This release includes a new Project Attribute feature which requires a database
 migration. Also included in this release is a new date widget which updates
@@ -33,7 +33,7 @@ $ coldfront collectstatic
 $ coldfront add_default_project_choices
 ```
 
-## [v1.1.3](https://github.com/coldfront/coldfront/releases/tag/v1.1.3)
+## [v1.1.3](https://github.com/ubccr/coldfront/releases/tag/v1.1.3)
 
 This release changes some css/javascript assets to be hosted statically instead
 of using a CDN. We also made some minor modifications to the default template.
@@ -50,10 +50,10 @@ $ coldfront migrate
 $ coldfront collectstatic
 ```
 
-## [v1.1.2](https://github.com/coldfront/coldfront/releases/tag/v1.1.2)
+## [v1.1.2](https://github.com/ubccr/coldfront/releases/tag/v1.1.2)
 
 This release includes a new notes field on projects which will require database
-migrations. See [PR #403](https://github.com/coldfront/coldfront/pull/403) for
+migrations. See [PR #403](https://github.com/ubccr/coldfront/pull/403) for
 details. Before upgrading, be sure to backup your database and any custom
 changes. 
 
@@ -66,7 +66,7 @@ $ coldfront migrate
 $ coldfront collectstatic
 ```
 
-## [v1.1.0](https://github.com/coldfront/coldfront/releases/tag/v1.1.0)
+## [v1.1.0](https://github.com/ubccr/coldfront/releases/tag/v1.1.0)
 
 This release includes a new allocation change workflow along with a major
 Django upgrade from v2.2 to v3.2, both of which will require database
@@ -85,7 +85,7 @@ $ coldfront collectstatic
 $ coldfront add_resource_defaults
 ```
 
-## [v1.0.3](https://github.com/coldfront/coldfront/releases/tag/v1.0.3)
+## [v1.0.3](https://github.com/ubccr/coldfront/releases/tag/v1.0.3)
 
 This release changed the way ColdFront is configured. Before, there were two
 files `local_settings.py` and `local_strings.py` that were used for custom
@@ -125,3 +125,63 @@ PLUGIN_SLURM=True
 SLURM_IGNORE_USERS=root,admin,testuser
 SLURM_SACCTMGR_PATH=/usr/bin/sacctmgr
 ```
+
+## Upgrading with Git
+
+This is one way to use Git to upgrade your codebase with the latest upstream changes in ColdFront. 
+
+Git Remote setup:
+
+- `origin` -> Your organization's Git repo for ColdFront
+- `upstream` -> https://github.com/coldfront/coldfront.git 
+
+Git Branch setup:
+
+- `custom` -> This is your default branch, containing your organization's ColdFront codebase
+- `main` -> This branch tracks the `main` branch of the ColdFront project
+- `staged_upgrade` -> This is based on your `custom` branch, used for resolving merge conflicts
+
+Commands:
+
+```sh
+# let's assume you only have a `main` branch and a `custom` branch
+git checkout main
+# pull in the latest changes
+git pull upstream main
+
+# return to your custom branch
+git checkout custom
+# make a new branch off of your `custom` branch
+git checkout -b staged_upgrade
+git merge main
+
+# alternative: checkout a tagged release instead of using `main`
+# git fetch --all --tags
+# git tag -l
+# git merge v1.x.x
+
+# Install any updated dependencies
+uv sync
+
+# resolve any conflicts in your text editor
+git commit -m "bring in latest changes"
+```
+
+Migrate your database to accomodate changes to models:
+
+```sh
+uv run coldfront makemigrations --merge
+uv run coldfront migrate
+```
+
+Restart your server in your testing environment to confirm everything is working as expected. If everything looks good, merge your `staged_upgrade` branch into your default branch:
+
+```sh
+git checkout custom
+git merge staged_upgrade
+# update your remote
+git push origin custom
+git branch -d staged_upgrade
+```
+
+Your organization's ColdFront codebase should now have the latest updates from the upstream ColdFront project.

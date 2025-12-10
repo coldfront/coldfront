@@ -161,16 +161,7 @@ class AttributeTypeAdmin(admin.ModelAdmin):
 
 @admin.register(AllocationAttributeType)
 class AllocationAttributeTypeAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "name",
-        "attribute_type",
-        "has_usage",
-        "is_required",
-        "is_unique",
-        "is_private",
-        "is_changeable",
-    )
+    list_display = ("pk", "name", "attribute_type", "has_usage", "is_private")
 
 
 class AllocationAttributeUsageInline(admin.TabularInline):

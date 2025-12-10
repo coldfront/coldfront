@@ -28,7 +28,6 @@ Allocation Review New and Pending Change Requests
           <th scope="col">#</th>
           <th scope="col">Requested</th>
           <th scope="col">Project Title</th>
-          <th scope="col">Allocation ID</th>
           <th scope="col">PI</th>
           <th scope="col">Resource</th>
           <th scope="col">Extension</th>
@@ -41,7 +40,6 @@ Allocation Review New and Pending Change Requests
             <td>{{change.pk}}</td>
             <td>{{ change.created|date:"M. d, Y" }}</td>
             <td><a href="{% url 'project-detail' change.allocation.project.pk %}">{{change.allocation.project.title|truncatechars:50}}</a></td>
-            <td><a href="{% url 'allocation-detail' change.allocation.pk %}">{{change.allocation.pk}}</a></td>
             <td>{{change.allocation.project.pi.first_name}} {{change.allocation.project.pi.last_name}}
               ({{change.allocation.project.pi.username}})</td>
             <td>{{change.allocation.get_parent_resource}}</td>

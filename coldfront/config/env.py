@@ -19,7 +19,7 @@ if ENV.str("COLDFRONT_ENV", default="") != "":
 # Read in any environment files
 for e in env_paths:
     try:
-        with e.file(""):
-            ENV.read_env(e())
+        e.file("")
+        ENV.read_env(e())
     except FileNotFoundError:
         pass

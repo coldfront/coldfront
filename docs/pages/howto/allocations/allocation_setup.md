@@ -33,7 +33,7 @@ Here we've updated the start and end date of the allocation, changed the status 
 
 ### Cloud Resource Allocations  
 
-The allocation detail page for cloud resource allocations will display usage charts if cloud-related attributes are added.  In this example, we've added the "Cloud Storage Quota" and "Core Usage" attributes, as well as a unix group, and cloud account name.  The usage metrics are drawn from Open XDMoD using the Openstack realm for cloud reporting.  More details can be [found here](https://github.com/coldfront/coldfront/tree/master/coldfront/plugins/xdmod)  
+The allocation detail page for cloud resource allocations will display usage charts if cloud-related attributes are added.  In this example, we've added the "Cloud Storage Quota" and "Core Usage" attributes, as well as a unix group, and cloud account name.  The usage metrics are drawn from Open XDMoD using the Openstack realm for cloud reporting.  More details can be [found here](https://github.com/ubccr/coldfront/tree/master/coldfront/plugins/xdmod)  
 ![Cloud Allocation](../../images/alloc_cloud.PNG)
 
 

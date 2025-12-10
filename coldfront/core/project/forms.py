@@ -19,12 +19,10 @@ EMAIL_DIRECTOR_EMAIL_ADDRESS = import_from_settings("EMAIL_DIRECTOR_EMAIL_ADDRES
 class ProjectSearchForm(forms.Form):
     """Search form for the Project list page."""
 
-    TITLE = "Title"
     LAST_NAME = "Last Name"
     USERNAME = "Username"
     FIELD_OF_SCIENCE = "Field of Science"
 
-    title = forms.CharField(label=TITLE, max_length=255, required=False)
     last_name = forms.CharField(label=LAST_NAME, max_length=100, required=False)
     username = forms.CharField(label=USERNAME, max_length=100, required=False)
     field_of_science = forms.CharField(label=FIELD_OF_SCIENCE, max_length=100, required=False)
@@ -128,9 +126,10 @@ class ProjectAttributeAddForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ProjectAttributeAddForm, self).__init__(*args, **kwargs)
-        user = kwargs.get("initial").get("user")
-        queryset = self.fields["proj_attr_type"].queryset.select_related("attribute_type").order_by(Lower("name"))
-        self.fields["proj_attr_type"].queryset = queryset if user.is_superuser else queryset.filter(is_private=False)
+        user = (kwargs.get("initial")).get("user")
+        self.fields["proj_attr_type"].queryset = self.fields["proj_attr_type"].queryset.order_by(Lower("name"))
+        if not user.is_superuser:
+            self.fields["proj_attr_type"].queryset = self.fields["proj_attr_type"].queryset.filter(is_private=False)
 
 
 class ProjectAttributeDeleteForm(forms.Form):

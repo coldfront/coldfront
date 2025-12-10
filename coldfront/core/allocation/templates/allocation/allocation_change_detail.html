@@ -54,10 +54,6 @@ Allocation Change Detail
               <td><a href="{% url 'project-detail' allocation_change.allocation.project.pk %}">{{ allocation_change.allocation.project }}</a></td>
             </tr>
             <tr>
-              <th scope="row" class="text-nowrap">Allocation ID:</th>
-              <td><a href="{% url 'allocation-detail' allocation_change.allocation.pk %}">{{ allocation_change.allocation.pk }}</a></td>
-            </tr>
-            <tr>
               <th scope="row" class="text-nowrap">Resource{{ allocation_change.allocation.resources.all|pluralize }} in allocation:</th>
               <td>{{ allocation_change.allocation.get_resources_as_string }}</td>
             </tr>
@@ -220,3 +216,4 @@ Allocation Change Detail
   })
 </script>
 {% endblock %}
+

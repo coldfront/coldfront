@@ -59,7 +59,7 @@ categories: core and plugins. The core apps support the core functionality of Co
 
 ## Contact Us
 
-Source code on Github: https://github.com/coldfront/coldfront
+Source code on Github: https://github.com/ubccr/coldfront
 
 If you would like a live demo followed by QA, please contact us at
 ccr-coldfront-admin-list@listserv.buffalo.edu. You can also contact us for

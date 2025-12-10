@@ -69,7 +69,7 @@ We also change the status of the allocation to 'Active', set today's date as the
 
 ### Step 4 - Sync with Slurm  
 
-Your [ColdFront config](../../config.md) must have the [Slurm plugin](https://github.com/coldfront/coldfront/tree/master/coldfront/plugins/slurm) enabled and you'll need the Slurm client installed on your ColdFront instance so it can run the slurm commands.  
+Your [ColdFront config](../../config.md) must have the [Slurm plugin](https://github.com/ubccr/coldfront/tree/master/coldfront/plugins/slurm) enabled and you'll need the Slurm client installed on your ColdFront instance so it can run the slurm commands.  
 
 Within your ColdFront virtual environment, dump the Slurm account and association from ColdFront:  
 

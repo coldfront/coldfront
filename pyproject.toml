@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "coldfront"
 version = "1.1.7"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 authors = [
     { name = "Andrew E. Bruno" },
     { name = "Dori Sajdak" },
@@ -46,10 +46,10 @@ dependencies = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/coldfront/coldfront/issues"
-Changelog = "https://github.com/coldfront/coldfront/blob/main/CHANGELOG.md"
-Documentation = "https://docs.coldfront.dev"
-"Source Code" = "https://github.com/coldfront/coldfront"
+"Bug Tracker" = "https://github.com/ubccr/coldfront/issues"
+Changelog = "https://github.com/ubccr/coldfront/blob/main/CHANGELOG.md"
+Documentation = "https://coldfront.readthedocs.io"
+"Source Code" = "https://github.com/ubccr/coldfront"
 
 [project.scripts]
 coldfront = "coldfront:manage"
@@ -63,8 +63,6 @@ ldap = [
 freeipa = [
     "dbus-python>=1.4.0",
     "ipaclient>=4.12.2",
-    "setuptools==80.6.0",
-    "cryptography==43.0.3",
 ]
 iquota = [
     "kerberos>=1.3.1",
@@ -102,9 +100,6 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
-
-[tool.uv]
-required-version = ">=0.9.13"
 
 [tool.ruff]
 line-length = 120

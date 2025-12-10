@@ -170,6 +170,8 @@ def remove_dn_from_openldap(dn, write=True):
 
     try:
         conn.delete(dn)
+        conn.unbind()
+        conn = openldap_connection(server, PROJECT_OPENLDAP_BIND_USER, PROJECT_OPENLDAP_BIND_PASSWORD)
     except Exception as exc_log:
         logger.info(exc_log)
     finally:
@@ -189,6 +191,7 @@ def update_posixgroup_description_in_openldap(dn, openldap_description, write=Tr
 
     try:
         conn.modify(dn, {"description": [(MODIFY_REPLACE, [openldap_description])]})
+        conn.unbind()
     except Exception as exc_log:
         logger.info(exc_log)
     finally:
@@ -208,6 +211,7 @@ def move_dn_in_openldap(current_dn, relative_dn, destination_ou, write=True):
 
     try:
         conn.modify_dn(current_dn, relative_dn, new_superior=destination_ou)
+        conn.unbind()
     except Exception as exc_log:
         logger.info(exc_log)
     finally:

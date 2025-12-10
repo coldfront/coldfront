@@ -3,8 +3,8 @@ docs_dir: 'pages'
 site_description: 'HPC Resource Allocation Management System'
 site_url: 'https://docs.coldfront.dev'
 copyright: 'Copyright &copy; University at Buffalo Center for Computational Research'
-repo_name: 'coldfront/coldfront'
-repo_url: 'https://github.com/coldfront/coldfront'
+repo_name: 'ubccr/coldfront'
+repo_url: 'https://github.com/ubccr/coldfront'
 edit_uri: ''
 
 extra_css:

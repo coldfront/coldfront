@@ -54,18 +54,16 @@ Allocation Detail
             <td><a href="{% url 'project-detail' allocation.project.pk %}">{{ allocation.project }}</a></td>
           </tr>
           <tr>
-            {% with allocation.get_resources_as_list as resources_as_list %}
-            <th scope="row" class="text-nowrap">Resource{{ resources_as_list|pluralize }} in allocation:</th>
+            <th scope="row" class="text-nowrap">Resource{{ allocation.resources.all|pluralize }} in allocation:</th>
             <td>
-              {% if resources_as_list %}
-                {% for resource in resources_as_list %}
+              {% if allocation.get_resources_as_list %}
+                {% for resource in allocation.get_resources_as_list %}
                   <a href="{% url 'resource-detail' resource.pk %}">{{ resource }}</a> <br>
                 {% endfor %}
-              {% else %}
-                None
-              {% endif %}
+            {% else %}
+              None
+            {% endif %}
             </td>
-            {% endwith %}
           </tr>
           {% if request.user.is_superuser %}
             <tr>
@@ -109,7 +107,7 @@ Allocation Detail
               <span class="badge badge-warning"><i class="far fa-clock" aria-hidden="true"></i>
                 Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} - Not renewable
               </span>
-              {% elif is_allowed_to_update_project and settings.ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
+              {% elif is_allowed_to_update_project and ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
                 <a href="{% url 'allocation-renew' allocation.pk %}">
                 <span class="badge badge-warning"><i class="fas fa-redo-alt" aria-hidden="true"></i>
                 Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} - Click to renew
