@@ -1,6 +1,10 @@
-{% extends "common/base.html" %} {% load crispy_forms_tags %} {% load static %}
-{% block title %} Allocation Change Detail {% endblock %} {% block content %}
+{% extends "common/base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
 
+{% block title %} Allocation Change Detail {% endblock %}
+
+{% block content %}
 <h2>
   Edit attributes for {{ allocation.get_parent_resource }} for project: {{ allocation.project.title }}
 </h2>
@@ -63,7 +67,12 @@
   </div>
 </form>
 
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   $(document).ready(function() {
     {% for form in formset %}
     $("#{{form.value.auto_id}}").on("input", function(){
@@ -76,6 +85,7 @@
     });
     $("#{{form.value.auto_id}}").trigger("input");
     {% endfor %}
-  })
+  });
+});
 </script>
 {% endblock %}

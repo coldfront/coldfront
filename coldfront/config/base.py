@@ -65,6 +65,7 @@ INSTALLED_APPS += [
     "django_q",
     "simple_history",
     "fontawesome_free",
+    "django_vite",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -150,9 +151,18 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 SETTINGS_EXPORT = []
 
 STATIC_URL = "/static/"
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": ENV.bool("DJANGO_VITE_DEV_MODE", default=False),
+        "dev_server_port": ENV.int("DJANGO_VITE_SERVER_PORT", default=5173),
+    }
+}
+
 STATIC_ROOT = ENV.str("STATIC_ROOT", default=PROJECT_ROOT("static_root"))
 STATICFILES_DIRS = [
-    PROJECT_ROOT("coldfront/static"),
+    PROJECT_ROOT("coldfront/static/bundles"),
+    PROJECT_ROOT("coldfront/static/assets"),
 ]
 
 # Add local site static files if set

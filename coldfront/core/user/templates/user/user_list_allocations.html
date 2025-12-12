@@ -7,7 +7,7 @@
   <div class="card border-light">
     <div class="card-body">
         <div class="table-responsive">
-          <table id="user-table" class="table table-sm table-hover">
+          <table id="user-table" class="table table-sm table-hover datatable">
             <thead>
               <tr>
                 <th scope="col">#</th>
@@ -27,7 +27,7 @@
                   <td class="text-nowrap">
                     {% for allocation in allocations %}
                       <a href="{% url 'allocation-detail' allocation.pk %}">{{ allocation.get_parent_resource.name }} ({{ allocation.get_parent_resource.resource_type.name }})</a>  {% if 'slurm' in allocation.get_information %} -- {{allocation.get_information}} {% else %} <br> {% endif %}
-                    {% endfor %} 
+                    {% endfor %}
                   </td>
                 </tr>
               {% endfor %}
@@ -36,28 +36,10 @@
         </div>
     </div>
   </div>
-  <script>
-    $(document).ready(function(){
-      $('#user-table').DataTable({
-        "iDisplayLength": 25,
-        "bSortClasses": false,
-        "columnDefs": [ {
-        "targets": 4,
-        "orderable": false
-      } ]
-      });
-    });
-  </script>
 {% else %}
   <div class="alert alert-secondary">
     You are not a PI on any project with an allocation!
   </div>
 {% endif %}
 
-<script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-project-menu").addClass("active");
-  $("#navbar-user-allocation").addClass("active");
-</script>
 {% endblock %}
-

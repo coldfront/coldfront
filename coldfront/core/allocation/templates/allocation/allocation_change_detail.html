@@ -118,7 +118,7 @@ Allocation Change Detail
     </div>
   </div>
 
-  
+
   <div class="card mb-3">
     <div class="card-header">
       <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Attributes</h3>
@@ -211,9 +211,15 @@ Allocation Change Detail
   {% endif %}
   <br>
 
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   $(document).on('click', '.confirm-delete', function(){
       return confirm('Are you sure you want to delete this requested allocation attribute change?');
   })
+});
 </script>
 {% endblock %}

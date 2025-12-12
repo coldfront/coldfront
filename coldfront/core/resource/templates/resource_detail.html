@@ -18,9 +18,9 @@ Resource Detail
 
 <div class="card mb-3">
   <div class="card-header">
-      <h3><i class="fas fa-list" aria-hidden="true"></i> Resource Information</h3>   
+      <h3><i class="fas fa-list" aria-hidden="true"></i> Resource Information</h3>
   </div>
-  
+
   <div class="card-body">
       {% csrf_token %}
       <div class="table-responsive">
@@ -126,7 +126,7 @@ Resource Detail
   <div class="card-body">
     {% if child_resources %}
       <div class="table-responsive">
-        <table id="child_resource_table" class="table table-bordered table-sm">
+        <table id="child_resource_table" class="table table-bordered table-sm datatable">
           <thead>
             <tr>
               <th scope="col">Resource Name</th>
@@ -160,18 +160,4 @@ Resource Detail
   </div>
 </div>
 
-
-<script>
-  $(document).ready(function () { 
-    $('#child_resource_table').DataTable({
-      lengthMenu: [5, 10, 20, 50, 100],
-      "pageLength": 5,
-      "ordering": false,
-      'aoColumnDefs': [{
-        'bSortable': false,
-        'aTargets': ['nosort']
-      }]
-    });
-  });
-</script>
 {% endblock %}

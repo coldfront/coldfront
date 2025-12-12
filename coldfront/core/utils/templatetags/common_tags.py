@@ -70,3 +70,36 @@ def get_value_by_index(array, index):
     usage example {{ your_list|get_value_by_index:your_index }}
     """
     return array[index]
+
+
+@register.simple_tag
+def navbar_active_item(menu_item, request):
+    view_map = {
+        "center-summary": ["center-summary"],
+        "home": ["home"],
+        "invoice": ["allocation-invoice-list"],
+        "project": ["project-list", "allocation-list", "allocation-account-list", "resource-list"],
+        "admin": [
+            "user-search-home",
+            "project-review-list",
+            "allocation-request-list",
+            "allocation-change-list",
+            "grant-report",
+        ],
+        "staff": [
+            "user-search-home",
+            "project-review-list",
+            "allocation-request-list",
+            "grant-report",
+        ],
+        "director": [
+            "project-review-list",
+            "grant-report",
+        ],
+    }
+    view_name = request.resolver_match.view_name
+
+    if menu_item in view_map:
+        if view_name in view_map[menu_item]:
+            return "active"
+    return ""

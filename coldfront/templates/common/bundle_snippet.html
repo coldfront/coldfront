@@ -1,0 +1,12 @@
+{% load static %}
+{% load portal_tags %}
+{% load django_vite %}
+{% if settings.DJANGO_VITE.default.dev_mode %}
+  {% vite_hmr_client %}
+  {% vite_asset asset_name_ts %}
+{% else %}
+  {% if asset_name_css %}
+  <link  rel="stylesheet" href="{% static asset_name_css %}?v={% get_version %}">
+  {% endif %}
+  <script type="module" crossorigin="" src="{% static asset_name_js %}?v={% get_version %}"></script>
+{% endif %}

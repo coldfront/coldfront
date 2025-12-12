@@ -34,7 +34,7 @@ Project Review List
         {% for project_review in project_review_list %}
           <tr>
             <td><a href="{% url 'project-detail' project_review.project.pk %}">{{project_review.project.title|truncatechars:50}}</a></td>
-            <td >{{ project_review.created|date:"M. d, Y" }}</td>        
+            <td >{{ project_review.created|date:"M. d, Y" }}</td>
             <td>{{project_review.project.pi.first_name}} {{project_review.project.pi.last_name}} ({{project_review.project.pi.username}})</td>
 {% if settings.GRANT_ENABLE %}
             <td >{{ project_review.project.latest_grant.modified|date:"M. d, Y"|default:"No grants" }}</td>
@@ -58,10 +58,4 @@ Project Review List
   </div>
 {% endif %}
 
-<script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-admin").addClass("active");
-  $("#navbar-director").addClass("active");
-  $("#navbar-project-reviews").addClass("active");
-</script>
 {% endblock %}

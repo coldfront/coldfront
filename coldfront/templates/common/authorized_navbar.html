@@ -11,13 +11,13 @@
 
     <div class="navbar-collapse collapse" id="navbar-main">
       <ul class="navbar-nav">
-        <li id="navbar-home" class="nav-item active">
+        <li id="navbar-home" class="nav-item {% navbar_active_item 'home' request %}">
           <a class="nav-link" href="/">Home</a>
         </li>
-        <li id="navbar-center-summary" class="nav-item">
+        <li id="navbar-center-summary" class="nav-item {% navbar_active_item 'center-summary' request %}">
           <a class="nav-link" href="{% url 'center-summary' %}">Center Summary</a>
         </li>
-        <li id="navbar-project-menu" class="nav-item dropdown">
+        <li id="navbar-project-menu" class="nav-item dropdown {% navbar_active_item 'project' request %}">
           <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Project</a>
           <div class="dropdown-menu">
             <a id="navbar-project" class="dropdown-item" href="{% url 'project-list' %}">Projects</a>

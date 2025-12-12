@@ -57,16 +57,4 @@ Delete Grants from Project
   </div>
 {% endif %}
 
-<script>
-  $("#selectAll").click(function () {
-    $("input[name^='grantform-']").prop('checked', $(this).prop('checked'));
-  });
-
-  $("input[name^='grantform-']").click(function (ele) {
-    var id = $(this).attr('id');
-    if ( id != "selectAll") {
-      $("#selectAll").prop('checked', false);
-    }
-  });
-</script>
 {% endblock %}

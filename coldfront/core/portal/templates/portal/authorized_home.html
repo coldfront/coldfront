@@ -1,5 +1,6 @@
 {% extends "common/base.html" %}
 {% load common_tags %}
+{% load static %}
 
 
 {% block content %}
@@ -48,8 +49,8 @@
           <tr>
             <td>{{allocation.project.title}}</td>
             <td>{{allocation.get_parent_resource}}
-              {% if allocation.get_parent_resource.get_ondemand_status == 'Yes' and ondemand_url %}
-              <a href="{{ondemand_url}}"> {% load static %}  <img src="/static/core/portal/imgs/ondemand.png" alt="ondemand cta" width="25" height="25"></a>
+            {% if allocation.get_parent_resource.get_ondemand_status == 'Yes' and ondemand_url %}
+              <a href="{{ondemand_url}}"> {% load static %}  <img src="{% static 'common/images/ondemand.png' %}" alt="ondemand cta" width="25" height="25"></a>
             {% endif %} 
             </td>
             {%  if allocation.status.name == "Expired" and allocation.expires_in < 0 %}
@@ -93,13 +94,4 @@
 <div class="row">
   {% include "portal/extra_app_templates.html" %}
 </div>
-{% endblock %}
-
-
-{% block javascript %}
-{{ block.super }}
-<script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-home").addClass("active");
-</script>
 {% endblock %}

@@ -1,6 +1,7 @@
 <div id="slurm_help"></div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   $(document).ready(function () {
     $.ajax({
       url: "{% url 'slurm-help' %}",
@@ -12,6 +13,7 @@
       success: function(data) {
         $('#slurm_help').html(data);
       }
-    })
-  })
+    });
+  });
+});
 </script>

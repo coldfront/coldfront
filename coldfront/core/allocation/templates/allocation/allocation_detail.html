@@ -40,10 +40,10 @@ Allocation Detail
       </div>
     </div>
     {% else %}
-      <h3><i class="fas fa-list" aria-hidden="true"></i> Allocation Information</h3>   
+      <h3><i class="fas fa-list" aria-hidden="true"></i> Allocation Information</h3>
     {% endif %}
   </div>
-  
+
   <div class="card-body">
     <form method="post">
       {% csrf_token %}
@@ -293,11 +293,11 @@ Allocation Detail
       {% endif %}
     </div>
   </div>
-  
+
   <div class="card-body">
     {% if allocation_changes %}
       <div class="table-responsive">
-        <table id="allocation_change_table" class="table table-bordered table-sm">
+        <table id="allocation_change_table" class="table table-bordered table-sm datatable">
           <thead>
             <tr>
               <th scope="col">Date Requested</th>
@@ -357,7 +357,7 @@ Allocation Detail
   </div>
   <div class="card-body">
     <div class="table-responsive">
-      <table id="allocationuser_table" class="table table-hover">
+      <table id="allocationuser_table" class="table table-hover datatable">
         <thead>
           <tr>
             <th scope="col" class="text-nowrap">Username</th>
@@ -365,7 +365,7 @@ Allocation Detail
             <th scope="col" class="text-nowrap">Last Name</th>
             <th scope="col" class="text-nowrap">Email</th>
             <th scope="col" class="text-nowrap" >Status</th>
-            <th scope="col" class="nosort">Last Modified</th>
+            <th scope="col" data-dt-order="disable">Last Modified</th>
           </tr>
         </thead>
         <tbody>
@@ -441,55 +441,27 @@ Allocation Detail
 
 {{ guage_data|json_script:"guage-data" }}
 
+{% endblock %}
 
+{% block javascript %}
+{{ block.super }}
 <script>
-  $(document).ready(function () {
-    var guage_data = JSON.parse(document.getElementById('guage-data').textContent);
-    drawGauges(guage_data);
+document.addEventListener('DOMContentLoaded', function() {
+  var guage_data = JSON.parse(document.getElementById('guage-data').textContent);
+  drawGauges(guage_data);
 
-    $('#allocation_change_table').DataTable({
-      lengthMenu: [5, 10, 20, 50, 100],
-      "pageLength": 5,
-      "ordering": false,
-      'aoColumnDefs': [{
-        'bSortable': false,
-        'aTargets': ['nosort']
-      }]
-    });
-    $('#allocationuser_table').DataTable({
-      'aoColumnDefs': [{
-        'bSortable': false,
-        'aTargets': ['nosort']
-      }]
-    });
-  });
-
-  function drawGauges(guage_data) {
-    var arrayLength = guage_data.length;
-    for (var i = 0; i < arrayLength; i++) {
-      c3.generate({
-        bindto: '#gauge-' + i,
-        data: guage_data[i],
-        legend: {
-          item: {
-            onclick: function (id) { }
-          }
-        }
-      });
-    }
-  }
-  $(".datepicker").flatpickr();
   $(document).on('click', '.confirm-activate', function(){
     var attributes_num = {{ attributes | length }};
     if (attributes_num == 0) {
       return confirm('Are you sure you want to activate this allocation request without setting any allocation attributes?');
     }
-  })
+  });
   $(document).on('click', '.confirm-deny', function(){
     var notes_num = {{ notes | length }};
     if (notes_num == 0) {
       return confirm('Are you sure you want to deny this allocation request without setting a notification?');
     }
-  })
+  });
+});
 </script>
 {% endblock %}

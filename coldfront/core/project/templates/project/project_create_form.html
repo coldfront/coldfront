@@ -1,4 +1,4 @@
-{% extends "common/base.html" %} 
+{% extends "common/base.html" %}
 {% load crispy_forms_tags %}
 {% load static %}
 
@@ -16,9 +16,4 @@ Create Project
   <a class="btn btn-secondary" href="{% url 'project-list' %}" role="button">Cancel</a>
 </form>
 
-<script>
-  $(document).ready(function() {
-    $('#id_field_of_science').select2();
-  });
-</script>
 {% endblock %}

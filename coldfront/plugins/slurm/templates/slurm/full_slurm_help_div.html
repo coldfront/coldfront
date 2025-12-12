@@ -1,6 +1,7 @@
 <div id="full_slurm_help"></div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   $(document).ready(function () {
     $.ajax({
       url: "{% url 'full-slurm-help' %}",
@@ -12,6 +13,7 @@
         $('#full_slurm_help').before(data);
         $('#full_slurm_help').remove();
       }
-    })
-  })
+    });
+  });
+});
 </script>

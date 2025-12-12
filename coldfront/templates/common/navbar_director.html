@@ -1,4 +1,6 @@
-<li id="navbar-director" class="nav-item dropdown">
+{% load common_tags %}
+
+<li id="navbar-director" class="nav-item dropdown {% navbar_active_item 'director' request %}">
   <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown">Director</a>
   <div class="dropdown-menu">
     <a class="dropdown-item" href="{% url 'project-list' %}?show_all_projects=on">All Projects</a>

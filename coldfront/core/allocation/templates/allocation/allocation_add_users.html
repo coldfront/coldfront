@@ -63,16 +63,4 @@ Add Users to Allocation
   </div>
 {% endif %}
 
-<script>
-  $("#selectAll").click(function () {
-    $("input[name^='userform-']").prop('checked', $(this).prop('checked'));
-  });
-
-  $("input[name^='userform-']").click(function (ele) {
-    var id = $(this).attr('id');
-    if ( id != "selectAll") {
-      $("#selectAll").prop('checked', false);
-    }
-  });
-</script>
 {% endblock %}

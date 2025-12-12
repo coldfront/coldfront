@@ -1,0 +1,41 @@
+{
+  "name": "coldfront",
+  "version": "1.1.7",
+  "license": "AGPL-3.0-or-later",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint ./src",
+    "format": "prettier ./src --write",
+    "format:check": "prettier ./src  --check",
+    "check": "npm run lint && npm run format:check"
+  },
+  "devDependencies": {
+    "@types/bootstrap": "^4.6.2",
+    "@types/c3": "^0.7.11",
+    "@types/jquery": "^3.5.33",
+    "@types/select2": "^4.0.63",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.7.4",
+    "sass": "^1.95.1",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.49.0",
+    "vite": "^7.2.7",
+    "vite-plugin-eslint": "^1.8.1"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^4.6.2",
+    "c3": "^0.7.20",
+    "datatables.net": "^2.3.5",
+    "datatables.net-bs4": "^2.3.5",
+    "flatpickr": "^4.6.13",
+    "jquery": "^3.7.1",
+    "select2": "^4.1.0-rc.0"
+  }
+}

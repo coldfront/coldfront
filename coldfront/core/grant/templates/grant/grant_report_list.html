@@ -21,7 +21,7 @@ Grants Report
     <form id="download_form" action="{% url 'grant-report' %}" method="post">
       {% csrf_token %}
       <div class="table-responsive">
-        <table id="grants-table" class="table table-hover table-sm">
+        <table id="grants-table" class="table table-hover table-sm datatable-long">
           <thead>
             <tr>
               <th scope="col"><input type="checkbox" class="check" id="selectAll"></th>
@@ -67,30 +67,4 @@ Grants Report
 </div>
 <!-- End Project Grants -->
 
-<script>
-  $("#navbar-main > ul > li.active").removeClass("active")
-  $("#navbar-admin").addClass("active")
-  $("#navbar-director").addClass("active")
-  $("#navbar-grant-report").addClass("active")
-  $(document).ready(function() {
-    $('#grants-table').DataTable({
-      "iDisplayLength": 50,
-      "bSortClasses": false,
-      "order": [[ 5, "desc" ]],
-      "columnDefs": [{ 'orderable': false, 'targets': 0 }],
-      "aaSorting": [[1, 'asc']] 
-    });
-  });
-
-  $("#selectAll").click(function () {
-    $("input[name^='grantdownloadform-']").prop('checked', $(this).prop('checked'));
-  });
-
-  $("input[name^='grantdownloadform-']").click(function (ele) {
-    var id = $(this).attr('id');
-    if (id != "selectAll") {
-      $("#selectAll").prop('checked', false);
-    }
-  });
-</script>
 {% endblock %}
