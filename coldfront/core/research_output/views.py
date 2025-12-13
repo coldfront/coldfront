@@ -7,6 +7,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.views.generic import CreateView, ListView
 
@@ -91,10 +92,7 @@ class ResearchOutputDeleteResearchOutputsView(
 
         num_deletions, _ = project_research_outputs.filter(pk__in=posted_research_output_pks).delete()
 
-        msg = "Deleted {} research output{} from project.".format(
-            num_deletions,
-            "" if num_deletions == 1 else "s",
-        )
+        msg = f"Deleted {num_deletions} research output{pluralize(num_deletions)} from project."
         messages.success(request, msg)
 
         return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
