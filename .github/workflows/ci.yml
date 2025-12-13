@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
+        node-version: ["24.x"]
     env:
       PLUGIN_API: True
 
@@ -22,14 +23,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
       - name: Install the project
         run: uv sync --locked --dev
+
+      - name: Install frontend packages
+        run: npm --prefix coldfront/static install
 
       - name: Check for lint violations
         run: uv run ruff check
 
       - name: Check formatting
         run: uv run ruff format --check
+
+      - name: Check frontend with eslint and prettier
+        run: npm --prefix coldfront/static run check
 
       - name: Check licence with reuse
         run: uv run reuse lint

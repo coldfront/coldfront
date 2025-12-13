@@ -55,7 +55,12 @@ Export Publications from Project
   </div>
 {% endif %}
 
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   $(document).ready(function () {
     $("input[name^='publicationform-']").click(function (ele) {
       var id = $(this).attr('id');
@@ -101,5 +106,7 @@ Export Publications from Project
   anyChecked()
         ? submitbtn.removeAttribute('disabled')
         : submitbtn.setAttribute('disabled','')
+});
 </script>
+
 {% endblock %}

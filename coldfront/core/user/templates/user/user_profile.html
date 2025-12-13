@@ -64,9 +64,4 @@ User Profile{% if not user == viewed_user %}: {{ viewed_user.username }}{% endif
   </div>
 </div>
 
-<script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-user").addClass("active");
-  $("#navbar-user-user-profile").addClass("active");
-</script>
 {% endblock %}

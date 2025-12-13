@@ -66,7 +66,12 @@ Request New Allocation
 {{ resources_with_accounts|json_script:"resources-with-accounts" }}
 {{ resources_with_eula|json_script:"resources-with-eula" }}
 
+{% endblock %}
+
+{% block javascript %}
+{{ block.super }}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   var resources_form_default_quantities = JSON.parse(document.getElementById('resources-form-default-quantities').textContent);
   var resources_form_description = JSON.parse(document.getElementById('resources-form-description').textContent);
   var resources_form_label_texts = JSON.parse(document.getElementById('resources-form-label-texts').textContent);
@@ -90,21 +95,6 @@ Request New Allocation
     });
   });
 
-  function getCookie(name) {
-    var cookieValue = null;
-    if (document.cookie && document.cookie != '') {
-      var cookies = document.cookie.split(';');
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = jQuery.trim(cookies[i]);
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) == (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
-  }
   $('#modal_link').on("click", function () {
     $('#Modal').modal('show');
   });
@@ -179,5 +169,6 @@ Request New Allocation
       $('#eula-div').hide();
     }
   });
+});
 </script>
 {% endblock %}

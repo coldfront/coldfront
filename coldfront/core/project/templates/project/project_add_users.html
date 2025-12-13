@@ -14,7 +14,7 @@ Add Users to Project
 
 <div class="row">
   <div class="col">
-    <form method="post" action="/search-ldap" id="post-form">
+    <form method="post" id="post-form">
       {% csrf_token %}
       {{ user_search_form|crispy }}
       <button id="search-button" type="submit" class="btn btn-success btn-block"><i class="fas fa-search" aria-hidden="true"></i> Search</button>
@@ -44,11 +44,9 @@ Add Users to Project
 
 
 {% block javascript %}
-  {{ block.super }}
+{{ block.super }}
 <script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-ldap-home").addClass("active");
-
+document.addEventListener('DOMContentLoaded', function() {
   $('#post-form').on('submit', function(event){
     event.preventDefault();
     $('#search_results').show();
@@ -70,9 +68,9 @@ Add Users to Project
     $.ajax({
         url : "/project/" + pk + "/add-users-search-results/", // the endpoint
         type : "POST", // http method
-        data : { 
-          q : q, 
-          search_by : search_by, 
+        data : {
+          q : q,
+          search_by : search_by,
           csrfmiddlewaretoken: "{{ csrf_token }}"
         }, // data sent with the post request
         // handle a successful response
@@ -96,10 +94,9 @@ Add Users to Project
     });
   };
 
-  $(document).ready(function(){
     $('#search_results').hide();
     $('#selected_users').hide();
-    $('[data-toggle="popover"]').popover(); 
-  });
+    $('[data-toggle="popover"]').popover();
+});
 </script>
 {% endblock %}

@@ -35,8 +35,9 @@ Add Publication to Project
 
 
 {% block javascript %}
-  {{ block.super }}
+{{ block.super }}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   $('#post-form').on('submit', function(event){
     event.preventDefault();
     $('#search_results').show();
@@ -52,7 +53,7 @@ Add Publication to Project
         url : "/publication/publication-search-result/" + pk +"/", // the endpoint
         type : "POST", // http method
         data : {
-          search_id : search_id, 
+          search_id : search_id,
           csrfmiddlewaretoken: "{{ csrf_token }}"
         }, // data sent with the post request
         // handle a successful response
@@ -70,8 +71,7 @@ Add Publication to Project
     });
   };
 
-  $(document).ready(function(){
-    $('[data-toggle="popover"]').popover(); 
-  });
+  $('[data-toggle="popover"]').popover();
+});
 </script>
 {% endblock %}

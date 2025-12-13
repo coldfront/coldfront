@@ -91,27 +91,19 @@ Renew Allocation
 
 {{ resource_eula|json_script:"resource-eula" }}
 
+{% endblock %}
 
+{% block javascript %}
+{{ block.super }}
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   var resource_eula = JSON.parse(document.getElementById('resource-eula').textContent);
 
-  $(document).ready(function () {
-    if (resource_eula['eula']) {
-      $('#eula').text(resource_eula['eula'])
-      $('#eula-div').show();
-      $('#eula').show();
-    }
-
-    $("#selectAll").click(function () {
-      $("input[name^='userform-']").prop('checked', $(this).prop('checked'));
-    });
-
-    $("input[name^='userform-']").click(function (ele) {
-      var id = $(this).attr('id');
-      if (id != "selectAll") {
-        $("#selectAll").prop('checked', false);
-      }
-    });
-  });
+  if (resource_eula['eula']) {
+    $('#eula').text(resource_eula['eula'])
+    $('#eula-div').show();
+    $('#eula').show();
+  }
+});
 </script>
 {% endblock %}

@@ -27,10 +27,7 @@
 {% block javascript %}
   {{ block.super }}
 <script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-admin").addClass("active");
-  $("#navbar-user-search").addClass("active");
-
+document.addEventListener('DOMContentLoaded', function() {
   $('#post-form').on('submit', function(event){
     event.preventDefault();
     $("#search_results_inner").html('<div class="alert alert-info text-center"><i class="fas fa-sync fa-spin fa-fw" aria-hidden="true"></i> Searching</div>')
@@ -52,9 +49,9 @@
     $.ajax({
         url : "/user/user-search-results/", // the endpoint
         type : "POST", // http method
-        data : { 
-          q : q, 
-          search_by : search_by, 
+        data : {
+          q : q,
+          search_by : search_by,
           csrfmiddlewaretoken: "{{ csrf_token }}"
         }, // data sent with the post request
         // handle a successful response
@@ -75,8 +72,7 @@
     });
   };
 
-  $(document).ready(function(){
-      $('[data-toggle="popover"]').popover();
-  });
+  $('[data-toggle="popover"]').popover();
+});
 </script>
 {% endblock %}

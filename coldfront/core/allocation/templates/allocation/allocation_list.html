@@ -78,7 +78,7 @@ Allocation List
         {% for allocation in allocation_list %}
           <tr>
             <td><a href="/allocation/{{allocation.id}}/">{{ allocation.id }}</a></td>
-            <td class="text-nowrap"><a 
+            <td class="text-nowrap"><a
                 href="/project/{{allocation.project.id}}/">{{ allocation.project.title|truncatechars:50 }}</a></td>
             <td class="text-nowrap">{{allocation.project.pi.first_name}} {{allocation.project.pi.last_name}}
               ({{allocation.project.pi.username}})</td>
@@ -114,26 +114,4 @@ Allocation List
   </div>
 {% endif %}
 
-<script>
-  $("#navbar-main > ul > li.active").removeClass("active");
-  $("#navbar-project-menu").addClass("active");
-  $("#navbar-allocation").addClass("active");
-
-  $(document).on('click', '#form_reset_button', function () {
-    resetForm($('#filter_form'));
-  });
-
-  $(".datepicker").flatpickr();
-
-  function resetForm($form) {
-    $form.find('input:text, input:password, input:file, select, textarea').val('');
-    $form.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected');
-  };
-
-  $("#expand_button").click(function () {
-    $('#collapseOne').collapse();
-    icon = $("#plus_minus");
-    icon.toggleClass("fa-plus fa-minus");
-  });
-</script>
 {% endblock %}

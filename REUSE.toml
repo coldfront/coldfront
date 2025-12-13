@@ -7,6 +7,7 @@ path = [
     ".python-version",
     "Dockerfile",
     ".dockerignore",
+    ".zed/settings.json",
     "MANIFEST.in",
     "docs/pages/.pages",
     "pyproject.toml",
@@ -19,6 +20,9 @@ path = [
     "**.gitignore",
     "**.html",
     "**.css",
+    "**.scss",
+    "**.js",
+    "**.ts",
     "**.webmanifest",
 ]
 SPDX-FileCopyrightText = "(C) ColdFront Authors"
@@ -36,6 +40,12 @@ SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 [[annotations]]
 path = [
     "uv.lock",
+    "coldfront/static/package-lock.json",
+    "coldfront/static/bundles/manifest.json",
+    "coldfront/static/package.json",
+    "coldfront/static/tsconfig.json",
+    "coldfront/static/.prettierignore",
+    "coldfront/static/.prettierrc",
     "coldfront/**.png",
     "coldfront/**.jpg",
 ]
@@ -44,49 +54,14 @@ SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
 path = [
-    "coldfront/static/bootstrap/*",
+    "coldfront/static/bundles/fa-*.woff2",
 ]
 SPDX-FileCopyrightText = "Copyright (c) 2011-2025 The Bootstrap Authors"
 SPDX-License-Identifier = "MIT"
 
 [[annotations]]
 path = [
-    "coldfront/static/c3js/*",
+    "coldfront/static/bundles/c3.js",
 ]
 SPDX-FileCopyrightText = "Copyright (c) 2013 Masayuki Tanaka"
 SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = [
-    "coldfront/static/datatable/*",
-]
-SPDX-FileCopyrightText = "Copyright (C) 2008-2025, SpryMedia Ltd."
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = [
-    "coldfront/static/flatpickr/*",
-]
-SPDX-FileCopyrightText = "Copyright (c) 2017 Gregory Petrosyan"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = [
-    "coldfront/static/jquery/*",
-]
-SPDX-FileCopyrightText = "Copyright OpenJS Foundation and other contributors"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = [
-    "coldfront/static/select2/*",
-]
-SPDX-FileCopyrightText = "Copyright (c) 2012-2017 Kevin Brown, Igor Vaynberg, and Select2 contributors"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = [
-    "coldfront/static/d3/*",
-]
-SPDX-FileCopyrightText = "Copyright 2010-2023 Mike Bostock"
-SPDX-License-Identifier = "ISC"

@@ -58,16 +58,4 @@ Delete Allocation Attributes from Allocation
   </div>
 {% endif %}
 
-<script>
-  $("#selectAll").click(function () {
-    $("input[name^='attributeform-']").prop('checked', $(this).prop('checked'));
-  });
-
-  $("input[name^='attributeform-']").click(function (ele) {
-    var id = $(this).attr('id');
-    if (id != "selectAll") {
-      $("#selectAll").prop('checked', false);
-    }
-  });
-</script>
 {% endblock %}

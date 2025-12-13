@@ -185,3 +185,7 @@ class ProjectCreationForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ["title", "description", "field_of_science"]
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectCreationForm, self).__init__(*args, **kwargs)
+        self.fields["field_of_science"].widget.attrs["class"] = "fos-select2"

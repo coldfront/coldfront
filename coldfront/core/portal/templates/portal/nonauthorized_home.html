@@ -20,12 +20,3 @@
   {% include "portal/extra_app_templates.html" %}
 </div>
 {% endblock %}
-
-
-{% block javascript %}
-  {{ block.super }}
-  <script>
-    $("#navbar-main > ul > li.active").removeClass("active");
-    $("#navbar-home").addClass("active");
-  </script>
-{% endblock %}

@@ -1,0 +1,62 @@
+{
+  "../node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
+    "file": "fa-brands-400.woff2",
+    "src": "../node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2"
+  },
+  "../node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2": {
+    "file": "fa-regular-400.woff2",
+    "src": "../node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2"
+  },
+  "../node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2": {
+    "file": "fa-solid-900.woff2",
+    "src": "../node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
+  },
+  "_c3.js": {
+    "file": "c3.js",
+    "name": "c3"
+  },
+  "_util.js": {
+    "file": "util.js",
+    "name": "util",
+    "imports": [
+      "_c3.js"
+    ]
+  },
+  "allocationSummary.ts": {
+    "file": "coldfront-allocation-summary.js",
+    "name": "coldfront-allocation-summary",
+    "src": "allocationSummary.ts",
+    "isEntry": true,
+    "imports": [
+      "_c3.js"
+    ]
+  },
+  "centerSummary.ts": {
+    "file": "coldfront-center-summary.js",
+    "name": "coldfront-center-summary",
+    "src": "centerSummary.ts",
+    "isEntry": true,
+    "imports": [
+      "_c3.js",
+      "_util.js"
+    ]
+  },
+  "coldfront.ts": {
+    "file": "coldfront.js",
+    "name": "coldfront",
+    "src": "coldfront.ts",
+    "isEntry": true,
+    "imports": [
+      "_c3.js",
+      "_util.js"
+    ],
+    "css": [
+      "coldfront.css"
+    ],
+    "assets": [
+      "fa-solid-900.woff2",
+      "fa-brands-400.woff2",
+      "fa-regular-400.woff2"
+    ]
+  }
+}
