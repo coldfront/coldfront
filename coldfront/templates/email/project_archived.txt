@@ -1,0 +1,12 @@
+Dear {{center_name}} user,
+
+A project you are a member of has been archived. Below is information about the project:
+
+Project Title: {{project.title}}
+Project URL: {{center_base_url}}{% url 'project-detail' project.pk %}
+Project PI: {{project.pi.first_name}} {{project.pi.last_name}} ({{project.pi.email}})
+
+All active allocations under this project have been expired.
+
+Thank you,
+{{ signature }}

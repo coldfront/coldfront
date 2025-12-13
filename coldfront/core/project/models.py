@@ -309,6 +309,27 @@ We do not have information about your research. Please provide a detailed descri
     def get_absolute_url(self):
         return reverse("project-detail", kwargs={"pk": self.pk})
 
+    def get_user_emails(self, ignore_disabled_notifications=False) -> set[str]:
+        """Gets a set of user emails for notifications.
+
+        Params:
+            ignore_disabled_notifications (bool): If True, include project users
+                that have enable_notifications off.
+
+        Returns:
+            set: A set of user emails for notifications.
+        """
+        filter_options = {
+            "status__name": "Active",
+        }
+        if not ignore_disabled_notifications:
+            filter_options["enable_notifications"] = True
+
+        project_users = self.projectuser_set.filter(**filter_options)
+        user_emails = set(project_users.values_list("user__email", flat=True))
+        user_emails.add(self.pi.email)
+        return user_emails
+
 
 class ProjectAdminComment(TimeStampedModel):
     """A project admin comment is a comment that an admin can make on a project.

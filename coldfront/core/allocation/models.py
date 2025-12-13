@@ -430,6 +430,33 @@ class Allocation(TimeStampedModel):
     def get_absolute_url(self):
         return reverse("allocation-detail", kwargs={"pk": self.pk})
 
+    def get_user_emails(self, status_name="Active", ignore_disabled_notifications=False) -> set[str]:
+        """Gets a set of user emails for notifications.
+
+        Params:
+            status_name (str): The name of the AllocationUserStatus to filter on. Defaults to "Active".
+            ignore_disabled_notifications (bool): If True, include project users
+                that have enable_notifications off.
+
+        Returns:
+            set: A set of user emails for notifications.
+        """
+        allocation_users = self.allocationuser_set.filter(status__name=status_name)
+        if ignore_disabled_notifications:
+            user_emails = set(allocation_users.values_list("user__email", flat=True))
+            return user_emails
+
+        users = allocation_users.values_list("user", flat=True)
+        filter_options = {
+            "user__in": users,
+            "staus__name": "Active",
+            "enable_notifications": True,
+        }
+
+        project_users = self.project.projectuser_set.filter(**filter_options)
+        user_emails = set(project_users.values_list("user__email", flat=True))
+        return user_emails
+
 
 class AllocationAdminNote(TimeStampedModel):
     """An allocation admin note is a note that an admin makes on an allocation.

@@ -7,7 +7,7 @@ import datetime
 # import the logging library
 import logging
 
-from coldfront.core.allocation.models import Allocation, AllocationStatusChoice, AllocationUserStatusChoice
+from coldfront.core.allocation.models import Allocation, AllocationStatusChoice
 from coldfront.core.user.models import User
 from coldfront.core.utils.common import import_from_settings
 from coldfront.core.utils.mail import send_email_template
@@ -55,37 +55,30 @@ def update_statuses():
 
 def send_eula_reminders():
     for allocation in Allocation.objects.all():
-        if allocation.get_eula():
-            email_receiver_list = []
-            for allocation_user in allocation.allocationuser_set.all():
-                projectuser = allocation.project.projectuser_set.get(user=allocation_user.user)
-                if (
-                    allocation_user.status == AllocationUserStatusChoice.objects.get(name="PendingEULA")
-                    and projectuser.status.name == "Active"
-                ):
-                    should_send = (projectuser.enable_notifications) or (EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT)
-                    if should_send and allocation_user.user.email not in email_receiver_list:
-                        email_receiver_list.append(allocation_user.user.email)
+        if not allocation.get_eula():
+            continue
 
-            template_context = {
-                "center_name": CENTER_NAME,
-                "resource": allocation.get_parent_resource,
-                "url": f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/review-eula",
-                "signature": EMAIL_SIGNATURE,
-            }
+        email_receivers = allocation.get_user_emails(status_name="PendingEULA")
 
-            if email_receiver_list:
-                send_email_template(
-                    f"Reminder: Agree to EULA for {allocation}",
-                    "email/allocation_eula_reminder.txt",
-                    template_context,
-                    EMAIL_SENDER,
-                    email_receiver_list,
-                )
-                logger.debug(f"Allocation(s) EULA reminder sent to users {email_receiver_list}.")
+        if not email_receivers:
+            continue
+
+        template_context = {
+            "resource": allocation.get_parent_resource,
+            "url": f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/review-eula",
+        }
+
+        send_email_template(
+            f"Reminder: Agree to EULA for {allocation}",
+            "email/allocation_eula_reminder.txt",
+            template_context,
+            email_receivers,
+        )
+        logger.debug(f"Allocation(s) EULA reminder sent to users {email_receivers}.")
 
 
 def send_expiry_emails():
+    # TODO: cleanup
     # Allocations expiring soon
     for user in User.objects.all():
         projectdict = {}
@@ -110,7 +103,6 @@ def send_expiry_emails():
                     resource_name = allocation.get_parent_resource.name
 
                     template_context = {
-                        "center_name": CENTER_NAME,
                         "expring_in_days": days_remaining,
                         "project_dict": projectdict,
                         "expiration_dict": expirationdict,
@@ -160,7 +152,6 @@ def send_expiry_emails():
                 f"Your access to {CENTER_NAME}'s resources is expiring soon",
                 "email/allocation_expiring.txt",
                 template_context,
-                EMAIL_SENDER,
                 email_receiver_list,
             )
 
@@ -189,7 +180,6 @@ def send_expiry_emails():
                 resource_name = allocation.get_parent_resource.name
 
                 template_context = {
-                    "center_name": CENTER_NAME,
                     "project_dict": projectdict,
                     "allocation_dict": allocationdict,
                     "project_renewal_help_url": CENTER_PROJECT_RENEWAL_HELP_URL,
@@ -238,7 +228,6 @@ def send_expiry_emails():
                 "Your access to resource(s) have expired",
                 "email/allocation_expired.txt",
                 template_context,
-                EMAIL_SENDER,
                 email_receiver_list,
             )
 
@@ -256,8 +245,5 @@ def send_expiry_emails():
                 "Allocation(s) have expired",
                 "email/admin_allocation_expired.txt",
                 admin_template_context,
-                EMAIL_SENDER,
-                [
-                    EMAIL_ADMIN_LIST,
-                ],
+                [EMAIL_ADMIN_LIST],
             )

@@ -75,6 +75,7 @@ from coldfront.core.utils.mail import (
     send_allocation_admin_email,
     send_allocation_customer_email,
     send_allocation_eula_customer_email,
+    send_email_template,
 )
 
 ALLOCATION_ENABLE_ALLOCATION_RENEWAL = import_from_settings("ALLOCATION_ENABLE_ALLOCATION_RENEWAL", True)
@@ -91,6 +92,7 @@ if INVOICE_ENABLED:
 ALLOCATION_ACCOUNT_ENABLED = import_from_settings("ALLOCATION_ACCOUNT_ENABLED", False)
 ALLOCATION_ACCOUNT_MAPPING = import_from_settings("ALLOCATION_ACCOUNT_MAPPING", {})
 
+EMAIL_SENDER = import_from_settings("EMAIL_SENDER")
 EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT = import_from_settings("EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT", False)
 EMAIL_ALLOCATION_EULA_CONFIRMATIONS = import_from_settings("EMAIL_ALLOCATION_EULA_CONFIRMATIONS", False)
 EMAIL_ALLOCATION_EULA_CONFIRMATIONS_CC_MANAGERS = import_from_settings(
@@ -878,19 +880,26 @@ class AllocationAddUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
 
         users_added_count = 0
 
-        if formset.is_valid():
-            for form in formset:
-                user_form_data = form.cleaned_data
-                if user_form_data["selected"]:
-                    users_added_count += 1
-                    user_obj = get_user_model().objects.get(username=user_form_data.get("username"))
-                    allocation_obj.add_user(user_obj, signal_sender=self.__class__)
-
-            user_plural = "user" if users_added_count == 1 else "users"
-            messages.success(request, f"Added {users_added_count} {user_plural} to allocation.")
-        else:
+        if not formset.is_valid():
             for error in formset.errors:
                 messages.error(request, error)
+            return redirect
+        for form in formset:
+            user_form_data = form.cleaned_data
+            if user_form_data["selected"]:
+                users_added_count += 1
+                user_obj = get_user_model().objects.get(username=user_form_data.get("username"))
+                allocation_obj.add_user(user_obj, signal_sender=self.__class__)
+                if allocation_obj.allocationuser_set.get(user=user_obj).status.name == "Active":
+                    send_email_template(
+                        "You have been added to an allocation",
+                        "email/user_added_to_allocation.txt",
+                        {"user": user_obj, "allocation": allocation_obj},
+                        [user_obj.email],
+                    )
+
+        user_plural = "user" if users_added_count == 1 else "users"
+        messages.success(request, f"Added {users_added_count} {user_plural} to allocation.")
 
         return redirect(allocation_obj)
 
