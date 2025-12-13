@@ -8,15 +8,8 @@ from unittest.mock import patch
 from django.core.exceptions import ValidationError
 from django.test import TestCase, TransactionTestCase
 
-from coldfront.core.project.models import (
-    Project,
-    ProjectAttribute,
-    ProjectAttributeType,
-)
-from coldfront.core.project.utils import (
-    determine_automated_institution_choice,
-    generate_project_code,
-)
+from coldfront.core.project.models import Project, ProjectAttribute, ProjectAttributeType
+from coldfront.core.project.utils import determine_automated_institution_choice, generate_project_code
 from coldfront.core.test_helpers.factories import (
     FieldOfScienceFactory,
     PAttributeTypeFactory,
@@ -180,16 +173,11 @@ class TestProjectAttribute(TestCase):
         project_attr_types = [("Project ID", "Text"), ("Account Number", "Int")]
         for atype in project_attr_types:
             ProjectAttributeTypeFactory(
-                name=atype[0],
-                attribute_type=PAttributeTypeFactory(name=atype[1]),
-                has_usage=False,
-                is_unique=True,
+                name=atype[0], attribute_type=PAttributeTypeFactory(name=atype[1]), has_usage=False, is_unique=True
             )
         cls.project = ProjectFactory()
         cls.new_attr = ProjectAttributeFactory(
-            proj_attr_type=ProjectAttributeType.objects.get(name="Account Number"),
-            project=cls.project,
-            value=1243,
+            proj_attr_type=ProjectAttributeType.objects.get(name="Account Number"), project=cls.project, value=1243
         )
 
     def test_unique_attrs_one_per_project(self):
@@ -226,10 +214,7 @@ class TestProjectCode(TransactionTestCase):
         """Helper method to create a project and a project code with a specific prefix and padding"""
         # Project Creation
         project = Project.objects.create(
-            title=title,
-            pi=self.user,
-            status=self.status,
-            field_of_science=self.field_of_science,
+            title=title, pi=self.user, status=self.status, field_of_science=self.field_of_science
         )
 
         project.project_code = generate_project_code(project_code, project.pk, project_code_padding)
@@ -291,10 +276,7 @@ class TestInstitution(TestCase):
         """Helper method to create a project and assign a institution value based on the argument passed"""
         # Project Creation
         project = Project.objects.create(
-            title=title,
-            pi=self.user,
-            status=self.status,
-            field_of_science=self.field_of_science,
+            title=title, pi=self.user, status=self.status, field_of_science=self.field_of_science
         )
 
         if institution_dict:

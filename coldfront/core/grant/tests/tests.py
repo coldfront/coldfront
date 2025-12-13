@@ -9,11 +9,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from coldfront.core.grant.models import Grant
-from coldfront.core.test_helpers.factories import (
-    GrantFundingAgencyFactory,
-    GrantStatusChoiceFactory,
-    ProjectFactory,
-)
+from coldfront.core.test_helpers.factories import GrantFundingAgencyFactory, GrantStatusChoiceFactory, ProjectFactory
 
 
 class TestGrant(TestCase):

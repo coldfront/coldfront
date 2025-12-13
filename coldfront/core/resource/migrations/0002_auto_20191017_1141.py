@@ -13,14 +13,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="historicalresourceattribute",
-            name="value",
-            field=models.TextField(),
-        ),
-        migrations.AlterField(
-            model_name="resourceattribute",
-            name="value",
-            field=models.TextField(),
-        ),
+        migrations.AlterField(model_name="historicalresourceattribute", name="value", field=models.TextField()),
+        migrations.AlterField(model_name="resourceattribute", name="value", field=models.TextField()),
     ]

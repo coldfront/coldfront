@@ -18,11 +18,7 @@ from coldfront.core.allocation.models import (
     AllocationAttributeChangeRequest,
     AllocationChangeRequest,
 )
-from coldfront.core.project.models import (
-    Project,
-    ProjectUser,
-    ProjectUserRoleChoice,
-)
+from coldfront.core.project.models import Project, ProjectUser, ProjectUserRoleChoice
 from coldfront.core.test_helpers import utils
 from coldfront.core.test_helpers.factories import (
     AllocationAttributeFactory,

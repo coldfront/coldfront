@@ -14,13 +14,8 @@ from django.test import TestCase
 import coldfront.core.publication
 from coldfront.core.publication.models import Publication
 from coldfront.core.publication.views import PublicationSearchResultView
-from coldfront.core.test_helpers.decorators import (
-    makes_remote_requests,
-)
-from coldfront.core.test_helpers.factories import (
-    ProjectFactory,
-    PublicationSourceFactory,
-)
+from coldfront.core.test_helpers.decorators import makes_remote_requests
+from coldfront.core.test_helpers.factories import ProjectFactory, PublicationSourceFactory
 
 
 class TestPublication(TestCase):

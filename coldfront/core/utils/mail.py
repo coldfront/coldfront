@@ -109,11 +109,7 @@ def send_allocation_admin_email(allocation_obj, subject, template_name, url_path
     ctx["resource"] = resource_name
     ctx["url"] = url
 
-    send_admin_email_template(
-        f"{subject}: {pi_name} - {resource_name}",
-        template_name,
-        ctx,
-    )
+    send_admin_email_template(f"{subject}: {pi_name} - {resource_name}", template_name, ctx)
 
 
 def send_allocation_customer_email(allocation_obj, subject, template_name, url_path="", domain_url=""):

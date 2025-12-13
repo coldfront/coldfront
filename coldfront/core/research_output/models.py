@@ -24,9 +24,7 @@ class ResearchOutput(TimeStampedModel):
     # core fields
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=128, blank=True)
-    description = models.TextField(
-        validators=[MinLengthValidator(3)],
-    )
+    description = models.TextField(validators=[MinLengthValidator(3)])
 
     # auxiliary fields
     created_by = models.ForeignKey(

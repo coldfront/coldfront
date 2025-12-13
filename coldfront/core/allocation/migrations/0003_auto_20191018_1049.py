@@ -13,14 +13,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(model_name="allocation", name="is_locked", field=models.BooleanField(default=False)),
         migrations.AddField(
-            model_name="allocation",
-            name="is_locked",
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name="historicalallocation",
-            name="is_locked",
-            field=models.BooleanField(default=False),
+            model_name="historicalallocation", name="is_locked", field=models.BooleanField(default=False)
         ),
     ]

@@ -34,20 +34,14 @@ class AllocationStatusChoiceAdmin(admin.ModelAdmin):
 class AllocationUserInline(admin.TabularInline):
     model = AllocationUser
     extra = 0
-    fields = (
-        "user",
-        "status",
-    )
+    fields = ("user", "status")
     raw_id_fields = ("user",)
 
 
 class AllocationAttributeInline(admin.TabularInline):
     model = AllocationAttribute
     extra = 0
-    fields = (
-        "allocation_attribute_type",
-        "value",
-    )
+    fields = ("allocation_attribute_type", "value")
 
 
 class AllocationAdminNoteInline(admin.TabularInline):
@@ -66,12 +60,7 @@ class AllocationUserNoteInline(admin.TabularInline):
 
 @admin.register(Allocation)
 class AllocationAdmin(SimpleHistoryAdmin):
-    readonly_fields_change = (
-        "project",
-        "justification",
-        "created",
-        "modified",
-    )
+    readonly_fields_change = ("project", "justification", "created", "modified")
     fields_change = (
         "project",
         "resources",
@@ -209,14 +198,7 @@ class UsageValueFilter(admin.SimpleListFilter):
 @admin.register(AllocationAttribute)
 class AllocationAttributeAdmin(SimpleHistoryAdmin):
     readonly_fields_change = ("allocation", "allocation_attribute_type", "created", "modified", "project_title")
-    fields_change = (
-        "project_title",
-        "allocation",
-        "allocation_attribute_type",
-        "value",
-        "created",
-        "modified",
-    )
+    fields_change = ("project_title", "allocation", "allocation_attribute_type", "value", "created", "modified")
     list_display = (
         "pk",
         "project",
@@ -295,20 +277,8 @@ class AllocationUserStatusChoiceAdmin(admin.ModelAdmin):
 
 @admin.register(AllocationUser)
 class AllocationUserAdmin(SimpleHistoryAdmin):
-    readonly_fields_change = (
-        "allocation",
-        "user",
-        "resource",
-        "created",
-        "modified",
-    )
-    fields_change = (
-        "allocation",
-        "user",
-        "status",
-        "created",
-        "modified",
-    )
+    readonly_fields_change = ("allocation", "user", "resource", "created", "modified")
+    fields_change = ("allocation", "user", "status", "created", "modified")
     list_display = (
         "pk",
         "project",
@@ -320,20 +290,9 @@ class AllocationUserAdmin(SimpleHistoryAdmin):
         "created",
         "modified",
     )
-    list_filter = (
-        "status",
-        "allocation__status",
-        "allocation__resources",
-    )
-    search_fields = (
-        "user__first_name",
-        "user__last_name",
-        "user__username",
-    )
-    raw_id_fields = (
-        "allocation",
-        "user",
-    )
+    list_filter = ("status", "allocation__status", "allocation__resources")
+    search_fields = ("user__first_name", "user__last_name", "user__username")
+    raw_id_fields = ("allocation", "user")
 
     def allocation_status(self, obj):
         return obj.allocation.status
@@ -418,18 +377,9 @@ class ValueFilter(admin.SimpleListFilter):
 
 @admin.register(AllocationAttributeUsage)
 class AllocationAttributeUsageAdmin(SimpleHistoryAdmin):
-    list_display = (
-        "allocation_attribute",
-        "project",
-        "project_pi",
-        "resource",
-        "value",
-    )
+    list_display = ("allocation_attribute", "project", "project_pi", "resource", "value")
     readonly_fields = ("allocation_attribute",)
-    fields = (
-        "allocation_attribute",
-        "value",
-    )
+    fields = ("allocation_attribute", "value")
     list_filter = (
         "allocation_attribute__allocation_attribute_type",
         "allocation_attribute__allocation__resources",
@@ -448,10 +398,7 @@ class AllocationAttributeUsageAdmin(SimpleHistoryAdmin):
 
 @admin.register(AllocationAccount)
 class AllocationAccountAdmin(SimpleHistoryAdmin):
-    list_display = (
-        "name",
-        "user",
-    )
+    list_display = ("name", "user")
 
 
 @admin.register(AllocationChangeStatusChoice)
@@ -461,21 +408,9 @@ class AllocationChangeStatusChoiceAdmin(admin.ModelAdmin):
 
 @admin.register(AllocationChangeRequest)
 class AllocationChangeRequestAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "allocation",
-        "status",
-        "end_date_extension",
-        "justification",
-        "notes",
-    )
+    list_display = ("pk", "allocation", "status", "end_date_extension", "justification", "notes")
 
 
 @admin.register(AllocationAttributeChangeRequest)
 class AllocationAttributeChangeRequestAdmin(admin.ModelAdmin):
-    list_display = (
-        "pk",
-        "allocation_change_request",
-        "allocation_attribute",
-        "new_value",
-    )
+    list_display = ("pk", "allocation_change_request", "allocation_attribute", "new_value")

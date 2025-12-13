@@ -9,12 +9,7 @@ from coldfront.core.user.models import UserProfile
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = (
-        "username",
-        "first_name",
-        "last_name",
-        "is_pi",
-    )
+    list_display = ("username", "first_name", "last_name", "is_pi")
     list_filter = ("is_pi",)
     search_fields = ["user__username", "user__first_name", "user__last_name"]
 

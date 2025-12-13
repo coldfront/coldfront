@@ -23,8 +23,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterField(
-            model_name="historicalresearchoutput",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalresearchoutput", name="history_date", field=models.DateTimeField(db_index=True)
         ),
     ]

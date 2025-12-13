@@ -37,11 +37,7 @@ class Command(BaseCommand):
         ):
             AllocationStatusChoice.objects.get_or_create(name=choice)
 
-        for choice in (
-            "Pending",
-            "Approved",
-            "Denied",
-        ):
+        for choice in ("Pending", "Approved", "Denied"):
             AllocationChangeStatusChoice.objects.get_or_create(name=choice)
 
         for choice in ("Active", "Error", "Removed", "PendingEULA", "DeclinedEULA"):

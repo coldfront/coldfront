@@ -45,30 +45,9 @@ class ProjectUserStatusChoiceAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectUser)
 class ProjectUserAdmin(SimpleHistoryAdmin):
-    fields_change = (
-        "user",
-        "project",
-        "role",
-        "status",
-        "created",
-        "modified",
-    )
-    readonly_fields_change = (
-        "user",
-        "project",
-        "created",
-        "modified",
-    )
-    list_display = (
-        "pk",
-        "project_title",
-        "PI",
-        "User",
-        "role",
-        "status",
-        "created",
-        "modified",
-    )
+    fields_change = ("user", "project", "role", "status", "created", "modified")
+    readonly_fields_change = ("user", "project", "created", "modified")
+    list_display = ("pk", "project_title", "PI", "User", "role", "status", "created", "modified")
     list_filter = ("role", "status")
     search_fields = ["user__username", "user__first_name", "user__last_name"]
     raw_id_fields = ("user", "project")
@@ -136,10 +115,7 @@ class ProjectUserMessageInline(admin.TabularInline):
 class ProjectAttributeInLine(admin.TabularInline):
     model = ProjectAttribute
     extra = 0
-    fields = (
-        "proj_attr_type",
-        "value",
-    )
+    fields = ("proj_attr_type", "value")
 
 
 @admin.register(AttributeType)
@@ -188,24 +164,8 @@ class UsageValueFilter(admin.SimpleListFilter):
 @admin.register(ProjectAttribute)
 class ProjectAttributeAdmin(SimpleHistoryAdmin):
     readonly_fields_change = ("proj_attr_type", "created", "modified", "project_title")
-    fields_change = (
-        "project_title",
-        "proj_attr_type",
-        "value",
-        "created",
-        "modified",
-    )
-    list_display = (
-        "pk",
-        "project",
-        "pi",
-        "project_status",
-        "proj_attr_type",
-        "value",
-        "usage",
-        "created",
-        "modified",
-    )
+    fields_change = ("project_title", "proj_attr_type", "value", "created", "modified")
+    list_display = ("pk", "project", "pi", "project_status", "proj_attr_type", "value", "usage", "created", "modified")
     inlines = [
         ProjectAttributeUsageInline,
     ]
@@ -287,21 +247,10 @@ class ValueFilter(admin.SimpleListFilter):
 
 @admin.register(ProjectAttributeUsage)
 class ProjectAttributeUsageAdmin(SimpleHistoryAdmin):
-    list_display = (
-        "project_attribute",
-        "project",
-        "project_pi",
-        "value",
-    )
+    list_display = ("project_attribute", "project", "project_pi", "value")
     readonly_fields = ("project_attribute",)
-    fields = (
-        "project_attribute",
-        "value",
-    )
-    list_filter = (
-        "project_attribute__proj_attr_type",
-        ValueFilter,
-    )
+    fields = ("project_attribute", "value")
+    list_filter = ("project_attribute__proj_attr_type", ValueFilter)
 
     def project(self, obj):
         return obj.project_attribute.project.title
@@ -312,20 +261,8 @@ class ProjectAttributeUsageAdmin(SimpleHistoryAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(SimpleHistoryAdmin):
-    fields_change = (
-        "title",
-        "pi",
-        "description",
-        "status",
-        "requires_review",
-        "force_review",
-        "created",
-        "modified",
-    )
-    readonly_fields_change = (
-        "created",
-        "modified",
-    )
+    fields_change = ("title", "pi", "description", "status", "requires_review", "force_review", "created", "modified")
+    readonly_fields_change = ("created", "modified")
     list_display = ("pk", "title", "PI", "created", "modified", "status")
     search_fields = [
         "pi__username",

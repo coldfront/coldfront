@@ -78,9 +78,7 @@ def allocation_auto_compute(project_obj, project_code):
 def allocation_auto_compute_pi(project_obj, allocation_obj):
     """Method to add the PI to the auto_compute allocation - not other users, as they won't exist on project creation"""
     allocation_user_obj = AllocationUser.objects.create(
-        allocation=allocation_obj,
-        user=project_obj.pi,
-        status=AllocationUserStatusChoice.objects.get(name="Active"),
+        allocation=allocation_obj, user=project_obj.pi, status=AllocationUserStatusChoice.objects.get(name="Active")
     )
     return allocation_user_obj
 
@@ -88,9 +86,7 @@ def allocation_auto_compute_pi(project_obj, allocation_obj):
 def allocation_auto_compute_attribute_create(allocation_attribute_type_obj, allocation_obj, allocation_value):
     """generic method to add allocation attribute types and corresponding values"""
     allocation_attribute_obj = AllocationAttribute.objects.create(
-        allocation=allocation_obj,
-        allocation_attribute_type=allocation_attribute_type_obj,
-        value=allocation_value,
+        allocation=allocation_obj, allocation_attribute_type=allocation_attribute_type_obj, value=allocation_value
     )
     return allocation_attribute_obj
 
@@ -99,20 +95,14 @@ def allocation_auto_compute_fairshare_institution(project_obj, allocation_obj):
     """method to add an institutional fair share value for slurm association - slurm specs"""
     if not hasattr(project_obj, "institution"):
         logger.info("Enable institution feature to set per institution fairshare in the auto_compute_allocation plugin")
-        logger.info(
-            "Additional message - this issue was encountered with project pk %s",
-            {project_obj.pk},
-        )
+        logger.info("Additional message - this issue was encountered with project pk %s", {project_obj.pk})
         return None
     if project_obj.institution in [None, "", "None"]:
         logger.info(
             "None or empty institution value encountered, an institution value is required to set per institution fairshare in the auto_compute_allocation plugin - value found was %s",
             {project_obj.institution},
         )
-        logger.info(
-            "Additional message - this issue was encountered with project pk",
-            {project_obj.pk},
-        )
+        logger.info("Additional message - this issue was encountered with project pk", {project_obj.pk})
         return None
 
     # get the format for the fairshare institution
@@ -122,7 +112,5 @@ def allocation_auto_compute_fairshare_institution(project_obj, allocation_obj):
     fairshare_value = f"Fairshare={fairshare_institution}"
 
     AllocationAttribute.objects.create(
-        allocation=allocation_obj,
-        allocation_attribute_type=allocation_attribute_type_obj,
-        value=fairshare_value,
+        allocation=allocation_obj, allocation_attribute_type=allocation_attribute_type_obj, value=fairshare_value
     )

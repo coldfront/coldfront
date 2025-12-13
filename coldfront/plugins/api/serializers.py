@@ -13,16 +13,7 @@ from coldfront.core.resource.models import Resource
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = (
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_active",
-            "is_superuser",
-            "is_staff",
-            "date_joined",
-        )
+        fields = ("id", "username", "first_name", "last_name", "is_active", "is_superuser", "is_staff", "date_joined")
 
 
 class ResourceSerializer(serializers.ModelSerializer):
@@ -42,14 +33,7 @@ class AllocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Allocation
-        fields = (
-            "id",
-            "project",
-            "resource",
-            "status",
-            "allocation_users",
-            "allocation_attributes",
-        )
+        fields = ("id", "project", "resource", "status", "allocation_users", "allocation_attributes")
 
     def get_allocation_users(self, obj):
         request = self.context.get("request", None)

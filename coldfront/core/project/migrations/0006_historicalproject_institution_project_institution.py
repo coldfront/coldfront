@@ -19,8 +19,6 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, default="None", max_length=80),
         ),
         migrations.AddField(
-            model_name="project",
-            name="institution",
-            field=models.CharField(blank=True, default="None", max_length=80),
+            model_name="project", name="institution", field=models.CharField(blank=True, default="None", max_length=80)
         ),
     ]

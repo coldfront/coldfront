@@ -19,7 +19,4 @@ logger = logging.getLogger(__name__)
 def project_new_auto_compute_allocation(sender, **kwargs):
     project_obj = kwargs.get("project_obj")
     # Add a compute allocation
-    async_task(
-        "coldfront.plugins.auto_compute_allocation.tasks.add_auto_compute_allocation",
-        project_obj,
-    )
+    async_task("coldfront.plugins.auto_compute_allocation.tasks.add_auto_compute_allocation", project_obj)

@@ -95,10 +95,7 @@ class Allocation(TimeStampedModel):
             ("can_manage_invoice", "Can manage invoice"),
         )
 
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-    )
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     resources = models.ManyToManyField(Resource)
     status = models.ForeignKey(AllocationStatusChoice, on_delete=models.CASCADE, verbose_name="Status")
     quantity = models.IntegerField(default=1)
@@ -774,10 +771,7 @@ class AllocationChangeRequest(TimeStampedModel):
         notes (str): represents notes for users changing allocations
     """
 
-    allocation = models.ForeignKey(
-        Allocation,
-        on_delete=models.CASCADE,
-    )
+    allocation = models.ForeignKey(Allocation, on_delete=models.CASCADE)
     status = models.ForeignKey(AllocationChangeStatusChoice, on_delete=models.CASCADE, verbose_name="Status")
     end_date_extension = models.IntegerField(blank=True, null=True)
     justification = models.TextField()

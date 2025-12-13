@@ -70,47 +70,28 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AddField(
-            model_name="historicalproject",
-            name="project_code",
-            field=models.CharField(blank=True, max_length=10),
+            model_name="historicalproject", name="project_code", field=models.CharField(blank=True, max_length=10)
         ),
         migrations.AddField(
-            model_name="project",
-            name="project_code",
-            field=models.CharField(blank=True, max_length=10),
+            model_name="project", name="project_code", field=models.CharField(blank=True, max_length=10)
         ),
         migrations.AlterField(
-            model_name="historicalproject",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalproject", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalprojectattribute",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalprojectattribute", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalprojectattributetype",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalprojectattributetype", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalprojectattributeusage",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalprojectattributeusage", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalprojectreview",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalprojectreview", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
-            model_name="historicalprojectuser",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalprojectuser", name="history_date", field=models.DateTimeField(db_index=True)
         ),
-        migrations.AlterUniqueTogether(
-            name="project",
-            unique_together={("title", "pi")},
-        ),
+        migrations.AlterUniqueTogether(name="project", unique_together={("title", "pi")}),
     ]

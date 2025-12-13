@@ -14,13 +14,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="publicationsource",
-            name="name",
-            field=models.CharField(max_length=255, unique=True),
+            model_name="publicationsource", name="name", field=models.CharField(max_length=255, unique=True)
         ),
-        migrations.AlterField(
-            model_name="publicationsource",
-            name="url",
-            field=models.URLField(blank=True, null=True),
-        ),
+        migrations.AlterField(model_name="publicationsource", name="url", field=models.URLField(blank=True, null=True)),
     ]

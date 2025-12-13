@@ -14,18 +14,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="projectstatuschoice",
-            name="name",
-            field=models.CharField(max_length=64, unique=True),
+            model_name="projectstatuschoice", name="name", field=models.CharField(max_length=64, unique=True)
         ),
         migrations.AlterField(
-            model_name="projectuserrolechoice",
-            name="name",
-            field=models.CharField(max_length=64, unique=True),
+            model_name="projectuserrolechoice", name="name", field=models.CharField(max_length=64, unique=True)
         ),
         migrations.AlterField(
-            model_name="projectuserstatuschoice",
-            name="name",
-            field=models.CharField(max_length=64, unique=True),
+            model_name="projectuserstatuschoice", name="name", field=models.CharField(max_length=64, unique=True)
         ),
     ]

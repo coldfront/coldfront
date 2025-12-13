@@ -26,9 +26,7 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.AlterField(
-            model_name="grant",
-            name="direct_funding",
-            field=coldfront.core.grant.models.MoneyField(max_length=100),
+            model_name="grant", name="direct_funding", field=coldfront.core.grant.models.MoneyField(max_length=100)
         ),
         migrations.AlterField(
             model_name="grant",
@@ -48,9 +46,7 @@ class Migration(migrations.Migration):
             field=coldfront.core.grant.models.MoneyField(max_length=100),
         ),
         migrations.AlterField(
-            model_name="historicalgrant",
-            name="history_date",
-            field=models.DateTimeField(db_index=True),
+            model_name="historicalgrant", name="history_date", field=models.DateTimeField(db_index=True)
         ),
         migrations.AlterField(
             model_name="historicalgrant",

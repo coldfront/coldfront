@@ -65,20 +65,12 @@ class Migration(migrations.Migration):
                 "ordering": ["name"],
             },
         ),
+        migrations.AddField(model_name="allocation", name="is_changeable", field=models.BooleanField(default=False)),
         migrations.AddField(
-            model_name="allocation",
-            name="is_changeable",
-            field=models.BooleanField(default=False),
+            model_name="allocationattributetype", name="is_changeable", field=models.BooleanField(default=False)
         ),
         migrations.AddField(
-            model_name="allocationattributetype",
-            name="is_changeable",
-            field=models.BooleanField(default=False),
-        ),
-        migrations.AddField(
-            model_name="historicalallocation",
-            name="is_changeable",
-            field=models.BooleanField(default=False),
+            model_name="historicalallocation", name="is_changeable", field=models.BooleanField(default=False)
         ),
         migrations.AddField(
             model_name="historicalallocationattributetype",

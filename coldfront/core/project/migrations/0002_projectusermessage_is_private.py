@@ -14,8 +14,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="projectusermessage",
-            name="is_private",
-            field=models.BooleanField(default=True),
+            model_name="projectusermessage", name="is_private", field=models.BooleanField(default=True)
         ),
     ]

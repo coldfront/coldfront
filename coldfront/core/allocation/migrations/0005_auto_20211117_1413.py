@@ -9,11 +9,7 @@ from django.db import migrations
 
 def create_status_choices(apps, schema_editor):
     AllocationChangeStatusChoice = apps.get_model("allocation", "AllocationChangeStatusChoice")
-    for choice in (
-        "Pending",
-        "Approved",
-        "Denied",
-    ):
+    for choice in ("Pending", "Approved", "Denied"):
         AllocationChangeStatusChoice.objects.get_or_create(name=choice)
 
 

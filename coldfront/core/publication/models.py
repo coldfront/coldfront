@@ -45,10 +45,7 @@ class Publication(TimeStampedModel):
     journal = models.CharField(max_length=1024)
     unique_id = models.CharField(max_length=255, null=True, blank=True)
     source = models.ForeignKey(PublicationSource, on_delete=models.CASCADE)
-    STATUS_CHOICES = (
-        ("Active", "Active"),
-        ("Archived", "Archived"),
-    )
+    STATUS_CHOICES = (("Active", "Active"), ("Archived", "Archived"))
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="Active")
     history = HistoricalRecords()
 

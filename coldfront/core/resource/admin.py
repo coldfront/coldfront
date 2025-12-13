@@ -16,26 +16,14 @@ from coldfront.core.resource.models import (
 
 @admin.register(AttributeType)
 class AttributeTypeAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "created",
-        "modified",
-    )
+    list_display = ("name", "created", "modified")
     search_fields = ("name",)
 
 
 @admin.register(ResourceType)
 class ResourceTypeAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "description",
-        "created",
-        "modified",
-    )
-    search_fields = (
-        "name",
-        "description",
-    )
+    list_display = ("name", "description", "created", "modified")
+    search_fields = ("name", "description")
 
 
 @admin.register(ResourceAttributeType)
@@ -50,11 +38,7 @@ class ResourceAttributeTypeAdmin(SimpleHistoryAdmin):
         "created",
         "modified",
     )
-    search_fields = (
-        "name",
-        "attribute_type__name",
-        "resource_type__name",
-    )
+    search_fields = ("name", "attribute_type__name", "resource_type__name")
     list_filter = ("attribute_type__name", "name", "is_required", "is_unique_per_resource", "is_value_unique")
 
     def attribute_type_name(self, obj):
@@ -63,10 +47,7 @@ class ResourceAttributeTypeAdmin(SimpleHistoryAdmin):
 
 class ResourceAttributeInline(admin.TabularInline):
     model = ResourceAttribute
-    fields_change = (
-        "resource_attribute_type",
-        "value",
-    )
+    fields_change = ("resource_attribute_type", "value")
     extra = 0
 
     def get_fields(self, request, obj):
@@ -128,14 +109,7 @@ class ResourceAdmin(SimpleHistoryAdmin):
 
 @admin.register(ResourceAttribute)
 class ResourceAttributeAdmin(SimpleHistoryAdmin):
-    list_display = (
-        "pk",
-        "resource_name",
-        "value",
-        "resource_attribute_type_name",
-        "created",
-        "modified",
-    )
+    list_display = ("pk", "resource_name", "value", "resource_attribute_type_name", "created", "modified")
     search_fields = ("resource__name", "resource_attribute_type__name", "value")
     list_filter = ("resource_attribute_type__name",)
 
