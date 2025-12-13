@@ -408,7 +408,8 @@ class Allocation(TimeStampedModel):
         Params:
             user (User|AllocationUser): User to remove.
             signal_sender (str): Sender for the `allocation_remove_user` signal.
-            ignore_user_not_found (bool):
+            ignore_user_not_found (bool): If enabled, logs a warning that the allocation user for
+                the provded user couldn't be found and returns. Otherwise, raises `AllocationUser.DoesNotExist`.
         """
         if isinstance(user, AllocationUser):
             allocation_user = user
