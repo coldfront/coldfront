@@ -915,9 +915,13 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
             if not formset.is_valid():
                 for error in formset.errors:
                     messages.error(request, error)
+                for error in formset.non_form_errors():
+                    messages.error(request, error)
 
             if not allocation_formset.is_valid():
                 for error in allocation_formset.errors:
+                    messages.error(request, error)
+                for error in allocation_formset.non_form_errors():
                     messages.error(request, error)
 
         return redirect(project_obj)
@@ -1012,6 +1016,8 @@ class ProjectRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
                 messages.success(request, "Removed {} users from project.".format(remove_users_count))
         else:
             for error in formset.errors:
+                messages.error(request, error)
+            for error in formset.non_form_errors():
                 messages.error(request, error)
 
         return redirect(project_obj)
@@ -1507,6 +1513,8 @@ class ProjectAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Templa
             messages.success(request, "Deleted {} attributes from project.".format(attributes_deleted_count))
         else:
             for error in formset.errors:
+                messages.error(request, error)
+            for error in formset.non_form_errors():
                 messages.error(request, error)
 
         return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": pk}))
