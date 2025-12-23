@@ -9,12 +9,6 @@ export function initForm(): void {
     resetForm($('#filter_form'));
   });
 
-  $('#expand_button').click(function () {
-    $('#collapseOne').collapse();
-    const icon = $('#plus_minus');
-    icon.toggleClass('fa-plus fa-minus');
-  });
-
   const forms = [
     ['selectAll', 'attributeform-'],
     ['selectAllAllocations', 'allocationform-'],

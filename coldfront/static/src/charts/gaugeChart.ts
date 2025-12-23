@@ -39,12 +39,12 @@ function createGaugeChart(
           data: [value, total],
           // This uses bootstraps colors
           backgroundColor: [
-            getCSSVariable('--success'),
-            getCSSVariable('--secondary'),
+            getCSSVariable('--bs-success'),
+            getCSSVariable('--bs-secondary'),
           ],
           borderColor: [
-            getCSSVariable('--success'),
-            getCSSVariable('--secondary'),
+            getCSSVariable('--bs-success'),
+            getCSSVariable('--bs-secondary'),
           ],
           borderWidth: 1,
         },

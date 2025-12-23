@@ -256,7 +256,7 @@ name = "coldfront"
 version = "1.1.7"
 source = { editable = "." }
 dependencies = [
-    { name = "crispy-bootstrap4" },
+    { name = "crispy-bootstrap5" },
     { name = "django" },
     { name = "django-crispy-forms" },
     { name = "django-environ" },
@@ -323,7 +323,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "crispy-bootstrap4", specifier = ">=2024.10" },
+    { name = "crispy-bootstrap5", specifier = ">=2025.6" },
     { name = "cryptography", marker = "extra == 'freeipa'", specifier = "==43.0.3" },
     { name = "dbus-python", marker = "extra == 'freeipa'", specifier = ">=1.4.0" },
     { name = "django", specifier = ">5.2,<6" },
@@ -385,16 +385,16 @@ wheels = [
 ]
 
 [[package]]
-name = "crispy-bootstrap4"
+name = "crispy-bootstrap5"
 version = "2025.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "django-crispy-forms" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/99/f7/5dea1c2ad806fb28b42da08f1dc19ac172e909a63bcef0734bfdf811fedf/crispy_bootstrap4-2025.6.tar.gz", hash = "sha256:69066c33fc9c8841cbd8741a7ec99ad9234f12877b4549490031a47c2c1abd79", size = 35938, upload-time = "2025-06-08T08:04:54.872Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/97/30/36cc4144b6dff91bb54490a3b474897b7469bcda9517bf9f54681ea91011/crispy_bootstrap5-2025.6.tar.gz", hash = "sha256:f1bde7cac074c650fc82f31777d4a4cfd0df2512c68bc4128f259c75d3daada4", size = 23950, upload-time = "2025-06-08T07:43:35.461Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/f9/a43aeecf5bf7c9b05eccf9f35d1878291a1f2c5ffc501bd96b8759fb6b10/crispy_bootstrap4-2025.6-py3-none-any.whl", hash = "sha256:64bf732b27690c7147bfaa154b4b690217bee81c71731daf5da73de00ee01943", size = 23281, upload-time = "2025-06-08T08:04:53.622Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/d4/8cf1ba773a91fc17bab1fd46b75bbdef780c4cccbbb8230e617980a0362c/crispy_bootstrap5-2025.6-py3-none-any.whl", hash = "sha256:a343aa128b4383f35f00295b94de2b10862f2a4f24eda21fa6ead45234c07050", size = 24794, upload-time = "2025-06-08T07:43:34.206Z" },
 ]
 
 [[package]]

@@ -78,7 +78,7 @@ Allocation Change Detail
                 <td>
                   {{ allocation_change.allocation.end_date }}
                   {% if allocation_change.allocation.is_locked and allocation_change.allocation.status.name == 'Approved' and allocation_change.allocation.expires_in <= 60 and allocation_change.allocation.expires_in >= 0 %}
-                  <span class="badge badge-warning"><i class="far fa-clock" aria-hidden="true"></i>
+                  <span class="badge bg-warning"><i class="far fa-clock" aria-hidden="true"></i>
                     Expires in {{allocation_change.allocation.expires_in}} day{{allocation_change.allocation.expires_in|pluralize}} - Not renewable
                   </span>
                   {% endif %}
@@ -145,7 +145,7 @@ Allocation Change Detail
                     {% if request.user.is_superuser %}
                       <td>
                         {{form.new_value}}
-                        <a href="{% url 'allocation-attribute-change-delete' form.change_pk.value %}" class="float-right confirm-delete">
+                        <a href="{% url 'allocation-attribute-change-delete' form.change_pk.value %}" class="float-end confirm-delete">
                           <i class="far fa-trash-alt fa-lg"></i>
                         </a>
                       </td>
@@ -174,7 +174,7 @@ Allocation Change Detail
     </div>
   </div>
 
-  <p class="card-text text-justify">{{allocation_change_form.justification | as_crispy_field}}</p>
+  <p class="card-text">{{allocation_change_form.justification | as_crispy_field}}</p>
 
   <hr/>
 
@@ -186,12 +186,12 @@ Allocation Change Detail
       <div class="card-body">
         {% csrf_token %}
         {{note_form.notes | as_crispy_field}}
-        <div class="d-inline float-right">
+        <div class="d-inline float-end">
           {% if allocation_change.status.name == 'Pending' %}
-            <button type="submit" name="action" value="approve" class="btn btn-success float-right ml-1">Approve</button>
-            <button type="submit" name="action" value="deny" class="btn btn-danger float-right ml-1">Deny</button>
+            <button type="submit" name="action" value="approve" class="btn btn-success float-end ml-1">Approve</button>
+            <button type="submit" name="action" value="deny" class="btn btn-danger float-end ml-1">Deny</button>
           {% endif %}
-            <button type="submit" name="action" value="update" class="btn btn-primary float-right">
+            <button type="submit" name="action" value="update" class="btn btn-primary float-end">
               <i class="fas fa-sync" aria-hidden="true"></i> Update
             </button>
         </div>

@@ -24,7 +24,7 @@ classifiers = [
     'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
 ]
 dependencies = [
-    "crispy-bootstrap4>=2024.10",
+    "crispy-bootstrap5>=2025.6",
     "django>5.2,<6",
     "django-crispy-forms>=2.3",
     "django-environ>=0.12.0",

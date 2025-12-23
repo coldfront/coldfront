@@ -17,7 +17,9 @@ Add Users to Project
     <form method="post" id="post-form">
       {% csrf_token %}
       {{ user_search_form|crispy }}
-      <button id="search-button" type="submit" class="btn btn-success btn-block"><i class="fas fa-search" aria-hidden="true"></i> Search</button>
+      <div class="d-grid gap-2">
+         <button id="search-button" type="submit" class="btn btn-success"><i class="fas fa-search" aria-hidden="true"></i> Search</button>
+      </div>
     </form>
   </div>
 </div>
@@ -84,10 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // handle a non-successful response
         error : function(xhr,errmsg,err) {
             if(xhr.status == 403 || xhr.status == 401) {
-                $('#search_results_inner').html("<div class='alert alert-danger'>Your session expired. Please login again. <a href='#' class='close'>&times;</a></div>");
+                $('#search_results_inner').html("<div class='alert alert-danger'>Your session expired. Please login again. <a href='#' class='close'></a></div>");
             } else {
                 $('#search_results_inner').html("<div class='alert alert-danger'>Oops! We have encountered an error: "+errmsg+
-                    " <a href='#' class='close'>&times;</a></div>"); // add the error to the dom
+                    " <a href='#' class='close'></a></div>"); // add the error to the dom
             }
             console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
         }
@@ -96,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     $('#search_results').hide();
     $('#selected_users').hide();
-    $('[data-toggle="popover"]').popover();
 });
 </script>
 {% endblock %}

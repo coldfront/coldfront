@@ -106,12 +106,12 @@ Allocation Detail
                 {{ allocation.end_date }}
               {% endif %}
               {% if allocation.is_locked and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
-              <span class="badge badge-warning"><i class="far fa-clock" aria-hidden="true"></i>
+              <span class="badge bg-warning"><i class="far fa-clock" aria-hidden="true"></i>
                 Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} - Not renewable
               </span>
               {% elif is_allowed_to_update_project and settings.ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
                 <a href="{% url 'allocation-renew' allocation.pk %}">
-                <span class="badge badge-warning"><i class="fas fa-redo-alt" aria-hidden="true"></i>
+                <span class="badge bg-warning"><i class="fas fa-redo-alt" aria-hidden="true"></i>
                 Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} - Click to renew
                 </span>
                 </a>
@@ -163,10 +163,10 @@ Allocation Detail
         </table>
       </div>
       {% if request.user.is_superuser %}
-      <div class="float-right">
+      <div class="float-end">
         {% if allocation.status.name == 'New' or allocation.status.name == 'Renewal Requested' %}
-          <button type="submit" name="action" value="approve" class="btn btn-success mr-1 confirm-activate">Approve</button>
-          <button type="submit" name="action" value="deny" class="btn btn-danger mr-1 confirm-deny">Deny</button>
+          <button type="submit" name="action" value="approve" class="btn btn-success me-1 confirm-activate">Approve</button>
+          <button type="submit" name="action" value="deny" class="btn btn-danger me-1 confirm-deny">Deny</button>
         {% endif %}
         <button type="submit" name="action" value="update" class="btn btn-primary"><i class="fas fa-sync" aria-hidden="true"></i> Update</button>
       {% endif %}
@@ -214,7 +214,7 @@ Allocation Detail
   <div class="card mb-3">
     <div class="card-header">
       <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Attributes</h3>
-      <div class="float-right">
+      <div class="float-end">
         {% if request.user.is_superuser %}
           {% if attributes %}
             <a class="btn btn-info" href="{% url 'allocation-attribute-edit' allocation.pk %}" role="button">
@@ -264,7 +264,7 @@ Allocation Detail
       {% if attributes_with_usage %}
         <hr>
         {% for attribute in attributes_with_usage %}
-          <div class="card mb-3 mr-1">
+          <div class="card mb-3 me-1">
             <div class="card-body">
               <h4 class="card-title">{{attribute}}</h4>
               <div class="chart-container mx-auto" style="text-align: center; position: relative; width:40%">
@@ -286,10 +286,10 @@ Allocation Detail
 <!-- Start Allocation Change Requests -->
 <div class="card mb-3">
   <div class="card-header">
-    <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Change Requests</h3> <span class="badge badge-secondary">{{allocation_changes.count}}</span>
-    <div class="float-right">
+    <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Change Requests</h3> <span class="badge bg-secondary">{{allocation_changes.count}}</span>
+    <div class="float-end">
       {% if request.user.is_superuser and allocation.is_changeable and not allocation.is_locked and is_allowed_to_update_project and allocation.status.name in 'Active, Renewal Requested, Payment Pending, Payment Requested, Paid' %}
-        <a class="btn btn-primary float-right" href="{% url 'allocation-change' allocation.pk %}" role="button">
+        <a class="btn btn-primary float-end" href="{% url 'allocation-change' allocation.pk %}" role="button">
           Request Change
         </a>
       {% endif %}
@@ -325,7 +325,7 @@ Allocation Detail
                     <td></td>
                   {% endif %}
                   {% if can_edit_allocation_changes %}
-                    <td><a href="{% url 'allocation-change-detail' change_request.pk %}"><i class="far fa-edit" aria-hidden="true"></i><span class="sr-only">Edit</span></a></td>
+                    <td><a href="{% url 'allocation-change-detail' change_request.pk %}"><i class="far fa-edit" aria-hidden="true"></i><span class="visually-hidden">Edit</span></a></td>
                   {% endif %}
                 </tr>
             {% endfor %}
@@ -345,8 +345,8 @@ Allocation Detail
 <div class="card mb-3">
   <div class="card-header">
     <h3 class="d-inline"><i class="fas fa-users" aria-hidden="true"></i> Users in Allocation</h3>
-    <span class="badge badge-secondary">{{allocation_users.count}}</span>
-    <div class="float-right">
+    <span class="badge bg-secondary">{{allocation_users.count}}</span>
+    <div class="float-end">
       {% if allocation.project.status.name != 'Archived' and is_allowed_to_update_project and allocation.status.name in 'Active,New,Renewal Requested' %}
         <a class="btn btn-success" href="{% url 'allocation-add-users' allocation.pk %}" role="button">
           <i class="fas fa-user-plus" aria-hidden="true"></i> Add Users
@@ -399,8 +399,8 @@ Allocation Detail
 <div class="card mb-3">
   <div class="card-header">
     <h3 class="d-inline"><i class="fas fa-users" aria-hidden="true"></i> Notifications</h3>
-    <span class="badge badge-secondary">{{notes.count}}</span>
-    <div class="float-right">
+    <span class="badge bg-secondary">{{notes.count}}</span>
+    <div class="float-end">
       {% if request.user.is_superuser %}
         <a class="btn btn-success" href="{% url 'allocation-note-add' allocation.pk %}" role="button">
           <i class="fas fa-plus" aria-hidden="true"></i> Add Notification

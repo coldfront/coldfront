@@ -13,7 +13,7 @@
     "check": "npm run lint && npm run format:check"
   },
   "devDependencies": {
-    "@types/bootstrap": "^4.6.2",
+    "@types/bootstrap": "^5.2.10",
     "@types/chart.js": "^2.9.41",
     "@types/jquery": "^3.5.33",
     "@types/select2": "^4.0.63",
@@ -30,10 +30,10 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^4.6.2",
+    "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
     "datatables.net": "^2.3.5",
-    "datatables.net-bs4": "^2.3.5",
+    "datatables.net-bs5": "^2.3.5",
     "flatpickr": "^4.6.13",
     "htmx.org": "^2.0.8",
     "jquery": "^3.7.1",

@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import DataTable from 'datatables.net-bs4';
+import DataTable from 'datatables.net-bs5';
 
 export function initDataTable(): void {
   const dtables = document.querySelectorAll<HTMLDivElement>(

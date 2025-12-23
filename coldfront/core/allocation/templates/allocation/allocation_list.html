@@ -17,12 +17,12 @@ Allocation List
   <div class="mb-3" id="accordion">
     <div class="card">
       <div class="card-header">
-        <a id="expand_button" role="button" class="card-link " data-toggle="collapse" href="#collapseOne">
+        <a id="expand_button" role="button" class="card-link " data-bs-toggle="collapse" href="#collapseOne">
           <i class="fas fa-filter" aria-hidden="true"></i> Filter
-          <i id="plus_minus" class="fas {{expand_accordion|get_icon}} float-right"></i>
+          <i id="plus_minus" class="fas {{expand_accordion|get_icon}} float-end"></i>
         </a>
       </div>
-      <div id="collapseOne" class="collapse {{expand_accordion}}" data-parent="#accordion">
+      <div id="collapseOne" class="collapse {{expand_accordion}}" data-bs-parent="#accordion">
         <div class="card-body">
           <form id="filter_form" method="GET" action="{% url 'allocation-list' %}" autocomplete="off">
             {{ allocation_search_form|crispy }}
@@ -44,8 +44,8 @@ Allocation List
         <tr>
           <th scope="col" class="text-nowrap">
             ID
-            <a href="?order_by=id&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="sr-only">Sort ID asc</span></a>
-            <a href="?order_by=id&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="sr-only">Sort ID desc</span></a>
+            <a href="?order_by=id&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="visually-hidden">Sort ID asc</span></a>
+            <a href="?order_by=id&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="visually-hidden">Sort ID desc</span></a>
           </th>
           <th scope="col" class="text-nowrap">
             Project
@@ -53,24 +53,24 @@ Allocation List
           <th scope="col" class="text-nowrap">
             PI
             <a href="?order_by=project__pi__username&direction=asc&{{filter_parameters}}"><i
-                class="fas fa-sort-up" aria-hidden="true"></i><span class="sr-only">Sort PI asc</span></a>
+                class="fas fa-sort-up" aria-hidden="true"></i><span class="visually-hidden">Sort PI asc</span></a>
             <a href="?order_by=project__pi__username&direction=des&{{filter_parameters}}"><i
-                class="fas fa-sort-down" aria-hidden="true"></i><span class="sr-only">Sort PI desc</span></a>
+                class="fas fa-sort-down" aria-hidden="true"></i><span class="visually-hidden">Sort PI desc</span></a>
           </th>
           <th scope="col" class="text-nowrap">
             Resource Name
-            <a href="?order_by=resources&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="sr-only">Sort Resource Name asc</span></a>
-            <a href="?order_by=resources&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="sr-only">Sort Resource Name desc</span></a>
+            <a href="?order_by=resources&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="visually-hidden">Sort Resource Name asc</span></a>
+            <a href="?order_by=resources&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="visually-hidden">Sort Resource Name desc</span></a>
           </th>
           <th scope="col" class="text-nowrap">
             Status
-            <a href="?order_by=status__name&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="sr-only">Sort Status asc</span></a>
-            <a href="?order_by=status__name&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="sr-only">Sort Status desc</span></a>
+            <a href="?order_by=status__name&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="visually-hidden">Sort Status asc</span></a>
+            <a href="?order_by=status__name&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="visually-hidden">Sort Status desc</span></a>
           </th>
           <th scope="col" class="text-nowrap">
             End Date
-            <a href="?order_by=end_date&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="sr-only">Sort End Date asc</span></a>
-            <a href="?order_by=end_date&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="sr-only">Sort End Date desc</span></a>
+            <a href="?order_by=end_date&direction=asc&{{filter_parameters}}"><i class="fas fa-sort-up" aria-hidden="true"></i><span class="visually-hidden">Sort End Date asc</span></a>
+            <a href="?order_by=end_date&direction=des&{{filter_parameters}}"><i class="fas fa-sort-down" aria-hidden="true"></i><span class="visually-hidden">Sort End Date desc</span></a>
           </th>
         </tr>
       </thead>
@@ -90,7 +90,7 @@ Allocation List
       </tbody>
     </table>
     {% if is_paginated %} Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-      <ul class="pagination float-right mr-3">
+      <ul class="pagination float-end me-3">
         {% if page_obj.has_previous %}
           <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{filter_parameters_with_order_by}}">Previous</a></li>
         {% else %}
