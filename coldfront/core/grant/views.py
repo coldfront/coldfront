@@ -43,6 +43,7 @@ class GrantCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             return True
 
         messages.error(self.request, "You do not have permission to add a new grant to this project.")
+        return False
 
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("project_pk"))
@@ -52,8 +53,7 @@ class GrantCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         ]:
             messages.error(request, "You cannot add grants to an archived project.")
             return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
-        else:
-            return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form_data = form.cleaned_data
@@ -104,6 +104,7 @@ class GrantUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return True
 
         messages.error(self.request, "You do not have permission to update grant from this project.")
+        return False
 
     model = Grant
     template_name_suffix = "_update_form"
@@ -146,6 +147,7 @@ class GrantDeleteGrantsView(LoginRequiredMixin, UserPassesTestMixin, TemplateVie
             return True
 
         messages.error(self.request, "You do not have permission to delete grants from this project.")
+        return False
 
     def get_grants_to_delete(self, project_obj):
         grants_to_delete = [
@@ -214,6 +216,7 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             return True
 
         messages.error(self.request, "You do not have permission to view all grants.")
+        return False
 
     def get_grants(self):
         grants = Grant.objects.select_related("project", "project__pi").all().order_by("-total_amount_awarded")
@@ -320,10 +323,9 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             response = StreamingHttpResponse((writer.writerow(row) for row in rows), content_type="text/csv")
             response["Content-Disposition"] = 'attachment; filename="grants.csv"'
             return response
-        else:
-            for error in formset.errors:
-                messages.error(request, error)
-            return HttpResponseRedirect(reverse("grant-report"))
+        for error in formset.errors:
+            messages.error(request, error)
+        return HttpResponseRedirect(reverse("grant-report"))
 
 
 class GrantDownloadView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -338,6 +340,7 @@ class GrantDownloadView(LoginRequiredMixin, UserPassesTestMixin, View):
             return True
 
         messages.error(self.request, "You do not have permission to download all grants.")
+        return False
 
     def get(self, request):
         header = [

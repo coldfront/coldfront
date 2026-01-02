@@ -15,7 +15,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.forms import formset_factory
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
@@ -537,6 +537,8 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
         ).exists():
             return True
 
+        return False
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.get("pk")
@@ -587,6 +589,8 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
         if self.request.user.userprofile.is_pi:
             return True
+
+        return False
 
     def form_valid(self, form):
         project_obj = form.save(commit=False)
@@ -640,6 +644,8 @@ class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestM
         ).exists():
             return True
 
+        return False
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
 
@@ -656,8 +662,7 @@ class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestM
         ]:
             messages.error(request, "You cannot update an archived project.")
             return redirect(project_obj.pk)
-        else:
-            return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         # project signals
@@ -683,6 +688,8 @@ class ProjectAddUsersSearchView(LoginRequiredMixin, UserPassesTestMixin, Templat
         ).exists():
             return True
 
+        return False
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project.objects.select_related("status"), pk=self.kwargs.get("pk"))
         if project_obj.status.name not in [
@@ -691,8 +698,7 @@ class ProjectAddUsersSearchView(LoginRequiredMixin, UserPassesTestMixin, Templat
         ]:
             messages.error(request, "You cannot add users to an archived project.")
             return redirect(project_obj.pk)
-        else:
-            return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -720,6 +726,8 @@ class ProjectAddUsersSearchResultsView(LoginRequiredMixin, UserPassesTestMixin, 
         ).exists():
             return True
 
+        return False
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project.objects.select_related("status"), pk=self.kwargs.get("pk"))
         if project_obj.status.name not in [
@@ -728,8 +736,7 @@ class ProjectAddUsersSearchResultsView(LoginRequiredMixin, UserPassesTestMixin, 
         ]:
             messages.error(request, "You cannot add users to an archived project.")
             return redirect(project_obj.pk)
-        else:
-            return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_initial_data(self, project_obj):
         allocation_objs = project_obj.allocation_set.select_related("status").filter(
@@ -819,6 +826,8 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
         ).exists():
             return True
 
+        return False
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         if project_obj.status.name not in [
@@ -827,8 +836,7 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
         ]:
             messages.error(request, "You cannot add users to an archived project.")
             return redirect(project_obj.pk)
-        else:
-            return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_initial_data(self, project_obj):
         allocation_objs = project_obj.allocation_set.select_related("status").filter(
@@ -956,6 +964,8 @@ class ProjectRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         ).exists():
             return True
 
+        return False
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         if project_obj.status.name not in [
@@ -964,8 +974,7 @@ class ProjectRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         ]:
             messages.error(request, "You cannot remove users from an archived project.")
             return redirect(project_obj)
-        else:
-            return super().dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_users_to_remove(self, project_obj):
         users_to_remove = [
@@ -1050,6 +1059,8 @@ class ProjectUserDetail(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         ).exists():
             return True
 
+        return False
+
     def get(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         project_user_obj = get_object_or_404(ProjectUser, pk=self.kwargs.get("project_user_pk"))
@@ -1107,6 +1118,13 @@ class ProjectUserDetail(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
                         "project-user-detail", kwargs={"pk": project_obj.pk, "project_user_pk": project_user_obj.pk}
                     )
                 )
+            context = {}
+            context["project_obj"] = project_obj
+            context["project_user_update_form"] = project_user_update_form
+            context["project_user_obj"] = project_user_obj
+
+            return render(request, self.template_name, context)
+        return HttpResponseNotFound("Project user does not exist.")
 
 
 @login_required
@@ -1132,20 +1150,17 @@ def project_update_email_notification(request):
 
         if allowed is False:
             return HttpResponse("not allowed", status=403)
-        else:
-            checked = data.get("checked")
-            if checked == "true":
-                project_user_obj.enable_notifications = True
-                project_user_obj.save()
-                return HttpResponse("checked", status=200)
-            elif checked == "false":
-                project_user_obj.enable_notifications = False
-                project_user_obj.save()
-                return HttpResponse("unchecked", status=200)
-            else:
-                return HttpResponse("no checked", status=400)
-    else:
-        return HttpResponse("no POST", status=400)
+        checked = data.get("checked")
+        if checked == "true":
+            project_user_obj.enable_notifications = True
+            project_user_obj.save()
+            return HttpResponse("checked", status=200)
+        if checked == "false":
+            project_user_obj.enable_notifications = False
+            project_user_obj.save()
+            return HttpResponse("unchecked", status=200)
+        return HttpResponse("no checked", status=400)
+    return HttpResponse("no POST", status=400)
 
 
 class ProjectReviewView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -1168,6 +1183,7 @@ class ProjectReviewView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
             return True
 
         messages.error(self.request, "You do not have permissions to review this project.")
+        return False
 
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
@@ -1271,6 +1287,7 @@ class ProjectReviewListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
             return True
 
         messages.error(self.request, "You do not have permission to review pending project reviews.")
+        return False
 
 
 class ProjectReviewCompleteView(LoginRequiredMixin, UserPassesTestMixin, View):
@@ -1286,6 +1303,7 @@ class ProjectReviewCompleteView(LoginRequiredMixin, UserPassesTestMixin, View):
             return True
 
         messages.error(self.request, "You do not have permission to mark a pending project review as completed.")
+        return False
 
     def get(self, request, project_review_pk):
         project_review_obj = get_object_or_404(ProjectReview, pk=project_review_pk)
@@ -1315,6 +1333,7 @@ class ProjectReviewEmailView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             return True
 
         messages.error(self.request, "You do not have permission to send email for a pending project review.")
+        return False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1370,8 +1389,8 @@ class ProjectNoteCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
 
         if self.request.user.is_superuser:
             return True
-        else:
-            messages.error(self.request, "You do not have permission to add project notes.")
+        messages.error(self.request, "You do not have permission to add project notes.")
+        return False
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1423,6 +1442,7 @@ class ProjectAttributeCreateView(LoginRequiredMixin, UserPassesTestMixin, Create
             return True
 
         messages.error(self.request, "You do not have permission to add project attributes.")
+        return False
 
     def get_initial(self):
         initial = super().get_initial()
@@ -1470,6 +1490,7 @@ class ProjectAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Templa
             return True
 
         messages.error(self.request, "You do not have permission to add project attributes.")
+        return False
 
     def get_avail_attrs(self, project_obj):
         avail_attrs = ProjectAttribute.objects.select_related("proj_attr_type").filter(project=project_obj)
@@ -1541,6 +1562,8 @@ class ProjectAttributeUpdateView(LoginRequiredMixin, UserPassesTestMixin, Templa
         ).exists():
             return True
 
+        return False
+
     def get(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         project_attribute_pk = self.kwargs.get("project_attribute_pk")
@@ -1563,6 +1586,7 @@ class ProjectAttributeUpdateView(LoginRequiredMixin, UserPassesTestMixin, Templa
             context["project_attribute_obj"] = project_attribute_obj
 
             return render(request, self.template_name, context)
+        return HttpResponseNotFound("This project has not attributes.")
 
     def post(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
@@ -1597,12 +1621,14 @@ class ProjectAttributeUpdateView(LoginRequiredMixin, UserPassesTestMixin, Templa
 
                 messages.success(request, "Attribute Updated.")
                 return redirect(project_obj)
-            else:
-                for error in project_attribute_update_form.errors.values():
-                    messages.error(request, error)
-                return HttpResponseRedirect(
-                    reverse(
-                        "project-attribute-update",
-                        kwargs={"pk": project_obj.pk, "project_attribute_pk": project_attribute_obj.pk},
-                    )
+            for error in project_attribute_update_form.errors.values():
+                messages.error(request, error)
+            return HttpResponseRedirect(
+                reverse(
+                    "project-attribute-update",
+                    kwargs={"pk": project_obj.pk, "project_attribute_pk": project_attribute_obj.pk},
                 )
+            )
+
+        messages.error(request, "This project has not attributes which belong to the PI.")
+        return HttpResponseNotFound("This project has not attributes which belong to the PI.")

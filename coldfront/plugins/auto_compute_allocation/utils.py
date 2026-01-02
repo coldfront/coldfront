@@ -103,7 +103,7 @@ def allocation_auto_compute_fairshare_institution(project_obj, allocation_obj):
             "Additional message - this issue was encountered with project pk %s",
             {project_obj.pk},
         )
-        return None
+        return
     if project_obj.institution in [None, "", "None"]:
         logger.info(
             "None or empty institution value encountered, an institution value is required to set per institution fairshare in the auto_compute_allocation plugin - value found was %s",
@@ -113,7 +113,7 @@ def allocation_auto_compute_fairshare_institution(project_obj, allocation_obj):
             "Additional message - this issue was encountered with project pk",
             {project_obj.pk},
         )
-        return None
+        return
 
     # get the format for the fairshare institution
     fairshare_institution = generate_fairshare_institution_name(project_obj)
