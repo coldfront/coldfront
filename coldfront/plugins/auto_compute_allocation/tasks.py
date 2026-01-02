@@ -34,7 +34,7 @@ AUTO_COMPUTE_ALLOCATION_SLURM_ATTR_TUPLE_TRAINING = import_from_settings(
 
 
 # automatically create a compute allocation, called by project_new signal
-def add_auto_compute_allocation(project_obj):
+def add_auto_compute_allocation(project_obj):  # noqa: C901 # FIXME: method is too complex
     """Method to add a compute allocation automatically upon project creation - uses signals for project creation"""
 
     # if project_code not enabled or None or empty, print appropriate message and stop
