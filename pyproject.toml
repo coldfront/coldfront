@@ -106,7 +106,7 @@ publish-url = "https://test.pypi.org/legacy/"
 explicit = true
 
 [tool.uv]
-required-version = ">=0.9.13"
+required-version = ">=0.9.13" # Make sure this version matches what is in the Dockerfile
 
 [tool.ruff]
 line-length = 120

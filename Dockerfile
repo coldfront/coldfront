@@ -24,7 +24,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y \
         libglib2.0-dev \
         libsasl2-dev
 
-COPY --from=ghcr.io/astral-sh/uv:0.7 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.9.13 /uv /bin/uv
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_INSTALL_DIR=/python
