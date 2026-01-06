@@ -323,12 +323,7 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         if action == "auto-approve":
             messages.success(
                 request,
-                "Allocation to {} has been ACTIVATED for {} {} ({})".format(
-                    allocation_obj.get_parent_resource,
-                    allocation_obj.project.pi.first_name,
-                    allocation_obj.project.pi.last_name,
-                    allocation_obj.project.pi.username,
-                ),
+                f"Allocation to {allocation_obj.get_parent_resource} has been ACTIVATED for {allocation_obj.project.pi.first_name} {allocation_obj.project.pi.last_name} ({allocation_obj.project.pi.username})",
             )
             return HttpResponseRedirect(reverse("allocation-request-list"))
 
@@ -1699,12 +1694,7 @@ class AllocationChangeDetailView(LoginRequiredMixin, UserPassesTestMixin, FormVi
 
             messages.success(
                 request,
-                "Allocation change request to {} has been DENIED for {} {} ({})".format(
-                    allocation_change_obj.allocation.resources.first(),
-                    allocation_change_obj.allocation.project.pi.first_name,
-                    allocation_change_obj.allocation.project.pi.last_name,
-                    allocation_change_obj.allocation.project.pi.username,
-                ),
+                f"Allocation change request to {allocation_change_obj.allocation.resources.first()} has been DENIED for {allocation_change_obj.allocation.project.pi.first_name} {allocation_change_obj.allocation.project.pi.last_name} ({allocation_change_obj.allocation.project.pi.username})",
             )
 
             send_allocation_customer_email(
@@ -1784,12 +1774,7 @@ class AllocationChangeDetailView(LoginRequiredMixin, UserPassesTestMixin, FormVi
 
             messages.success(
                 request,
-                "Allocation change request to {} has been APPROVED for {} {} ({})".format(
-                    allocation_change_obj.allocation.get_parent_resource,
-                    allocation_change_obj.allocation.project.pi.first_name,
-                    allocation_change_obj.allocation.project.pi.last_name,
-                    allocation_change_obj.allocation.project.pi.username,
-                ),
+                f"Allocation change request to {allocation_change_obj.allocation.get_parent_resource} has been APPROVED for {allocation_change_obj.allocation.project.pi.first_name} {allocation_change_obj.allocation.project.pi.last_name} ({allocation_change_obj.allocation.project.pi.username})",
             )
 
             allocation_change_approved.send(

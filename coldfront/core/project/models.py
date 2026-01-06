@@ -559,7 +559,7 @@ class ProjectAttribute(TimeStampedModel):
             .exclude(pk=self.pk)
             .exists()
         ):
-            raise ValidationError("'{}' attribute already exists for this project.".format(self.proj_attr_type))
+            raise ValidationError(f"'{self.proj_attr_type}' attribute already exists for this project.")
 
         expected_value_type = self.proj_attr_type.attribute_type.name.strip()
 
@@ -591,4 +591,4 @@ class ProjectAttributeUsage(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "{}: {}".format(self.project_attribute.proj_attr_type.name, self.value)
+        return f"{self.project_attribute.proj_attr_type.name}: {self.value}"

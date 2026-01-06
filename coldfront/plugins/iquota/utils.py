@@ -49,7 +49,7 @@ class Iquota:
         token = self.gssclient_token()
 
         headers = {"Authorization": "Negotiate " + token}
-        url = "https://{}:{}/quota?user={}".format(self.IQUOTA_API_HOST, self.IQUOTA_API_PORT, self.username)
+        url = f"https://{self.IQUOTA_API_HOST}:{self.IQUOTA_API_PORT}/quota?user={self.username}"
 
         r = requests.get(url, headers=headers, verify=self.IQUOTA_CA_CERT)
 
@@ -77,7 +77,7 @@ class Iquota:
 
         headers = {"Authorization": "Negotiate " + token}
 
-        url = "https://{}:{}/quota?group={}".format(self.IQUOTA_API_HOST, self.IQUOTA_API_PORT, group)
+        url = f"https://{self.IQUOTA_API_HOST}:{self.IQUOTA_API_PORT}/quota?group={group}"
 
         r = requests.get(url, headers=headers, verify=self.IQUOTA_CA_CERT)
 

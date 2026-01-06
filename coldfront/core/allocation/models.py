@@ -578,7 +578,7 @@ class AllocationAttribute(TimeStampedModel):
             .exists()
         ):
             raise ValidationError(
-                "'{}' attribute already exists for this allocation.".format(self.allocation_attribute_type)
+                f"'{self.allocation_attribute_type}' attribute already exists for this allocation."
             )
 
         expected_value_type = self.allocation_attribute_type.attribute_type.name.strip()
@@ -664,7 +664,7 @@ class AllocationAttributeUsage(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "{}: {}".format(self.allocation_attribute.allocation_attribute_type.name, self.value)
+        return f"{self.allocation_attribute.allocation_attribute_type.name}: {self.value}"
 
 
 class AllocationUserStatusChoice(TimeStampedModel):

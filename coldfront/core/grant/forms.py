@@ -18,14 +18,12 @@ class GrantForm(ModelForm):
             "project",
         ]
         labels = {
-            "percent_credit": "Percent credit to {}".format(CENTER_NAME),
-            "direct_funding": "Direct funding to {}".format(CENTER_NAME),
+            "percent_credit": f"Percent credit to {CENTER_NAME}",
+            "direct_funding": f"Direct funding to {CENTER_NAME}",
         }
         help_texts = {
             "percent_credit": "Percent credit as entered in the sponsored projects form for grant submission as financial credit to the department/unit in the credit distribution section. Enter only digits, decimals, percent symbols, or spaces.",
-            "direct_funding": "Funds budgeted specifically for {} services, hardware, software, and/or personnel. Enter only digits, decimals, commas, dollar signs, or spaces.".format(
-                CENTER_NAME
-            ),
+            "direct_funding": f"Funds budgeted specifically for {CENTER_NAME} services, hardware, software, and/or personnel. Enter only digits, decimals, commas, dollar signs, or spaces.",
             "total_amount_awarded": "Enter only digits, decimals, commas, dollar signs, or spaces.",
         }
 

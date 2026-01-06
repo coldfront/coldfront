@@ -184,7 +184,7 @@ class ResourceAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Templ
                     resource_attribute = ResourceAttribute.objects.get(pk=form_data["pk"])
                     resource_attribute.delete()
 
-            messages.success(request, "Deleted {} attributes from resource.".format(attributes_deleted_count))
+            messages.success(request, f"Deleted {attributes_deleted_count} attributes from resource.")
         else:
             for error in formset.errors:
                 messages.error(request, error)
@@ -289,9 +289,9 @@ class ResourceListView(LoginRequiredMixin, ListView):
                 if value:
                     if isinstance(value, list):
                         for ele in value:
-                            filter_parameters += "{}={}&".format(key, ele)
+                            filter_parameters += f"{key}={ele}&"
                     else:
-                        filter_parameters += "{}={}&".format(key, value)
+                        filter_parameters += f"{key}={value}&"
             context["resource_search_form"] = resource_search_form
         else:
             filter_parameters = None
