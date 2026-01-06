@@ -568,7 +568,7 @@ class AllocationListView(LoginRequiredMixin, ListView):
         order_by = self.request.GET.get("order_by")
         if order_by:
             direction = self.request.GET.get("direction")
-            filter_parameters_with_order_by = filter_parameters + "order_by=%s&direction=%s&" % (order_by, direction)
+            filter_parameters_with_order_by = filter_parameters + f"order_by={order_by}&direction={direction}&"
         else:
             filter_parameters_with_order_by = filter_parameters
 

@@ -56,7 +56,7 @@ class Iquota:
         try:
             usage = r.json()[0]
         except KeyError:
-            raise MissingQuotaError("Missing user quota for username: %s" % (self.username))
+            raise MissingQuotaError(f"Missing user quota for username: {self.username}")
         else:
             user_used = usage["used"]
             user_limit = usage["soft_limit"]

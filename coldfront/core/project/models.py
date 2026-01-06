@@ -471,7 +471,7 @@ class ProjectUser(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "%s %s (%s)" % (self.user.first_name, self.user.last_name, self.user.username)
+        return f"{self.user.first_name} {self.user.last_name} ({self.user.username})"
 
     class Meta:
         unique_together = ("user", "project")
@@ -519,7 +519,7 @@ class ProjectAttributeType(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "%s (%s)" % (self.name, self.attribute_type.name)
+        return f"{self.name} ({self.attribute_type.name})"
 
     def __repr__(self) -> str:
         return str(self)
@@ -575,7 +575,7 @@ class ProjectAttribute(TimeStampedModel):
             validator.validate_date()
 
     def __str__(self):
-        return "%s" % (self.proj_attr_type.name)
+        return f"{self.proj_attr_type.name}"
 
 
 class ProjectAttributeUsage(TimeStampedModel):

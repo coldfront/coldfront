@@ -352,7 +352,7 @@ class Allocation(TimeStampedModel):
         return perm in perms
 
     def __str__(self):
-        return "%s (%s)" % (self.get_parent_resource.name, self.project.pi)
+        return f"{self.get_parent_resource.name} ({self.project.pi})"
 
     def get_eula(self):
         if self.get_resources_as_list:
@@ -536,7 +536,7 @@ class AllocationAttributeType(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "%s" % (self.name)
+        return f"{self.name}"
 
     class Meta:
         ordering = [
@@ -594,7 +594,7 @@ class AllocationAttribute(TimeStampedModel):
             validator.validate_date()
 
     def __str__(self):
-        return "%s" % (self.allocation_attribute_type.name)
+        return f"{self.allocation_attribute_type.name}"
 
     def typed_value(self):
         """
@@ -723,7 +723,7 @@ class AllocationUser(TimeStampedModel):
         return self.status.name == "Active" and self.allocation.status.name in active_allocation_statuses
 
     def __str__(self):
-        return "%s" % (self.user)
+        return f"{self.user}"
 
     class Meta:
         verbose_name_plural = "Allocation User Status"
@@ -803,7 +803,7 @@ class AllocationChangeRequest(TimeStampedModel):
             return self.allocation.resources.filter(is_allocatable=True).first()
 
     def __str__(self):
-        return "%s (%s)" % (self.get_parent_resource.name, self.allocation.project.pi)
+        return f"{self.get_parent_resource.name} ({self.allocation.project.pi})"
 
     def get_absolute_url(self):
         return reverse("allocation-change-detail", kwargs={"pk": self.pk})
@@ -824,4 +824,4 @@ class AllocationAttributeChangeRequest(TimeStampedModel):
     history = HistoricalRecords()
 
     def __str__(self):
-        return "%s" % (self.allocation_attribute.allocation_attribute_type.name)
+        return f"{self.allocation_attribute.allocation_attribute_type.name}"

@@ -44,7 +44,7 @@ def _run_slurm_cmd(cmd, noop=True):
         return
 
     try:
-        result = subprocess.run(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        result = subprocess.run(shlex.split(cmd), capture_output=True, check=True)
     except subprocess.CalledProcessError as e:
         if "Nothing deleted" in str(e.stdout):
             # We tried to delete something that didn't exist. Don't throw error

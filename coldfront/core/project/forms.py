@@ -123,7 +123,7 @@ class ProjectAttributeAddForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ProjectAttributeAddForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         user = kwargs.get("initial").get("user")
         queryset = self.fields["proj_attr_type"].queryset.select_related("attribute_type").order_by(Lower("name"))
         self.fields["proj_attr_type"].queryset = queryset if user.is_superuser else queryset.filter(is_private=False)
@@ -183,5 +183,5 @@ class ProjectCreationForm(forms.ModelForm):
         fields = ["title", "description", "field_of_science"]
 
     def __init__(self, *args, **kwargs):
-        super(ProjectCreationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["field_of_science"].widget.attrs["class"] = "fos-select2"
