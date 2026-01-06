@@ -309,7 +309,7 @@ class AllocationAttributeEditForm(forms.Form):
 class AllocationChangeForm(forms.Form):
     EXTENSION_CHOICES = [(0, "No Extension")]
     for choice in ALLOCATION_CHANGE_REQUEST_EXTENSION_DAYS:
-        EXTENSION_CHOICES.append((choice, "{} days".format(choice)))
+        EXTENSION_CHOICES.append((choice, f"{choice} days"))
 
     end_date_extension = forms.TypedChoiceField(
         label="Request End Date Extension",
@@ -345,7 +345,7 @@ class AllocationAttributeCreateForm(forms.ModelForm):
         fields = "__all__"
 
     def __init__(self, *args, **kwargs):
-        super(AllocationAttributeCreateForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["allocation_attribute_type"].queryset = self.fields["allocation_attribute_type"].queryset.order_by(
             Lower("name")
         )

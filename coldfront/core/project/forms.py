@@ -110,11 +110,9 @@ class ProjectReviewEmailForm(forms.Form):
     def __init__(self, pk, *args, **kwargs):
         super().__init__(*args, **kwargs)
         project_review_obj = get_object_or_404(ProjectReview, pk=int(pk))
-        self.fields["email_body"].initial = "Dear {} {} \n{}".format(
-            project_review_obj.project.pi.first_name,
-            project_review_obj.project.pi.last_name,
-            EMAIL_DIRECTOR_PENDING_PROJECT_REVIEW_EMAIL,
-        )
+        self.fields[
+            "email_body"
+        ].initial = f"Dear {project_review_obj.project.pi.first_name} {project_review_obj.project.pi.last_name} \n{EMAIL_DIRECTOR_PENDING_PROJECT_REVIEW_EMAIL}"
         self.fields["cc"].initial = ", ".join([EMAIL_DIRECTOR_EMAIL_ADDRESS] + EMAIL_ADMIN_LIST)
 
 
@@ -127,7 +125,7 @@ class ProjectAttributeAddForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        super(ProjectAttributeAddForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         user = kwargs.get("initial").get("user")
         queryset = self.fields["proj_attr_type"].queryset.select_related("attribute_type").order_by(Lower("name"))
         self.fields["proj_attr_type"].queryset = queryset if user.is_superuser else queryset.filter(is_private=False)
@@ -187,5 +185,5 @@ class ProjectCreationForm(forms.ModelForm):
         fields = ["title", "description", "field_of_science"]
 
     def __init__(self, *args, **kwargs):
-        super(ProjectCreationForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields["field_of_science"].widget.attrs["class"] = "fos-select2"
