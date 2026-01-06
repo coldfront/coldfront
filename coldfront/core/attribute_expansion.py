@@ -165,9 +165,7 @@ def get_attribute_parameter_value(argument, attribute_parameter_dict, error_text
             value = float(argument)
             return value
         except ValueError:
-            logger.warning(
-                f"Unable to evaluate argument '{argument}' while processing {error_text}, returning None"
-            )
+            logger.warning(f"Unable to evaluate argument '{argument}' while processing {error_text}, returning None")
             return None
 
     # Should not reach here
@@ -254,9 +252,7 @@ def process_attribute_parameter_operation(opcode, oldvalue, argument, error_text
             if argument == "floor":
                 newval = math.floor(oldvalue)
             else:
-                logger.error(
-                    f"Unrecognized function named {argument} in {opcode}= for {error_text}, returning None"
-                )
+                logger.error(f"Unrecognized function named {argument} in {opcode}= for {error_text}, returning None")
                 return None
         # If reached here, we do not recognize opcode
         logger.error(f"Unrecognized operation {opcode}= in {error_text}, returning None")
@@ -330,7 +326,9 @@ def process_attribute_parameter_string(
         value = argument
     else:
         # Extra text to display in diagnostics if error occurs
-        error_text = f"processing attribute_parameter_string={parameter_string} for expansion of attribute {attribute_name}"
+        error_text = (
+            f"processing attribute_parameter_string={parameter_string} for expansion of attribute {attribute_name}"
+        )
         value = get_attribute_parameter_value(
             argument=argument,
             attribute_parameter_dict=attribute_parameter_dict,

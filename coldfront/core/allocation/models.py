@@ -577,9 +577,7 @@ class AllocationAttribute(TimeStampedModel):
             .exclude(id=self.pk)
             .exists()
         ):
-            raise ValidationError(
-                f"'{self.allocation_attribute_type}' attribute already exists for this allocation."
-            )
+            raise ValidationError(f"'{self.allocation_attribute_type}' attribute already exists for this allocation.")
 
         expected_value_type = self.allocation_attribute_type.attribute_type.name.strip()
 
