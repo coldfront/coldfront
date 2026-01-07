@@ -180,10 +180,12 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
                             ]
                         )
                         & (
-                            Q(allocationuser__user=self.request.user)
-                            & Q(allocationuser__status__name__in=["Active", "PendingEULA"])
+                            (
+                                Q(allocationuser__user=self.request.user)
+                                & Q(allocationuser__status__name__in=["Active", "PendingEULA"])
+                            )
+                            | Q(project__projectuser__role__name="Manager")
                         )
-                        | Q(project__projectuser__role__name="Manager")
                     )
                     .distinct()
                     .order_by("-end_date")
