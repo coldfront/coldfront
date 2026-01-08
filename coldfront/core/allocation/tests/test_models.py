@@ -322,7 +322,7 @@ class AllocationModelStrTests(TestCase):
         """When the project associated with this allocation changes the str should change"""
         original_string = str(self.allocation)
 
-        new_project = ProjectFactory()
+        new_project = ProjectFactory(pi=UserFactory(first_name="Unique Name"))
         self.allocation.project = new_project
         self.allocation.save()
 
