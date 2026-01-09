@@ -304,7 +304,7 @@ Project Detail
       {% if attributes_with_usage %}
       <hr>
       {% for attribute in attributes_with_usage %}
-        <div class="card mb-3 mr-1">
+        <div class="card mb-3 me-1">
           <div class="card-body">
             <h4 class="card-title">{{attribute}}</h4>
             <div class="chart-container mx-auto" style="text-align: center; position: relative; width:40%">
@@ -551,10 +551,10 @@ document.addEventListener('DOMContentLoaded', function() {
           checked: checked
         },
         success: function (data) {
-          $("#alert_div").html('<div class="alert alert-success alert-dismissible"><button type="button" class="btn-close" data-bs-dismiss="alert">&times;</button><strong>Success!</strong> Email notification updated.</div>')
+          $("#alert_div").html('<div class="alert alert-success alert-dismissible"><button type="button" class="btn-close" data-bs-dismiss="alert"></button><strong>Success!</strong> Email notification updated.</div>')
         },
         error: function (xhr, status, error) {
-          $("#alert_div").html('<div class="alert alert-danger alert-dismissible"><button type="button" class="btn-close" data-bs-dismiss="alert">&times;</button><strong>Error!</strong> Failed updating email notification.</div>')
+          $("#alert_div").html('<div class="alert alert-danger alert-dismissible"><button type="button" class="btn-close" data-bs-dismiss="alert"></button><strong>Error!</strong> Failed updating email notification.</div>')
         }
       });
     });

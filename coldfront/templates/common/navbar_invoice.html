@@ -1,7 +1,7 @@
 {% load common_tags %}
 
-<li id="navbar-invoice" class="nav-item dropdown {% navbar_active_item 'invoice' request %}">
-  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Invoice</a>
+<li id="navbar-invoice" class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% navbar_active_item 'invoice' request %}" href="#" data-bs-toggle="dropdown">Invoice</a>
   <div class="dropdown-menu">
     <a id="navbar-allocation-invoice-list" class="dropdown-item" href="{% url 'allocation-invoice-list' %}">Allocations
       Invoice List</a>

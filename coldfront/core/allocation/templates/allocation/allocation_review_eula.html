@@ -53,8 +53,8 @@ Review Allocation EULA
           {% csrf_token %}
           <h4 class="d-inline">In order to access <a href="{% url 'allocation-detail' allocation %}">this allocation</a> you must agree to the EULA</h4>
           <div style="padding-top:1em">
-            <button type="submit" name="action" value="accepted_eula" class="btn btn-success mr-1 confirm-eula">I Agree</button>
-            <button type="submit" name="action" value="declined_eula" class="btn btn-danger mr-1 confirm-deny-eula">I Disagree</button>
+            <button type="submit" name="action" value="accepted_eula" class="btn btn-success me-1 confirm-eula">I Agree</button>
+            <button type="submit" name="action" value="declined_eula" class="btn btn-danger me-1 confirm-deny-eula">I Disagree</button>
           </div>
         </form>
         {% elif allocation_user_status == 'DeclinedEULA' %}

@@ -188,8 +188,8 @@ Allocation Change Detail
         {{note_form.notes | as_crispy_field}}
         <div class="d-inline float-end">
           {% if allocation_change.status.name == 'Pending' %}
-            <button type="submit" name="action" value="approve" class="btn btn-success float-end ml-1">Approve</button>
-            <button type="submit" name="action" value="deny" class="btn btn-danger float-end ml-1">Deny</button>
+            <button type="submit" name="action" value="approve" class="btn btn-success float-end ms-1">Approve</button>
+            <button type="submit" name="action" value="deny" class="btn btn-danger float-end ms-1">Deny</button>
           {% endif %}
             <button type="submit" name="action" value="update" class="btn btn-primary float-end">
               <i class="fas fa-sync" aria-hidden="true"></i> Update

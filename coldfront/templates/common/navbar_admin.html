@@ -1,7 +1,7 @@
 {% load common_tags %}
 
-<li id="navbar-admin" class="nav-item dropdown {% navbar_active_item 'admin' request %}">
-  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Admin</a>
+<li id="navbar-admin" class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle {% navbar_active_item 'admin' request %}" href="#" data-bs-toggle="dropdown">Admin</a>
   <div class="dropdown-menu">
     <a class="dropdown-item" href="/admin">ColdFront Administration</a>
     <a id="navbar-user-search" class="dropdown-item" href="{% url 'user-search-home' %}">User Search</a>

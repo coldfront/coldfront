@@ -31,7 +31,7 @@ Project List
           <i id="plus_minus" class="fas {{expand_accordion|get_icon}} float-end"></i>
         </a>
       </div>
-      <div id="collapseOne" class="collapse {{expand_accordion}}" data-parent="#accordion">
+      <div id="collapseOne" class="collapse {{expand_accordion}}" data-bs-parent="#accordion">
         <div class="card-body">
           <form id="filter_form" method="GET" action="{% url 'project-list' %}" autocomplete="off">
             {{ project_search_form|crispy }}
