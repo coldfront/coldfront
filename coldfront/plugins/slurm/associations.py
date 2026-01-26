@@ -70,29 +70,29 @@ class SlurmCluster(SlurmBase):
         cluster = None
         parent = None
         for line in stream:
-            line = line.strip()
-            if re.match("^#", line):
+            stripped_line = line.strip()
+            if re.match("^#", stripped_line):
                 continue
-            elif re.match("^Cluster - '[^']+'", line):
-                parts = line.split(":")
+            elif re.match("^Cluster - '[^']+'", stripped_line):
+                parts = stripped_line.split(":")
                 name = re.sub(r"^Cluster - ", "", parts[0]).strip("\n'")
                 if len(name) == 0:
-                    raise (SlurmParserError(f"Cluster name not found for line: {line}"))
+                    raise (SlurmParserError(f"Cluster name not found for line: {stripped_line}"))
                 cluster = SlurmCluster(name)
                 cluster.specs += parts[1:]
-            elif re.match("^Account - '[^']+'", line):
-                account = SlurmAccount.new_from_sacctmgr(line)
+            elif re.match("^Account - '[^']+'", stripped_line):
+                account = SlurmAccount.new_from_sacctmgr(stripped_line)
                 cluster.accounts[account.name] = account
-            elif re.match("^Parent - '[^']+'", line):
-                parent = re.sub(r"^Parent - ", "", line).strip("\n'")
+            elif re.match("^Parent - '[^']+'", stripped_line):
+                parent = re.sub(r"^Parent - ", "", stripped_line).strip("\n'")
                 if parent == "root":
                     cluster.accounts["root"] = SlurmAccount("root")
                 if not parent:
-                    raise (SlurmParserError(f"Parent name not found for line: {line}"))
+                    raise (SlurmParserError(f"Parent name not found for line: {stripped_line}"))
             elif re.match("^User - '[^']+'", line):
                 user = SlurmUser.new_from_sacctmgr(line)
                 if not parent:
-                    raise (SlurmParserError(f"Found user record without Parent for line: {line}"))
+                    raise (SlurmParserError(f"Found user record without Parent for line: {stripped_line}"))
                 account = cluster.accounts[parent]
                 account.add_user(user)
                 cluster.accounts[parent] = account
