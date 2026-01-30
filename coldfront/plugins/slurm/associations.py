@@ -141,10 +141,11 @@ class SlurmCluster(SlurmBase):
                 continue
             parent_account = cluster.accounts.get(account.parent_account_name)
             if not parent_account:
-                raise SlurmError(
-                    f"No allocation with {SLURM_ACCOUNT_ATTRIBUTE_NAME}={account.parent_account_name} in correct resource"
+                logger.error(
+                    f"Skipping account {account.name} - could not find parent allocation {SLURM_ACCOUNT_ATTRIBUTE_NAME}={account.parent_account_name} for allocation {SLURM_ACCOUNT_ATTRIBUTE_NAME}={account.name} in current resource. Is the parent allocation active?"
                     # Don't have an easy way to get the resource here
                 )
+                continue
             parent_account.add_account(account)
             child_accounts.add(account.name)
         # remove child accounts from cluster accounts
@@ -327,9 +328,10 @@ class SlurmAccount(SlurmBase):
 
         accounts_removed = 0
         for account_name, account in self.accounts.items():
-            if account_name not in expected.accounts:
-                accounts_removed += 1
-            child_objects_to_remove = self.get_objects_to_remove(expected.accounts.get(account_name))
+            if account_name in expected.accounts:
+                continue
+            accounts_removed += 1
+            child_objects_to_remove = account.get_objects_to_remove(expected.accounts.get(account_name))
             for key, value in child_objects_to_remove.items():
                 objects_to_remove[key].extend(value)
 

@@ -7,7 +7,7 @@ from io import StringIO
 from django.core.management import call_command
 from django.test import TestCase
 
-from coldfront.core.allocation.models import Allocation
+from coldfront.core.allocation.models import Allocation, AllocationUserStatusChoice
 from coldfront.core.resource.models import ResourceAttribute, ResourceAttributeType, ResourceType
 from coldfront.core.test_helpers.factories import (
     AAttributeTypeFactory,
@@ -104,7 +104,7 @@ class AssociationTest(TestCase):
         AllocationAttributeFactory(allocation=cls.a6, value="a6", **aat_kwargs)
         AllocationAttributeFactory(allocation=cls.a7, value="a7", **aat_kwargs)
         AllocationAttributeFactory(allocation=cls.a8, value="a8", **aat_kwargs)
-        # slurm children
+        # slurm parents
         aat_kwargs = {"allocation_attribute_type": sp_aat}
         AllocationAttributeFactory(allocation=cls.a2, value="a1", **aat_kwargs)
         AllocationAttributeFactory(allocation=cls.a3, value="a1", **aat_kwargs)
@@ -122,44 +122,7 @@ class AssociationTest(TestCase):
         AllocationUserFactory(allocation=cls.a8, user=cls.u1)
         AllocationUserFactory(allocation=cls.a8, user=cls.u2)
 
-    def test_slurm_from_resource(self):
-        """non-exhaustive, should make better"""
-        cluster = SlurmCluster.new_from_resource(self.resource)
-        self.assertEqual(cluster.name, "test_cluster")
-        self.assertEqual(len(cluster.accounts), 2)
-        self.assertIn("a1", cluster.accounts)
-        self.assertIn("a7", cluster.accounts)
-        a7_accounts = cluster.accounts["a7"].accounts
-        a7_users = cluster.accounts["a7"].users
-        self.assertEqual(len(a7_accounts), 1)
-        self.assertEqual(len(a7_users), 2)
-        self.assertIn("a8", a7_accounts)
-        self.assertIn("u3", a7_users)
-        self.assertIn("a7", a7_users)
-
-    def test_slurm_dump_roundtrip(self):
-        """create from resource, dump, and load dump"""
-        cluster = SlurmCluster.new_from_resource(self.resource)
-        out = StringIO("")
-        cluster.write(out)
-        out.seek(0)
-
-        cluster = SlurmCluster.new_from_stream(out)
-
-        self.assertEqual(cluster.name, "test_cluster")
-        self.assertEqual(len(cluster.accounts), 3)  # root account is added when dumped
-        self.assertIn("a1", cluster.accounts)
-        self.assertIn("a7", cluster.accounts)
-        a7_accounts = cluster.accounts["a7"].accounts
-        a7_users = cluster.accounts["a7"].users
-        self.assertEqual(len(a7_accounts), 1)
-        self.assertEqual(len(a7_users), 2)
-        self.assertIn("a8", a7_accounts)
-        self.assertIn("u3", a7_users)
-        self.assertIn("a7", a7_users)
-
-    def test_slurm_from_stream(self):
-        dump = StringIO("""
+        cls.cluster_dump = StringIO("""
 # To edit this file start with a cluster line for the new cluster
 # Cluster - 'cluster_name':MaxNodesPerJob=50
 # Followed by Accounts you want in this fashion (root is created by default)...
@@ -200,7 +163,45 @@ Parent - 'a8'
 User - 'u1'
 User - 'u2'
         """)
-        cluster = SlurmCluster.new_from_stream(dump)
+
+    def test_slurm_from_resource(self):
+        """non-exhaustive, should make better"""
+        cluster = SlurmCluster.new_from_resource(self.resource)
+        self.assertEqual(cluster.name, "test_cluster")
+        self.assertEqual(len(cluster.accounts), 2)
+        self.assertIn("a1", cluster.accounts)
+        self.assertIn("a7", cluster.accounts)
+        a7_accounts = cluster.accounts["a7"].accounts
+        a7_users = cluster.accounts["a7"].users
+        self.assertEqual(len(a7_accounts), 1)
+        self.assertEqual(len(a7_users), 2)
+        self.assertIn("a8", a7_accounts)
+        self.assertIn("u3", a7_users)
+        self.assertIn("a7", a7_users)
+
+    def test_slurm_dump_roundtrip(self):
+        """create from resource, dump, and load dump"""
+        cluster = SlurmCluster.new_from_resource(self.resource)
+        out = StringIO("")
+        cluster.write(out)
+        out.seek(0)
+
+        cluster = SlurmCluster.new_from_stream(out)
+
+        self.assertEqual(cluster.name, "test_cluster")
+        self.assertEqual(len(cluster.accounts), 3)  # root account is added when dumped
+        self.assertIn("a1", cluster.accounts)
+        self.assertIn("a7", cluster.accounts)
+        a7_accounts = cluster.accounts["a7"].accounts
+        a7_users = cluster.accounts["a7"].users
+        self.assertEqual(len(a7_accounts), 1)
+        self.assertEqual(len(a7_users), 2)
+        self.assertIn("a8", a7_accounts)
+        self.assertIn("u3", a7_users)
+        self.assertIn("a7", a7_users)
+
+    def test_slurm_from_stream(self):
+        cluster = SlurmCluster.new_from_stream(self.cluster_dump)
         self.assertEqual(cluster.name, "test_cluster")
         self.assertEqual(len(cluster.accounts), 3)
         self.assertIn("a1", cluster.accounts)
@@ -212,3 +213,34 @@ User - 'u2'
         self.assertIn("a8", a7_accounts)
         self.assertIn("u3", a7_users)
         self.assertIn("a7", a7_users)
+
+    def test_slurm_get_objects_to_remove(self):
+        cluster = SlurmCluster.new_from_stream(self.cluster_dump)
+        coldfront_cluster = SlurmCluster.new_from_resource(self.resource)
+        expected = {"users": [], "accounts": [], "qoses": []}
+        self.assertEqual(expected, cluster.get_objects_to_remove(coldfront_cluster))
+
+        # deactivate user a7 (u4) and allocation a3
+        u4 = self.a7.allocationuser_set.get(user=self.u4)
+        u4.status = AllocationUserStatusChoice.objects.get(name="Removed")
+        u4.save()
+        self.a3.status = AllocationStatusChoiceFactory(name="Denied")
+        self.a3.save()
+        coldfront_cluster = SlurmCluster.new_from_resource(self.resource)
+        expected = {
+            "users": [
+                {"user": "u1", "account": "a4"},
+                {"user": "u2", "account": "a4"},
+                {"user": "u3", "account": "a6"},
+                {"user": "a7", "account": "a7"},
+            ],
+            "accounts": [
+                {"account": "a4"},
+                {"account": "a6"},
+                {"account": "a5"},
+                {"account": "a3"},
+            ],
+            "qoses": [],
+        }
+        self.maxDiff = None
+        self.assertEqual(expected, cluster.get_objects_to_remove(coldfront_cluster))
