@@ -131,7 +131,6 @@ class Command(BaseCommand):
         if self.sync:
             try:
                 slurm_remove_qos(user, cluster, account, qos, noop=self.noop)
-                pass
             except SlurmError as e:
                 logger.error(
                     f"Failed removing Slurm qos {qos} for user {user} account {account} cluster {cluster}: {e}"
