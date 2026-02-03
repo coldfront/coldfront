@@ -51,6 +51,6 @@ def generate_slurm_account_name(allocation_obj, project_obj):
             **SLURM_ACCOUNT_NAME_VARS
         )
 
-    logger.info(f"Generated slurm account name {gen_slurm_account_name}")
+    logger.info("Generated slurm account name %s", gen_slurm_account_name)
 
     return gen_slurm_account_name
