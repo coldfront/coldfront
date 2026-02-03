@@ -145,3 +145,9 @@ PROJECT_UPDATE_FIELDS = ENV.list(
         "field_of_science",
     ],
 )
+
+# ------------------------------------------------------------------------------
+# Web request settings.
+# ------------------------------------------------------------------------------
+
+REQUEST_TIMEOUT = ENV.int("REQUEST_TIMEOUT", default=10)
