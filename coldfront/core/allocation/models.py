@@ -726,7 +726,7 @@ class AllocationUser(TimeStampedModel):
         return "%s" % (self.user)
 
     class Meta:
-        verbose_name_plural = "Allocation User Status"
+        verbose_name_plural = "Allocation Users"
         unique_together = ("user", "allocation")
 
 

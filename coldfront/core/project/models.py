@@ -475,7 +475,7 @@ class ProjectUser(TimeStampedModel):
 
     class Meta:
         unique_together = ("user", "project")
-        verbose_name_plural = "Project User Status"
+        verbose_name_plural = "Project Users"
 
 
 class AttributeType(TimeStampedModel):
