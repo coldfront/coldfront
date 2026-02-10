@@ -8,7 +8,7 @@ from http import HTTPStatus
 
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -54,7 +54,7 @@ class AllocationViewBaseTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         """Test Data setup for all allocation view tests."""
-        pi_user: User = UserFactory()
+        pi_user: get_user_model() = UserFactory()
         pi_user.userprofile.is_pi = True
         AllocationStatusChoiceFactory(name="New")
         AllocationUserStatusChoiceFactory(name="Removed")
@@ -63,12 +63,12 @@ class AllocationViewBaseTest(TestCase):
         cls.allocation.resources.add(ResourceFactory(name="holylfs07/tier1"))
         # create allocation user that belongs to project
         allocation_user = AllocationUserFactory(allocation=cls.allocation)
-        cls.allocation_user: User = allocation_user.user
+        cls.allocation_user: get_user_model() = allocation_user.user
         ProjectUserFactory(project=cls.project, user=allocation_user.user)
         # create project user that isn't an allocationuser
         proj_nonallocation_user: ProjectUser = ProjectUserFactory(project=cls.project)
         cls.proj_nonallocation_user = proj_nonallocation_user.user
-        cls.admin_user: User = UserFactory(is_staff=True, is_superuser=True)
+        cls.admin_user: get_user_model() = UserFactory(is_staff=True, is_superuser=True)
         manager_role: ProjectUserRoleChoice = ProjectUserRoleChoiceFactory(name="Manager")
         ProjectUserFactory(user=pi_user, project=cls.project, role=manager_role)
         cls.pi_user = pi_user

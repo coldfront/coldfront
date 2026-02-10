@@ -7,9 +7,9 @@ import logging
 from django import forms
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import User
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
@@ -874,7 +874,7 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
                     added_users_count += 1
 
                     # Will create local copy of user if not already present in local database
-                    user_obj, created = User.objects.get_or_create(username=user_form_data.get("username"))
+                    user_obj, created = get_user_model().objects.get_or_create(username=user_form_data.get("username"))
                     if created:
                         user_obj.first_name = user_form_data.get("first_name")
                         user_obj.last_name = user_form_data.get("last_name")
@@ -991,7 +991,7 @@ class ProjectRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
                 if user_form_data["selected"]:
                     remove_users_count += 1
 
-                    user_obj = User.objects.get(username=user_form_data.get("username"))
+                    user_obj = get_user_model().objects.get(username=user_form_data.get("username"))
 
                     if project_obj.pi == user_obj:
                         continue

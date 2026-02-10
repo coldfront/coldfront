@@ -6,8 +6,8 @@ import datetime
 import logging
 from enum import Enum
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.urls import reverse
@@ -479,7 +479,7 @@ class AllocationAdminNote(TimeStampedModel):
     """
 
     allocation = models.ForeignKey(Allocation, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     note = models.TextField()
 
     def __str__(self):
@@ -497,7 +497,7 @@ class AllocationUserNote(TimeStampedModel):
     """
 
     allocation = models.ForeignKey(Allocation, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_private = models.BooleanField(default=True)
     note = models.TextField()
 
@@ -713,7 +713,7 @@ class AllocationUser(TimeStampedModel):
     """
 
     allocation = models.ForeignKey(Allocation, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.ForeignKey(
         AllocationUserStatusChoice, on_delete=models.CASCADE, verbose_name="Allocation User Status"
     )
@@ -749,7 +749,7 @@ class AllocationAccount(TimeStampedModel):
         name (str):
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=64, unique=True)
 
     def __str__(self):

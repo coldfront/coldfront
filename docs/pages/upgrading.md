@@ -3,6 +3,21 @@
 This document describes upgrading ColdFront. New releases of ColdFront may
 introduce breaking changes so please refer to this document before upgrading.
 
+## [v2.0.0](https://github.com/coldfront/coldfront/releases/tag/v2.0.0)
+
+!!! warning "Backup your database"
+    This release contains a migration to a new custom user model. Please backup
+    your database and test before going into production.
+    
+After upgrading run the following commands in order:
+
+```
+$ uv run coldfront dbshell < scripts/upgrade-v2.2.2-user-model.sql
+$ uv run coldfront migrate
+$ uv run coldfront collectstatic
+```
+
+
 ## [v1.1.7](https://github.com/coldfront/coldfront/releases/tag/v1.1.7)
 
 This release upgrades to [django-q2](https://github.com/django-q2/django-q2)
