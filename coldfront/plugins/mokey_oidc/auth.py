@@ -4,7 +4,7 @@
 
 import logging
 
-from django.contrib.auth.models import Group
+from coldront.users.models import Group
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 from coldfront.core.utils.common import import_from_settings

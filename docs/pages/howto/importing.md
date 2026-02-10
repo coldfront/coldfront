@@ -295,7 +295,7 @@ following python file `import-alloc-users.py`:
 
 ```python
 from django.db.models import Q
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model()
 from coldfront.core.project.models import Project
 from coldfront.core.allocation.models import (
                                           Allocation,
@@ -304,7 +304,7 @@ from coldfront.core.allocation.models import (
 
 
 status = AllocationUserStatusChoice.objects.get(name="Active")
-piuser = User.objects.get(username="cgray")
+piuser = get_user_model().objects.get(username="cgray")
 project = Project.objects.get(
                     title="Angular momentum in QGP holography",
                     pi=piuser)

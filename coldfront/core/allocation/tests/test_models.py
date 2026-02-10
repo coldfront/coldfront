@@ -8,7 +8,7 @@ import datetime
 import sys
 from unittest.mock import patch
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
@@ -292,7 +292,7 @@ class AllocationModelStrTests(TestCase):
 
     def test_project_pi_name_updated_changes_str(self):
         """Test that if the name of the PI is updated that the str changes"""
-        pi: User = self.allocation.project.pi
+        pi: get_user_model() = self.allocation.project.pi
         new_username: str = "This is a new username!"
         pi.username = new_username
         pi.save()
@@ -304,7 +304,7 @@ class AllocationModelStrTests(TestCase):
 
     def test_parent_resource_changed_changes_str(self):
         """When the original parent resource is removed and replaced with another the str changes"""
-        original_pi: User = self.allocation.project.pi
+        original_pi: get_user_model() = self.allocation.project.pi
 
         original_string = str(self.allocation)
 
