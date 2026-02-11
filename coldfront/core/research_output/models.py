@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.validators import MinLengthValidator
 from django.db import models
 from model_utils.models import TimeStampedModel
@@ -30,7 +30,7 @@ class ResearchOutput(TimeStampedModel):
 
     # auxiliary fields
     created_by = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         editable=False,
         on_delete=models.SET_NULL,  # don't want to remove the entry when author user is deleted
         null=True,
