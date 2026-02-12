@@ -97,9 +97,9 @@ def navbar_active_item(menu_item, request):
             "grant-report",
         ],
     }
-    view_name = request.resolver_match.view_name
-
-    if menu_item in view_map:
-        if view_name in view_map[menu_item]:
-            return "active"
+    if request.resolver_match is not None:
+        view_name = request.resolver_match.view_name
+        if menu_item in view_map:
+            if view_name in view_map[menu_item]:
+                return "active"
     return ""
