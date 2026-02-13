@@ -15,8 +15,9 @@ from model_utils.models import TimeStampedModel
 from simple_history.models import HistoricalRecords
 
 from coldfront.core.field_of_science.models import FieldOfScience
-from coldfront.core.project.signals import project_activate_user, project_remove_user
+from coldfront.core.project.signals import project_activate_user, project_archive, project_remove_user
 from coldfront.core.utils.common import import_from_settings
+from coldfront.core.utils.mail import send_email_template
 from coldfront.core.utils.validate import AttributeValidator
 
 PROJECT_ENABLE_PROJECT_REVIEW = import_from_settings("PROJECT_ENABLE_PROJECT_REVIEW", False)
@@ -305,6 +306,30 @@ We do not have information about your research. Please provide a detailed descri
         project_user.status = ProjectUserStatusChoice.objects.get(name="Removed")
         project_user.save()
         project_remove_user.send(sender=signal_sender, project_user_pk=project_user.pk)
+
+    def archive(self):
+        """
+        Sets the project status to "Archived" and expires all active allocations.
+        Sends project archive email to project users.
+        """
+        # set project status
+        project_status_archive = ProjectStatusChoice.objects.get(name="Archived")
+        self.status = project_status_archive
+        self.save()
+
+        # expire allocations
+        for allocation in self.allocation_set.filter(status__name="Active"):
+            allocation.expire()
+
+        # send project archived email
+        send_email_template(
+            subject="Project has been archived",
+            template_name="email/project_archived.txt",
+            template_context={"project": self},
+            receiver_list=self.get_user_emails(),
+        )
+
+        project_archive.send(sender=self.__class__, project_obj=self)
 
     def get_absolute_url(self):
         return reverse("project-detail", kwargs={"pk": self.pk})

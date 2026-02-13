@@ -428,6 +428,16 @@ class Allocation(TimeStampedModel):
         allocation_user.save()
         allocation_remove_user.send(sender=signal_sender, allocation_user_pk=allocation_user.pk)
 
+    def expire(self):
+        """
+        Sets the allocation status to "Expired" and expires all active allocations.
+        """
+        # TODO: expiry should probably send an email... (but i think send_expiry_emails() would have to get refactored)
+        allocation_status_expired = AllocationStatusChoice.objects.get(name="Expired")
+        self.status = allocation_status_expired
+        self.end_date = datetime.datetime.now()
+        self.save()
+
     def get_absolute_url(self):
         return reverse("allocation-detail", kwargs={"pk": self.pk})
 

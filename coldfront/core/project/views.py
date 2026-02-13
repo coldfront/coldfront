@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-import datetime
 import logging
 
 from django import forms
@@ -25,7 +24,6 @@ from django.views.generic.edit import FormView
 
 from coldfront.core.allocation.models import (
     Allocation,
-    AllocationStatusChoice,
 )
 from coldfront.core.grant.models import Grant
 from coldfront.core.project.forms import (
@@ -53,7 +51,6 @@ from coldfront.core.project.models import (
     ProjectUserStatusChoice,
 )
 from coldfront.core.project.signals import (
-    project_archive,
     project_new,
     project_update,
 )
@@ -551,29 +548,7 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
     def post(self, request, *args, **kwargs):
         pk = self.kwargs.get("pk")
         project = get_object_or_404(Project, pk=pk)
-        project_status_archive = ProjectStatusChoice.objects.get(name="Archived")
-        allocation_status_expired = AllocationStatusChoice.objects.get(name="Expired")
-        end_date = datetime.datetime.now()
-        project.status = project_status_archive
-        project.save()
-
-        # project signals
-        project_archive.send(sender=self.__class__, project_obj=project)
-
-        # send email to project members
-        email_recipients = project.get_user_emails()
-
-        send_email_template(
-            "Project has been archived",
-            "email/project_archived.txt",
-            {"project": project},
-            email_recipients,
-        )
-
-        for allocation in project.allocation_set.filter(status__name="Active"):
-            allocation.status = allocation_status_expired
-            allocation.end_date = end_date
-            allocation.save()
+        project.archive()
         return redirect(project)
 
 
