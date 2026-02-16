@@ -113,7 +113,7 @@ to `v1.0.3`:
 
 ```python
 EXTRA_APPS += [
-    'coldfront.plugins.slurm',
+    'coldfront.legacy.plugins.slurm',
 ]
 SLURM_IGNORE_USERS = ['root']
 SLURM_SACCTMGR_PATH = '/usr/bin/sacctmgr'
@@ -126,7 +126,7 @@ as follows:
 from coldfront.config.base import INSTALLED_APPS
 
 INSTALLED_APPS += [
-    'coldfront.plugins.slurm',
+    'coldfront.legacy.plugins.slurm',
 ]
 
 SLURM_IGNORE_USERS = ['root']

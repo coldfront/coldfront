@@ -82,6 +82,7 @@ pg = [
 
 [dependency-groups]
 dev = [
+    "coverage[toml]>=7.13.4",
     "django-sslserver>=0.22",
     "django-upgrade>=1.29.1",
     "factory-boy>=3.3.3",
@@ -119,3 +120,20 @@ select = ["E4", "E7", "E9", "F", "I", "S308"]
 [tool.ruff.format]
 indent-style = "space"
 docstring-code-format = true
+
+[tool.pytest]
+minversion = "9.0"
+DJANGO_SETTINGS_MODULE = "coldfront.config.settings"
+testpaths = ["coldfront/"]
+python_files = ["tests.py", "test_*.py", "*_tests.py"]
+filterwarnings = [
+    'ignore::DeprecationWarning',
+]
+
+[tool.coverage.run]
+branch = true
+source = ["coldfront/"]
+omit = [
+    "coldfront/legacy/*",
+    "coldfront/config/plugins/*",
+]

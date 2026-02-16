@@ -1,1 +1,1 @@
-::: coldfront.core.allocation.models
+::: coldfront.legacy.allocation.models

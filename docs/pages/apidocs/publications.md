@@ -1,1 +1,1 @@
-::: coldfront.core.publication.models
+::: coldfront.legacy.publication.models

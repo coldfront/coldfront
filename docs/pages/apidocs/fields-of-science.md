@@ -1,3 +1,3 @@
 # Fields of Science
 
-::: coldfront.core.field_of_science.models
+::: coldfront.legacy.field_of_science.models

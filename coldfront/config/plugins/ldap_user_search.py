@@ -27,4 +27,4 @@ LDAP_USER_SEARCH_CERT_FILE = ENV.str("LDAP_USER_SEARCH_CERT_FILE", default=None)
 LDAP_USER_SEARCH_CACERT_FILE = ENV.str("LDAP_USER_SEARCH_CACERT_FILE", default=None)
 LDAP_USER_SEARCH_CERT_VALIDATE_MODE = ENV.str("LDAP_USER_SEARCH_CERT_VALIDATE_MODE", default=None)
 
-ADDITIONAL_USER_SEARCH_CLASSES = ["coldfront.plugins.ldap_user_search.utils.LDAPUserSearch"]
+ADDITIONAL_USER_SEARCH_CLASSES = ["coldfront.legacy.plugins.ldap_user_search.utils.LDAPUserSearch"]

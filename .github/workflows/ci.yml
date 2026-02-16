@@ -64,8 +64,11 @@ jobs:
       - name: Check licence with reuse
         run: uv run reuse lint
 
-      - name: Run tests
-        run: uv run coldfront test
-
       - name: Check for migrations
         run: uv run coldfront makemigrations --check
+
+      - name: Run tests
+        run: uv run -m coverage run -m pytest --ignore=coldfront/legacy
+
+      - name: Show coverage report
+        run: uv run -m coverage report --skip-covered --omit '*/migrations/*,*/tests/*'

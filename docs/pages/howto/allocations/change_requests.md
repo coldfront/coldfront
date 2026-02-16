@@ -12,7 +12,7 @@ Python 3.9.2 (default, Feb 28 2021, 17:03:44)
 [GCC 10.2.1 20210110] on linux
 Type "help", "copyright", "credits" or "license" for more information.
 (InteractiveConsole)
->>> from coldfront.core.allocation.models import Allocation
+>>> from coldfront.legacy.allocation.models import Allocation
 >>> Allocation.objects.all().update(is_changeable=True)
 ```
 

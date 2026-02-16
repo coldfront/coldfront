@@ -19,7 +19,7 @@ LOGIN_URL = "/user/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = ENV.str("LOGOUT_REDIRECT_URL", LOGIN_URL)
 
-SU_LOGIN_CALLBACK = "coldfront.core.utils.common.su_login_callback"
+SU_LOGIN_CALLBACK = "coldfront.legacy.utils.common.su_login_callback"
 SU_LOGOUT_REDIRECT_URL = "/admin/auth/user/"
 
 SESSION_COOKIE_AGE = ENV.int("SESSION_INACTIVITY_TIMEOUT", default=60 * 60)

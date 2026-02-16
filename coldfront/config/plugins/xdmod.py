@@ -9,7 +9,7 @@ from coldfront.config.env import ENV
 # Enable XDMoD support
 # ------------------------------------------------------------------------------
 INSTALLED_APPS += [
-    "coldfront.plugins.xdmod",
+    "coldfront.legacy.plugins.xdmod",
 ]
 
 XDMOD_API_URL = ENV.str("XDMOD_API_URL")

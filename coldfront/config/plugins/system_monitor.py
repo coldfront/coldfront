@@ -5,7 +5,7 @@
 from coldfront.config.base import INSTALLED_APPS, SETTINGS_EXPORT
 from coldfront.config.env import ENV
 
-INSTALLED_APPS += ["coldfront.plugins.system_monitor"]
+INSTALLED_APPS += ["coldfront.legacy.plugins.system_monitor"]
 
 SYSTEM_MONITOR_PANEL_TITLE = ENV.str("SYSMON_TITLE", default="HPC Cluster Status")
 SYSTEM_MONITOR_ENDPOINT = ENV.str("SYSMON_ENDPOINT")

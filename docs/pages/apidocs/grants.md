@@ -1,1 +1,1 @@
-::: coldfront.core.grant.models
+::: coldfront.legacy.grant.models

@@ -71,16 +71,16 @@ if DEBUG and importlib.util.find_spec("sslserver") is not None:
 
 # ColdFront Apps
 INSTALLED_APPS += [
-    "coldfront.core.user",
-    "coldfront.core.field_of_science",
-    "coldfront.core.utils",
-    "coldfront.core.portal",
-    "coldfront.core.project",
-    "coldfront.core.resource",
-    "coldfront.core.allocation",
-    "coldfront.core.grant",
-    "coldfront.core.publication",
-    "coldfront.core.research_output",
+    "coldfront.legacy.user",
+    "coldfront.legacy.field_of_science",
+    "coldfront.legacy.utils",
+    "coldfront.legacy.portal",
+    "coldfront.legacy.project",
+    "coldfront.legacy.resource",
+    "coldfront.legacy.allocation",
+    "coldfront.legacy.grant",
+    "coldfront.legacy.publication",
+    "coldfront.legacy.research_output",
     "coldfront.users",
 ]
 

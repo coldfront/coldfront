@@ -30,7 +30,7 @@ weeklyreportapp
 ```
 2. Ensure that your app's __\_\_init\_\_.py__ file contents have the following format:
 ```
-default_app_config = "coldfront.plugins.weeklyreportapp.apps.WeeklyreportappConfig"
+default_app_config = "coldfront.legacy.plugins.weeklyreportapp.apps.WeeklyreportappConfig"
 ```
 
 3. Ensure that your app's **apps.py** file contents look like this:
@@ -40,7 +40,7 @@ from django.apps import AppConfig
 
 class WeeklyreportappConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'coldfront.plugins.weeklyreportapp'
+    name = 'coldfront.legacy.plugins.weeklyreportapp'
 ```
 
 4. Make sure to include these lines (or similar for your app) in your app's **urls.py** file:
@@ -62,10 +62,10 @@ from .models import *
    
 6. Import ColdFront models in the following manner in your **models.py** file in your app:
 ```
-from coldfront.core.allocation.models import *
-from coldfront.core.project.models import *
-from coldfront.core.resource.models import *
-from coldfront.core.user.models import *
+from coldfront.legacy.allocation.models import *
+from coldfront.legacy.project.models import *
+from coldfront.legacy.resource.models import *
+from coldfront.legacy.user.models import *
 ```
    
 7. Add ColdFront's skeleton HTML/CSS by adding the following lines to all of your template files:
@@ -83,14 +83,14 @@ from coldfront.core.user.models import *
 from coldfront.config.base import INSTALLED_APPS
 
 INSTALLED_APPS += [
-    'coldfront.plugins.weeklyreportapp',
+    'coldfront.legacy.plugins.weeklyreportapp',
 ]
 ```
 
 2. Edit the ColdFront **urls.py** (`coldfront/config/urls.py`) file to include the new urls info:
 ```
 urlpatterns += [
-    path('weeklyreportapp/', include('coldfront.plugins.weeklyreportapp.urls')),
+    path('weeklyreportapp/', include('coldfront.legacy.plugins.weeklyreportapp.urls')),
 ]
 ```
 

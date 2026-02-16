@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+from django.apps import AppConfig
+
+
+class UtilsConfig(AppConfig):
+    name = "coldfront.legacy.utils"
+    verbose_name = "Coldfront Utils"

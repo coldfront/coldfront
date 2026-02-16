@@ -1,0 +1,351 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+from django import forms
+from django.contrib.auth import get_user_model
+from django.db.models.functions import Lower
+from django.forms import ValidationError
+
+from coldfront.legacy.allocation.models import (
+    Allocation,
+    AllocationAccount,
+    AllocationAttribute,
+    AllocationAttributeType,
+    AllocationStatusChoice,
+)
+from coldfront.legacy.allocation.utils import get_user_resources
+from coldfront.legacy.project.models import Project
+from coldfront.legacy.resource.models import Resource, ResourceType
+from coldfront.legacy.user.forms import UserModelMultipleChoiceField
+from coldfront.legacy.utils.common import import_from_settings
+
+ALLOCATION_ACCOUNT_ENABLED = import_from_settings("ALLOCATION_ACCOUNT_ENABLED", False)
+ALLOCATION_CHANGE_REQUEST_EXTENSION_DAYS = import_from_settings("ALLOCATION_CHANGE_REQUEST_EXTENSION_DAYS", [])
+ALLOCATION_ACCOUNT_MAPPING = import_from_settings("ALLOCATION_ACCOUNT_MAPPING", {})
+ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT = import_from_settings(
+    "ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT", True
+)
+INVOICE_ENABLED = import_from_settings("INVOICE_ENABLED", False)
+if INVOICE_ENABLED:
+    INVOICE_DEFAULT_STATUS = import_from_settings("INVOICE_DEFAULT_STATUS", "Pending Payment")
+
+
+class AllocationForm(forms.ModelForm):
+    class Meta:
+        model = Allocation
+        fields = [
+            "resource",
+            "justification",
+            "quantity",
+            "users",
+            "project",
+            "is_changeable",
+            "allocation_account",
+        ]
+        help_texts = {
+            "justification": "<br/>Justification for requesting this allocation.",
+            "users": "<br/>Select users in your project to add to this allocation.",
+        }
+        widgets = {
+            "status": forms.HiddenInput(),
+            "project": forms.HiddenInput(),
+            "is_changeable": forms.HiddenInput(),
+        }
+
+    resource = forms.ModelChoiceField(queryset=None, empty_label=None)
+    users = UserModelMultipleChoiceField(queryset=None, required=False)
+    allocation_account = forms.ModelChoiceField(queryset=None, required=False)
+
+    def __init__(self, request_user, project_pk, *args, **kwargs):
+        project_obj = Project.objects.get(pk=project_pk)
+        # Set default initial values
+        initial = {
+            "quantity": 1,
+            "is_changeable": ALLOCATION_ENABLE_CHANGE_REQUESTS_BY_DEFAULT,
+            "project": project_obj,
+        }
+        if kwargs["initial"] is not None:
+            initial.update(kwargs["initial"])
+        kwargs["initial"] = initial
+        super().__init__(*args, **kwargs)
+
+        self.fields["resource"].queryset = get_user_resources(request_user).order_by(Lower("name"))
+        self.fields["users"].queryset = (
+            get_user_model()
+            .objects.filter(projectuser__project=project_obj, projectuser__status__name="Active")
+            .order_by("username")
+            .exclude(pk=project_obj.pi.pk)
+        )
+        if not self.fields["users"].queryset:
+            self.fields["users"].widget = forms.HiddenInput()
+
+        # Set allocation_account choices
+        if ALLOCATION_ACCOUNT_ENABLED:
+            self.fields["allocation_account"].queryset = AllocationAccount.objects.filter(user=request_user)
+            if not self.fields["allocation_account"].queryset:
+                self.fields["allocation_account"].widget = forms.HiddenInput()
+        else:
+            self.fields["allocation_account"].widget = forms.HiddenInput()
+
+    def clean(self):
+        form_data = super().clean()
+        project_obj = form_data.get("project")
+        resource_obj = form_data.get("resource")
+        allocation_account = form_data.get("allocation_account", None)
+
+        # Ensure user has account name if ALLOCATION_ACCOUNT_ENABLED
+        if (
+            ALLOCATION_ACCOUNT_ENABLED
+            and resource_obj.name in ALLOCATION_ACCOUNT_MAPPING
+            and AllocationAttributeType.objects.filter(name=ALLOCATION_ACCOUNT_MAPPING[resource_obj.name]).exists()
+            and not allocation_account
+        ):
+            raise ValidationError(
+                'You need to create an account name. Create it by clicking the link under the "Allocation account" field.',
+                code="user_has_no_account_name",
+            )
+
+        # Ensure this allocaiton wouldn't exceed the limit
+        allocation_limit = resource_obj.get_attribute("allocation_limit", typed=True)
+        if allocation_limit:
+            allocation_count = project_obj.allocation_set.filter(
+                resources=resource_obj,
+                status__name__in=["Active", "New", "Renewal Requested", "Paid", "Payment Pending", "Payment Requested"],
+            ).count()
+            if allocation_count >= allocation_limit:
+                raise ValidationError(
+                    "Your project is at the allocation limit allowed for this resource.",
+                    code="reached_allocation_limit",
+                )
+
+        # Set allocation status
+        if INVOICE_ENABLED and resource_obj.requires_payment:
+            allocation_status_name = INVOICE_DEFAULT_STATUS
+        else:
+            allocation_status_name = "New"
+        form_data["status"] = AllocationStatusChoice.objects.get(name=allocation_status_name)
+        self.instance.status = form_data["status"]
+
+        return form_data
+
+
+class AllocationUpdateForm(forms.Form):
+    status = forms.ModelChoiceField(
+        queryset=AllocationStatusChoice.objects.all().order_by(Lower("name")), empty_label=None
+    )
+    start_date = forms.DateField(
+        label="Start Date", widget=forms.DateInput(attrs={"class": "datepicker"}), required=False
+    )
+    end_date = forms.DateField(label="End Date", widget=forms.DateInput(attrs={"class": "datepicker"}), required=False)
+    description = forms.CharField(max_length=512, label="Description", required=False)
+    is_locked = forms.BooleanField(required=False)
+    is_changeable = forms.BooleanField(required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_date = cleaned_data.get("start_date")
+        end_date = cleaned_data.get("end_date")
+
+        if start_date and end_date and end_date < start_date:
+            raise forms.ValidationError("End date cannot be less than start date")
+
+
+class AllocationInvoiceUpdateForm(forms.Form):
+    status = forms.ModelChoiceField(
+        queryset=AllocationStatusChoice.objects.filter(
+            name__in=["Payment Pending", "Payment Requested", "Payment Declined", "Paid"]
+        ).order_by(Lower("name")),
+        empty_label=None,
+    )
+
+
+class AllocationAddUserForm(forms.Form):
+    username = forms.CharField(max_length=150, disabled=True)
+    first_name = forms.CharField(max_length=150, required=False, disabled=True)
+    last_name = forms.CharField(max_length=150, required=False, disabled=True)
+    email = forms.EmailField(max_length=100, required=False, disabled=True)
+    selected = forms.BooleanField(initial=False, required=False)
+
+
+class AllocationRemoveUserForm(forms.Form):
+    username = forms.CharField(max_length=150, disabled=True)
+    first_name = forms.CharField(max_length=150, required=False, disabled=True)
+    last_name = forms.CharField(max_length=150, required=False, disabled=True)
+    email = forms.EmailField(max_length=100, required=False, disabled=True)
+    selected = forms.BooleanField(initial=False, required=False)
+
+
+class AllocationAttributeDeleteForm(forms.Form):
+    pk = forms.IntegerField(required=False, disabled=True)
+    name = forms.CharField(max_length=150, required=False, disabled=True)
+    value = forms.CharField(max_length=150, required=False, disabled=True)
+    selected = forms.BooleanField(initial=False, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["pk"].widget = forms.HiddenInput()
+
+
+class AllocationSearchForm(forms.Form):
+    project = forms.CharField(label="Project Title", max_length=100, required=False)
+    username = forms.CharField(label="Username", max_length=100, required=False)
+    resource_type = forms.ModelChoiceField(
+        label="Resource Type", queryset=ResourceType.objects.all().order_by(Lower("name")), required=False
+    )
+    resource_name = forms.ModelMultipleChoiceField(
+        label="Resource Name",
+        queryset=Resource.objects.select_related("resource_type").filter(is_allocatable=True).order_by(Lower("name")),
+        required=False,
+    )
+    allocation_attribute_name = forms.ModelChoiceField(
+        label="Allocation Attribute Name",
+        queryset=AllocationAttributeType.objects.all().order_by(Lower("name")),
+        required=False,
+    )
+    allocation_attribute_value = forms.CharField(label="Allocation Attribute Value", max_length=100, required=False)
+    end_date = forms.DateField(label="End Date", widget=forms.DateInput(attrs={"class": "datepicker"}), required=False)
+    active_from_now_until_date = forms.DateField(
+        label="Active from Now Until Date", widget=forms.DateInput(attrs={"class": "datepicker"}), required=False
+    )
+    status = forms.ModelMultipleChoiceField(
+        widget=forms.CheckboxSelectMultiple,
+        queryset=AllocationStatusChoice.objects.all().order_by(Lower("name")),
+        required=False,
+    )
+    show_all_allocations = forms.BooleanField(initial=False, required=False)
+
+
+class AllocationReviewUserForm(forms.Form):
+    ALLOCATION_REVIEW_USER_CHOICES = (
+        ("keep_in_allocation_and_project", "Keep in allocation and project"),
+        ("keep_in_project_only", "Remove from this allocation only"),
+        ("remove_from_project", "Remove from project"),
+    )
+
+    username = forms.CharField(max_length=150, disabled=True)
+    first_name = forms.CharField(max_length=150, required=False, disabled=True)
+    last_name = forms.CharField(max_length=150, required=False, disabled=True)
+    email = forms.EmailField(max_length=100, required=False, disabled=True)
+    user_status = forms.ChoiceField(choices=ALLOCATION_REVIEW_USER_CHOICES)
+
+
+class AllocationInvoiceNoteDeleteForm(forms.Form):
+    pk = forms.IntegerField(required=False, disabled=True)
+    note = forms.CharField(widget=forms.Textarea, disabled=True)
+    author = forms.CharField(max_length=512, required=False, disabled=True)
+    selected = forms.BooleanField(initial=False, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["pk"].widget = forms.HiddenInput()
+
+
+class AllocationAccountForm(forms.ModelForm):
+    class Meta:
+        model = AllocationAccount
+        fields = [
+            "name",
+        ]
+
+
+class AllocationAttributeChangeForm(forms.Form):
+    pk = forms.IntegerField(required=False, disabled=True)
+    name = forms.CharField(max_length=150, required=False, disabled=True)
+    value = forms.CharField(max_length=150, required=False, disabled=True)
+    new_value = forms.CharField(max_length=150, required=False, disabled=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["pk"].widget = forms.HiddenInput()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if cleaned_data.get("new_value") != "":
+            allocation_attribute = AllocationAttribute.objects.get(pk=cleaned_data.get("pk"))
+            allocation_attribute.value = cleaned_data.get("new_value")
+            allocation_attribute.clean()
+
+
+class AllocationAttributeUpdateForm(forms.Form):
+    change_pk = forms.IntegerField(required=False, disabled=True)
+    attribute_pk = forms.IntegerField(required=False, disabled=True)
+    name = forms.CharField(max_length=150, required=False, disabled=True)
+    value = forms.CharField(max_length=150, required=False, disabled=True)
+    new_value = forms.CharField(max_length=150, required=False, disabled=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["change_pk"].widget = forms.HiddenInput()
+        self.fields["attribute_pk"].widget = forms.HiddenInput()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        allocation_attribute = AllocationAttribute.objects.get(pk=cleaned_data.get("attribute_pk"))
+
+        allocation_attribute.value = cleaned_data.get("new_value")
+        allocation_attribute.clean()
+
+
+class AllocationAttributeEditForm(forms.Form):
+    attribute_pk = forms.IntegerField(required=False, disabled=True)
+    name = forms.CharField(max_length=150, required=False, disabled=True)
+    orig_value = forms.CharField(max_length=150, required=False, disabled=True)
+    value = forms.CharField(max_length=150, required=False, disabled=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["attribute_pk"].widget = forms.HiddenInput()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        allocation_attribute = AllocationAttribute.objects.get(pk=cleaned_data.get("attribute_pk"))
+
+        allocation_attribute.value = cleaned_data.get("value")
+        allocation_attribute.clean()
+
+
+class AllocationChangeForm(forms.Form):
+    EXTENSION_CHOICES = [(0, "No Extension")]
+    for choice in ALLOCATION_CHANGE_REQUEST_EXTENSION_DAYS:
+        EXTENSION_CHOICES.append((choice, "{} days".format(choice)))
+
+    end_date_extension = forms.TypedChoiceField(
+        label="Request End Date Extension",
+        choices=EXTENSION_CHOICES,
+        coerce=int,
+        required=False,
+        empty_value=0,
+    )
+    justification = forms.CharField(
+        label="Justification for Changes",
+        widget=forms.Textarea,
+        required=True,
+        help_text="Justification for requesting this allocation change request.",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class AllocationChangeNoteForm(forms.Form):
+    notes = forms.CharField(
+        max_length=512,
+        label="Notes",
+        required=False,
+        widget=forms.Textarea,
+        help_text="Leave any feedback about the allocation change request.",
+    )
+
+
+class AllocationAttributeCreateForm(forms.ModelForm):
+    class Meta:
+        model = AllocationAttribute
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super(AllocationAttributeCreateForm, self).__init__(*args, **kwargs)
+        self.fields["allocation_attribute_type"].queryset = self.fields["allocation_attribute_type"].queryset.order_by(
+            Lower("name")
+        )

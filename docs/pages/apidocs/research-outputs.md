@@ -1,3 +1,3 @@
 # Research Outputs
 
-::: coldfront.core.research_output.models
+::: coldfront.legacy.research_output.models
