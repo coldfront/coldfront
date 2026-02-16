@@ -103,7 +103,7 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         messages.error(self.request, "You do not have permission to view the previous page.")
         return False
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # noqa: C901 # FIXME: method is too complex
         context = super().get_context_data(**kwargs)
         # Can the user update the project?
         project_obj = self.get_object(Project.objects.select_related("status"))
@@ -827,7 +827,7 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
             )
         return initial_data
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # noqa: C901 # FIXME: method is too complex
         user_search_string = request.POST.get("q")
         search_by = request.POST.get("search_by")
         pk = self.kwargs.get("pk")

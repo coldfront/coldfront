@@ -202,7 +202,7 @@ class Command(BaseCommand):
                         )
             del batch_args[:]
 
-    def process_user(self, user):
+    def process_user(self, user):  # noqa: C901 # FIXME: method is too complex
         if self.filter_user and self.filter_user != user.username:
             return
 
@@ -268,7 +268,7 @@ class Command(BaseCommand):
         else:
             root_logger.setLevel(logging.WARNING)
 
-    def handle(self, *args, **options):
+    def handle(self, *args, **options):  # noqa: C901 # FIXME: method is too complex
         os.environ["KRB5_CLIENT_KTNAME"] = CLIENT_KTNAME
 
         self.verbosity = int(options["verbosity"])
