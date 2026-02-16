@@ -5,10 +5,11 @@
 from django.apps import AppConfig
 
 
-class UsersConfig(AppConfig):
-    name = "coldfront.users"
+class CoreConfig(AppConfig):
+    name = "coldfront.core"
 
     def ready(self):
+        from coldfront.core import signals  # noqa: F401
         from coldfront.registry import register_models
 
         # Register models

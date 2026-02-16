@@ -82,6 +82,7 @@ INSTALLED_APPS += [
     "coldfront.legacy.publication",
     "coldfront.legacy.research_output",
     "coldfront.users",
+    "coldfront.core",
 ]
 
 # ------------------------------------------------------------------------------

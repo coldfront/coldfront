@@ -124,7 +124,7 @@ docstring-code-format = true
 [tool.pytest]
 minversion = "9.0"
 DJANGO_SETTINGS_MODULE = "coldfront.config.settings"
-testpaths = ["coldfront/"]
+testpaths = ["coldfront/tests"]
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 filterwarnings = [
     'ignore::DeprecationWarning',
