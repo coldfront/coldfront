@@ -5,8 +5,8 @@
 import datetime
 from enum import Enum
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -90,7 +90,7 @@ We do not have information about your research. Please provide a detailed descri
         max_length=255,
     )
     pi = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
     )
     description = models.TextField(
@@ -366,7 +366,7 @@ class ProjectAdminComment(TimeStampedModel):
     """
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     comment = models.TextField()
 
     def __str__(self):
@@ -384,7 +384,7 @@ class ProjectUserMessage(TimeStampedModel):
     """
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_private = models.BooleanField(default=True)
     message = models.TextField()
 
@@ -488,7 +488,7 @@ class ProjectUser(TimeStampedModel):
         enable_notifications (bool): indicates whether or not the user should enable notifications
     """
 
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     role = models.ForeignKey(ProjectUserRoleChoice, on_delete=models.CASCADE)
     status = models.ForeignKey(ProjectUserStatusChoice, on_delete=models.CASCADE, verbose_name="Status")

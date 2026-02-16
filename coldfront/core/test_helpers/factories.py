@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import factory
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from factory import SubFactory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyChoice
@@ -80,7 +80,7 @@ for provider in [ColdfrontProvider, field_of_science_provider]:
 
 class UserFactory(DjangoModelFactory):
     class Meta:
-        model = User
+        model = get_user_model()
         django_get_or_create = ("username",)
 
     first_name = factory.Faker("first_name")
