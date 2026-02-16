@@ -1,1 +1,1 @@
-::: coldfront.core.resource.models
+::: coldfront.legacy.resource.models

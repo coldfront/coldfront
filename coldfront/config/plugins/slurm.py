@@ -6,7 +6,7 @@ from coldfront.config.base import INSTALLED_APPS
 from coldfront.config.env import ENV
 
 INSTALLED_APPS += [
-    "coldfront.plugins.slurm",
+    "coldfront.legacy.plugins.slurm",
 ]
 
 SLURM_SACCTMGR_PATH = ENV.str("SLURM_SACCTMGR_PATH", default="/usr/bin/sacctmgr")

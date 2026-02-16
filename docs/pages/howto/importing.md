@@ -296,8 +296,8 @@ following python file `import-alloc-users.py`:
 ```python
 from django.db.models import Q
 from django.contrib.auth import get_user_model()
-from coldfront.core.project.models import Project
-from coldfront.core.allocation.models import (
+from coldfront.legacy.project.models import Project
+from coldfront.legacy.allocation.models import (
                                           Allocation,
                                           AllocationUser,
                                           AllocationUserStatusChoice)

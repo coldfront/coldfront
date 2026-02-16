@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from coldfront.config.base import AUTHENTICATION_BACKENDS, BASE_PATH, INSTALLED_APPS, TEMPLATES
+from coldfront.config.base import AUTHENTICATION_BACKENDS, INSTALLED_APPS, TEMPLATES
 from coldfront.config.env import ENV
 
 # ------------------------------------------------------------------------------
@@ -15,13 +15,12 @@ AUTHENTICATION_BACKENDS += [
     "django.contrib.auth.backends.ModelBackend",
 ]
 
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "home"
+LOGIN_URL = "/user/login"
+LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = ENV.str("LOGOUT_REDIRECT_URL", LOGIN_URL)
-CSRF_TRUSTED_ORIGINS = ENV.list("CSRF_TRUSTED_ORIGINS", default=[])
 
-SU_LOGIN_CALLBACK = "coldfront.core.utils.common.su_login_callback"
-SU_LOGOUT_REDIRECT_URL = f"/{BASE_PATH}admin/auth/user/"
+SU_LOGIN_CALLBACK = "coldfront.legacy.utils.common.su_login_callback"
+SU_LOGOUT_REDIRECT_URL = "/admin/auth/user/"
 
 SESSION_COOKIE_AGE = ENV.int("SESSION_INACTIVITY_TIMEOUT", default=60 * 60)
 SESSION_SAVE_EVERY_REQUEST = True

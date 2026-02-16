@@ -6,7 +6,7 @@ from coldfront.config.base import INSTALLED_APPS
 from coldfront.config.env import ENV
 
 INSTALLED_APPS += [
-    "coldfront.plugins.auto_compute_allocation",
+    "coldfront.legacy.plugins.auto_compute_allocation",
 ]
 
 AUTO_COMPUTE_ALLOCATION_ACCELERATOR_HOURS = ENV.int("AUTO_COMPUTE_ALLOCATION_ACCELERATOR_HOURS", default=0)

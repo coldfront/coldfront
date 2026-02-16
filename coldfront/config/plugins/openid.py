@@ -17,11 +17,11 @@ if ENV.bool("PLUGIN_MOKEY", default=False):
     # Enable Mokey/Hydra OpenID Connect Authentication Backend
     # ------------------------------------------------------------------------------
     INSTALLED_APPS += [
-        "coldfront.plugins.mokey_oidc",
+        "coldfront.legacy.plugins.mokey_oidc",
     ]
 
     AUTHENTICATION_BACKENDS += [
-        "coldfront.plugins.mokey_oidc.auth.OIDCMokeyAuthenticationBackend",
+        "coldfront.legacy.plugins.mokey_oidc.auth.OIDCMokeyAuthenticationBackend",
     ]
     MOKEY_OIDC_PI_GROUP = ENV.str("MOKEY_OIDC_PI_GROUP")
 else:

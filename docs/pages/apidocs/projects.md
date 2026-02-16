@@ -1,1 +1,1 @@
-::: coldfront.core.project.models
+::: coldfront.legacy.project.models
