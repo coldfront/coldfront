@@ -1,0 +1,75 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+from django.db.models import Prefetch, QuerySet
+
+from .constants import CONSTRAINT_TOKEN_USER
+from .permissions import get_permission_for_model, permission_is_exempt, qs_filter_from_constraints
+
+__all__ = (
+    "RestrictedPrefetch",
+    "RestrictedQuerySet",
+)
+
+
+class RestrictedPrefetch(Prefetch):
+    """
+    Extend Django's Prefetch to accept a user and action to be passed to the
+    `restrict()` method of the related object's queryset.
+    """
+
+    def __init__(self, lookup, user, action="view", queryset=None, to_attr=None):
+        self.restrict_user = user
+        self.restrict_action = action
+
+        super().__init__(lookup, queryset=queryset, to_attr=to_attr)
+
+    def get_current_querysets(self, level):
+        params = {
+            "user": self.restrict_user,
+            "action": self.restrict_action,
+        }
+
+        if querysets := super().get_current_querysets(level):
+            return [qs.restrict(**params) for qs in querysets]
+
+        # Bit of a hack. If no queryset is defined, pass through the dict of restrict()
+        # kwargs to be handled by the field. This is necessary e.g. for GenericForeignKey
+        # fields, which do not permit setting a queryset on a Prefetch object.
+        return params
+
+
+class RestrictedQuerySet(QuerySet):
+    def restrict(self, user, action="view"):
+        """
+        Filter the QuerySet to return only objects on which the specified user has been granted the specified
+        permission.
+
+        :param user: User instance
+        :param action: The action which must be permitted (e.g. "view" for "ras.view_allocation"); default is 'view'
+        """
+        # Resolve the full name of the required permission
+        permission_required = get_permission_for_model(self.model, action)
+
+        # Bypass restriction for superusers and exempt views
+        if user and user.is_superuser or permission_is_exempt(permission_required):
+            return self
+
+        # User is anonymous or has not been granted the requisite permission
+        if user is None or not user.is_authenticated or permission_required not in user.get_all_permissions():
+            return self.none()
+
+        # Filter the queryset to include only objects with allowed attributes
+        constraints = user._object_perm_cache[permission_required]
+        tokens = {
+            CONSTRAINT_TOKEN_USER: user,
+        }
+        if attrs := qs_filter_from_constraints(constraints, tokens):
+            # #8715: Avoid duplicates when JOIN on many-to-many fields without using DISTINCT.
+            # DISTINCT acts globally on the entire request, which may not be desirable.
+            allowed_objects = self.model.objects.filter(attrs)
+            return self.filter(pk__in=allowed_objects)
+
+        return self

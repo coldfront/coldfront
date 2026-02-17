@@ -2,6 +2,13 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from .users import Group, User
+from .permissions import ObjectPermission
+from .users import Group, GroupManager, User, UserManager
 
-__all__ = ("User", "Group")
+__all__ = (
+    "User",
+    "Group",
+    "UserManager",
+    "GroupManager",
+    "ObjectPermission",
+)

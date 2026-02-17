@@ -145,3 +145,14 @@ PROJECT_UPDATE_FIELDS = ENV.list(
         "field_of_science",
     ],
 )
+
+DEFAULT_PERMISSIONS = {}
+EXEMPT_VIEW_PERMISSIONS = []
+
+# Exclude potentially sensitive models from wildcard view exemption. These may still be exempted
+# by specifying the model individually in the EXEMPT_VIEW_PERMISSIONS configuration parameter.
+EXEMPT_EXCLUDE_MODELS = (
+    ("users", "group"),
+    ("users", "objectpermission"),
+    ("users", "user"),
+)
