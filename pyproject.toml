@@ -31,6 +31,7 @@ dependencies = [
     "django-filter>=25.1",
     "django-htmx>=1.27.0",
     "django-model-utils>=5.0.0",
+    "django-mptt>=0.18.0",
     "django-q2>=1.7.6",
     "django-settings-export>=1.2.1",
     "django-simple-history>=3.8.0",
