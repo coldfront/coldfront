@@ -4,16 +4,32 @@
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import (
-    GroupManager,
+    GroupManager as DjangoGroupManager,
+)
+from django.contrib.auth.models import (
     Permission,
     PermissionsMixin,
-    UserManager,
+)
+from django.contrib.auth.models import (
+    UserManager as DjangoUserManager,
 )
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.mail import send_mail
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+from coldfront.users.querysets import RestrictedQuerySet
+
+__all__ = ("User", "UserManager", "Group", "GroupManager")
+
+
+class GroupManager(DjangoGroupManager.from_queryset(RestrictedQuerySet)):
+    pass
+
+
+class UserManager(DjangoUserManager.from_queryset(RestrictedQuerySet)):
+    pass
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -33,9 +49,20 @@ class User(AbstractBaseUser, PermissionsMixin):
             "unique": _("A user with that username already exists."),
         },
     )
-    first_name = models.CharField(_("first name"), max_length=150, blank=True)
-    last_name = models.CharField(_("last name"), max_length=150, blank=True)
-    email = models.EmailField(_("email address"), blank=True)
+    first_name = models.CharField(
+        _("first name"),
+        max_length=150,
+        blank=True,
+    )
+    last_name = models.CharField(
+        _("last name"),
+        max_length=150,
+        blank=True,
+    )
+    email = models.EmailField(
+        _("email address"),
+        blank=True,
+    )
     is_staff = models.BooleanField(
         _("staff status"),
         default=False,
@@ -48,9 +75,22 @@ class User(AbstractBaseUser, PermissionsMixin):
             "Designates whether this user should be treated as active. Unselect this instead of deleting accounts."
         ),
     )
-    date_joined = models.DateTimeField(_("date joined"), default=timezone.now)
+    date_joined = models.DateTimeField(
+        _("date joined"),
+        default=timezone.now,
+    )
     groups = models.ManyToManyField(
-        to="users.Group", verbose_name=_("groups"), blank=True, related_name="users", related_query_name="user"
+        to="users.Group",
+        verbose_name=_("groups"),
+        blank=True,
+        related_name="users",
+        related_query_name="user",
+    )
+
+    object_permissions = models.ManyToManyField(
+        to="users.ObjectPermission",
+        blank=True,
+        related_name="users",
     )
 
     objects = UserManager()
@@ -89,13 +129,31 @@ class Group(models.Model):
     ColdFront Group model.
     """
 
-    name = models.CharField(verbose_name=_("name"), max_length=150, unique=True)
-    description = models.CharField(verbose_name=_("description"), max_length=200, blank=True)
+    name = models.CharField(
+        verbose_name=_("name"),
+        max_length=150,
+        unique=True,
+    )
+    description = models.CharField(
+        verbose_name=_("description"),
+        max_length=200,
+        blank=True,
+    )
 
     # Replicate legacy Django permissions support from stock Group model
     # to ensure authentication backend compatibility
     permissions = models.ManyToManyField(
-        Permission, verbose_name=_("permissions"), blank=True, related_name="groups", related_query_name="group"
+        Permission,
+        verbose_name=_("permissions"),
+        blank=True,
+        related_name="groups",
+        related_query_name="group",
+    )
+
+    object_permissions = models.ManyToManyField(
+        to="users.ObjectPermission",
+        blank=True,
+        related_name="groups",
     )
 
     objects = GroupManager()
