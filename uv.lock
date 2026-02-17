@@ -269,6 +269,7 @@ dependencies = [
     { name = "django-simple-history" },
     { name = "django-split-settings" },
     { name = "django-su" },
+    { name = "django-taggit" },
     { name = "django-vite" },
     { name = "djangorestframework" },
     { name = "doi2bib" },
@@ -341,6 +342,7 @@ requires-dist = [
     { name = "django-simple-history", specifier = ">=3.8.0" },
     { name = "django-split-settings", specifier = ">=1.3.2" },
     { name = "django-su", specifier = ">=1.0.0" },
+    { name = "django-taggit", specifier = ">=6.1.0" },
     { name = "django-vite", specifier = ">=3.1.0" },
     { name = "djangorestframework", specifier = ">=3.16.0" },
     { name = "doi2bib", specifier = ">=0.4.0" },
@@ -750,6 +752,18 @@ dependencies = [
     { name = "django" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d3/cf/5d5bdaff569468dba3053a7a623f64fcf5e36d5a936a5617a1c1972a7da4/django-su-1.0.0.tar.gz", hash = "sha256:1a3f98b2f757a3f47e33e90047c0a81cf965805fd7f91f67089292bdd461bd1a", size = 23677, upload-time = "2022-04-01T14:56:01.013Z" }
+
+[[package]]
+name = "django-taggit"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/34/a6/f1beaf8f552fe90c153cc039316ebab942c23dfbc88588dde081fefca816/django_taggit-6.1.0.tar.gz", hash = "sha256:c4d1199e6df34125dd36db5eb0efe545b254dec3980ce5dd80e6bab3e78757c3", size = 38151, upload-time = "2024-09-29T08:07:39.477Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6b/34/4185c345530b91d05cb82e05d07148f481a5eb5dc2ac44e092b3daa6f206/django_taggit-6.1.0-py3-none-any.whl", hash = "sha256:ab776264bbc76cb3d7e49e1bf9054962457831bd21c3a42db9138b41956e4cf0", size = 75749, upload-time = "2024-09-29T08:07:14.612Z" },
+]
 
 [[package]]
 name = "django-upgrade"

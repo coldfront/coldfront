@@ -13,6 +13,16 @@ from mptt.models import MPTTModel, TreeForeignKey
 from coldfront.querysets import TreeManager
 from coldfront.users.querysets import RestrictedQuerySet
 
+from .features import ChangeLoggingMixin, CloningMixin
+
+
+class ColdFrontFeatureSet(
+    ChangeLoggingMixin,
+    CloningMixin,
+):
+    class Meta:
+        abstract = True
+
 
 class BaseModel(models.Model):
     """
@@ -65,7 +75,17 @@ class BaseModel(models.Model):
                     setattr(self, field.name, obj)
 
 
-class ColdFrontModel(BaseModel):
+class ChangeLoggedModel(ChangeLoggingMixin, BaseModel):
+    """
+    Base model for ancillary models; provides limited functionality for models which don't
+    support ColdFront's full feature set.
+    """
+
+    class Meta:
+        abstract = True
+
+
+class ColdFrontModel(ColdFrontFeatureSet, BaseModel):
     """
     Base model for most object types. Suitable for use by plugins.
     """
@@ -78,6 +98,12 @@ class PrimaryModel(ColdFrontModel):
     """
     Primary model used for internal ColdFront functionality
     """
+
+    description = models.CharField(
+        verbose_name=_("description"),
+        max_length=200,
+        blank=True,
+    )
 
     class Meta:
         abstract = True
