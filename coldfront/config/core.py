@@ -148,6 +148,7 @@ PROJECT_UPDATE_FIELDS = ENV.list(
 
 DEFAULT_PERMISSIONS = {}
 EXEMPT_VIEW_PERMISSIONS = []
+CHANGELOG_SKIP_EMPTY_CHANGES = True
 
 # Exclude potentially sensitive models from wildcard view exemption. These may still be exempted
 # by specifying the model individually in the EXEMPT_VIEW_PERMISSIONS configuration parameter.
