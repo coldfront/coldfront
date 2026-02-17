@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from django.utils.safestring import mark_safe
+
 from coldfront.config.base import SETTINGS_EXPORT
 from coldfront.config.env import ENV
 
@@ -56,13 +58,17 @@ ALLOCATION_ACCOUNT_ENABLED = ENV.bool("ALLOCATION_ACCOUNT_ENABLED", default=Fals
 ALLOCATION_ACCOUNT_MAPPING = ENV.dict("ALLOCATION_ACCOUNT_MAPPING", default={})
 
 SETTINGS_EXPORT += [
+    "ACCOUNT_CREATION_TEXT",
     "ALLOCATION_ACCOUNT_ENABLED",
     "ALLOCATION_DEFAULT_ALLOCATION_LENGTH",
     "ALLOCATION_ENABLE_ALLOCATION_RENEWAL",
     "ALLOCATION_EULA_ENABLE",
     "CENTER_HELP_URL",
+    "CENTER_NAME",
+    "EMAIL_PROJECT_REVIEW_CONTACT",
     "GRANT_ENABLE",
     "INVOICE_ENABLED",
+    "LOGIN_FAIL_MESSAGE",
     "PROJECT_ENABLE_PROJECT_REVIEW",
     "PROJECT_INSTITUTION_EMAIL_MAP",
     "PUBLICATION_ENABLE",
@@ -99,7 +105,8 @@ ONDEMAND_URL = ENV.str("ONDEMAND_URL", default=None)
 # ------------------------------------------------------------------------------
 # Default Strings. Override these in local_settings.py
 # ------------------------------------------------------------------------------
-LOGIN_FAIL_MESSAGE = ENV.str("LOGIN_FAIL_MESSAGE", "")
+# FIXME: This is using mark_safe for now but settings should not contain HTML in the future
+LOGIN_FAIL_MESSAGE = mark_safe(ENV.str("LOGIN_FAIL_MESSAGE", ""))  # noqa: S308
 
 EMAIL_DIRECTOR_PENDING_PROJECT_REVIEW_EMAIL = """
 You recently applied for renewal of your account, however, to date you have not entered any publication nor grant info in the ColdFront system. I am reluctant to approve your renewal without understanding why. If there are no relevant publications or grants yet, then please let me know. If there are, then I would appreciate it if you would take the time to enter the data (I have done it myself and it took about 15 minutes). We use this information to help make the case to the university for continued investment in our department and it is therefore important that faculty enter the data when appropriate. Please email xxx-helpexample.com if you need technical assistance.
@@ -114,10 +121,11 @@ xxx@example.edu
 Phone: (xxx) xxx-xxx
 """
 
-ACCOUNT_CREATION_TEXT = """University faculty can submit a help ticket to request an account.
+# noqa: S308
+ACCOUNT_CREATION_TEXT = mark_safe("""University faculty can submit a help ticket to request an account.
 Please see <a href="#">instructions on our website</a>. Staff, students, and external collaborators must
 request an account through a university faculty member.
-"""
+""")
 
 
 # ------------------------------------------------------------------------------
