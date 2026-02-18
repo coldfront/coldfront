@@ -13,12 +13,13 @@ from mptt.models import MPTTModel, TreeForeignKey
 from coldfront.querysets import TreeManager
 from coldfront.users.querysets import RestrictedQuerySet
 
-from .features import ChangeLoggingMixin, CloningMixin
+from .features import ChangeLoggingMixin, CloningMixin, TagsMixin
 
 
 class ColdFrontFeatureSet(
     ChangeLoggingMixin,
     CloningMixin,
+    TagsMixin,
 ):
     class Meta:
         abstract = True
