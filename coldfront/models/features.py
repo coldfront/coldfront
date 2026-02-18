@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from taggit.managers import TaggableManager
 
 from coldfront.core.choices import ObjectChangeActionChoices
 from coldfront.core.models.change_logging import ObjectChange
@@ -151,5 +152,21 @@ class CloningMixin(models.Model):
         return attrs
 
 
-register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
+class TagsMixin(models.Model):
+    """
+    Enables support for tag assignment. Assigned tags can be managed via the `tags` attribute,
+    which is a `TaggableManager` instance.
+    """
+
+    tags = TaggableManager(
+        through="core.TaggedItem",
+        ordering=("weight", "name"),
+    )
+
+    class Meta:
+        abstract = True
+
+
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))
+register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
+register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
