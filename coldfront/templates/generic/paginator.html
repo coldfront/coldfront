@@ -1,0 +1,105 @@
+{% load helpers %}
+{% load i18n %}
+
+{% if page %}
+  <div
+      class="d-flex justify-content-between align-items-center border-{% if placement == 'top' %}bottom{% else %}top{% endif %} p-2"
+      hx-target="closest .htmx-container"
+      hx-disinherit="hx-select"
+      hx-swap="outerHTML"
+      {% if not table.embedded %}hx-push-url="true"{% endif %}
+  >
+
+    {# Pages carousel #}
+    {% if paginator.num_pages > 1 %}
+      <nav aria-label="{% trans "Page selection" %}">
+        <ul class="pagination mb-0">
+
+          {# Previous page #}
+          {% if page.has_previous %}
+            <li class="page-item">
+              {% if htmx %}
+                <a href="#" hx-get="{{ table.htmx_url }}{% querystring request page=page.previous_page_number %}" class="page-link">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </a>
+              {% else %}
+                <a href="{% querystring request page=page.previous_page_number %}" class="page-link">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </a>
+              {% endif %}
+            </li>
+          {% endif %}
+          {# /Previous page #}
+
+          {# Page numbers #}
+          {% for p in page.smart_pages %}
+            <li class="page-item{% if page.number == p %} active" aria-current="page{% endif %}">
+              {% if p and htmx %}
+                <a href="#" hx-get="{{ table.htmx_url }}{% querystring request page=p %}" class="page-link">
+                  {{ p }}
+                </a>
+              {% elif p %}
+                <a href="{% querystring request page=p %}" class="page-link {% if page.number == p %} active{% endif %}">
+                  {{ p }}
+                </a>
+              {% else %}
+                <span class="page-link" disabled>&hellip;</span>
+              {% endif %}
+            </li>
+          {% endfor %}
+          {# /Page numbers #}
+
+          {# Next page #}
+          {% if page.has_next %}
+            <li class="page-item">
+              {% if htmx %}
+                <a href="#" hx-get="{{ table.htmx_url }}{% querystring request page=page.next_page_number %}" class="page-link">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </a>
+              {% else %}
+                <a href="{% querystring request page=page.next_page_number %}" class="page-link">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </a>
+              {% endif %}
+            </li>
+          {% endif %}
+          {# /Next page #}
+
+        </ul>
+      </nav>
+    {% endif %}
+    {# /Pages carousel #}
+
+    {# Showing #}
+    <small class="text-end text-muted">
+      {% blocktrans trimmed with start=page.start_index end=page.end_index total=page.paginator.count %}
+        Showing {{ start }}-{{ end }} of {{ total }}
+      {% endblocktrans %}
+    </small>
+    {# /Showing #}
+
+    {# Pagination options #}
+    <nav aria-label="{% trans "Pagination options" %}">
+      {% if page %}
+        <div class="dropdown dropdown-menu-end">
+          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            {% trans "Per Page" %}
+          </button>
+          <ul class="dropdown-menu">
+            {% for n in page.paginator.get_page_lengths %}
+              <li>
+                {% if htmx %}
+                  <a href="#" hx-get="{{ table.htmx_url }}{% querystring request per_page=n %}" class="dropdown-item">{{ n }}</a>
+                {% else %}
+                  <a href="{% querystring request per_page=n %}" class="dropdown-item">{{ n }}</a>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+    </nav>
+    {# /Pagination options #}
+
+  </div>
+{% endif %}

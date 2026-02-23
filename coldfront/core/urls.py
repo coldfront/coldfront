@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+from django.urls import include, path
+
+from coldfront.registry import get_model_urls
+
+app_name = "core"
+urlpatterns = [
+    path("tags/", include(get_model_urls("core", "tag", detail=False))),
+    path("tags/<int:pk>/", include(get_model_urls("core", "tag"))),
+    path("changelog/", include(get_model_urls("core", "objectchange", detail=False))),
+    path("changelog/<int:pk>/", include(get_model_urls("core", "objectchange"))),
+]

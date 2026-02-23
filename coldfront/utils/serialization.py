@@ -71,7 +71,7 @@ def deserialize_object(model, data, pk=None):
 
     # Pop any assigned tags to handle the M2M relationships manually
     if is_taggable(model) and data.get("tags"):
-        Tag = apps.get_model("extras", "Tag")
+        Tag = apps.get_model("core", "Tag")
         m2m_data["tags"] = Tag.objects.filter(name__in=data.pop("tags"))
 
     # Separate any non-field attributes for assignment after deserialization of the object

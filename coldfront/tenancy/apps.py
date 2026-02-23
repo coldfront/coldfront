@@ -9,7 +9,7 @@ class TenancyConfig(AppConfig):
     name = "coldfront.tenancy"
 
     def ready(self):
-        from coldfront.registry import register_models
+        from coldfront.models.features import register_models
 
         # Register models
         register_models(*self.get_models())

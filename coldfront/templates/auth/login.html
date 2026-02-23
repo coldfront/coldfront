@@ -1,0 +1,71 @@
+{% extends 'base/base.html' %}
+{% block title %}
+Login
+{% endblock title %}
+
+{% block head %}
+  <style>
+    .bd-placeholder-img {
+      font-size: 1.125rem;
+      text-anchor: middle;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+
+    @media (min-width: 768px) {
+      .bd-placeholder-img-lg {
+        font-size: 3.5rem;
+      }
+    }
+    html,
+    body {
+      height: 100%;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      padding-top: 40px;
+      padding-bottom: 40px;
+      background-color: #f5f5f5;
+    }
+
+    .form-signin {
+      width: 100%;
+      max-width: 430px;
+      padding: 15px;
+      margin: auto;
+    }
+
+  </style>
+{% endblock head %}
+
+{% block layout %}
+
+<main class="form-signin">
+    <div class="text-center">
+    <h1 class="h3 mb-3 fw-normal"><i class="fa-solid fa-snowflake fa-xl fa-fw me-2" style="color: #f39c12;"></i>ColdFront</h1>
+    </div>
+      <div class="card">
+        <div class="card-header text-center">
+          <h2 class="h5"><i class="fas fa-lock" aria-hidden="true"></i> Log In</h2>
+        </div>
+        <div class="card-body">
+          {% include "auth/login_form.html" %}
+          {% if 'mozilla_django_oidc' in settings.EXTRA_APPS %}
+            <hr/>
+            <p class="text-center"><strong>OR</strong></p>
+
+            <div>
+              <a class="btn btn-primary" role="button" href="{% url 'oidc_authentication_init' %}?next={{request.GET.next}}">
+                <i class="fab fa-openid" aria-hidden="true"></i> Log in via OpenID Connect
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+</main>
+
+{% endblock layout %}

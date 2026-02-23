@@ -5,6 +5,15 @@
 import $ from 'jquery';
 
 export function initForm(): void {
+  // Initialize any reset buttons so that when clicked, the page is reloaded without query parameters.
+  const resetButton =
+    document.querySelector<HTMLButtonElement>('button[data-reset]');
+  if (resetButton !== null) {
+    resetButton.addEventListener('click', () => {
+      window.location.assign(window.location.origin + window.location.pathname);
+    });
+  }
+
   $(document).on('click', '#form_reset_button', function () {
     resetForm($('#filter_form'));
   });

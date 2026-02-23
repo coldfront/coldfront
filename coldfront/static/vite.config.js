@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "~bootstrap": path.resolve(__dirname, "node_modules/bootstrap"),
+        "~tomselect": path.resolve(__dirname, "node_modules/tom-select"),
         "~fontawesome": path.resolve(
           __dirname,
           "node_modules/@fortawesome/fontawesome-free",

@@ -3,7 +3,9 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
-from django.db.models import Prefetch, QuerySet
+from django.db.models import Manager, Prefetch, QuerySet
+from mptt.managers import TreeManager as TreeManager_
+from mptt.querysets import TreeQuerySet as TreeQuerySet_
 
 from .constants import CONSTRAINT_TOKEN_USER
 from .permissions import get_permission_for_model, permission_is_exempt, qs_filter_from_constraints
@@ -11,6 +13,8 @@ from .permissions import get_permission_for_model, permission_is_exempt, qs_filt
 __all__ = (
     "RestrictedPrefetch",
     "RestrictedQuerySet",
+    "TreeQuerySet",
+    "TreeManager",
 )
 
 
@@ -73,3 +77,19 @@ class RestrictedQuerySet(QuerySet):
             return self.filter(pk__in=allowed_objects)
 
         return self
+
+
+class TreeQuerySet(TreeQuerySet_, RestrictedQuerySet):
+    """
+    Mate django-mptt's TreeQuerySet with our RestrictedQuerySet for permissions enforcement.
+    """
+
+    pass
+
+
+class TreeManager(Manager.from_queryset(TreeQuerySet), TreeManager_):
+    """
+    Extend django-mptt's TreeManager to incorporate RestrictedQuerySet().
+    """
+
+    pass

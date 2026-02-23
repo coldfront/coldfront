@@ -4,8 +4,13 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 import collections
+import warnings
+from contextlib import ExitStack, contextmanager
 
+from django.urls import path
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
+from django.views.generic import View
 
 
 class Registry(dict):
@@ -31,6 +36,7 @@ class Registry(dict):
 registry = Registry(
     {
         "model_features": dict(),
+        "request_processors": list(),
         "plugins": dict(),
         "views": collections.defaultdict(dict),
     }
@@ -110,17 +116,60 @@ def register_model_view(model, name="", path=None, detail=True, kwargs=None):
     return _wrapper
 
 
-def register_models(*models):
+def get_model_urls(app_label, model_name, detail=True):
     """
-    Register one or more models in ColdFront. This entails:
+    Return a list of URL paths for detail views registered to the given model.
 
-     - Determining whether the model is considered "public" (available for reference by other models)
-     - Registering which features the model supports (e.g. bookmarks, custom fields, etc.)
-     - Registering any feature-specific views for the model (e.g. ObjectJournalView instances)
-
-    register_model() should be called for each relevant model under the ready() of an app's AppConfig class.
+    Args:
+        app_label: App/plugin name
+        model_name: Model name
+        detail: If True (default), return only URL views for an individual object.
+            Otherwise, return only list views.
     """
-    for model in models:
-        app_label, model_name = model._meta.label_lower.split(".")
+    paths = []
 
-        # Register applicable feature views for the model
+    # Retrieve registered views for this model
+    try:
+        views = [view for view in registry["views"][app_label][model_name] if view["detail"] == detail]
+    except KeyError:
+        # No views have been registered for this model
+        return []
+
+    for config in views:
+        # Import the view class or function
+        if type(config["view"]) is str:
+            view_ = import_string(config["view"])
+        else:
+            view_ = config["view"]
+        if issubclass(view_, View):
+            view_ = view_.as_view()
+
+        # Create a path to the view
+        name = f"{model_name}_{config['name']}" if config["name"] else model_name
+        url_path = f"{config['path']}/" if config["path"] else ""
+        paths.append(path(url_path, view_, name=name, kwargs=config["kwargs"]))
+
+    return paths
+
+
+def register_request_processor(func):
+    """
+    Decorator for registering a request processor.
+    """
+    registry["request_processors"].append(func)
+
+    return func
+
+
+@contextmanager
+def apply_request_processors(request):
+    """
+    A context manager which applies all registered request processors.
+    """
+    with ExitStack() as stack:
+        for request_processor in registry["request_processors"]:
+            try:
+                stack.enter_context(request_processor(request))
+            except Exception as e:
+                warnings.warn(f"Failed to initialize request processor {request_processor.__name__}: {e}")
+        yield

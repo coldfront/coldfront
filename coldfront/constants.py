@@ -6,3 +6,6 @@ CORE_APPS = (
     "core",
     "users",
 )
+
+# Placeholder text for empty tables
+EMPTY_TABLE_TEXT = "No results found"

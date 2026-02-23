@@ -1,0 +1,24 @@
+{# Render an HTMX-enabled table with paginator #}
+{% load helpers %}
+{% load buttons %}
+{% load render_table from django_tables2 %}
+
+<div class="htmx-container table-responsive">
+  {% render_table table 'inc/table_htmx.html' %}
+  {% include 'generic/paginator.html' with htmx=True table=table paginator=table.paginator page=table.page %}
+</div>
+
+{% if request.htmx %}
+  {# Include the updated object count for display elsewhere on the page #}
+  {% if not table.embedded %}
+    <div hx-swap-oob="innerHTML:.total-object-count">{{ table.rows|length }}</div>
+  {% endif %}
+
+
+  {# Update the bulk action buttons with new query parameters #}
+  {% if actions and not table.embedded %}
+    <div class="bulk-action-buttons" hx-swap-oob="outerHTML:.bulk-action-buttons">
+      {% action_buttons actions model multi=True %}
+    </div>
+  {% endif %}
+{% endif %}

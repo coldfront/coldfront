@@ -8,10 +8,15 @@ import 'htmx.org';
 import { initDateSelector } from './dateSelector';
 import { initSelect2 } from './select2';
 import { initForm } from './form';
-import { initDataTable } from './dataTable';
+import { initColorSelects, initSelects } from './selectStatic';
+import { initQuickSearch } from './search';
 import { initCharts } from './charts';
 import { initHtmx } from './htmx';
+import { initTableConfig } from './tableConfig';
+import { initButtons } from './buttons';
 import { initBootstrap } from './bs';
+import { initNavLinks } from './sidenav';
+import { initTheme } from './theme';
 import { getCookie } from './util';
 import jQuery from 'jquery';
 
@@ -28,10 +33,16 @@ function initDocument(): void {
     initDateSelector,
     initSelect2,
     initForm,
-    initDataTable,
+    initSelects,
+    initColorSelects,
+    initQuickSearch,
     initBootstrap,
     initCharts,
     initHtmx,
+    initNavLinks,
+    initButtons,
+    initTableConfig,
+    initTheme,
   ]) {
     init();
   }
