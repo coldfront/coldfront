@@ -6,7 +6,7 @@
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.models import ObjectChange, Tag, TaggedItem
+from coldfront.core.models import CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
 from coldfront.tables import ColdFrontTable, columns
 
 from .template_code import OBJECTCHANGE_FULL_NAME, OBJECTCHANGE_OBJECT, OBJECTCHANGE_REQUEST_ID
@@ -102,3 +102,38 @@ class ObjectChangeTable(ColdFrontTable):
             "message",
             "actions",
         )
+
+
+class CustomFieldChoiceSetTable(ColdFrontTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    choices = tables.TemplateColumn(
+        template_code="""{% for v in value %}{{ v|split:":"|last }}{% if not forloop.last %}, {% endif %}{% endfor %}"""
+    )
+    choice_count = tables.TemplateColumn(
+        accessor=tables.A("choices"),
+        template_code="{{ value|length }}",
+        orderable=False,
+        verbose_name=_("Count"),
+    )
+    order_alphabetically = columns.BooleanColumn(
+        verbose_name=_("Order Alphabetically"),
+        false_mark=None,
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = CustomFieldChoiceSet
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "description",
+            "choice_count",
+            "choices",
+            "order_alphabetically",
+            "created",
+            "last_updated",
+        )
+        default_columns = ("pk", "name", "choices", "choice_count", "description")

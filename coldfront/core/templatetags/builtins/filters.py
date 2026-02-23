@@ -130,3 +130,9 @@ def render_json(value):
         {{ data_dict|json }}
     """
     return json.dumps(value, ensure_ascii=False, indent=4, sort_keys=True)
+
+
+@register.filter(name="split")
+def split(string, sep):
+    """Return the string split by sep."""
+    return string.split(sep)

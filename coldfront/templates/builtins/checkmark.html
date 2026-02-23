@@ -1,0 +1,5 @@
+{% if value %}
+  <i class="fa-solid fa-square-check text-success" title="{{ true_label }}"></i>
+{% elif show_false %}
+  <i class="fa-solid fa-rectangle-xmark text-danger" title="{{ false_label }}"></i>
+{% endif %}

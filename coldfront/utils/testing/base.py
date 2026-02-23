@@ -14,6 +14,7 @@ from django.db.models import JSONField, ManyToManyField, ManyToManyRel
 from django.forms.models import model_to_dict
 from django.test import Client
 from django.test import TestCase as _TestCase
+from django_jsonform.models.fields import JSONField as JFJSONField
 from taggit.managers import TaggableManager
 
 from coldfront.core.models import ObjectType
@@ -155,7 +156,7 @@ class ModelTestCase(TestCase):
 
             else:
                 # JSON
-                if type(field) is JSONField and value is not None:
+                if (type(field) is JSONField or type(field) is JFJSONField) and value is not None:
                     model_dict[key] = json.dumps(value)
 
         return model_dict
