@@ -33,7 +33,10 @@ CUSTOMIZATION_MENU = Menu(
     groups=(
         MenuGroup(
             label=_("Customization"),
-            items=(get_model_item("core", "tag", "Tags"),),
+            items=(
+                get_model_item("core", "customfieldchoiceset", _("Custom Field Choices")),
+                get_model_item("core", "tag", "Tags"),
+            ),
         ),
     ),
 )

@@ -41,3 +41,21 @@ def tag(value, viewname=None):
         "tag": value,
         "viewname": viewname,
     }
+
+@register.inclusion_tag('builtins/checkmark.html')
+def checkmark(value, show_false=True, true='Yes', false='No'):
+    """
+    Display either a green checkmark or red X to indicate a boolean value.
+
+    Args:
+        value: True or False
+        show_false: Show false values
+        true: Text label for true values
+        false: Text label for false values
+    """
+    return {
+        'value': bool(value),
+        'show_false': show_false,
+        'true_label': true,
+        'false_label': false,
+    }

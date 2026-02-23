@@ -13,7 +13,7 @@ from coldfront.users.models import User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet, ChangeLoggedModelFilterSet
 
-from .models import Tag, TaggedItem
+from .models import CustomFieldChoiceSet, Tag, TaggedItem
 
 
 class TagFilterSet(ChangeLoggedModelFilterSet):
@@ -129,3 +129,28 @@ class ObjectChangeFilterSet(BaseFilterSet):
         return queryset.filter(
             Q(user_name__icontains=value) | Q(object_repr__icontains=value) | Q(message__icontains=value)
         )
+
+
+class CustomFieldChoiceSetFilterSet(ChangeLoggedModelFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    choice = django_filters.CharFilter(method="filter_by_choice")
+
+    class Meta:
+        model = CustomFieldChoiceSet
+        fields = (
+            "id",
+            "name",
+            "description",
+            "order_alphabetically",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+
+    def filter_by_choice(self, queryset, name, value):
+        return queryset.filter(choices__icontains=value)

@@ -4,10 +4,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 from django.contrib.contenttypes.models import ContentType
+from django.core.paginator import EmptyPage
 from django.db.models import Count
 
 from coldfront.core.models import ObjectChange
 from coldfront.registry import register_model_view
+from coldfront.tables.paginator import EnhancedPaginator, get_paginate_count
 from coldfront.utils.data import shallow_compare_dict
 from coldfront.utils.query import count_related
 from coldfront.views import generic
@@ -18,7 +20,7 @@ from . import (
     forms,
     tables,
 )
-from .models import Tag, TaggedItem
+from .models import CustomFieldChoiceSet, Tag, TaggedItem
 
 
 @register_model_view(Tag, "list", path="", detail=False)
@@ -136,3 +138,52 @@ class ObjectChangeView(generic.ObjectView):
             "related_changes_count": related_changes.count(),
             "non_atomic_change": non_atomic_change,
         }
+
+
+#
+# Custom field choices
+#
+
+
+@register_model_view(CustomFieldChoiceSet, "list", path="", detail=False)
+class CustomFieldChoiceSetListView(generic.ObjectListView):
+    queryset = CustomFieldChoiceSet.objects.all()
+    filterset = filtersets.CustomFieldChoiceSetFilterSet
+    filterset_form = forms.CustomFieldChoiceSetFilterForm
+    table = tables.CustomFieldChoiceSetTable
+
+
+@register_model_view(CustomFieldChoiceSet)
+class CustomFieldChoiceSetView(generic.ObjectView):
+    queryset = CustomFieldChoiceSet.objects.all()
+
+    def get_extra_context(self, request, instance):
+
+        # Paginate choices list
+        per_page = get_paginate_count(request)
+        try:
+            page_number = request.GET.get("page", 1)
+        except ValueError:
+            page_number = 1
+        paginator = EnhancedPaginator(instance.choices, per_page)
+        try:
+            choices = paginator.page(page_number)
+        except EmptyPage:
+            choices = paginator.page(paginator.num_pages)
+
+        return {
+            "paginator": paginator,
+            "choices": choices,
+        }
+
+
+@register_model_view(CustomFieldChoiceSet, "add", detail=False)
+@register_model_view(CustomFieldChoiceSet, "edit")
+class CustomFieldChoiceSetEditView(generic.ObjectEditView):
+    queryset = CustomFieldChoiceSet.objects.all()
+    form = forms.CustomFieldChoiceSetForm
+
+
+@register_model_view(CustomFieldChoiceSet, "delete")
+class CustomFieldChoiceSetDeleteView(generic.ObjectDeleteView):
+    queryset = CustomFieldChoiceSet.objects.all()

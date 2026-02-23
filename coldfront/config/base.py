@@ -63,6 +63,7 @@ INSTALLED_APPS += [
     "django_vite",
     "django_htmx",
     "django_tables2",
+    "django_jsonform",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:

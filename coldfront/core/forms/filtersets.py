@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.choices import ObjectChangeActionChoices
-from coldfront.core.models import ObjectChange, ObjectType, Tag
+from coldfront.core.models import CustomFieldChoiceSet, ObjectChange, ObjectType, Tag
 from coldfront.forms import PrimaryModelFilterSetForm
 from coldfront.forms.layouts import DateTime
 from coldfront.users.models import User
@@ -72,4 +72,21 @@ class ObjectChangeFilterForm(PrimaryModelFilterSetForm):
                 "changed_object_type_id",
             )
         )
+        return helper
+
+
+class CustomFieldChoiceSetFilterForm(PrimaryModelFilterSetForm):
+    model = CustomFieldChoiceSet
+    choice = forms.CharField(required=False)
+
+    @property
+    def helper(self):
+        helper = super().helper
+        helper.layout.append(
+            Fieldset(
+                "Choices",
+                "choice",
+            )
+        )
+
         return helper

@@ -12,4 +12,6 @@ urlpatterns = [
     path("tags/<int:pk>/", include(get_model_urls("core", "tag"))),
     path("changelog/", include(get_model_urls("core", "objectchange", detail=False))),
     path("changelog/<int:pk>/", include(get_model_urls("core", "objectchange"))),
+    path("custom-field-choices/", include(get_model_urls("core", "customfieldchoiceset", detail=False))),
+    path("custom-field-choices/<int:pk>/", include(get_model_urls("core", "customfieldchoiceset"))),
 ]

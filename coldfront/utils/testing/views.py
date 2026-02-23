@@ -463,6 +463,20 @@ class ViewTestCases:
             self.assertHttpStatus(response, 200)
             self.assertEqual(response.get("Content-Type"), "text/csv; charset=utf-8")
 
+    class PrimaryObjectViewTestCase(
+        GetObjectViewTestCase,
+        GetObjectChangelogViewTestCase,
+        CreateObjectViewTestCase,
+        EditObjectViewTestCase,
+        DeleteObjectViewTestCase,
+        ListObjectsViewTestCase,
+    ):
+        """
+        TestCase suitable for all primary objects
+        """
+
+        pass
+
     class OrganizationalObjectViewTestCase(
         GetObjectViewTestCase,
         GetObjectChangelogViewTestCase,

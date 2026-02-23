@@ -30,6 +30,7 @@ dependencies = [
     "django-environ>=0.12.0",
     "django-filter>=25.1",
     "django-htmx>=1.27.0",
+    "django-jsonform>=2.23.2",
     "django-model-utils>=5.0.0",
     "django-mptt>=0.18.0",
     "django-q2>=1.7.6",
