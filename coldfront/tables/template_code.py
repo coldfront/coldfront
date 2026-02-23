@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+SEARCH_RESULT_ATTRS = """
+{% for name, value in record.display_attrs.items %}
+  <span class="badge text-bg-secondary"
+      {% if value|length > 40 %} data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ value }}"{% endif %}
+    >
+    {{ name|bettertitle }}:
+    {% with url=value.get_absolute_url %}
+      {% if url %}<a href="{{ url }}">{% endif %}
+      {% if value|length > 40 %}
+        {{ value|truncatechars:"40" }}
+      {% else %}
+        {{ value }}
+      {% endif %}
+      {% if url %}</a>{% endif %}
+    {% endwith %}
+  </span>
+{% endfor %}
+"""

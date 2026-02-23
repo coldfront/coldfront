@@ -14,7 +14,7 @@ from taggit.managers import TaggableManager
 from coldfront.core.choices import ObjectChangeActionChoices
 from coldfront.core.models.change_logging import ObjectChange
 from coldfront.core.utils import is_taggable
-from coldfront.registry import register_model_feature
+from coldfront.registry import register_model_feature, register_model_view
 from coldfront.utils.serialization import serialize_object
 
 from .deletion import DeleteMixin
@@ -170,3 +170,23 @@ class TagsMixin(models.Model):
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))
 register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
 register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
+
+
+def register_models(*models):
+    """
+    Register one or more models in ColdFront. This entails:
+
+     - Determining whether the model is considered "public" (available for reference by other models)
+     - Registering which features the model supports (e.g. bookmarks, custom fields, etc.)
+     - Registering any feature-specific views for the model (e.g. ObjectJournalView instances)
+
+    register_model() should be called for each relevant model under the ready() of an app's AppConfig class.
+    """
+    for model in models:
+        app_label, model_name = model._meta.label_lower.split(".")
+
+        # Register applicable feature views for the model
+        if issubclass(model, ChangeLoggingMixin):
+            register_model_view(model, "changelog", kwargs={"model": model})(
+                "coldfront.views.generic.ObjectChangeLogView"
+            )

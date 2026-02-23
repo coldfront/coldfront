@@ -269,6 +269,7 @@ dependencies = [
     { name = "django-simple-history" },
     { name = "django-split-settings" },
     { name = "django-su" },
+    { name = "django-tables2" },
     { name = "django-taggit" },
     { name = "django-vite" },
     { name = "djangorestframework" },
@@ -278,6 +279,7 @@ dependencies = [
     { name = "humanize" },
     { name = "python-dateutil" },
     { name = "redis" },
+    { name = "tablib" },
 ]
 
 [package.optional-dependencies]
@@ -342,6 +344,7 @@ requires-dist = [
     { name = "django-simple-history", specifier = ">=3.8.0" },
     { name = "django-split-settings", specifier = ">=1.3.2" },
     { name = "django-su", specifier = ">=1.0.0" },
+    { name = "django-tables2", specifier = ">=2.8.0" },
     { name = "django-taggit", specifier = ">=6.1.0" },
     { name = "django-vite", specifier = ">=3.1.0" },
     { name = "djangorestframework", specifier = ">=3.16.0" },
@@ -358,6 +361,7 @@ requires-dist = [
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "redis", specifier = ">=5.2.1" },
     { name = "setuptools", marker = "extra == 'freeipa'", specifier = "==80.6.0" },
+    { name = "tablib", specifier = ">=3.9.0" },
 ]
 provides-extras = ["ldap", "freeipa", "iquota", "oidc", "mysql", "pg"]
 
@@ -752,6 +756,18 @@ dependencies = [
     { name = "django" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d3/cf/5d5bdaff569468dba3053a7a623f64fcf5e36d5a936a5617a1c1972a7da4/django-su-1.0.0.tar.gz", hash = "sha256:1a3f98b2f757a3f47e33e90047c0a81cf965805fd7f91f67089292bdd461bd1a", size = 23677, upload-time = "2022-04-01T14:56:01.013Z" }
+
+[[package]]
+name = "django-tables2"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/28/ab/3533314e818b04a9e1f04ae167845fec509f4e78ebaa6cf507d12eabcce3/django_tables2-2.8.0.tar.gz", hash = "sha256:0dea3401bb99a0164ba09e20d59a7d90856fdc05e5ae2da9a14d0fa14d99257c", size = 129204, upload-time = "2025-11-21T10:17:43.813Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/79/8b/047bb29359953b1c76f8886377845538144033d87da622c6b743f597a50b/django_tables2-2.8.0-py3-none-any.whl", hash = "sha256:860633b0f448216af73fca6005c7e38dc9b46931dc36c08a9281a71ee250b1ee", size = 95968, upload-time = "2025-11-21T10:17:42.363Z" },
+]
 
 [[package]]
 name = "django-taggit"
@@ -1711,6 +1727,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/90/76/437d71068094df0726366574cf3432a4ed754217b436eb7429415cf2d480/sqlparse-0.5.5.tar.gz", hash = "sha256:e20d4a9b0b8585fdf63b10d30066c7c94c5d7a7ec47c889a2d83a3caa93ff28e", size = 120815, upload-time = "2025-12-19T07:17:45.073Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/49/4b/359f28a903c13438ef59ebeee215fb25da53066db67b305c125f1c6d2a25/sqlparse-0.5.5-py3-none-any.whl", hash = "sha256:12a08b3bf3eec877c519589833aed092e2444e68240a3577e8e26148acc7b1ba", size = 46138, upload-time = "2025-12-19T07:17:46.573Z" },
+]
+
+[[package]]
+name = "tablib"
+version = "3.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/11/00/416d2ba54d7d58a7f7c61bf62dfeb48fd553cf49614daf83312f2d2c156e/tablib-3.9.0.tar.gz", hash = "sha256:1b6abd8edb0f35601e04c6161d79660fdcde4abb4a54f66cc9f9054bd55d5fe2", size = 125565, upload-time = "2025-10-15T18:21:56.263Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/66/6b/32e51d847148b299088fc42d3d896845fd09c5247190133ea69dbe71ba51/tablib-3.9.0-py3-none-any.whl", hash = "sha256:eda17cd0d4dda614efc0e710227654c60ddbeb1ca92cdcfc5c3bd1fc5f5a6e4a", size = 49580, upload-time = "2025-10-15T18:21:44.185Z" },
 ]
 
 [[package]]

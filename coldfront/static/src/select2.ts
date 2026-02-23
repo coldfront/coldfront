@@ -18,5 +18,6 @@ new Function('module', 'require', 'window', 'jQuery', src)(
 export function initSelect2(): void {
   $('.fos-select2').select2({
     placeholder: 'Select a fos',
+    width: '100%',
   });
 }

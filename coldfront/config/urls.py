@@ -10,11 +10,13 @@ import environ
 import split_settings
 from django.conf import settings
 from django.contrib import admin
+from django.contrib.auth.views import LoginView
 from django.core import serializers
 from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from coldfront.auth.logout import LogoutView
 from coldfront.config.env import ENV, PROJECT_ROOT
 
 admin.site.site_header = "ColdFront Administration"
@@ -23,6 +25,16 @@ admin.site.site_title = "ColdFront Administration"
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
+    # Login/logout
+    path(
+        "login",
+        LoginView.as_view(template_name="auth/login.html", redirect_authenticated_user=True),
+        name="login",
+    ),
+    path("logout/", LogoutView.as_view(), name="logout"),
+    # ColdFront core apps
+    path("core/", include("coldfront.core.urls")),
+    path("tenancy/", include("coldfront.tenancy.urls")),
 ]
 
 if "mozilla_django_oidc" in settings.INSTALLED_APPS:

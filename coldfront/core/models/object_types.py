@@ -9,7 +9,7 @@ from collections import defaultdict
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.db.models import Q
+from django.db.models import ManyToOneRel, Q
 from django.db.models.fields.json import KT
 from django.utils.translation import gettext as _
 
@@ -62,14 +62,6 @@ class ObjectTypeManager(models.Manager):
             model = model._meta.concrete_model
         return model._meta
 
-    def _get_model_features(self, model):
-        features = {}
-        feature_array = ObjectType.get_model_features(model)
-        for f in feature_array:
-            features[f] = True
-
-        return features
-
     def get_for_model(self, model, for_concrete_model=True):
         """
         Retrieve or create and return the ObjectType for a model.
@@ -94,7 +86,7 @@ class ObjectTypeManager(models.Manager):
                 app_label=opts.app_label,
                 model=opts.model_name,
                 public=ObjectType.model_is_public(model),
-                features=self._get_model_features(model),
+                features=ObjectType.get_model_features_dict(model),
             )[0]
 
         # TODO: Populate the request cache to avoid redundant lookups
@@ -142,7 +134,7 @@ class ObjectTypeManager(models.Manager):
                     app_label=app_label,
                     model=model_name,
                     public=ObjectType.model_is_public(model),
-                    features=self._get_model_features(model),
+                    features=ObjectType.get_model_features_dict(model),
                 )
 
         return results
@@ -204,9 +196,21 @@ class ObjectType(ContentType):
     @staticmethod
     def get_model_features(model):
         """
-        Return all features supported by the given model.
+        Return all features supported by the given model as a list.
         """
         return [feature for feature, test_func in registry["model_features"].items() if test_func(model)]
+
+    @staticmethod
+    def get_model_features_dict(model):
+        """
+        Return all features supported by the given model as a dict.
+        """
+        features = {}
+        feature_array = ObjectType.get_model_features(model)
+        for f in feature_array:
+            features[f] = True
+
+        return features
 
     @staticmethod
     def model_is_public(model):
@@ -235,6 +239,46 @@ class ObjectType(ContentType):
         else:
             ot = ObjectType.objects.get_for_model(model_or_ct)
         return feature in ot.features
+
+    @staticmethod
+    def get_related_models(model, ordered=True):
+        """
+        Return a list of all models which have a ForeignKey to the given model and the name of the field. For example,
+        `get_related_models(Tenant)` will return all models which have a ForeignKey relationship to Tenant.
+        """
+        related_models = [
+            (field.related_model, field.remote_field.name)
+            for field in model._meta.related_objects
+            if type(field) is ManyToOneRel and not getattr(field.related_model, "_coldfront_private", False)
+        ]
+
+        if ordered:
+            return sorted(related_models, key=lambda x: x[0]._meta.verbose_name.lower())
+
+        return related_models
+
+    @staticmethod
+    def identifier_string(object_type):
+        """
+        Return a "raw" ObjectType identifier string suitable for bulk import/export (e.g. "dcim.site").
+        """
+        return f"{object_type.app_label}.{object_type.model}"
+
+    @staticmethod
+    def display_name(object_type, include_app=True):
+        """
+        Return a human-friendly ObjectType name (e.g. "DCIM > Site").
+        """
+        try:
+            meta = object_type.model_class()._meta
+            app_label = title(meta.app_config.verbose_name)
+            model_name = title(meta.verbose_name)
+            if include_app:
+                return f"{app_label} > {model_name}"
+            return model_name
+        except AttributeError:
+            # Model does not exist
+            return f"{object_type.app_label} > {object_type.model}"
 
     @property
     def app_labeled_name(self):

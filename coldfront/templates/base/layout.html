@@ -1,0 +1,70 @@
+{% extends 'base/base.html' %}
+{% block layout %}
+
+{% include "su/is_su.html" %}
+
+<div class="container-fluid">
+  <div class="row">
+   {% include 'base/sidebar.html' %}
+
+    <!-- Main content area -->
+    <main class="container-fluid col-md-9 col-lg-10 vh-100" id="main-content" data-bs-spy="scroll" data-bs-target="#sidebar-nav" data-bs-offset="100" tabindex="0">
+        <section class="py-5 mb-5">
+          <!-- Search bar and user menu -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <form class="d-flex" role="search">
+              <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+              <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+
+            <div class="d-flex align-items-center">
+              <button id="theme-toggle" class="btn btn-outline-secondary me-2" title="Toggle dark mode">
+                <i class="fas fa-lightbulb"></i>
+              </button>
+
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                  {{ user.username }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#"><i class="fas fa-user-circle" aria-hidden="true"></i> Profile</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><button class="dropdown-item" hx-post="{% url 'logout' %}" hx-swap="none"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Log Out</button></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {# Page header #}
+          {% block header %}
+
+          {# Alerts #}
+          {% include 'common/messages.html' %}
+
+          {% endblock header %}
+
+          {# Page body #}
+          {% block page %}
+            <div class="page-body my-1">
+              <div class="container-fluid tab-content py-3">
+
+                {# Page alerts #}
+                {% block alerts %}{% endblock %}
+                {# /Page alerts #}
+
+                {# Page content #}
+                {% block content %}{% endblock %}
+                {# /Page content #}
+
+              </div>
+            </div>
+          {% endblock page %}
+
+          {# BS5 pop-up modals #}
+          {% block modals %}{% endblock %}
+
+        </section>
+    </main>
+  </div>
+</div>
+{% endblock layout %}

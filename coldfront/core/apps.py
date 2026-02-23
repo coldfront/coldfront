@@ -9,8 +9,12 @@ class CoreConfig(AppConfig):
     name = "coldfront.core"
 
     def ready(self):
-        from coldfront.core import signals  # noqa: F401
-        from coldfront.registry import register_models
+        from coldfront.models.features import register_models
+
+        from . import (
+            signals,  # noqa: F401
+            views,  # noqa: F401
+        )
 
         # Register models
         register_models(*self.get_models())

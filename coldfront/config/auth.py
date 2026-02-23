@@ -16,7 +16,7 @@ AUTHENTICATION_BACKENDS += [
     "coldfront.auth.backends.ObjectPermissionBackend",
 ]
 
-LOGIN_URL = "/user/login"
+LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = ENV.str("LOGOUT_REDIRECT_URL", LOGIN_URL)
 

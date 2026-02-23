@@ -4,95 +4,145 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-.fakeimg {
-  height: 77px;
-  background: #e2e2e2;
+.page-body .card {
+  margin-bottom: 1rem;
 }
 
-html {
+.page-body .card .table {
+  margin-bottom: 0;
+}
+
+/* Quick search close button */
+div.quicksearch > input#quicksearch {
+  border-right: 0;
+}
+
+div.quicksearch > span.input-group-text {
+  padding-left: 0;
+  background: var(--tblr-bg-forms);
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+/* Sidebar link and toggle button styles */
+.sidebar .btn-toggle,
+.sidebar .nav-link {
   position: relative;
-  min-height: 100%;
-}
-body {
-  /* Margin bottom by footer height */
-  margin-bottom: 150px;
-}
-
-main {
-  padding-top: 40px;
-  padding-bottom: 40px;
-}
-
-.bg-primary {
-  background-color: #1f1d1d !important;
-}
-
-.text-primary {
-  color: #1f1d1d !important;
-}
-
-.border-primary {
-  border-color: #1f1d1d !important;
-}
-
-#brand .container {
-  margin-bottom: 1px;
-}
-#brand h1 {
-  font-size: 1.75rem;
-  color: white;
-  padding-top: 20px;
-  font-weight: normal;
-  letter-spacing: 1px;
-}
-#brand h1 small {
-  color: white;
-  font-weight: lighter;
-  letter-spacing: 2px;
-}
-
-#footer {
-  position: absolute;
-  bottom: 0;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  color: var(--bs-light-subtle);
+  padding: 0.75rem;
+  border-radius: 0.375rem;
   width: 100%;
-  /* Set the fixed height of the footer here */
-  height: 150px;
-  background-color: #4582ec;
-  color: #ffffff;
-  padding-top: 15px;
+  text-align: left;
+  border: none;
 }
 
-#footer a {
-  color: #ffffff;
+span.color-label {
+  display: inline-block;
+  width: 5rem;
+  height: 1rem;
+  padding: 0.25em 0.5em;
+  border: 1px solid #303030;
+  border-radius: 6px;
 }
 
-.banner-name {
-  padding-top: 25px;
-  color: #ffffff;
+/* Hover effects for buttons */
+.sidebar .btn-toggle:hover {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-emphasis-color-rgb);
 }
 
-.banner-logo {
-  margin-top: 5px;
-  max-height: 75px !important;
-  margin-bottom: 5px;
+/* Hover effects for nav links */
+.sidebar .nav-link:hover {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-emphasis-color-rgb);
 }
 
-body > main > form > div.alert.alert-block.alert-danger > ul > li {
-  list-style: none;
-  margin-top: 14px;
+aside.sidebar {
+  ul.nav {
+    flex-direction: column;
+    li.nav-item {
+      .btn-group {
+        visibility: hidden;
+      }
+
+      &:hover,
+      &.active {
+        background-color: var(--tblr-navbar-active-bg);
+        a {
+          text-decoration: none;
+        }
+        .btn-group {
+          visibility: visible;
+        }
+      }
+    }
+  }
 }
 
-body
-  > main
-  > div
-  > div.card.border-primary
-  > div.card-body
-  > form
-  > div.alert.alert-block.alert-danger
-  > ul
-  > li {
-  list-style: none;
-  margin-top: 14px;
+.nav li.text-secondary {
+  color: #f39c12 !important;
+}
+
+/* Allow the showing of the page drop down nav */
+.table-responsive {
+  overflow-x: inherit;
+}
+
+/* ChangeLogging Diffs */
+// Serialized data from change records
+pre.change-data {
+  border-radius: 0;
+  padding: 0;
+
+  // Display each line individually for highlighting
+  > span {
+    display: block;
+    padding-right: 1em;
+    padding-left: 1em;
+    width: 100%;
+    min-width: fit-content;
+
+    &.added {
+      color: var(--tblr-dark);
+      background-color: #2fb344;
+    }
+
+    &.removed {
+      color: var(--tblr-dark);
+      background-color: #d63939;
+    }
+  }
+}
+
+// Change data diff w/added & removed data
+pre.change-diff {
+  border-color: transparent;
+
+  &.change-added {
+    color: var(--tblr-dark);
+    background-color: #2fb344;
+  }
+
+  &.change-removed {
+    color: var(--tblr-dark);
+    background-color: #d63939;
+  }
+}
+
+// <pre> elements displayed with a border
+pre.block {
+  padding: 1em;
+  border: 1px solid #eee;
+  border-radius: var(--tblr-border-radius);
+}
+
+// ToggleColumn checkbox widths
+.w-1 {
+  width: 0.25rem !important;
 }
 
 /*

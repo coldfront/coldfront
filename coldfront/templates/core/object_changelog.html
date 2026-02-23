@@ -1,0 +1,19 @@
+{% extends base_template %}
+{% load render_table from django_tables2 %}
+{% load i18n %}
+
+{% block content %}
+  <div class="row mb-3">
+    <div class="col col-md-12">
+      <div class="card">
+        <div class="table-responsive">
+          {% render_table table 'inc/table.html' %}
+          {% include 'generic/paginator.html' with paginator=table.paginator page=table.page %}
+        </div>
+      </div>
+      <div class="text-muted">
+        {% trans "Change log retention" %}: {% if settings.CHANGELOG_RETENTION %}{{ settings.CHANGELOG_RETENTION }} {% trans "days" %}{% else %}{% trans "Indefinite" %}{% endif %}
+      </div>
+    </div>
+  </div>
+{% endblock %}

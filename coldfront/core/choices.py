@@ -14,9 +14,9 @@ class ObjectChangeActionChoices(ChoiceSet):
     ACTION_DELETE = "delete"
 
     CHOICES = (
-        (ACTION_CREATE, _("Created"), "green"),
-        (ACTION_UPDATE, _("Updated"), "blue"),
-        (ACTION_DELETE, _("Deleted"), "red"),
+        (ACTION_CREATE, _("Created"), "success"),
+        (ACTION_UPDATE, _("Updated"), "info"),
+        (ACTION_DELETE, _("Deleted"), "danger"),
     )
 
 

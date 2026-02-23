@@ -1,0 +1,91 @@
+{% extends 'generic/base.html' %}
+{% load helpers %}
+{% load i18n %}
+
+{% comment %}
+Blocks:
+  - title:      Page title
+  - controls:   Control elements displayed between the header and content
+  - tabs:       Page tabs
+  - content:    Primary page content
+    - form:     Content within the <form> element
+    - buttons:  Form submission buttons
+  - modals:     Any pre-loaded modals
+
+Context:
+  - object:      Python instance of the object being edited
+  - form:        The edit form
+  - return_url:  The URL to which the user is redirected after submitting the form
+{% endcomment %}
+
+{% block title %}
+  {% if object.pk %}
+    {% trans "Editing" %} {{ object|meta:"verbose_name" }} {{ object }}
+  {% else %}
+    {% blocktrans trimmed with object_type=object|meta:"verbose_name" %}
+      Add a new {{ object_type }}
+    {% endblocktrans %}
+  {% endif %}
+{% endblock title %}
+
+{% block controls %}
+  <div class="btn-list">
+
+    {# Link to model documentation #}
+    {% if settings.DOCS_ROOT and object.docs_url %}
+      <a href="{{ object.docs_url }}" target="_blank" class="btn btn-outline-secondary" title="{% trans "View model documentation" %}">
+        <i class="fa-solid fa-life-ring"></i> {% trans "Help" %}
+      </a>
+    {% endif %}
+
+  </div>
+{% endblock controls %}
+
+{% block tabs %}
+  <ul class="nav nav-tabs">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="edit-form-tab" data-bs-toggle="tab" data-bs-target="#edit-form" type="button" role="tab" aria-controls="edit-form" aria-selected="true">
+        {% if object.pk %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %}
+      </button>
+    </li>
+  </ul>
+{% endblock tabs %}
+
+{% block content %}
+  <div class="tab-pane show active" id="edit-form" role="tabpanel" aria-labelledby="object-list-tab">
+
+    <form action="." method="post" enctype="multipart/form-data" class="object-edit mt-5">
+      {% csrf_token %}
+
+      <div id="form_fields" hx-disinherit="hx-select hx-swap">
+        {% block form %}
+          {% include 'htmx/form.html' %}
+        {% endblock form %}
+      </div>
+
+      <div class="col-lg-9 text-end">
+        {% block buttons %}
+          <a href="{{ return_url }}" class="btn btn-outline-secondary btn-float">{% trans "Cancel" %}</a>
+          {% if object.pk %}
+            <button type="submit" name="_update" class="btn btn-primary">
+              {% trans "Save" %}
+            </button>
+          {% else %}
+            <div class="btn-group" role="group" aria-label="{% trans "Actions" %}">
+              <button type="submit" name="_create" class="btn btn-primary">
+                {% trans "Create" %}
+              </button>
+              <button type="submit" name="_addanother" class="btn btn-outline-primary btn-float">
+                {% trans "Create & Add Another" %}
+              </button>
+            </div>
+          {% endif %}
+        {% endblock buttons %}
+      </div>
+    </form>
+  </div>
+{% endblock content %}
+
+{% block modals %}
+  {% include 'generic/htmx_modal.html' with size='lg' %}
+{% endblock %}

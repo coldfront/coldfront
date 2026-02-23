@@ -62,6 +62,7 @@ INSTALLED_APPS += [
     "simple_history",
     "django_vite",
     "django_htmx",
+    "django_tables2",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -99,6 +100,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "coldfront.middleware.ColdFrontMiddleware",
 ]
 
 # ------------------------------------------------------------------------------
@@ -128,12 +130,17 @@ TEMPLATES = [
         ],
         "APP_DIRS": True,
         "OPTIONS": {
+            "builtins": [
+                "coldfront.core.templatetags.builtins.filters",
+                "coldfront.core.templatetags.builtins.tags",
+            ],
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django_settings_export.settings_export",
+                "coldfront.context_processors.settings",
+                "coldfront.context_processors.registry",
             ],
         },
     },

@@ -7,11 +7,12 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import ValidationError
 from django.db import models
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
-from coldfront.querysets import TreeManager
-from coldfront.users.querysets import RestrictedQuerySet
+from coldfront.users.querysets import RestrictedQuerySet, TreeManager
+from coldfront.views import get_viewname
 
 from .features import ChangeLoggingMixin, CloningMixin, TagsMixin
 
@@ -23,6 +24,9 @@ class ColdFrontFeatureSet(
 ):
     class Meta:
         abstract = True
+
+    def get_absolute_url(self):
+        return reverse(get_viewname(self), args=[self.pk])
 
 
 class BaseModel(models.Model):

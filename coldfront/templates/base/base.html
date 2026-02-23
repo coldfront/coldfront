@@ -1,0 +1,40 @@
+{% load django_htmx %}
+{% load i18n %}
+{% load static %}
+{% load django_vite %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'common/images/apple-touch-icon.png' %}">
+  <link rel="shortcut icon" type="image/png" href="{% static 'common/images/favicon.ico' %}"/>
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'common/images/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'common/images/favicon-16x16.png' %}">
+  {% if settings.DJANGO_VITE.default.dev_mode %}
+    {% vite_hmr_client %}
+    {% vite_asset "coldfront.ts" %}
+  {% else %}
+    <link  rel="stylesheet" href="{% static "coldfront.css" %}?v={{ settings.VERSION }}">
+    <script type="module" crossorigin="" src="{% static "coldfront.js" %}?v={{ settings.VERSION }}"></script>
+  {% endif %}
+  <link rel="manifest" href="{% static 'common/site.webmanifest' %}">
+  <link rel="stylesheet" href="{% static 'common/css/common.css' %}">
+  {% django_htmx_script %}
+
+  {# Page title #}
+  <title>{% block title %}{% trans "Home" %}{% endblock %} | ColdFront</title>
+
+  {# Additional <head> content #}
+  {% block head %}{% endblock %}
+</head>
+
+<body hx-headers='{"x-csrftoken": "{{ csrf_token }}"}' data-bs-theme="light">
+    {# Page layout #}
+    {% block layout %}{% endblock %}
+
+    {% block javascript %} {% endblock %}
+</body>
+</html>

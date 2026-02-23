@@ -1,0 +1,15 @@
+{% load render_table from django_tables2 %}
+{% load i18n %}
+
+<div class="card {% if panel_class %}border-{{ panel_class }}{% endif %}">
+  {% if heading %}
+    <h2 class="card-header{% if panel_class %} text-{{ panel_class }}{% endif %}">{{ heading }}</h2>
+  {% endif %}
+  {% if table.rows %}
+    <div class="table-responsive">
+      {% render_table table 'inc/table.html' %}
+    </div>
+  {% else %}
+    <div class="card-body text-muted">{% trans "None" %}</div>
+  {% endif %}
+</div>

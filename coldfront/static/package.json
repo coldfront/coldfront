@@ -37,6 +37,7 @@
     "flatpickr": "^4.6.13",
     "htmx.org": "^2.0.8",
     "jquery": "^3.7.1",
-    "select2": "^4.1.0-rc.0"
+    "select2": "^4.1.0-rc.0",
+    "tom-select": "^2.5.1"
   }
 }

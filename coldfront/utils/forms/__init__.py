@@ -2,6 +2,27 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from .utils import add_blank_choice
+from .forms import (
+    BulkDeleteForm,
+    BulkEditForm,
+    BulkRenameForm,
+    ConfirmationForm,
+    CSVModelForm,
+    DeleteForm,
+    FilterForm,
+    TableConfigForm,
+)
+from .utils import add_blank_choice, restrict_form_fields
 
-__all__ = ("add_blank_choice",)
+__all__ = (
+    "add_blank_choice",
+    "restrict_form_fields",
+    "BulkDeleteForm",
+    "BulkEditForm",
+    "BulkRenameForm",
+    "ConfirmationForm",
+    "CSVModelForm",
+    "DeleteForm",
+    "FilterForm",
+    "TableConfigForm",
+)
