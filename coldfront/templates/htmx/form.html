@@ -1,2 +1,26 @@
 {% load crispy_forms_tags %}
+{% load form_helpers %}
+{% load i18n %}
+
 {% crispy form %}
+
+{% if form.custom_fields %}
+<fieldset> <legend class="col-9 offset-3">{% trans "Custom Fields" %}</legend>
+
+{% for group, fields in form.custom_field_groups.items %}
+  {% if group %}
+  <div class="row">
+    <h3 class="col-9 offset-3 mb-3 h4">{{ group }}</h3>
+  </div>
+  {% endif %}
+  {% for name in fields %}
+    {% if name in form.nullable_fields %}
+      {% render_field form|getfield:name bulk_nullable=True %}
+    {% else %}
+      {% render_field form|getfield:name %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+  </fieldset>
+{% endif %}

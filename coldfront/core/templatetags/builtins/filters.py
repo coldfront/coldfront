@@ -8,11 +8,15 @@ import json
 import re
 
 from django import template
+from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturalday, naturaltime
 from django.utils.html import escape, format_html
 from django.utils.timezone import localtime
+from markdown import markdown
+from markdown.extensions.tables import TableExtension
 
-from coldfront.utils.html import foreground_color
+from coldfront.utils.html import clean_html, foreground_color
+from coldfront.utils.strings import title
 
 register = template.Library()
 
@@ -136,3 +140,44 @@ def render_json(value):
 def split(string, sep):
     """Return the string split by sep."""
     return string.split(sep)
+
+
+@register.filter("markdown", is_safe=True)
+def render_markdown(value):
+    """
+    Render a string as Markdown. This filter is invoked as "markdown":
+
+        {{ md_source_text|markdown }}
+    """
+    if not value:
+        return ""
+
+    # Render Markdown
+    html = markdown(
+        value,
+        extensions=[
+            "def_list",
+            "fenced_code",
+            TableExtension(use_align_attribute=True),
+        ],
+    )
+
+    # If the string is not empty wrap it in rendered-markdown to style tables
+    if html:
+        html = f'<div class="rendered-markdown">{html}</div>'
+
+    schemes = settings.ALLOWED_URL_SCHEMES
+
+    # Sanitize HTML
+    html = clean_html(html, schemes)
+
+    return format_html(html)
+
+
+@register.filter()
+def bettertitle(value):
+    """
+    Alternative to the builtin title(). Ensures that the first letter of each word is uppercase but retains the
+    original case of all others.
+    """
+    return title(value)

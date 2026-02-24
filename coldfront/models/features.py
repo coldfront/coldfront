@@ -4,16 +4,20 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 import json
+from collections import defaultdict
+from functools import cached_property
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.validators import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 
-from coldfront.core.choices import ObjectChangeActionChoices
+from coldfront.constants import CUSTOMFIELD_EMPTY_VALUES
+from coldfront.core.choices import CustomFieldUIVisibleChoices, ObjectChangeActionChoices
 from coldfront.core.models.change_logging import ObjectChange
-from coldfront.core.utils import is_taggable
+from coldfront.core.utils import CustomFieldJSONEncoder, is_taggable
 from coldfront.registry import register_model_feature, register_model_view
 from coldfront.utils.serialization import serialize_object
 
@@ -167,9 +171,159 @@ class TagsMixin(models.Model):
         abstract = True
 
 
+class CustomFieldsMixin(models.Model):
+    """
+    Enables support for custom fields.
+    """
+
+    custom_field_data = models.JSONField(encoder=CustomFieldJSONEncoder, blank=True, default=dict)
+
+    class Meta:
+        abstract = True
+
+    @cached_property
+    def cf(self):
+        """
+        Return a dictionary mapping each custom field for this instance to its deserialized value.
+
+        ```python
+        >>> tenant = Tenant.objects.first()
+        >>> tenant.cf
+        {'primary_site': <Site: DM-NYC>, 'cust_id': 'DMI01', 'is_active': True}
+        ```
+        """
+        return {cf.name: cf.deserialize(self.custom_field_data.get(cf.name)) for cf in self.custom_fields}
+
+    @cached_property
+    def custom_fields(self):
+        """
+        Return the QuerySet of CustomFields assigned to this model.
+
+        ```python
+        >>> tenant = Tenant.objects.first()
+        >>> tenant.custom_fields
+        <RestrictedQuerySet [<CustomField: Primary site>, <CustomField: Customer ID>, <CustomField: Is active>]>
+        ```
+        """
+        from coldfront.core.models import CustomField
+
+        return CustomField.objects.get_for_model(self)
+
+    def get_custom_fields(self, omit_hidden=False):
+        """
+        Return a dictionary of custom fields for a single object in the form `{field: value}`.
+
+        ```python
+        >>> tenant = Tenant.objects.first()
+        >>> tenant.get_custom_fields()
+        {<CustomField: Customer ID>: 'CYB01'}
+        ```
+
+        Args:
+            omit_hidden: If True, custom fields with no UI visibility will be omitted.
+        """
+        from coldfront.core.models import CustomField
+
+        data = {}
+
+        for field in CustomField.objects.get_for_model(self):
+            value = self.custom_field_data.get(field.name)
+
+            # Skip hidden fields if 'omit_hidden' is True
+            if omit_hidden and field.ui_visible == CustomFieldUIVisibleChoices.HIDDEN:
+                continue
+            if omit_hidden and field.ui_visible == CustomFieldUIVisibleChoices.IF_SET and not value:
+                continue
+
+            data[field] = field.deserialize(value)
+
+        return data
+
+    def get_custom_fields_by_group(self):
+        """
+        Return a dictionary of custom field/value mappings organized by group. Hidden fields are omitted.
+
+        ```python
+        >>> tenant = Tenant.objects.first()
+        >>> tenant.get_custom_fields_by_group()
+        {
+            '': {<CustomField: Primary site>: <Site: DM-NYC>},
+            'Billing': {<CustomField: Customer ID>: 'DMI01', <CustomField: Is active>: True}
+        }
+        ```
+        """
+        from coldfront.core.models import CustomField
+
+        groups = defaultdict(dict)
+        visible_custom_fields = CustomField.objects.get_for_model(self).exclude(
+            ui_visible=CustomFieldUIVisibleChoices.HIDDEN
+        )
+
+        for cf in visible_custom_fields:
+            value = self.custom_field_data.get(cf.name)
+            if value in CUSTOMFIELD_EMPTY_VALUES and cf.ui_visible == CustomFieldUIVisibleChoices.IF_SET:
+                continue
+            value = cf.deserialize(value)
+            groups[cf.group_name][cf] = value
+
+        return dict(groups)
+
+    def populate_custom_field_defaults(self):
+        """
+        Apply the default value for each custom field
+        """
+        for cf in self.custom_fields:
+            self.custom_field_data[cf.name] = cf.default
+
+    populate_custom_field_defaults.alters_data = True
+
+    def clean(self):
+        super().clean()
+        from coldfront.core.models import CustomField
+
+        custom_fields = {cf.name: cf for cf in CustomField.objects.get_for_model(self)}
+
+        # Remove any stale custom field data
+        self.custom_field_data = {k: v for k, v in self.custom_field_data.items() if k in custom_fields.keys()}
+
+        # Validate all field values
+        for field_name, value in self.custom_field_data.items():
+            try:
+                custom_fields[field_name].validate(value)
+            except ValidationError as e:
+                raise ValidationError(
+                    _("Invalid value for custom field '{name}': {error}").format(name=field_name, error=e.message)
+                )
+
+            # Validate uniqueness if enforced
+            if custom_fields[field_name].unique and value not in CUSTOMFIELD_EMPTY_VALUES:
+                if (
+                    self._meta.model.objects.exclude(pk=self.pk)
+                    .filter(**{f"custom_field_data__{field_name}": value})
+                    .exists()
+                ):
+                    raise ValidationError(_("Custom field '{name}' must have a unique value.").format(name=field_name))
+
+        # Check for missing required values
+        for cf in custom_fields.values():
+            if cf.required and cf.name not in self.custom_field_data:
+                raise ValidationError(_("Missing required custom field '{name}'.").format(name=cf.name))
+
+    def save(self, *args, **kwargs):
+        from coldfront.core.models import CustomField
+
+        # Populate default values for custom fields not already present in the object data
+        for cf in CustomField.objects.get_for_model(self):
+            if cf.name not in self.custom_field_data and cf.default is not None:
+                self.custom_field_data[cf.name] = cf.default
+
+        super().save(*args, **kwargs)
+
+
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))
 register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
 register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
+register_model_feature("custom_fields", lambda model: issubclass(model, CustomFieldsMixin))
 
 
 def register_models(*models):

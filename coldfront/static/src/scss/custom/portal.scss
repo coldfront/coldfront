@@ -145,6 +145,14 @@ pre.block {
   width: 0.25rem !important;
 }
 
+// For the action button lists
+.btn-list {
+  --tblr-list-gap: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--tblr-list-gap);
+}
+
 /*
  * These were copied from django-hijack https://github.com/arteria/django-hijack
  *

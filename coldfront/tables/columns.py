@@ -26,12 +26,14 @@ __all__ = (
     "ActionsColumn",
     "BooleanColumn",
     "ColorColumn",
+    "ChoicesColumn",
     "ColoredLabelColumn",
     "ContentTypeColumn",
     "ContentTypesColumn",
     "ChoiceFieldColumn",
     "LinkedCountColumn",
     "MPTTColumn",
+    "MarkdownColumn",
     "TagColumn",
     "ToggleColumn",
 )
@@ -411,7 +413,7 @@ class ContentTypesColumn(tables.ManyToManyColumn):
         return ObjectType.display_name(obj, include_app=False)
 
     def value(self, value):
-        return ",".join([ObjectType.identifier(ot) for ot in self.filter(value)])
+        return ",".join([ObjectType.identifier_string(ot) for ot in self.filter(value)])
 
 
 class TemplateColumn(tables.TemplateColumn):
@@ -477,3 +479,51 @@ class ChoiceFieldColumn(tables.Column):
 
     def value(self, value):
         return value
+
+
+class MarkdownColumn(tables.TemplateColumn):
+    """
+    Render a Markdown string.
+    """
+
+    template_code = """
+    {% if value %}
+      {{ value|markdown }}
+    {% else %}
+      &mdash;
+    {% endif %}
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(
+            template_code=self.template_code,
+            **kwargs,
+        )
+
+    def value(self, value):
+        return value
+
+
+class ChoicesColumn(tables.Column):
+    """
+    Display the human-friendly labels of a set of choices.
+    """
+
+    def __init__(self, *args, max_items=None, **kwargs):
+        self.max_items = max_items
+        super().__init__(*args, **kwargs)
+
+    def render(self, value):
+        omitted_count = 0
+        value = [v[1] for v in value]
+
+        # Limit the returned items to the specified maximum number (if any)
+        if self.max_items:
+            omitted_count = len(value) - self.max_items
+            value = value[: self.max_items - 1]
+
+        # Annotate omitted items (if applicable)
+        if omitted_count > 0:
+            value.append(f"({omitted_count} more)")
+
+        return ", ".join(value)

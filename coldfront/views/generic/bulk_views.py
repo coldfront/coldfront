@@ -10,7 +10,7 @@ from django_tables2.export import TableExport
 from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.query import reapply_model_ordering
 from coldfront.views.htmx import htmx_partial
-from coldfront.views.object_actions import AddObject
+from coldfront.views.object_actions import AddObject, BulkExport
 
 from .base import BaseMultiObjectView
 from .mixins import ActionsMixin, TableMixin
@@ -30,7 +30,10 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
     filterset = None
     filterset_form = None
     # actions = (AddObject, BulkImport, BulkExport, BulkEdit, BulkRename, BulkDelete)
-    actions = (AddObject,)
+    actions = (
+        AddObject,
+        BulkExport,
+    )
 
     def get_required_permission(self):
         return get_permission_for_model(self.queryset.model, "view")

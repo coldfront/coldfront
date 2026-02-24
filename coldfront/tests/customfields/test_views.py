@@ -3,7 +3,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
-from coldfront.core.models import CustomFieldChoiceSet
+from coldfront.core.choices import (
+    CustomFieldFilterLogicChoices,
+    CustomFieldTypeChoices,
+    CustomFieldUIEditableChoices,
+    CustomFieldUIVisibleChoices,
+)
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType
+from coldfront.tenancy.models import Tenant
 from coldfront.utils.testing import ViewTestCases
 
 
@@ -44,4 +51,56 @@ class CustomFieldChoiceSetTestCase(ViewTestCases.PrimaryObjectViewTestCase):
 
         cls.bulk_edit_data = {
             "description": "New description",
+        }
+
+
+class CustomFieldTestCase(ViewTestCases.PrimaryObjectViewTestCase):
+    model = CustomField
+
+    @classmethod
+    def setUpTestData(cls):
+
+        tenant_type = ObjectType.objects.get_for_model(Tenant)
+
+        custom_fields = (
+            CustomField(name="field1", label="Field 1", type=CustomFieldTypeChoices.TYPE_TEXT),
+            CustomField(name="field2", label="Field 2", type=CustomFieldTypeChoices.TYPE_TEXT),
+            CustomField(name="field3", label="Field 3", type=CustomFieldTypeChoices.TYPE_TEXT),
+        )
+        for customfield in custom_fields:
+            customfield.save()
+            customfield.object_types.add(tenant_type)
+
+        cls.form_data = {
+            "name": "field_x",
+            "label": "Field X",
+            "type": "text",
+            "object_types": [tenant_type.pk],
+            "search_weight": 2000,
+            "filter_logic": CustomFieldFilterLogicChoices.FILTER_EXACT,
+            "default": None,
+            "weight": 200,
+            "required": True,
+            "ui_visible": CustomFieldUIVisibleChoices.ALWAYS,
+            "ui_editable": CustomFieldUIEditableChoices.YES,
+        }
+
+        cls.csv_data = (
+            "name,label,type,object_types,related_object_type,weight,search_weight,filter_logic,choice_set,validation_minimum,validation_maximum,validation_regex,ui_visible,ui_editable",
+            "field4,Field 4,text,tenancy.tenant,,100,1000,exact,,,,[a-z]{3},always,yes",
+            "field5,Field 5,integer,tenancy.tenant,,100,2000,exact,,1,100,,always,yes",
+            "field6,Field 6,select,tenancy.tenant,,100,3000,exact,Choice Set 1,,,,always,yes",
+            "field7,Field 7,object,tenancy.tenant,tenancy.tenantgroup,100,4000,exact,,,,,always,yes",
+        )
+
+        cls.csv_update_data = (
+            "id,label",
+            f"{custom_fields[0].pk},New label 1",
+            f"{custom_fields[1].pk},New label 2",
+            f"{custom_fields[2].pk},New label 3",
+        )
+
+        cls.bulk_edit_data = {
+            "required": True,
+            "weight": 200,
         }

@@ -78,3 +78,67 @@ class ColorChoices(ChoiceSet):
         (COLOR_BLACK, _("Black")),
         (COLOR_WHITE, _("White")),
     )
+
+
+class CustomFieldTypeChoices(ChoiceSet):
+    TYPE_TEXT = "text"
+    TYPE_LONGTEXT = "longtext"
+    TYPE_INTEGER = "integer"
+    TYPE_DECIMAL = "decimal"
+    TYPE_BOOLEAN = "boolean"
+    TYPE_DATE = "date"
+    TYPE_DATETIME = "datetime"
+    TYPE_SELECT = "select"
+    TYPE_MULTISELECT = "multiselect"
+    TYPE_OBJECT = "object"
+    TYPE_MULTIOBJECT = "multiobject"
+
+    CHOICES = (
+        (TYPE_TEXT, _("Text")),
+        (TYPE_LONGTEXT, _("Text (long)")),
+        (TYPE_INTEGER, _("Integer")),
+        (TYPE_DECIMAL, _("Decimal")),
+        (TYPE_BOOLEAN, _("Boolean (true/false)")),
+        (TYPE_DATE, _("Date")),
+        (TYPE_DATETIME, _("Date & time")),
+        (TYPE_SELECT, _("Selection")),
+        (TYPE_MULTISELECT, _("Multiple selection")),
+        (TYPE_OBJECT, _("Object")),
+        (TYPE_MULTIOBJECT, _("Multiple objects")),
+    )
+
+
+class CustomFieldFilterLogicChoices(ChoiceSet):
+    FILTER_DISABLED = "disabled"
+    FILTER_LOOSE = "loose"
+    FILTER_EXACT = "exact"
+
+    CHOICES = (
+        (FILTER_DISABLED, _("Disabled")),
+        (FILTER_LOOSE, _("Loose")),
+        (FILTER_EXACT, _("Exact")),
+    )
+
+
+class CustomFieldUIVisibleChoices(ChoiceSet):
+    ALWAYS = "always"
+    IF_SET = "if-set"
+    HIDDEN = "hidden"
+
+    CHOICES = (
+        (ALWAYS, _("Always"), "green"),
+        (IF_SET, _("If set"), "yellow"),
+        (HIDDEN, _("Hidden"), "gray"),
+    )
+
+
+class CustomFieldUIEditableChoices(ChoiceSet):
+    YES = "yes"
+    NO = "no"
+    HIDDEN = "hidden"
+
+    CHOICES = (
+        (YES, _("Yes"), "green"),
+        (NO, _("No"), "red"),
+        (HIDDEN, _("Hidden"), "gray"),
+    )

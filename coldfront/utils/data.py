@@ -2,6 +2,10 @@
 # SPDX-FileCopyrightText: (C) DigitalOcean, LLC
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+import datetime
+
+from django.utils import timezone
+from django.utils.timezone import localtime
 
 __all__ = (
     "get_config_value_ci",
@@ -36,3 +40,17 @@ def shallow_compare_dict(source_dict, destination_dict, exclude=tuple()):
             difference[key] = value
 
     return difference
+
+
+def local_now():
+    """
+    Return the current date & time in the system timezone.
+    """
+    return localtime(timezone.now())
+
+
+def datetime_from_timestamp(value):
+    """
+    Convert an ISO 8601 or RFC 3339 timestamp to a datetime object.
+    """
+    return datetime.datetime.fromisoformat(value)

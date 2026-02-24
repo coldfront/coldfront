@@ -9,9 +9,9 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
-from coldfront.core.choices import ObjectChangeActionChoices
+from coldfront.core.choices import CustomFieldFilterLogicChoices, ObjectChangeActionChoices
 from coldfront.core.filters import TagFilter, TagIDFilter
-from coldfront.core.models import ObjectChange
+from coldfront.core.models import CustomField, ObjectChange
 
 __all__ = (
     "BaseFilterSet",
@@ -73,6 +73,21 @@ class ColdFrontModelFilterSet(ChangeLoggedModelFilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        custom_field_filters = {}
+        for custom_field in CustomField.objects.get_for_model(self._meta.model):
+            if custom_field.filter_logic == CustomFieldFilterLogicChoices.FILTER_DISABLED:
+                # Skip disabled fields
+                continue
+            if filter_instance := custom_field.to_filter():
+                filter_name = f"cf_{custom_field.name}"
+                custom_field_filters[filter_name] = filter_instance
+
+                # Add relevant additional lookups
+                # additional_lookups = self.get_additional_lookups(filter_name, filter_instance)
+                # custom_field_filters.update(additional_lookups)
+
+        self.filters.update(custom_field_filters)
 
     def search(self, queryset, name, value):
         """
