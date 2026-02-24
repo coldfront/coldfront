@@ -15,7 +15,7 @@ from django.dispatch import receiver
 from coldfront.context import current_request
 from coldfront.core.choices import ObjectChangeActionChoices
 from coldfront.core.events import OBJECT_CREATED, OBJECT_DELETED, OBJECT_UPDATED
-from coldfront.core.models import ObjectChange, ObjectType, Tag
+from coldfront.core.models import CustomField, ObjectChange, ObjectType, Tag
 from coldfront.models.features import ChangeLoggingMixin
 
 
@@ -175,3 +175,40 @@ def handle_deleted_object(sender, instance, **kwargs):
                 elif type(relation) is ManyToOneRel and relation.null and relation.on_delete not in (CASCADE, RESTRICT):
                     setattr(obj, related_field_name, None)
                     obj.save()
+
+
+def handle_cf_added_obj_types(instance, action, pk_set, **kwargs):
+    """
+    Handle the population of default/null values when a CustomField is added to one or more ContentTypes.
+    """
+    if action == "post_add":
+        instance.populate_initial_data(ContentType.objects.filter(pk__in=pk_set))
+
+
+def handle_cf_removed_obj_types(instance, action, pk_set, **kwargs):
+    """
+    Handle the cleanup of old custom field data when a CustomField is removed from one or more ContentTypes.
+    """
+    if action == "post_remove":
+        instance.remove_stale_data(ContentType.objects.filter(pk__in=pk_set))
+
+
+def handle_cf_renamed(instance, created, **kwargs):
+    """
+    Handle the renaming of custom field data on objects when a CustomField is renamed.
+    """
+    if not created and instance.name != instance._name:
+        instance.rename_object_data(old_name=instance._name, new_name=instance.name)
+
+
+def handle_cf_deleted(instance, **kwargs):
+    """
+    Handle the cleanup of old custom field data when a CustomField is deleted.
+    """
+    instance.remove_stale_data(instance.object_types.all())
+
+
+post_save.connect(handle_cf_renamed, sender=CustomField)
+pre_delete.connect(handle_cf_deleted, sender=CustomField)
+m2m_changed.connect(handle_cf_added_obj_types, sender=CustomField.object_types.through)
+m2m_changed.connect(handle_cf_removed_obj_types, sender=CustomField.object_types.through)

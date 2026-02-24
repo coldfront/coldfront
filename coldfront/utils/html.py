@@ -5,9 +5,13 @@
 
 import re
 
+import nh3
 from django.utils.html import escape
 
+from coldfront.constants import HTML_ALLOWED_ATTRIBUTES, HTML_ALLOWED_TAGS
+
 __all__ = (
+    "clean_html",
     "foreground_color",
     "highlight",
 )
@@ -58,3 +62,16 @@ def highlight(value, highlight, trim_pre=None, trim_post=None, trim_placeholder=
         post = post[:trim_post] + trim_placeholder
 
     return f"{escape(pre)}<mark>{escape(match)}</mark>{escape(post)}"
+
+
+def clean_html(html, schemes):
+    """
+    Sanitizes HTML based on a whitelist of allowed tags and attributes.
+    Also takes a list of allowed URI schemes.
+    """
+    return nh3.clean(
+        html,
+        tags=HTML_ALLOWED_TAGS,
+        attributes=HTML_ALLOWED_ATTRIBUTES,
+        url_schemes=set(schemes),
+    )

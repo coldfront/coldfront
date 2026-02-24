@@ -6,7 +6,7 @@
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.models import CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
 from coldfront.tables import ColdFrontTable, columns
 
 from .template_code import OBJECTCHANGE_FULL_NAME, OBJECTCHANGE_OBJECT, OBJECTCHANGE_REQUEST_ID
@@ -137,3 +137,98 @@ class CustomFieldChoiceSetTable(ColdFrontTable):
             "last_updated",
         )
         default_columns = ("pk", "name", "choices", "choice_count", "description")
+
+
+class CustomFieldTable(ColdFrontTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    object_types = columns.ContentTypesColumn(
+        verbose_name=_("Object Types"),
+    )
+    required = columns.BooleanColumn(
+        verbose_name=_("Required"),
+        false_mark=None,
+    )
+    unique = columns.BooleanColumn(
+        verbose_name=_("Validate Uniqueness"),
+        false_mark=None,
+    )
+    ui_visible = columns.ChoiceFieldColumn(
+        verbose_name=_("Visible"),
+    )
+    ui_editable = columns.ChoiceFieldColumn(
+        verbose_name=_("Editable"),
+    )
+    description = columns.MarkdownColumn(
+        verbose_name=_("Description"),
+    )
+    related_object_type = columns.ContentTypeColumn(
+        verbose_name=_("Related Object Type"),
+    )
+    choice_set = tables.Column(
+        linkify=True,
+        verbose_name=_("Choice Set"),
+    )
+    choices = columns.ChoicesColumn(
+        max_items=10,
+        orderable=False,
+        verbose_name=_("Choices"),
+    )
+    is_cloneable = columns.BooleanColumn(
+        verbose_name=_("Is Cloneable"),
+        false_mark=None,
+    )
+    validation_minimum = tables.Column(
+        verbose_name=_("Minimum Value"),
+    )
+    validation_maximum = tables.Column(
+        verbose_name=_("Maximum Value"),
+    )
+    validation_regex = tables.Column(
+        verbose_name=_("Validation Regex"),
+    )
+    owner = tables.Column(linkify=True, verbose_name=_("Owner"))
+
+    class Meta(ColdFrontTable.Meta):
+        model = CustomField
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "object_types",
+            "label",
+            "type",
+            "related_object_type",
+            "group_name",
+            "required",
+            "unique",
+            "default",
+            "description",
+            "search_weight",
+            "filter_logic",
+            "ui_visible",
+            "ui_editable",
+            "is_cloneable",
+            "weight",
+            "choice_set",
+            "choices",
+            "validation_minimum",
+            "validation_maximum",
+            "validation_regex",
+            "comments",
+            "created",
+            "last_updated",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "object_types",
+            "label",
+            "group_name",
+            "type",
+            "required",
+            "unique",
+            "description",
+        )

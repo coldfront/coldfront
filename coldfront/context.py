@@ -5,7 +5,11 @@
 
 from contextvars import ContextVar
 
-__all__ = ("current_request",)
+__all__ = (
+    "current_request",
+    "query_cache",
+)
 
 
 current_request = ContextVar("current_request", default=None)
+query_cache = ContextVar("query_cache", default=None)

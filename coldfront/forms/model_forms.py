@@ -8,7 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from coldfront.utils.forms.fields import SlugField
 
-from .mixins import ChangelogMessageMixin, CheckLastUpdatedMixin, HorizontalFormMixin, TagsMixin
+from .mixins import ChangelogMessageMixin, CheckLastUpdatedMixin, CustomFieldsMixin, HorizontalFormMixin, TagsMixin
 
 __all__ = (
     "NestedGroupModelForm",
@@ -18,7 +18,14 @@ __all__ = (
 )
 
 
-class ColdFrontModelForm(ChangelogMessageMixin, CheckLastUpdatedMixin, TagsMixin, HorizontalFormMixin, forms.ModelForm):
+class ColdFrontModelForm(
+    ChangelogMessageMixin,
+    CheckLastUpdatedMixin,
+    CustomFieldsMixin,
+    TagsMixin,
+    HorizontalFormMixin,
+    forms.ModelForm,
+):
     """
     Base form for creating & editing ColdFront models.
     """
@@ -36,6 +43,32 @@ class ColdFrontModelForm(ChangelogMessageMixin, CheckLastUpdatedMixin, TagsMixin
                 self.instance._m2m_values[field.name] = list(self.cleaned_data[field.name])
 
         return super()._post_clean()
+
+    def _get_form_field(self, customfield):
+        if self.instance.pk:
+            form_field = customfield.to_form_field(set_initial=False)
+            form_field.initial = self.instance.custom_field_data.get(customfield.name)
+            return form_field
+
+        return customfield.to_form_field()
+
+    def clean(self):
+
+        # Save custom field data on instance
+        for cf_name, customfield in self.custom_fields.items():
+            if cf_name not in self.fields:
+                # Custom fields may be absent when performing bulk updates via import
+                continue
+            key = cf_name[3:]  # Strip "cf_" from field name
+            value = self.cleaned_data.get(cf_name)
+
+            # Convert "empty" values to null
+            if value in self.fields[cf_name].empty_values:
+                self.instance.custom_field_data[key] = None
+            else:
+                self.instance.custom_field_data[key] = customfield.serialize(value)
+
+        return super().clean()
 
 
 class PrimaryModelForm(ColdFrontModelForm):

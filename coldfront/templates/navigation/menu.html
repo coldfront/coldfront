@@ -11,11 +11,11 @@
   <div class="collapse" id="{{ menu.label }}-collapse">
     {% for group, items in groups %}
     <ul class="nav flex-column">
-      <li class="nav-item d-flex nav-link text-secondary text-uppercase fw-bold pt-3 justify-content-between py-0"">
+      <li class="nav-item d-flex nav-link text-secondary text-uppercase fw-bold pt-3 justify-content-between py-0">
           {{ group.label }}
       </li>
       {% for item, buttons in items %}
-      <li class="nav-item d-flex justify-content-between py-0"">
+      <li class="nav-item d-flex justify-content-between py-0">
           <a href="{{ item.url }}" class="nav-link">{{ item.link_text }}</a>
           {% if buttons %}
           <div class="btn-group btn-group-sm">

@@ -8,12 +8,12 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
-from coldfront.core.models import ObjectChange
 from coldfront.users.models import User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet, ChangeLoggedModelFilterSet
 
-from .models import CustomFieldChoiceSet, Tag, TaggedItem
+from .choices import CustomFieldTypeChoices
+from .models import CustomField, CustomFieldChoiceSet, ObjectChange, ObjectType, Tag, TaggedItem
 
 
 class TagFilterSet(ChangeLoggedModelFilterSet):
@@ -154,3 +154,61 @@ class CustomFieldChoiceSetFilterSet(ChangeLoggedModelFilterSet):
 
     def filter_by_choice(self, queryset, name, value):
         return queryset.filter(choices__icontains=value)
+
+
+class CustomFieldFilterSet(ChangeLoggedModelFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    type = django_filters.MultipleChoiceFilter(
+        choices=CustomFieldTypeChoices,
+        distinct=False,
+    )
+    object_type_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=ObjectType.objects.all(), field_name="object_types"
+    )
+    object_type = ContentTypeFilter(field_name="object_types")
+    related_object_type_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=ObjectType.objects.all(), distinct=False, field_name="related_object_type"
+    )
+    related_object_type = ContentTypeFilter()
+    choice_set_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=CustomFieldChoiceSet.objects.all(),
+        distinct=False,
+    )
+    choice_set = django_filters.ModelMultipleChoiceFilter(
+        field_name="choice_set__name", queryset=CustomFieldChoiceSet.objects.all(), distinct=False, to_field_name="name"
+    )
+
+    class Meta:
+        model = CustomField
+        fields = (
+            "id",
+            "name",
+            "label",
+            "group_name",
+            "required",
+            "unique",
+            "search_weight",
+            "filter_logic",
+            "ui_visible",
+            "ui_editable",
+            "weight",
+            "is_cloneable",
+            "description",
+            "validation_minimum",
+            "validation_maximum",
+            "validation_regex",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(
+            Q(name__icontains=value)
+            | Q(label__icontains=value)
+            | Q(group_name__icontains=value)
+            | Q(description__icontains=value)
+            | Q(comments__icontains=value)
+        )

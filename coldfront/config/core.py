@@ -161,3 +161,20 @@ EXEMPT_EXCLUDE_MODELS = (
     ("users", "objectpermission"),
     ("users", "user"),
 )
+
+ALLOWED_URL_SCHEMES = [
+    "file",
+    "ftp",
+    "ftps",
+    "http",
+    "https",
+    "irc",
+    "mailto",
+    "sftp",
+    "ssh",
+    "tel",
+    "telnet",
+    "tftp",
+    "vnc",
+    "xmpp",
+]

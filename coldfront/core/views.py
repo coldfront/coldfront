@@ -5,9 +5,8 @@
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import EmptyPage
-from django.db.models import Count
+from django.db.models import Count, Q
 
-from coldfront.core.models import ObjectChange
 from coldfront.registry import register_model_view
 from coldfront.tables.paginator import EnhancedPaginator, get_paginate_count
 from coldfront.utils.data import shallow_compare_dict
@@ -20,7 +19,7 @@ from . import (
     forms,
     tables,
 )
-from .models import CustomFieldChoiceSet, Tag, TaggedItem
+from .models import CustomField, CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
 
 
 @register_model_view(Tag, "list", path="", detail=False)
@@ -187,3 +186,48 @@ class CustomFieldChoiceSetEditView(generic.ObjectEditView):
 @register_model_view(CustomFieldChoiceSet, "delete")
 class CustomFieldChoiceSetDeleteView(generic.ObjectDeleteView):
     queryset = CustomFieldChoiceSet.objects.all()
+
+
+#
+# Custom fields
+#
+
+
+@register_model_view(CustomField, "list", path="", detail=False)
+class CustomFieldListView(generic.ObjectListView):
+    queryset = CustomField.objects.select_related("choice_set")
+    filterset = filtersets.CustomFieldFilterSet
+    filterset_form = forms.CustomFieldFilterForm
+    table = tables.CustomFieldTable
+
+
+@register_model_view(CustomField)
+class CustomFieldView(generic.ObjectView):
+    queryset = CustomField.objects.select_related("choice_set")
+
+    def get_extra_context(self, request, instance):
+        related_models = ()
+
+        for object_type in instance.object_types.all():
+            related_models += (
+                object_type.model_class()
+                .objects.restrict(request.user, "view")
+                .exclude(
+                    Q(**{f"custom_field_data__{instance.name}": ""})
+                    | Q(**{f"custom_field_data__{instance.name}": None})
+                ),
+            )
+
+        return {"related_models": related_models}
+
+
+@register_model_view(CustomField, "add", detail=False)
+@register_model_view(CustomField, "edit")
+class CustomFieldEditView(generic.ObjectEditView):
+    queryset = CustomField.objects.select_related("choice_set")
+    form = forms.CustomFieldForm
+
+
+@register_model_view(CustomField, "delete")
+class CustomFieldDeleteView(generic.ObjectDeleteView):
+    queryset = CustomField.objects.select_related("choice_set")

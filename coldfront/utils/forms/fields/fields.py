@@ -3,12 +3,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
+import json
+
 from django import forms
 from django.conf import settings
 from django.db.models import Count
+from django.forms.fields import InvalidJSONInput
+from django.forms.fields import JSONField as _JSONField
 from django.utils.translation import gettext_lazy as _
-
-__all__ = ("QueryField", "SlugField", "TagFilterField")
 
 
 class QueryField(forms.CharField):
@@ -60,3 +62,31 @@ class TagFilterField(forms.MultipleChoiceField):
 
         # Choices are fetched each time the form is initialized
         super().__init__(label=_("Tags"), choices=get_choices, required=False, *args, **kwargs)
+
+
+class JSONField(_JSONField):
+    """
+    Custom wrapper around Django's built-in JSONField to avoid presenting "null" as the default text.
+    """
+
+    empty_values = [None, "", ()]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.widget.attrs["placeholder"] = ""
+        self.widget.attrs["class"] = "font-monospace"
+        if not self.help_text:
+            self.help_text = _('Enter context data in <a href="https://json.org/">JSON</a> format.')
+
+    def prepare_value(self, value):
+        if isinstance(value, InvalidJSONInput):
+            return value
+        if value in ("", None):
+            return ""
+        if type(value) is str:
+            try:
+                value = json.loads(value, cls=self.decoder)
+            except json.decoder.JSONDecodeError:
+                return f'"{value}"'
+        return json.dumps(value, sort_keys=True, indent=4, ensure_ascii=False, cls=self.encoder)

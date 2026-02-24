@@ -3,8 +3,11 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
+import re
 
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
 
 __all__ = ("ColorValidator",)
 
@@ -12,3 +15,14 @@ __all__ = ("ColorValidator",)
 ColorValidator = RegexValidator(
     regex="^[0-9a-f]{6}$", message="Enter a valid hexadecimal RGB color code.", code="invalid"
 )
+
+
+def validate_regex(value):
+    """
+    Checks that the value is a valid regular expression. (Don't confuse this with RegexValidator, which *uses* a regex
+    to validate a value.)
+    """
+    try:
+        re.compile(value)
+    except re.error:
+        raise ValidationError(_("{value} is not a valid regular expression.").format(value=value))

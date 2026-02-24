@@ -11,7 +11,8 @@ from django import forms
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
-from coldfront.core.models import ObjectType, Tag
+from coldfront.core.choices import CustomFieldUIEditableChoices
+from coldfront.core.models import CustomField, ObjectType, Tag
 
 __all__ = ("TagsMixin",)
 
@@ -111,3 +112,57 @@ class CheckLastUpdatedMixin(forms.Form):
                     "log for details."
                 )
             )
+
+
+class CustomFieldsMixin:
+    """
+    Extend a Form to include custom field support.
+
+    Attributes:
+        model: The model class
+    """
+
+    model = None
+
+    def __init__(self, *args, **kwargs):
+        self.custom_fields = {}
+        self.custom_field_groups = {}
+
+        super().__init__(*args, **kwargs)
+
+        self._append_customfield_fields()
+
+    def _get_content_type(self):
+        """
+        Return the ObjectType of the form's model.
+        """
+        if not getattr(self, "model", None):
+            raise NotImplementedError(
+                _("{class_name} must specify a model class.").format(class_name=self.__class__.__name__)
+            )
+        return ObjectType.objects.get_for_model(self.model)
+
+    def _get_custom_fields(self, content_type):
+        # Return only custom fields that are not hidden from the UI
+        return [
+            cf
+            for cf in CustomField.objects.get_for_model(content_type.model_class())
+            if cf.ui_editable != CustomFieldUIEditableChoices.HIDDEN
+        ]
+
+    def _get_form_field(self, customfield):
+        return customfield.to_form_field()
+
+    def _append_customfield_fields(self):
+        """
+        Append form fields for all CustomFields assigned to this object type.
+        """
+        for customfield in self._get_custom_fields(self._get_content_type()):
+            field_name = f"cf_{customfield.name}"
+            self.fields[field_name] = self._get_form_field(customfield)
+
+            # Annotate the field in the list of CustomField form fields
+            self.custom_fields[field_name] = customfield
+            if customfield.group_name not in self.custom_field_groups:
+                self.custom_field_groups[customfield.group_name] = []
+            self.custom_field_groups[customfield.group_name].append(field_name)
