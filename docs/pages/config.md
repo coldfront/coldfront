@@ -138,6 +138,7 @@ The following settings are ColdFront specific settings related to the core appli
 | LOGOUT_REDIRECT_URL                          |                                                                                                       | no          | yes                      |
 | PLUGIN_API                                   |                                                                                                       | no          | yes                      |
 | PLUGIN_SYSMON                                |                                                                                                       | no          | yes                      |
+| REQUEST_TIMEOUT                              | A float representing the number of seconds to wait for an external request to finish before timing out. Default 10.                                                                 | yes          | yes                      |
 | SYSMON_ENDPOINT                              | same as `SYSTEM_MONITOR_ENDPOINT`                                                                     | no          | yes                      |
 | SYSMON_LINK                                  | same as `SYSTEM_MONITOR_DISPLAY_MORE_STATUS_INFO_LINK`                                                | no          | yes                      |
 | SYSMON_TITLE                                 | same as `SYSTEM_MONITOR_PANEL_TITLE`                                                                  | no          | yes                      |
