@@ -281,7 +281,7 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 
                     row = [
                         grant.title,
-                        " ".join((grant.project.pi.first_name, grant.project.pi.last_name)),
+                        f"{grant.project.pi.first_name} {grant.project.pi.last_name}",
                         grant.role,
                         grant.grant_pi_full_name,
                         grant.total_amount_awarded,
@@ -301,7 +301,7 @@ class GrantReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 for grant in grants:
                     row = [
                         grant.title,
-                        " ".join((grant.project.pi.first_name, grant.project.pi.last_name)),
+                        f"{grant.project.pi.first_name} {grant.project.pi.last_name}",
                         grant.role,
                         grant.grant_pi_full_name,
                         grant.total_amount_awarded,
@@ -359,7 +359,7 @@ class GrantDownloadView(LoginRequiredMixin, UserPassesTestMixin, View):
         for grant in grants:
             row = [
                 grant.title,
-                " ".join((grant.project.pi.first_name, grant.project.pi.last_name)),
+                f"{grant.project.pi.first_name} {grant.project.pi.last_name}",
                 grant.role,
                 grant.grant_pi_full_name,
                 grant.total_amount_awarded,
