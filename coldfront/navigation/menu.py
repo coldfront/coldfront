@@ -18,10 +18,42 @@ ORGANIZATION_MENU = Menu(
     icon_class="fa-solid fa-sitemap",
     groups=(
         MenuGroup(
+            label=_("Projects"),
+            items=(get_model_item("ras", "project", _("Projects")),),
+        ),
+        MenuGroup(
             label=_("Tenancy"),
             items=(
                 get_model_item("tenancy", "tenant", _("Tenants")),
                 get_model_item("tenancy", "tenantgroup", _("Tenant Groups")),
+            ),
+        ),
+    ),
+)
+
+ALLOCATIONS_MENU = Menu(
+    label=_("Allocations"),
+    icon_class="fa-solid fa-list-check",
+    groups=(
+        MenuGroup(
+            label=_("Allocations"),
+            items=(
+                get_model_item("ras", "allocation", _("Allocations")),
+                get_model_item("ras", "allocationtype", _("Allocation Types")),
+            ),
+        ),
+    ),
+)
+
+RESOURCES_MENU = Menu(
+    label=_("Resources"),
+    icon_class="fa-solid fa-server",
+    groups=(
+        MenuGroup(
+            label=_("Resources"),
+            items=(
+                get_model_item("ras", "resource", _("Resources")),
+                get_model_item("ras", "resourcetype", _("Resource Types")),
             ),
         ),
     ),
@@ -70,6 +102,8 @@ def get_menus():
     """
     menus = [
         ORGANIZATION_MENU,
+        ALLOCATIONS_MENU,
+        RESOURCES_MENU,
         CUSTOMIZATION_MENU,
     ]
 

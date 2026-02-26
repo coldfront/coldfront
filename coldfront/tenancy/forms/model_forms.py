@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from crispy_forms.layout import Field, Fieldset
+from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import NestedGroupModelForm
 from coldfront.forms.layouts import Slug
@@ -68,3 +70,16 @@ class TenantForm(NestedGroupModelForm):
         )
 
         return helper
+
+
+class TenancyForm(forms.Form):
+    tenant_group = forms.ModelChoiceField(
+        label=_("Tenant group"),
+        queryset=TenantGroup.objects.all(),
+        required=False,
+    )
+    tenant = forms.ModelChoiceField(
+        label=_("Tenant"),
+        queryset=Tenant.objects.all(),
+        required=False,
+    )

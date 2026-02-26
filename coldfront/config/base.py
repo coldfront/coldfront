@@ -86,6 +86,7 @@ INSTALLED_APPS += [
     "coldfront.users",
     "coldfront.core",
     "coldfront.tenancy",
+    "coldfront.ras",
 ]
 
 # ------------------------------------------------------------------------------

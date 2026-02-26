@@ -84,8 +84,6 @@ class OrganizationalModelForm(ColdFrontModelForm):
     Form for models which inherit from OrganizationalModel.
     """
 
-    slug = SlugField()
-
     pass
 
 

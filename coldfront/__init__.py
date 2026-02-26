@@ -5,7 +5,7 @@
 import os
 import sys
 
-__version__ = "1.1.7"
+__version__ = "2.0.0-alpha"
 VERSION = __version__
 
 

@@ -125,11 +125,6 @@ class OrganizationalModel(ColdFrontModel):
         max_length=100,
         unique=True,
     )
-    slug = models.SlugField(
-        verbose_name=_("slug"),
-        max_length=100,
-        unique=True,
-    )
     description = models.CharField(
         verbose_name=_("description"),
         max_length=200,

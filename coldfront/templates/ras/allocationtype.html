@@ -1,0 +1,42 @@
+{% extends 'ras/base.html' %}
+{% load helpers %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+  {{ block.super }}
+  {% if object.group %}
+    <li class="breadcrumb-item"><a href="{% url 'ras:allocationtype_list' %}?group_id={{ object.group.pk }}">{{ object.group }}</a></li>
+  {% endif %}
+{% endblock breadcrumbs %}
+
+{% block content %}
+  <div class="row">
+    <div class="col col-12 col-md-7">
+      <div class="card">
+        <h2 class="card-header">{% trans "Allocation Type" %}</h2>
+        <table class="table table-hover attr-table">
+          <tr>
+            <th scope="row">{% trans "Name" %}</th>
+            <td>{{ object.name|placeholder }}</td>
+          </tr>
+          <tr>
+            <th scope="row">{% trans "Description" %}</th>
+            <td>{{ object.description|placeholder }}</td>
+          </tr>
+        </table>
+      </div>
+      {% include 'inc/panels/tags.html' %}
+    </div>
+    <div class="col col-md-5">
+        <div class="card">
+          <h2 class="card-header">{% trans "Schema" %}</h2>
+          <pre class="block">{{ object.schema|json }}</pre>
+        </div>
+        {% include 'inc/panels/related_objects.html' %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col col-md-12">
+    </div>
+  </div>
+{% endblock %}

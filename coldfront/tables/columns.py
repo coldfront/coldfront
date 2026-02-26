@@ -11,6 +11,7 @@ from urllib.parse import quote
 import django_tables2 as tables
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.humanize.templatetags.humanize import naturalday
 from django.db.models import DateField, DateTimeField
 from django.template import Context, Template
 from django.urls import reverse
@@ -51,11 +52,11 @@ class DateColumn(tables.Column):
 
     def render(self, value):
         if value:
-            return value.isoformat()
+            return naturalday(value.date().isoformat())
 
     def value(self, value):
         if value:
-            return value.isoformat()
+            return naturalday(value.date().isoformat())
 
     @classmethod
     def from_field(cls, field, **kwargs):

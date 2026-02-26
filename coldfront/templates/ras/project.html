@@ -1,0 +1,61 @@
+{% extends 'ras/base.html' %}
+{% load helpers %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+  {{ block.super }}
+  {% if object.group %}
+    <li class="breadcrumb-item"><a href="{% url 'ras:project_list' %}?group_id={{ object.group.pk }}">{{ object.group }}</a></li>
+  {% endif %}
+{% endblock breadcrumbs %}
+
+{% block extra_controls %}
+    {% if perms.ras.add_projectallocation %}
+        <a href="#"
+           class="btn btn-primary">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> {% trans "Request Allocation" %}
+        </a>
+    {% endif %}
+{% endblock extra_controls %}
+
+{% block content %}
+  <div class="row">
+    <div class="col col-12 col-md-7">
+      <div class="card">
+        <h2 class="card-header">{% trans "Project" %}</h2>
+        <table class="table table-hover attr-table">
+          <tr>
+              <th scope="row">Principal Investigator</th>
+              <td>{{ object.owner.first_name }} {{ object.owner.last_name }} ({{ object.owner.username }})</td>
+          </tr>
+          <tr>
+              <th scope="row">Contact</th>
+              <td class="d-flex justify-content-between align-items-start">
+                  <span>{{ object.owner.email }}</span>
+                  <a href="mailto:{{ object.owner.email }}" class="btn btn-primary btn-sm" title="Email PI">
+                    <i class="far fa-envelope"></i>
+                  </a>
+              </td>
+          </tr>
+          <tr>
+            <th scope="row">{% trans "Description" %}</th>
+            <td>{{ object.description|placeholder }}</td>
+          </tr>
+          <tr>
+            <th scope="row">{% trans "Status" %}</th>
+            <td>{% badge object.status bg_color=object.get_status_color %}</td>
+          </tr>
+        </table>
+      </div>
+      {% include 'inc/panels/tags.html' %}
+    </div>
+    <div class="col col-md-5">
+        {% include 'inc/panels/related_objects.html' %}
+        {% include 'inc/panels/custom_fields.html' %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col col-md-12">
+    </div>
+  </div>
+{% endblock %}

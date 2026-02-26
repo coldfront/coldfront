@@ -159,10 +159,11 @@ class BaseTable(tables.Table):
                 # If an ordering has been specified as a query parameter, save it as the
                 # user's preferred ordering for this table.
                 ordering = request.GET.getlist(self.prefixed_order_by_field)
-                request.user.config.set(f"tables.{self.name}.ordering", ordering, commit=True)
+                # request.user.config.set(f"tables.{self.name}.ordering", ordering, commit=True)
             else:
+                pass
                 # If the ordering has been set to none (empty), clear any existing preference.
-                request.user.config.clear(f"tables.{self.name}.ordering", commit=True)
+                # request.user.config.clear(f"tables.{self.name}.ordering", commit=True)
 
         # Fall back to the default columns & ordering
         if columns is None and hasattr(settings, "DEFAULT_USER_PREFERENCES"):
