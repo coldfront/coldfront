@@ -52,10 +52,10 @@ Context:
 {% block title %}{{ object }}{% endblock %}
 
 {% block subtitle %}
-  <div class="text-secondary fs-5">
+  <div class="text-secondary fs-7">
       Created <span title="{{ object.created | naturaltime }}">{{ object.created | date:'Y-m-d' }}</span>
       <span class="separator">·</span>
-      Updated <span title="{{ object.modified | naturaltime }}">{{ object.modified | date:'Y-m-d' }}</span>
+      Updated <span title="{{ object.last_updated | naturaltime }}">{{ object.last_updated | date:'Y-m-d' }}</span>
   </div>
 {% endblock subtitle %}
 

@@ -6,6 +6,7 @@ CORE_APPS = (
     "core",
     "users",
     "tenancy",
+    "ras",
 )
 
 # Placeholder text for empty tables

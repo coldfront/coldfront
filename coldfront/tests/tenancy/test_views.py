@@ -7,7 +7,7 @@ from coldfront.tenancy.models import Tenant, TenantGroup
 from coldfront.utils.testing import ViewTestCases, create_tags
 
 
-class TenantGroupTestCase(ViewTestCases.GetObjectViewTestCase):
+class TenantGroupTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
     model = TenantGroup
 
     @classmethod
@@ -49,7 +49,7 @@ class TenantGroupTestCase(ViewTestCases.GetObjectViewTestCase):
         }
 
 
-class TenantTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
+class TenantTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     model = Tenant
 
     @classmethod

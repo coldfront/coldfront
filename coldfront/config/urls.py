@@ -16,7 +16,7 @@ from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from coldfront.auth.logout import LogoutView
+from coldfront.auth.logout import HtmxLogoutView
 from coldfront.config.env import ENV, PROJECT_ROOT
 
 admin.site.site_header = "ColdFront Administration"
@@ -31,10 +31,11 @@ urlpatterns = [
         LoginView.as_view(template_name="auth/login.html", redirect_authenticated_user=True),
         name="login",
     ),
-    path("logout/", LogoutView.as_view(), name="logout"),
+    path("logout/", HtmxLogoutView.as_view(), name="logout"),
     # ColdFront core apps
     path("core/", include("coldfront.core.urls")),
     path("tenancy/", include("coldfront.tenancy.urls")),
+    path("ras/", include("coldfront.ras.urls")),
 ]
 
 if "mozilla_django_oidc" in settings.INSTALLED_APPS:

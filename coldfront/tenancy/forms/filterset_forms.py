@@ -45,3 +45,16 @@ class TenantFilterSetForm(PrimaryModelFilterSetForm):
             ),
         )
         return helper
+
+
+class TenancyFilterSetForm(forms.Form):
+    tenant_group_id = forms.ModelMultipleChoiceField(
+        queryset=TenantGroup.objects.all(),
+        required=False,
+        label=_("Tenant group"),
+    )
+    tenant_id = forms.ModelMultipleChoiceField(
+        queryset=Tenant.objects.all(),
+        required=False,
+        label=_("Tenant"),
+    )

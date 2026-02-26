@@ -14,6 +14,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import escape, format_html
+from django.utils.translation import gettext_lazy as _
 
 from coldfront.exceptions import AbortRequest, PermissionsViolation
 from coldfront.users.permissions import get_permission_for_model
@@ -26,12 +27,13 @@ from coldfront.views.mixins import GetReturnURLMixin
 from coldfront.views.object_actions import CloneObject, DeleteObject, EditObject
 
 from .base import BaseObjectView
-from .mixins import ActionsMixin
+from .mixins import ActionsMixin, TableMixin
 
 __all__ = (
     "ObjectDeleteView",
     "ObjectEditView",
     "ObjectView",
+    "ObjectChildrenView",
 )
 
 
@@ -443,5 +445,101 @@ class ObjectDeleteView(GetReturnURLMixin, BaseObjectView):
                 "form": form,
                 "return_url": self.get_return_url(request, obj),
                 **self.get_extra_context(request, obj),
+            },
+        )
+
+
+class ObjectChildrenView(ObjectView, ActionsMixin, TableMixin):
+    """
+    Display a table of child objects associated with the parent object. For example, ColdFront uses this to display
+    the set of allocations for a project.
+
+    Attributes:
+        child_model: The model class which represents the child objects
+        table: The django-tables2 Table class used to render the child objects list
+        filterset: A django-filter FilterSet that is applied to the queryset
+        filterset_form: The form class used to render filter options
+        actions: An iterable of ObjectAction subclasses (see ActionsMixin)
+    """
+
+    child_model = None
+    table = None
+    filterset = None
+    filterset_form = None
+    actions = (CloneObject, EditObject, DeleteObject)
+    template_name = "generic/object_children.html"
+
+    def get_children(self, request, parent):
+        """
+        Return a QuerySet of child objects.
+
+        Args:
+            request: The current request
+            parent: The parent object
+        """
+        raise NotImplementedError(
+            _("{class_name} must implement get_children()").format(class_name=self.__class__.__name__)
+        )
+
+    def prep_table_data(self, request, queryset, parent):
+        """
+        Provides a hook for subclassed views to modify data before initializing the table.
+
+        Args:
+            request: The current request
+            queryset: The filtered queryset of child objects
+            parent: The parent object
+        """
+        return queryset
+
+    #
+    # Request handlers
+    #
+
+    def get(self, request, *args, **kwargs):
+        """
+        GET handler for rendering child objects.
+        """
+        instance = self.get_object(**kwargs)
+        child_objects = self.get_children(request, instance)
+
+        if self.filterset:
+            child_objects = self.filterset(request.GET, child_objects, request=request).qs
+
+        # Determine the available actions
+        actions = self.get_permitted_actions(request.user, model=self.child_model)
+        has_table_actions = any(action.multi for action in actions)
+
+        table_data = self.prep_table_data(request, child_objects, instance)
+        table = self.get_table(table_data, request, has_table_actions)
+
+        # If this is an HTMX request, return only the rendered table HTML
+        if htmx_partial(request):
+            return render(
+                request,
+                "htmx/table.html",
+                {
+                    "object": instance,
+                    "table": table,
+                    "model": self.child_model,
+                },
+            )
+
+        return render(
+            request,
+            self.get_template_name(),
+            {
+                "object": instance,
+                "model": self.child_model,
+                "child_model": self.child_model,
+                "base_template": f"{instance._meta.app_label}/{instance._meta.model_name}.html",
+                "table": table,
+                "table_config": f"{table.name}_config",
+                "table_configs": None,  # get_table_configs(table, request.user),
+                "filter_form": self.filterset_form(request.GET) if self.filterset_form else None,
+                "actions": actions,
+                "tab": self.tab,
+                "return_url": request.get_full_path(),
+                **self.get_extra_context(request, instance),
             },
         )

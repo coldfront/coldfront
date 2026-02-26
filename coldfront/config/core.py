@@ -153,6 +153,7 @@ PAGINATE_COUNT = ENV.int("PAGINATE_COUNT", default=50)
 MAX_PAGE_SIZE = ENV.int("MAX_PAGE_SIZE", default=1000)
 FILTERS_NULL_CHOICE_LABEL = "None"
 FILTERS_NULL_CHOICE_VALUE = "null"
+FIELD_CHOICES = {}
 
 # Exclude potentially sensitive models from wildcard view exemption. These may still be exempted
 # by specifying the model individually in the EXEMPT_VIEW_PERMISSIONS configuration parameter.

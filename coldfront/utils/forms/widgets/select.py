@@ -18,3 +18,23 @@ class ColorSelect(forms.Select):
         kwargs["choices"] = add_blank_choice(ColorChoices)
         super().__init__(*args, **kwargs)
         self.attrs["class"] = "color-select"
+
+
+class HTMXSelect(forms.Select):
+    """
+    Selection widget that will re-generate the HTML form upon the selection of a new option.
+    """
+
+    def __init__(self, method="get", hx_url=".", hx_target_id="form_fields", attrs=None, **kwargs):
+        method = method.lower()
+        if method not in ("delete", "get", "patch", "post", "put"):
+            raise ValueError(f"Unsupported HTTP method: {method}")
+        _attrs = {
+            f"hx-{method}": hx_url,
+            "hx-include": f"#{hx_target_id}",
+            "hx-target": f"#{hx_target_id}",
+        }
+        if attrs:
+            _attrs.update(attrs)
+
+        super().__init__(attrs=_attrs, **kwargs)

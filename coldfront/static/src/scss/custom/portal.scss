@@ -153,6 +153,12 @@ pre.block {
   gap: var(--tblr-list-gap);
 }
 
+// Colored column links
+.badge a {
+  color: inherit;
+  text-decoration: none;
+}
+
 /*
  * These were copied from django-hijack https://github.com/arteria/django-hijack
  *

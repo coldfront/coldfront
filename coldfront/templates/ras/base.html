@@ -1,0 +1,11 @@
+{% extends 'generic/object.html' %}
+{% load helpers %}
+{% block breadcrumbs %}
+  {% if object.tenant %}
+    <li class="breadcrumb-item">{{ object.tenant|linkify }}</li>
+  {% endif %}
+  {% if object.project %}
+    <li class="breadcrumb-item">{{ object.project|linkify }}</li>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}

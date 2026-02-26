@@ -58,20 +58,3 @@ def model_view_tabs(context, instance):
     return {
         "tabs": tabs,
     }
-
-
-@register.inclusion_tag("builtins/badge.html")
-def badge(value, bg_color=None, show_empty=False):
-    """
-    Display the specified number as a badge.
-
-    Args:
-        value: The value to be displayed within the badge
-        bg_color: Background color CSS name
-        show_empty: If true, display the badge even if value is None or zero
-    """
-    return {
-        "value": value,
-        "bg_color": bg_color or "secondary",
-        "show_empty": show_empty,
-    }

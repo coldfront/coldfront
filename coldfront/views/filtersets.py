@@ -112,9 +112,7 @@ class OrganizationalModelFilterSet(ColdFrontModelFilterSet):
     def search(self, queryset, name, value):
         if not value.strip():
             return queryset
-        return queryset.filter(
-            models.Q(name__icontains=value) | models.Q(slug__icontains=value) | models.Q(description__icontains=value)
-        )
+        return queryset.filter(models.Q(name__icontains=value) | models.Q(description__icontains=value))
 
 
 class NestedGroupModelFilterSet(ColdFrontModelFilterSet):

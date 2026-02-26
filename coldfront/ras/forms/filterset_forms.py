@@ -1,0 +1,178 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+from crispy_forms.layout import Fieldset
+from django import forms
+from django.utils.translation import gettext_lazy as _
+
+from coldfront.forms import OrganizationalModelFilterSetForm, PrimaryModelFilterSetForm
+from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
+from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
+from coldfront.tenancy.forms import TenancyFilterSetForm
+from coldfront.utils.forms.fields import TagFilterField
+
+
+class ResourceTypeFilterSetForm(OrganizationalModelFilterSetForm):
+    model = ResourceType
+    tag = TagFilterField(model)
+
+    @property
+    def helper(self):
+        helper = super().helper
+        helper.layout.append(
+            Fieldset(
+                "Resource Type",
+                "tag",
+            ),
+        )
+        return helper
+
+
+class ResourceFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
+    model = Resource
+    resource_type_id = forms.ModelChoiceField(
+        queryset=ResourceType.objects.all(),
+        required=False,
+        label=_("Resource Type"),
+    )
+    status = forms.MultipleChoiceField(
+        label=_("Status"),
+        choices=ResourceStatusChoices,
+        required=False,
+    )
+    tag = TagFilterField(model)
+
+    @property
+    def helper(self):
+        helper = super().helper
+        helper.layout.extend(
+            (
+                Fieldset(
+                    _("Resource"),
+                    "resource_type_id",
+                    "status",
+                    "tag",
+                ),
+                Fieldset(
+                    _("Tenant"),
+                    "tenant_group_id",
+                    "tenant_id",
+                ),
+            )
+        )
+        return helper
+
+
+class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetForm):
+    model = Project
+    status = forms.MultipleChoiceField(
+        label=_("Status"),
+        choices=ResourceStatusChoices,
+        required=False,
+    )
+    last_name = forms.CharField(
+        label="Last Name",
+        max_length=100,
+        required=False,
+    )
+    username = forms.CharField(
+        label="PI Username",
+        max_length=100,
+        required=False,
+    )
+    tag = TagFilterField(model)
+
+    @property
+    def helper(self):
+        helper = super().helper
+        helper.layout.extend(
+            (
+                Fieldset(
+                    _("Project"),
+                    "status",
+                    "last_name",
+                    "username",
+                    "tag",
+                ),
+                Fieldset(
+                    _("Tenant"),
+                    "tenant_group_id",
+                    "tenant_id",
+                ),
+            )
+        )
+        return helper
+
+
+class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
+    model = Allocation
+    allocation_type_id = forms.ModelMultipleChoiceField(
+        queryset=AllocationType.objects.all(), required=False, label=_("Allocation Type")
+    )
+    project_id = forms.ModelChoiceField(
+        queryset=Project.objects.all(),
+        required=False,
+        label=_("Project"),
+    )
+    resources = forms.ModelMultipleChoiceField(
+        queryset=Resource.objects.all(),
+        required=False,
+        label=_("Resources"),
+    )
+    status = forms.MultipleChoiceField(
+        label=_("Status"),
+        choices=AllocationStatusChoices,
+        required=False,
+    )
+    last_name = forms.CharField(
+        label="Last Name",
+        max_length=100,
+        required=False,
+    )
+    username = forms.CharField(
+        label="PI Username",
+        max_length=100,
+        required=False,
+    )
+    tag = TagFilterField(model)
+
+    @property
+    def helper(self):
+        helper = super().helper
+        helper.layout.extend(
+            (
+                Fieldset(
+                    _("Allocation"),
+                    "allocation_type_id",
+                    "project_id",
+                    "resources",
+                    "status",
+                    "last_name",
+                    "username",
+                    "tag",
+                ),
+                Fieldset(
+                    _("Tenant"),
+                    "tenant_group_id",
+                    "tenant_id",
+                ),
+            )
+        )
+        return helper
+
+
+class AllocationTypeFilterSetForm(OrganizationalModelFilterSetForm):
+    model = AllocationType
+    tag = TagFilterField(model)
+
+    @property
+    def helper(self):
+        helper = super().helper
+        helper.layout.append(
+            Fieldset(
+                "Allocation Type",
+                "tag",
+            ),
+        )
+        return helper
