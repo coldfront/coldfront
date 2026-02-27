@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from crispy_forms.layout import Field, Fieldset
+from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -25,21 +25,16 @@ class TenantGroupForm(NestedGroupModelForm):
             "tags",
         ]
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                "Tenant Group",
-                Field("parent"),
-                Field("name"),
-                Slug(),
-                Field("description"),
-                Field("tags"),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            "Tenant Group",
+            "parent",
+            "name",
+            Slug(),
+            "description",
+            "tags",
+        ),
+    )
 
 
 class TenantForm(NestedGroupModelForm):
@@ -55,21 +50,16 @@ class TenantForm(NestedGroupModelForm):
             "tags",
         ]
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                "Tenant",
-                Field("name"),
-                Slug(),
-                Field("group"),
-                Field("description"),
-                Field("tags"),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            "Tenant",
+            "name",
+            Slug("slug"),
+            "group",
+            "description",
+            "tags",
+        ),
+    )
 
 
 class TenancyForm(forms.Form):

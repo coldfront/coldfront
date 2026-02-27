@@ -27,7 +27,15 @@ class TagFilterSet(ChangeLoggedModelFilterSet):
 
     class Meta:
         model = Tag
-        fields = ("id", "name", "slug", "color", "weight", "description", "object_types")
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "color",
+            "weight",
+            "description",
+            "object_types",
+        )
 
     def search(self, queryset, name, value):
         if not value.strip():

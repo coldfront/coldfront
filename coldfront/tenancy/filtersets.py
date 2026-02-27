@@ -45,7 +45,12 @@ class TenantGroupFilterSet(NestedGroupModelFilterSet):
 
     class Meta:
         model = TenantGroup
-        fields = ("id", "name", "slug", "description")
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "description",
+        )
 
 
 class TenantFilterSet(PrimaryModelFilterSet):
@@ -65,7 +70,12 @@ class TenantFilterSet(PrimaryModelFilterSet):
 
     class Meta:
         model = Tenant
-        fields = ("id", "name", "slug", "description")
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "description",
+        )
 
     def search(self, queryset, name, value):
         if not value.strip():

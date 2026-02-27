@@ -16,17 +16,13 @@ class TenantGroupFilterSetForm(NestedGroupModelFilterSetForm):
     parent_id = forms.ModelChoiceField(queryset=TenantGroup.objects.all(), required=False, label=_("Parent Group"))
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                "Tenant Group",
-                "parent_id",
-                "tag",
-            ),
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            "Tenant Group",
+            "parent_id",
+            "tag",
+        ),
+    )
 
 
 class TenantFilterSetForm(PrimaryModelFilterSetForm):
@@ -34,17 +30,13 @@ class TenantFilterSetForm(PrimaryModelFilterSetForm):
     group_id = forms.ModelChoiceField(queryset=TenantGroup.objects.all(), required=False, label=_("Tenant Group"))
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                "Tenant",
-                "group_id",
-                "tag",
-            ),
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            "Tenant",
+            "group_id",
+            "tag",
+        ),
+    )
 
 
 class TenancyFilterSetForm(forms.Form):
