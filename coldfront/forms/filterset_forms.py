@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from crispy_forms.layout import Field
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -23,17 +22,8 @@ class BaseModelFilterSetForm(HorizontalFormMixin, forms.Form):
     """
 
     q = forms.CharField(required=False, label=_("Search"))
-
     selector_fields = ("filter_id", "q")
-
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.form_method = "get"
-        helper.layout.append(
-            Field("q"),
-        )
-        return helper
+    fieldsets = ()
 
 
 class ColdFrontModelFilterSetForm(BaseModelFilterSetForm):

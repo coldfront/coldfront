@@ -19,16 +19,18 @@ __all__ = (
 
 
 class ColdFrontModelForm(
+    HorizontalFormMixin,
     ChangelogMessageMixin,
     CheckLastUpdatedMixin,
     CustomFieldsMixin,
     TagsMixin,
-    HorizontalFormMixin,
     forms.ModelForm,
 ):
     """
     Base form for creating & editing ColdFront models.
     """
+
+    fieldsets = ()
 
     def _get_content_type(self):
         return ContentType.objects.get_for_model(self._meta.model)

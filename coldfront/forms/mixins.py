@@ -24,12 +24,15 @@ class HorizontalFormMixin:
 
     @property
     def helper(self):
+        """
+        crispy forms helper which defines the form rendering behavior.
+        """
         helper = FormHelper()
         helper.form_tag = False
         helper.form_class = "form-horizontal"
         helper.label_class = "col-lg-3 text-end"
         helper.field_class = "col-lg-6"
-        helper.layout = Layout()
+        helper.layout = Layout(*self.fieldsets)
         return helper
 
 

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from crispy_forms.layout import Field, Fieldset
+from crispy_forms.layout import Fieldset
 from django import forms
 from django.core.validators import EMPTY_VALUES
 from django.utils.translation import gettext_lazy as _
@@ -28,21 +28,16 @@ class ResourceTypeForm(OrganizationalModelForm):
             "tags",
         ]
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                _("Resource Type"),
-                Field("name"),
-                Slug(),
-                Field("color"),
-                Field("description"),
-                Field("tags"),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Resource Type"),
+            "name",
+            Slug("slug"),
+            "color",
+            "description",
+            "tags",
+        ),
+    )
 
 
 class ResourceForm(TenancyForm, PrimaryModelForm):
@@ -56,57 +51,51 @@ class ResourceForm(TenancyForm, PrimaryModelForm):
             "tags",
         ]
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.extend(
-            (
-                Fieldset(
-                    _("Resource"),
-                    Field("name"),
-                    Field("resource_type"),
-                    Field("status"),
-                    Field("description"),
-                    Field("tags"),
-                ),
-                Fieldset(
-                    _("Tenant"),
-                    Field("tenant_group"),
-                    Field("tenant"),
-                ),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Resource"),
+            "name",
+            "resource_type",
+            "status",
+            "description",
+            "tags",
+        ),
+        Fieldset(
+            _("Tenant"),
+            "tenant_group",
+            "tenant",
+        ),
+    )
 
 
 class ProjectForm(TenancyForm, OrganizationalModelForm):
     class Meta:
         model = Project
-        exclude = []
+        fields = [
+            "name",
+            "status",
+            "description",
+            "owner",
+            "tags",
+            "tenant",
+            "tenant_group",
+        ]
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.extend(
-            (
-                Fieldset(
-                    _("Project"),
-                    Field("name"),
-                    Field("status"),
-                    Field("description"),
-                    Field("owner"),
-                    Field("tags"),
-                ),
-                Fieldset(
-                    _("Tenant"),
-                    Field("tenant_group"),
-                    Field("tenant"),
-                ),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Project"),
+            "name",
+            "status",
+            "description",
+            "owner",
+            "tags",
+        ),
+        Fieldset(
+            _("Tenant"),
+            "tenant_group",
+            "tenant",
+        ),
+    )
 
 
 class AllocationForm(TenancyForm, PrimaryModelForm):
@@ -189,15 +178,15 @@ class AllocationForm(TenancyForm, PrimaryModelForm):
         return [
             Fieldset(
                 _("Allocation"),
-                Field("project"),
-                Field("resources"),
-                Field("owner"),
+                "project",
+                "resources",
+                "owner",
                 DateTime("start_date"),
                 DateTime("end_date"),
-                Field("status"),
-                Field("description"),
-                Field("justification"),
-                Field("tags"),
+                "status",
+                "description",
+                "justification",
+                "tags",
             ),
             Fieldset(
                 "Allocation Attributes",
@@ -206,17 +195,10 @@ class AllocationForm(TenancyForm, PrimaryModelForm):
             ),
             Fieldset(
                 _("Tenant"),
-                Field("tenant_group"),
-                Field("tenant"),
+                "tenant_group",
+                "tenant",
             ),
         ]
-
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.extend(self.fieldsets)
-
-        return helper
 
 
 class AllocationTypeForm(OrganizationalModelForm):
@@ -235,17 +217,12 @@ class AllocationTypeForm(OrganizationalModelForm):
             "tags",
         ]
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                _("Allocation Type"),
-                Field("name"),
-                Field("description"),
-                Field("schema"),
-                Field("tags"),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Allocation Type"),
+            "name",
+            "description",
+            "schema",
+            "tags",
+        ),
+    )

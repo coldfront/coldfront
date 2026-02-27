@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
-from crispy_forms.layout import Field, Fieldset
+from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
@@ -35,22 +35,17 @@ class TagForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
             "object_types",
         ]
 
-    @property
-    def helper(self, *args, **kwargs):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                _("Tag"),
-                Field("name"),
-                Slug(),
-                Field("color"),
-                Field("weight"),
-                Field("description"),
-                Field("object_types"),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Tag"),
+            "name",
+            Slug("slug"),
+            "color",
+            "weight",
+            "description",
+            "object_types",
+        ),
+    )
 
 
 class CustomFieldChoiceSetForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
@@ -71,20 +66,15 @@ class CustomFieldChoiceSetForm(HorizontalFormMixin, ChangelogMessageMixin, forms
             "order_alphabetically",
         ]
 
-    @property
-    def helper(self, *args, **kwargs):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                _("Custom Field Choice Set"),
-                Field("name"),
-                Field("description"),
-                Field("choices"),
-                Field("order_alphabetically"),
-            )
-        )
-
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Custom Field Choice Set"),
+            "name",
+            "description",
+            "choices",
+            "order_alphabetically",
+        ),
+    )
 
 
 class CustomFieldForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
@@ -211,9 +201,3 @@ class CustomFieldForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelFor
             )
         else:
             del self.fields["choice_set"]
-
-    @property
-    def helper(self, *args, **kwargs):
-        helper = super().helper
-        helper.layout.extend(self.fieldsets)
-        return helper

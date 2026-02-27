@@ -16,7 +16,12 @@ from .models import Allocation, AllocationType, Project, Resource, ResourceType
 class ResourceTypeFilterSet(OrganizationalModelFilterSet):
     class Meta:
         model = ResourceType
-        fields = ("id", "name", "slug", "description")
+        fields = (
+            "id",
+            "name",
+            "slug",
+            "description",
+        )
 
 
 class ResourceFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
@@ -42,7 +47,12 @@ class ResourceFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
 
     class Meta:
         model = Resource
-        fields = ("id", "name", "status", "description")
+        fields = (
+            "id",
+            "name",
+            "status",
+            "description",
+        )
 
     def search(self, queryset, name, value):
         if not value.strip():
@@ -91,7 +101,11 @@ class AllocationFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
 class AllocationTypeFilterSet(OrganizationalModelFilterSet):
     class Meta:
         model = AllocationType
-        fields = ("id", "name", "description")
+        fields = (
+            "id",
+            "name",
+            "description",
+        )
 
     def search(self, queryset, name, value):
         if not value.strip():

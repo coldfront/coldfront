@@ -14,11 +14,7 @@
   </div>
   {% endif %}
   {% for name in fields %}
-    {% if name in form.nullable_fields %}
-      {% render_field form|getfield:name bulk_nullable=True %}
-    {% else %}
-      {% render_field form|getfield:name %}
-    {% endif %}
+      {{ form|getfield:name|as_crispy_field }}
   {% endfor %}
 {% endfor %}
 

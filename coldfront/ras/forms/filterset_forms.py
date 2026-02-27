@@ -17,16 +17,12 @@ class ResourceTypeFilterSetForm(OrganizationalModelFilterSetForm):
     model = ResourceType
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                "Resource Type",
-                "tag",
-            ),
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            "Resource Type",
+            "tag",
+        ),
+    )
 
 
 class ResourceFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
@@ -43,25 +39,19 @@ class ResourceFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
     )
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.extend(
-            (
-                Fieldset(
-                    _("Resource"),
-                    "resource_type_id",
-                    "status",
-                    "tag",
-                ),
-                Fieldset(
-                    _("Tenant"),
-                    "tenant_group_id",
-                    "tenant_id",
-                ),
-            )
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Resource"),
+            "resource_type_id",
+            "status",
+            "tag",
+        ),
+        Fieldset(
+            _("Tenant"),
+            "tenant_group_id",
+            "tenant_id",
+        ),
+    )
 
 
 class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetForm):
@@ -83,26 +73,20 @@ class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetFor
     )
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.extend(
-            (
-                Fieldset(
-                    _("Project"),
-                    "status",
-                    "last_name",
-                    "username",
-                    "tag",
-                ),
-                Fieldset(
-                    _("Tenant"),
-                    "tenant_group_id",
-                    "tenant_id",
-                ),
-            )
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Project"),
+            "status",
+            "last_name",
+            "username",
+            "tag",
+        ),
+        Fieldset(
+            _("Tenant"),
+            "tenant_group_id",
+            "tenant_id",
+        ),
+    )
 
 
 class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
@@ -137,42 +121,33 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
     )
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.extend(
-            (
-                Fieldset(
-                    _("Allocation"),
-                    "allocation_type_id",
-                    "project_id",
-                    "resources",
-                    "status",
-                    "last_name",
-                    "username",
-                    "tag",
-                ),
-                Fieldset(
-                    _("Tenant"),
-                    "tenant_group_id",
-                    "tenant_id",
-                ),
-            )
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            _("Allocation"),
+            "allocation_type_id",
+            "project_id",
+            "resources",
+            "status",
+            "last_name",
+            "username",
+            "tag",
+        ),
+        Fieldset(
+            _("Tenant"),
+            "tenant_group_id",
+            "tenant_id",
+        ),
+    )
 
 
 class AllocationTypeFilterSetForm(OrganizationalModelFilterSetForm):
     model = AllocationType
     tag = TagFilterField(model)
 
-    @property
-    def helper(self):
-        helper = super().helper
-        helper.layout.append(
-            Fieldset(
-                "Allocation Type",
-                "tag",
-            ),
-        )
-        return helper
+    fieldsets = (
+        Fieldset(
+            "Allocation Type",
+            "q",
+            "tag",
+        ),
+    )
