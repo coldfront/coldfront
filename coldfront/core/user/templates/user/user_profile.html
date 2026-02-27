@@ -34,20 +34,22 @@ User Profile{% if not user == viewed_user %}: {{ viewed_user.username }}{% endif
               <td>{{viewed_user.email}}</td>
             </tr>
             <tr>
-              <th scope="row">PI Status:</th>
+              <th class="align-middle" scope="row">PI Status:</th>
               <td>
                 {% if viewed_user.userprofile.is_pi %}
-                  <span class="badge bg-success"><i class="fas fa-check" aria-hidden="true"></i><span class="visually-hidden">Yes</span></span>
+                  <span class="badge bg-success mb-1"><i class="fas fa-check" aria-hidden="true"></i><span class="visually-hidden">Yes</span></span>
                 {% elif not user == viewed_user %}
-                  <span class="badge bg-danger"><i class="fas fa-times" aria-hidden="true"></i><span class="visually-hidden">No</span></span>
+                  <span class="badge bg-danger mb-1"><i class="fas fa-times" aria-hidden="true"></i><span class="visually-hidden">No</span></span>
                 {% else %}
-                  <form class="form-inline" method="post" action="{% url 'user-upgrade' %}">
-                    <div class="form-group mb-2">
+                  <form class="row row-cols-lg-auto align-items-center me-0" method="post" action="{% url 'user-upgrade' %}">
+                    <div>
                       <span class="badge bg-danger"><i class="fas fa-times" aria-hidden="true"></i><span class="visually-hidden">No</span></span>
                     </div>
-                    <div class="form-group mx-sm-3 mb-2">
+                    <div class="mx-sm-3">
                       {% csrf_token %}
-                      <button class="btn btn-secondary" type="submit"><i class="fas fa-chevron-circle-up" aria-hidden="true"></i> Upgrade Account</button>
+                      <span class="align-middle">
+                        <button class="btn btn-secondary" type="submit"><i class="fas fa-chevron-circle-up" aria-hidden="true"></i> Upgrade Account</button>
+                      </span>
                     </div>
                   </form>
                 {% endif %}
