@@ -9,6 +9,18 @@ CORE_APPS = (
     "ras",
 )
 
+# ColdFront 1.x legacy apps
+LEGACY_APPS = (
+    "allocation",
+    "project",
+    "grant",
+    "publication",
+    "research_output",
+    "resource",
+    "field_of_science",
+    "user",
+)
+
 # Placeholder text for empty tables
 EMPTY_TABLE_TEXT = "No results found"
 

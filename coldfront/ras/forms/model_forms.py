@@ -75,7 +75,6 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
             "name",
             "status",
             "description",
-            "owner",
             "tags",
             "tenant",
             "tenant_group",
@@ -87,7 +86,6 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
             "name",
             "status",
             "description",
-            "owner",
             "tags",
         ),
         Fieldset(

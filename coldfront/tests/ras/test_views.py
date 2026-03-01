@@ -35,7 +35,6 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
         cls.form_data = {
             "name": "Project X",
             "description": "A new project",
-            "owner": users[0].pk,
             "status": ProjectStatusChoices.STATUS_NEW,
             "tags": [t.pk for t in tags],
         }

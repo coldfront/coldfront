@@ -1,0 +1,129 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+import django_tables2 as tables
+from django.utils.translation import gettext as _
+
+from coldfront.tables import ColdFrontTable, columns
+
+from .models import Group, ObjectPermission, User
+
+__all__ = (
+    "GroupTable",
+    "ObjectPermissionTable",
+    "UserTable",
+)
+
+
+class UserTable(ColdFrontTable):
+    username = tables.Column(verbose_name=_("Username"), linkify=True)
+    groups = columns.ManyToManyColumn(verbose_name=_("Groups"), linkify_item=("users:group", {"pk": tables.A("pk")}))
+    is_active = columns.BooleanColumn(
+        verbose_name=_("Is Active"),
+    )
+    is_superuser = columns.BooleanColumn(
+        verbose_name=_("Is Superuser"),
+    )
+    actions = columns.ActionsColumn(
+        actions=("edit", "delete"),
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = User
+        fields = (
+            "pk",
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "groups",
+            "is_active",
+            "is_superuser",
+            "last_login",
+        )
+        default_columns = ("pk", "username", "first_name", "last_name", "email", "is_active")
+
+
+class GroupTable(ColdFrontTable):
+    name = tables.Column(verbose_name=_("Name"), linkify=True)
+    actions = columns.ActionsColumn(
+        actions=("edit", "delete"),
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = Group
+        fields = ("pk", "id", "name", "users_count", "description")
+
+
+class ObjectPermissionTable(ColdFrontTable):
+    name = tables.Column(verbose_name=_("Name"), linkify=True)
+    object_types = columns.ContentTypesColumn(
+        verbose_name=_("Object Types"),
+    )
+    enabled = columns.BooleanColumn(
+        verbose_name=_("Enabled"),
+    )
+    can_view = columns.BooleanColumn(
+        verbose_name=_("Can View"),
+        orderable=False,
+    )
+    can_add = columns.BooleanColumn(
+        verbose_name=_("Can Add"),
+        orderable=False,
+    )
+    can_change = columns.BooleanColumn(
+        verbose_name=_("Can Change"),
+        orderable=False,
+    )
+    can_delete = columns.BooleanColumn(
+        verbose_name=_("Can Delete"),
+        orderable=False,
+    )
+    custom_actions = columns.ArrayColumn(
+        verbose_name=_("Custom Actions"),
+        accessor=tables.A("actions"),
+    )
+    users = columns.ManyToManyColumn(
+        verbose_name=_("Users"),
+        linkify_item=("users:user", {"pk": tables.A("pk")}),
+    )
+    groups = columns.ManyToManyColumn(
+        verbose_name=_("Groups"),
+        linkify_item=("users:group", {"pk": tables.A("pk")}),
+    )
+    actions = columns.ActionsColumn(
+        actions=("edit", "delete"),
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = ObjectPermission
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "enabled",
+            "object_types",
+            "can_view",
+            "can_add",
+            "can_change",
+            "can_delete",
+            "custom_actions",
+            "users",
+            "groups",
+            "constraints",
+            "description",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "enabled",
+            "object_types",
+            "can_view",
+            "can_add",
+            "can_change",
+            "can_delete",
+            "description",
+        )
