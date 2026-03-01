@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django_tables2.export import TableExport
 
 from coldfront.users.permissions import get_permission_for_model
+from coldfront.utils.forms import restrict_form_fields
 from coldfront.utils.query import reapply_model_ordering
 from coldfront.views.htmx import htmx_partial
 from coldfront.views.object_actions import AddObject, BulkExport
@@ -135,12 +136,16 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
                 },
             )
 
+        filter_form = self.filterset_form(request.GET) if self.filterset_form else None
+        if filter_form:
+            restrict_form_fields(filter_form, request.user)
+
         context = {
             "model": model,
             "table": table,
             "table_configs": None,
             "actions": actions,
-            "filter_form": self.filterset_form(request.GET) if self.filterset_form else None,
+            "filter_form": filter_form,
             "prerequisite_model": self.get_prerequisite_model(),
             **self.get_extra_context(request),
         }

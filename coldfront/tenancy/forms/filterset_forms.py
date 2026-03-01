@@ -27,7 +27,11 @@ class TenantGroupFilterSetForm(NestedGroupModelFilterSetForm):
 
 class TenantFilterSetForm(PrimaryModelFilterSetForm):
     model = Tenant
-    group_id = forms.ModelChoiceField(queryset=TenantGroup.objects.all(), required=False, label=_("Tenant Group"))
+    group_id = forms.ModelChoiceField(
+        queryset=TenantGroup.objects.all(),
+        required=False,
+        label=_("Tenant Group"),
+    )
     tag = TagFilterField(model)
 
     fieldsets = (

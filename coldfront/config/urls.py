@@ -33,6 +33,7 @@ urlpatterns = [
     ),
     path("logout/", HtmxLogoutView.as_view(), name="logout"),
     # ColdFront core apps
+    path("users/", include("coldfront.users.urls")),
     path("core/", include("coldfront.core.urls")),
     path("tenancy/", include("coldfront.tenancy.urls")),
     path("ras/", include("coldfront.ras.urls")),

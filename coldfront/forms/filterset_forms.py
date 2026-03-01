@@ -25,6 +25,15 @@ class BaseModelFilterSetForm(HorizontalFormMixin, forms.Form):
     selector_fields = ("filter_id", "q")
     fieldsets = ()
 
+    @property
+    def helper(self):
+        """
+        crispy forms helper which defines the form rendering behavior. Override to set form method to get
+        """
+        helper = super().helper
+        helper.form_method = "get"
+        return helper
+
 
 class ColdFrontModelFilterSetForm(BaseModelFilterSetForm):
     """

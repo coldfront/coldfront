@@ -25,6 +25,7 @@ from coldfront.views import get_action_url
 
 __all__ = (
     "ActionsColumn",
+    "ArrayColumn",
     "BooleanColumn",
     "ColorColumn",
     "ChoicesColumn",
@@ -35,6 +36,7 @@ __all__ = (
     "LinkedCountColumn",
     "MPTTColumn",
     "MarkdownColumn",
+    "ManyToManyColumn",
     "TagColumn",
     "ToggleColumn",
 )
@@ -528,3 +530,38 @@ class ChoicesColumn(tables.Column):
             value.append(f"({omitted_count} more)")
 
         return ", ".join(value)
+
+class ManyToManyColumn(tables.ManyToManyColumn):
+    """
+    Overrides django-tables2's stock ManyToManyColumn to ensure that value() returns only plaintext data.
+    """
+    def value(self, value):
+        items = [self.transform(item) for item in self.filter(value)]
+        return self.separator.join(items)
+
+class ArrayColumn(tables.Column):
+    """
+    List array items as a comma-separated list.
+    """
+    def __init__(self, *args, max_items=None, func=str, **kwargs):
+        self.max_items = max_items
+        self.func = func
+        super().__init__(*args, **kwargs)
+
+    def render(self, value):
+        omitted_count = 0
+
+        # Limit the returned items to the specified maximum number (if any)
+        if self.max_items:
+            omitted_count = len(value) - self.max_items
+            value = value[:self.max_items - 1]
+
+        # Apply custom processing function (if any) per item
+        if self.func:
+            value = [self.func(v) for v in value]
+
+        # Annotate omitted items (if applicable)
+        if omitted_count > 0:
+            value.append(f'({omitted_count} more)')
+
+        return ', '.join(value)

@@ -79,16 +79,17 @@ ADMIN_MENU = Menu(
     icon_class="fa-solid fa-screwdriver-wrench",
     groups=(
         MenuGroup(
+            label=_("Authentication"),
+            items=(
+                get_model_item("users", "user", _("Users")),
+                get_model_item("users", "group", _("Groups")),
+                get_model_item("users", "objectpermission", _("Permissions"), actions=["add"]),
+            ),
+        ),
+        MenuGroup(
             label=_("Logging"),
             items=(get_model_item("core", "objectchange", _("Change Log"), actions=[]),),
         ),
-        #        MenuGroup(
-        #            label=_("Authentication"),
-        #            items=(
-        #                get_model_item("users", "user", _("Users")),
-        #                get_model_item("users", "group", _("Groups")),
-        #            ),
-        #        ),
     ),
 )
 

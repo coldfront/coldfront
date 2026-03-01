@@ -57,7 +57,7 @@ def resolve_permission_type(name):
 
     :param name: Permission name in the format <app_label>.<action>_<model>
     """
-    from core.models import ObjectType
+    from coldfront.core.models import ObjectType
 
     app_label, action, model_name = resolve_permission(name)
     try:

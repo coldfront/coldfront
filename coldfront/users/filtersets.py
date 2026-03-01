@@ -1,0 +1,144 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+import django_filters
+from django.db.models import Q
+from django.utils.translation import gettext as _
+
+from coldfront.core.models import ObjectType
+from coldfront.users.models import Group, ObjectPermission, User
+from coldfront.views.filters import ContentTypeFilter
+from coldfront.views.filtersets import BaseFilterSet
+
+__all__ = (
+    "GroupFilterSet",
+    "ObjectPermissionFilterSet",
+    "UserFilterSet",
+)
+
+
+class GroupFilterSet(BaseFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    user_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="user",
+        queryset=User.objects.all(),
+        label=_("User (ID)"),
+    )
+    permission_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="object_permissions",
+        queryset=ObjectPermission.objects.all(),
+        label=_("Permission (ID)"),
+    )
+
+    class Meta:
+        model = Group
+        fields = ("id", "name", "description")
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+
+
+class UserFilterSet(BaseFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    group_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="groups",
+        queryset=Group.objects.all(),
+        label=_("Group"),
+    )
+    group = django_filters.ModelMultipleChoiceFilter(
+        field_name="groups__name",
+        queryset=Group.objects.all(),
+        to_field_name="name",
+        label=_("Group (name)"),
+    )
+    permission_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="object_permissions",
+        queryset=ObjectPermission.objects.all(),
+        label=_("Permission (ID)"),
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "date_joined",
+            "last_login",
+            "is_active",
+            "is_superuser",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(
+            Q(username__icontains=value)
+            | Q(first_name__icontains=value)
+            | Q(last_name__icontains=value)
+            | Q(email__icontains=value)
+        )
+
+
+class ObjectPermissionFilterSet(BaseFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    object_type_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=ObjectType.objects.all(), field_name="object_types"
+    )
+    object_type = ContentTypeFilter(field_name="object_types")
+    can_view = django_filters.BooleanFilter(method="_check_action")
+    can_add = django_filters.BooleanFilter(method="_check_action")
+    can_change = django_filters.BooleanFilter(method="_check_action")
+    can_delete = django_filters.BooleanFilter(method="_check_action")
+    user_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="users",
+        queryset=User.objects.all(),
+        label=_("User"),
+    )
+    user = django_filters.ModelMultipleChoiceFilter(
+        field_name="users__username",
+        queryset=User.objects.all(),
+        to_field_name="username",
+        label=_("User (name)"),
+    )
+    group_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="groups",
+        queryset=Group.objects.all(),
+        label=_("Group"),
+    )
+    group = django_filters.ModelMultipleChoiceFilter(
+        field_name="groups__name",
+        queryset=Group.objects.all(),
+        to_field_name="name",
+        label=_("Group (name)"),
+    )
+
+    class Meta:
+        model = ObjectPermission
+        fields = ("id", "name", "enabled", "object_types", "description")
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+
+    def _check_action(self, queryset, name, value):
+        action = name.split("_")[1]
+        if value:
+            return queryset.filter(actions__contains=[action])
+        return queryset.exclude(actions__contains=[action])
