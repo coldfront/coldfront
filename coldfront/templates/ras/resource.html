@@ -22,6 +22,18 @@
   </c-slot>
 
   <c-slot name="right">
+    <c-card.fields header="{% trans 'Attributes' %}" only>
+      <c-card.fields.item label="{% trans 'Resrouce Type' %}">
+        {{ object.resource_type|linkify|placeholder }}
+      </c-card.fields.item>
+
+      {% for k, v in object.attributes.items %}
+      <c-card.fields.item :label="k">
+        {{ v|placeholder }}
+      </c-card.fields.item>
+      {% endfor %}
+    </c-card.fields>
+
     <c-card.related_objects :object="object" :models="related_models" only />
     <c-card.custom_fields :object="object" only />
   </c-slot>

@@ -32,6 +32,7 @@ class HTMXSelect(forms.Select):
         _attrs = {
             f"hx-{method}": hx_url,
             "hx-include": f"#{hx_target_id}",
+            "hx-params": "not csrfmiddlewaretoken",
             "hx-target": f"#{hx_target_id}",
         }
         if attrs:

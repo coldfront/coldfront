@@ -7,11 +7,14 @@ import json
 from collections import defaultdict
 from functools import cached_property
 
+import jsonschema
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.exceptions import ImproperlyConfigured
 from django.core.validators import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from jsonschema.exceptions import ValidationError as JSONValidationError
 from taggit.managers import TaggableManager
 
 from coldfront.constants import CUSTOMFIELD_EMPTY_VALUES
@@ -19,7 +22,9 @@ from coldfront.core.choices import CustomFieldUIVisibleChoices, ObjectChangeActi
 from coldfront.core.models.change_logging import ObjectChange
 from coldfront.core.utils import CustomFieldJSONEncoder, is_taggable
 from coldfront.registry import register_model_feature, register_model_view
+from coldfront.utils.jsonschema import validate_schema
 from coldfront.utils.serialization import serialize_object
+from coldfront.utils.strings import title
 
 from .deletion import DeleteMixin
 
@@ -320,10 +325,76 @@ class CustomFieldsMixin(models.Model):
         super().save(*args, **kwargs)
 
 
+class AttributeProfileMixin(models.Model):
+    """
+    AttributeProfile's store a schema for defining custom attributes that can be stored using CustomAttributes mixin.
+    """
+
+    schema = models.JSONField(
+        blank=True,
+        null=True,
+        validators=[validate_schema],
+        verbose_name=_("schema"),
+    )
+
+    class Meta:
+        abstract = True
+
+
+class CustomAttributesMixin(models.Model):
+    """
+    Enables support for custom attributes. Objects with this mixin can store custom attribute data based
+    the schema defined in the AttributeProfile they have been assigned.
+    """
+
+    attribute_data = models.JSONField(
+        blank=True,
+        null=True,
+        verbose_name=_("attributes"),
+    )
+
+    class Meta:
+        abstract = True
+
+    def get_profile(self):
+        """
+        Return the attribute profile
+        """
+        raise ImproperlyConfigured(f"{self.__class__.__name__} does not override get_profile method.")
+
+    @property
+    def attributes(self):
+        """
+        Returns a human-friendly representation of the attributes defined according to its type profile.
+        """
+        profile = self.get_profile()
+        if not self.attribute_data or profile is None or not profile.schema:
+            return {}
+        attrs = {}
+        for name, options in profile.schema.get("properties", {}).items():
+            key = options.get("title", title(name))
+            attrs[key] = self.attribute_data.get(name)
+        return dict(sorted(attrs.items()))
+
+    def clean(self):
+        super().clean()
+
+        # Validate any attributes against the assigned profile type's schema
+        profile = self.get_profile()
+        if profile and profile.schema:
+            try:
+                jsonschema.validate(self.attribute_data, schema=profile.schema)
+            except JSONValidationError as e:
+                raise ValidationError(_("Invalid schema: {error}").format(error=e))
+        else:
+            self.attribute_data = None
+
+
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))
 register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
 register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
 register_model_feature("custom_fields", lambda model: issubclass(model, CustomFieldsMixin))
+register_model_feature("custom_attributes", lambda model: issubclass(model, CustomAttributesMixin))
 
 
 def register_models(*models):

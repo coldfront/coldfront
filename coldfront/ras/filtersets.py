@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.tenancy.filtersets import TenancyFilterSet
-from coldfront.views.filtersets import OrganizationalModelFilterSet, PrimaryModelFilterSet
+from coldfront.views.filtersets import AttributeFilterSetMixin, OrganizationalModelFilterSet, PrimaryModelFilterSet
 
 from .choices import ResourceStatusChoices
 from .models import Allocation, AllocationType, Project, Resource, ResourceType
@@ -24,7 +24,7 @@ class ResourceTypeFilterSet(OrganizationalModelFilterSet):
         )
 
 
-class ResourceFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
+class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryModelFilterSet):
     resource_type_id = django_filters.ModelMultipleChoiceFilter(
         queryset=ResourceType.objects.all(),
         distinct=False,
@@ -77,7 +77,7 @@ class ProjectFilterSet(OrganizationalModelFilterSet, TenancyFilterSet):
         return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
 
 
-class AllocationFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
+class AllocationFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryModelFilterSet):
     allocation_type_id = django_filters.ModelMultipleChoiceFilter(
         queryset=AllocationType.objects.all(), field_name="allocation_type_id"
     )

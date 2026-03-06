@@ -8,11 +8,16 @@ import time
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout
 from django import forms
+from django.core.exceptions import ImproperlyConfigured
+from django.core.validators import EMPTY_VALUES
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CustomFieldUIEditableChoices
 from coldfront.core.models import CustomField, ObjectType, Tag
+from coldfront.utils.forms.fields import JSONField
+from coldfront.utils.forms.utils import get_field_value
+from coldfront.utils.jsonschema import JSONSchemaProperty
 
 __all__ = ("TagsMixin",)
 
@@ -169,3 +174,92 @@ class CustomFieldsMixin:
             if customfield.group_name not in self.custom_field_groups:
                 self.custom_field_groups[customfield.group_name] = []
             self.custom_field_groups[customfield.group_name].append(field_name)
+
+
+class AttributeProfileForm(forms.Form):
+    """
+    AttributeProfileForms have a schema field for defining custom attributes.
+    """
+
+    schema = JSONField(
+        label=_("Schema"),
+        required=False,
+        help_text=_("Enter a valid JSON schema to define supported attributes."),
+    )
+
+
+class CustomAttributesMixin(forms.Form):
+    """
+    Extend a Form to include custom attribute support.
+
+    Attributes:
+        profile_field_name: The name of the ModelChoiceField for the attribute profile
+    """
+
+    profile_field_name = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Track type-specific attribute fields
+        self.attr_fields = []
+
+        # Retrieve assigned AllocationType, if any
+        if not (id := get_field_value(self, self._get_profile_field_name())):
+            return
+        if not (profile := self.fields[self._get_profile_field_name()].queryset.filter(pk=id).first()):
+            return
+
+        # Extend form with fields for allocation attributes
+        for attr, form_field in self._get_attr_form_fields(profile).items():
+            field_name = f"attr_{attr}"
+            self.attr_fields.append(field_name)
+            self.fields[field_name] = form_field
+            if self.instance.attribute_data:
+                self.fields[field_name].initial = self.instance.attribute_data.get(attr)
+
+    def _get_profile_field_name(self):
+        """
+        Return the profile form field name.
+        """
+        if self.profile_field_name is None:
+            raise ImproperlyConfigured(
+                f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
+                f"override its _get_profile_field_name() method."
+            )
+        if not hasattr(self.fields[self.profile_field_name], "queryset"):
+            raise ImproperlyConfigured(
+                f"{self.__class__.__name__} does not define a profile field with a queryset. Please ensure the profile field is a ModelChoiceField with a queryset."
+            )
+
+        return self.profile_field_name
+
+    @staticmethod
+    def _get_attr_form_fields(profile):
+        """
+        Return a dictionary mapping of attribute names to form fields, suitable for extending
+        the form per the selected profile.
+        """
+        if not profile.schema:
+            return {}
+
+        properties = profile.schema.get("properties", {})
+        required_fields = profile.schema.get("required", [])
+
+        attr_fields = {}
+        for name, options in properties.items():
+            prop = JSONSchemaProperty(**options)
+            attr_fields[name] = prop.to_form_field(name, required=name in required_fields)
+
+        return dict(sorted(attr_fields.items()))
+
+    def _post_clean(self):
+        # Compile attribute data from the individual form fields
+        if self.cleaned_data.get(self._get_profile_field_name()):
+            self.instance.attribute_data = {
+                name[5:]: self.cleaned_data[name]  # Remove the attr_ prefix
+                for name in self.attr_fields
+                if self.cleaned_data.get(name) not in EMPTY_VALUES
+            }
+
+        return super()._post_clean()

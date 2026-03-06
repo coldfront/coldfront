@@ -21,5 +21,11 @@
     <c-card.related_objects :object="object" :models="related_models" only />
     <c-card.custom_fields :object="object" only />
   </c-slot>
+
+  <c-slot name="bottom">
+    <c-card.code header="{% trans 'Schema' %}">
+    {{ object.schema|json }}
+    </c-card.code>
+  </c-slot>
 </c-layout.panels>
 {% endblock %}
