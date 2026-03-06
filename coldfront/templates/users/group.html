@@ -1,60 +1,49 @@
 {% extends 'users/base.html' %}
 {% load i18n %}
-{% load helpers %}
-{% load render_table from django_tables2 %}
 
 {% block title %}{% trans "Group" %} {{ object.name }}{% endblock %}
 
 {% block subtitle %}{% endblock %}
 
 {% block content %}
-  <div class="row mb-3">
-    <div class="col-md-6">
-      <div class="card">
-        <h2 class="card-header">{% trans "Group" %}</h2>
-        <table class="table table-hover attr-table">
-          <tr>
-            <th scope="row">{% trans "Name" %}</th>
-            <td>{{ object.name }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Description" %}</th>
-            <td>{{ object.description|placeholder }}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card">
-        <h2 class="card-header">{% trans "Users" %}</h2>
-        <div class="list-group list-group-flush">
-          {% for user in object.users.all %}
-            <a href="{% url 'users:user' pk=user.pk %}" class="list-group-item list-group-item-action">{{ user }}</a>
-          {% empty %}
-            <div class="list-group-item text-muted">{% trans "None" %}</div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="card">
-        <h2 class="card-header">{% trans "Assigned Permissions" %}</h2>
-        <div class="list-group list-group-flush">
-          {% for perm in object.object_permissions.all %}
-            <a href="{% url 'users:objectpermission' pk=perm.pk %}" class="list-group-item list-group-item-action">{{ perm }}</a>
-          {% empty %}
-            <div class="list-group-item text-muted">{% trans "None" %}</div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="card">
-        <h2 class="card-header">{% trans "Owner Membership" %}</h2>
-        <div class="list-group list-group-flush">
-          {% for owner in object.owners.all %}
-            <a href="{% url 'users:owner' pk=owner.pk %}" class="list-group-item list-group-item-action">{{ owner }}</a>
-          {% empty %}
-            <div class="list-group-item text-muted">{% trans "None" %}</div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </div>
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Name' %}">
+          {{ object.name }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.description|placeholder }}
+      </c-card.fields.item>
+    </c-card.fields>
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.list header="{% trans 'Users' %}" only>
+      {% for user in object.users.all %}
+        <c-card.list.item link="{% url 'users:user' pk=user.pk %}">
+            {{ user }}
+        </c-card.list.item>
+      {% empty %}
+        <c-card.list.item>
+            <span class="text-muted">{% trans "None" %}</span>
+        </c-card.list.item>
+      {% endfor %}
+    </c-card.list>
+
+    <c-card.list header="{% trans 'Assigned Permissions' %}" only>
+      {% for perm in object.object_permissions.all %}
+        <c-card.list.item link="{% url 'users:objectpermission' pk=perm.pk %}">
+            {{ perm }}
+        </c-card.list.item>
+      {% empty %}
+        <c-card.list.item>
+            <span class="text-muted">{% trans "None" %}</span>
+        </c-card.list.item>
+      {% endfor %}
+    </c-card.list>
+
+  </c-slot>
+</c-layout.panels>
 {% endblock %}

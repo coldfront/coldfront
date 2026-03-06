@@ -258,6 +258,7 @@ source = { editable = "." }
 dependencies = [
     { name = "crispy-bootstrap5" },
     { name = "django" },
+    { name = "django-cotton" },
     { name = "django-crispy-forms" },
     { name = "django-environ" },
     { name = "django-filter" },
@@ -269,7 +270,6 @@ dependencies = [
     { name = "django-settings-export" },
     { name = "django-simple-history" },
     { name = "django-split-settings" },
-    { name = "django-su" },
     { name = "django-tables2" },
     { name = "django-taggit" },
     { name = "django-vite" },
@@ -337,6 +337,7 @@ requires-dist = [
     { name = "dbus-python", marker = "extra == 'freeipa'", specifier = ">=1.4.0" },
     { name = "django", specifier = ">5.2,<6" },
     { name = "django-auth-ldap", marker = "extra == 'ldap'", specifier = ">=5.1.0" },
+    { name = "django-cotton", specifier = ">=2.6.1" },
     { name = "django-crispy-forms", specifier = ">=2.3" },
     { name = "django-environ", specifier = ">=0.12.0" },
     { name = "django-filter", specifier = ">=25.1" },
@@ -348,7 +349,6 @@ requires-dist = [
     { name = "django-settings-export", specifier = ">=1.2.1" },
     { name = "django-simple-history", specifier = ">=3.8.0" },
     { name = "django-split-settings", specifier = ">=1.3.2" },
-    { name = "django-su", specifier = ">=1.0.0" },
     { name = "django-tables2", specifier = ">=2.8.0" },
     { name = "django-taggit", specifier = ">=6.1.0" },
     { name = "django-vite", specifier = ">=3.1.0" },
@@ -609,6 +609,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-cotton"
+version = "2.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/11/c1/0df4b01255626897f5e74bdcef407ba88753ca92898c912caf2f9e73ba33/django_cotton-2.6.1.tar.gz", hash = "sha256:bedfa4561e2505fca5b88396acb9bdfaea85167eeef11813676fedab45906088", size = 31147, upload-time = "2026-01-13T12:06:00.142Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3d/d2/dea85f1931de0b2da4746f6ad669c7da1f5c8569bee144fe6620c8d98d61/django_cotton-2.6.1-py3-none-any.whl", hash = "sha256:775dda0336c08d33a6daf10557eb261746b1b8e5f260b669cc6b37115571cb08", size = 30563, upload-time = "2026-01-13T12:05:59.162Z" },
+]
+
+[[package]]
 name = "django-crispy-forms"
 version = "2.5"
 source = { registry = "https://pypi.org/simple" }
@@ -767,15 +779,6 @@ dependencies = [
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6f/97/e4011f3944f83a7d2aaaf893c3689ad70e8d2ae46fb6e14fd0e3b0c6ce0b/django_sslserver-0.22-py3-none-any.whl", hash = "sha256:c598a363d2ccdc2421c08ddb3d8b0973f80e8e47a3a5b74e4a2896f21c2947c5", size = 10295, upload-time = "2019-12-10T02:30:03.76Z" },
 ]
-
-[[package]]
-name = "django-su"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d3/cf/5d5bdaff569468dba3053a7a623f64fcf5e36d5a936a5617a1c1972a7da4/django-su-1.0.0.tar.gz", hash = "sha256:1a3f98b2f757a3f47e33e90047c0a81cf965805fd7f91f67089292bdd461bd1a", size = 23677, upload-time = "2022-04-01T14:56:01.013Z" }
 
 [[package]]
 name = "django-tables2"

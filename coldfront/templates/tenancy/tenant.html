@@ -1,5 +1,4 @@
 {% extends 'tenancy/base.html' %}
-{% load helpers %}
 {% load i18n %}
 
 {% block breadcrumbs %}
@@ -10,29 +9,24 @@
 {% endblock breadcrumbs %}
 
 {% block content %}
-  <div class="row">
-    <div class="col col-12 col-md-7">
-      <div class="card">
-        <h2 class="card-header">{% trans "Tenant" %}</h2>
-        <table class="table table-hover attr-table">
-          <tr>
-            <th scope="row">{% trans "Group" %}</th>
-            <td>{{ object.group|linkify|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Description" %}</th>
-            <td>{{ object.description|placeholder }}</td>
-          </tr>
-        </table>
-      </div>
-      {% include 'inc/panels/tags.html' %}
-    </div>
-    <div class="col col-md-5">
-        {% include 'inc/panels/related_objects.html' %}
-    </div>
-  </div>
-  <div class="row">
-    <div class="col col-md-12">
-    </div>
-  </div>
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Group' %}">
+          {{ object.group|linkify|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.description|placeholder }}
+      </c-card.fields.item>
+    </c-card.fields>
+
+    <c-card.tags :object="object" only />
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.related_objects :object="object" :models="related_models" only />
+    <c-card.custom_fields :object="object" only />
+  </c-slot>
+</c-layout.panels>
 {% endblock %}

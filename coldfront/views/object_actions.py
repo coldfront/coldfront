@@ -4,9 +4,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 from django.db.models import ForeignKey
-from django.template import loader
 from django.urls.exceptions import NoReverseMatch
 from django.utils.translation import gettext_lazy as _
+from django_cotton import render_component
 
 from coldfront.core.models import ObjectType
 from coldfront.utils.querydict import prepare_cloned_fields
@@ -81,7 +81,9 @@ class ObjectAction:
             **cls.get_context(context, obj),
             **kwargs,
         }
-        return loader.render_to_string(cls.template_name, ctx)
+
+        return render_component(ctx["request"], cls.template_name, ctx)
+        # return loader.render_to_string(cls.template_name, ctx)
 
 
 class AddObject(ObjectAction):
@@ -92,7 +94,7 @@ class AddObject(ObjectAction):
     name = "add"
     label = _("Add")
     permissions_required = {"add"}
-    template_name = "buttons/add.html"
+    template_name = "button.add"
 
 
 class CloneObject(ObjectAction):
@@ -103,7 +105,7 @@ class CloneObject(ObjectAction):
     name = "add"
     label = _("Clone")
     permissions_required = {"add"}
-    template_name = "buttons/clone.html"
+    template_name = "button.clone"
 
     @classmethod
     def get_url(cls, obj):
@@ -121,7 +123,7 @@ class EditObject(ObjectAction):
     label = _("Edit")
     permissions_required = {"change"}
     url_kwargs = ["pk"]
-    template_name = "buttons/edit.html"
+    template_name = "button.edit"
 
 
 class DeleteObject(ObjectAction):
@@ -133,7 +135,7 @@ class DeleteObject(ObjectAction):
     label = _("Delete")
     permissions_required = {"delete"}
     url_kwargs = ["pk"]
-    template_name = "buttons/delete.html"
+    template_name = "button.delete"
 
 
 class BulkImport(ObjectAction):
@@ -144,7 +146,7 @@ class BulkImport(ObjectAction):
     name = "bulk_import"
     label = _("Import")
     permissions_required = {"add"}
-    template_name = "buttons/import.html"
+    template_name = "button.import"
 
 
 class BulkExport(ObjectAction):
@@ -155,7 +157,7 @@ class BulkExport(ObjectAction):
     name = "export"
     label = _("Export")
     permissions_required = {"view"}
-    template_name = "buttons/export.html"
+    template_name = "button.export"
 
     @classmethod
     def get_context(cls, context, model):
@@ -180,7 +182,7 @@ class BulkEdit(ObjectAction):
     label = _("Edit Selected")
     multi = True
     permissions_required = {"change"}
-    template_name = "buttons/bulk_edit.html"
+    template_name = "button.bulk_edit"
 
     @classmethod
     def get_context(cls, context, model):
@@ -207,7 +209,7 @@ class BulkRename(ObjectAction):
     label = _("Rename Selected")
     multi = True
     permissions_required = {"change"}
-    template_name = "buttons/bulk_rename.html"
+    template_name = "button.bulk_rename"
 
 
 class BulkDelete(ObjectAction):
@@ -219,4 +221,4 @@ class BulkDelete(ObjectAction):
     label = _("Delete Selected")
     multi = True
     permissions_required = {"delete"}
-    template_name = "buttons/bulk_delete.html"
+    template_name = "button.bulk_delete"

@@ -1,0 +1,17 @@
+{% load render_table from django_tables2 %}
+{% load i18n %}
+
+{% cotton:vars :request="request" %}
+{% cotton:vars show_paginator=True %}
+{% cotton:vars table %}
+
+{% if table.rows %}
+  <div class="table-container table-responsive">
+    {% render_table table 'generic/table.html' %}
+  </div>
+  {% if show_paginator %}
+  <c-table.paginator :paginator="table.paginator" :page="table.page" only />
+  {% endif %}
+{% else %}
+  <div class="card-body text-muted">{% trans "None" %}</div>
+{% endif %}

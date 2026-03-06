@@ -1,43 +1,29 @@
 {% extends 'ras/base.html' %}
-{% load helpers %}
 {% load i18n %}
 
-{% block breadcrumbs %}
-  {{ block.super }}
-  {% if object.group %}
-    <li class="breadcrumb-item"><a href="{% url 'ras:resource_list' %}?group_id={{ object.group.pk }}">{{ object.group }}</a></li>
-  {% endif %}
-{% endblock breadcrumbs %}
-
 {% block content %}
-  <div class="row">
-    <div class="col col-12 col-md-7">
-      <div class="card">
-        <h2 class="card-header">{% trans "Resource" %}</h2>
-        <table class="table table-hover attr-table">
-          <tr>
-            <th scope="row">{% trans "Resource Type" %}</th>
-            <td><span class="badge" style="color: {{ object.resource_type.color|fgcolor }}; background-color: #{{ object.resource_type.color }}">{{ object.resource_type }}</span></td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Description" %}</th>
-            <td>{{ object.description|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Status" %}</th>
-            <td>{% badge object.status bg_color=object.get_status_color %}</td>
-          </tr>
-        </table>
-      </div>
-      {% include 'inc/panels/tags.html' %}
-    </div>
-    <div class="col col-md-5">
-        {% include 'inc/panels/related_objects.html' %}
-        {% include 'inc/panels/custom_fields.html' %}
-    </div>
-  </div>
-  <div class="row">
-    <div class="col col-md-12">
-    </div>
-  </div>
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Resource Type' %}">
+          <c-ui.badge link="{{ object.resource_type.get_absolute_url }}" :value="object.resource_type" :color="object.resource_type.color" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.description|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Status' %}">
+          <c-ui.badge :value="object.status" :bg_color="object.get_status_color" />
+      </c-card.fields.item>
+    </c-card.fields>
+
+    <c-card.tags :object="object" only />
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.related_objects :object="object" :models="related_models" only />
+    <c-card.custom_fields :object="object" only />
+  </c-slot>
+</c-layout.panels>
 {% endblock %}

@@ -6,78 +6,10 @@
 from django import template
 
 from coldfront.core.choices import CustomFieldTypeChoices
-from coldfront.utils.querydict import dict_to_querydict
+from coldfront.core.utils import ActionURLNode
+from coldfront.utils.forms import TableConfigForm
 
 register = template.Library()
-
-
-@register.inclusion_tag("builtins/htmx_table.html", takes_context=True)
-def htmx_table(context, viewname, return_url=None, **kwargs):
-    """
-    Embed an object list table retrieved using HTMX. Any extra keyword arguments are passed as URL query parameters.
-
-    Args:
-        context: The current request context
-        viewname: The name of the view to use for the HTMX request (e.g. `dcim:site_list`)
-        return_url: The URL to pass as the `return_url`. If not provided, the current request's path will be used.
-    """
-    url_params = dict_to_querydict(kwargs)
-    url_params["return_url"] = return_url or context["request"].path
-    return {
-        "viewname": viewname,
-        "url_params": url_params,
-    }
-
-
-@register.inclusion_tag("builtins/tag.html")
-def tag(value, viewname=None):
-    """
-    Display a tag, optionally linked to a filtered list of objects.
-
-    Args:
-        value: A Tag instance
-        viewname: If provided, the tag will be a hyperlink to the specified view's URL
-    """
-    return {
-        "tag": value,
-        "viewname": viewname,
-    }
-
-
-@register.inclusion_tag("builtins/checkmark.html")
-def checkmark(value, show_false=True, true="Yes", false="No"):
-    """
-    Display either a green checkmark or red X to indicate a boolean value.
-
-    Args:
-        value: True or False
-        show_false: Show false values
-        true: Text label for true values
-        false: Text label for false values
-    """
-    return {
-        "value": bool(value),
-        "show_false": show_false,
-        "true_label": true,
-        "false_label": false,
-    }
-
-
-@register.inclusion_tag("builtins/badge.html")
-def badge(value, bg_color=None, show_empty=False):
-    """
-    Display the specified number as a badge.
-
-    Args:
-        value: The value to be displayed within the badge
-        bg_color: Background color CSS name
-        show_empty: If true, display the badge even if value is None or zero
-    """
-    return {
-        "value": value,
-        "bg_color": bg_color or "secondary",
-        "show_empty": show_empty,
-    }
 
 
 @register.inclusion_tag("builtins/customfield_value.html")
@@ -98,3 +30,93 @@ def customfield_value(customfield, value):
         "customfield": customfield,
         "value": value,
     }
+
+
+@register.inclusion_tag("builtins/table_config_form.html")
+def table_config_form(table, table_name=None):
+    return {
+        "table_name": table_name or table.__class__.__name__,
+        "form": TableConfigForm(table=table),
+    }
+
+
+@register.tag
+def action_url(parser, token):
+    """
+    Return an absolute URL matching the given model and action.
+
+    This is a way to define links that aren't tied to a particular URL
+    configuration::
+
+        {% action_url model "action_name" %}
+
+        or
+
+        {% action_url model "action_name" pk=object.pk %}
+
+        or
+
+        {% action_url model "action_name" pk=object.pk as variable_name %}
+
+    The first argument is a model or instance. The second argument is the action name.
+    Additional keyword arguments can be passed for URL parameters.
+
+    For example, if you have a Device model and want to link to its edit action::
+
+        {% action_url device "edit" %}
+        This will generate a URL like ``/dcim/devices/123/edit/``.
+
+        You can also pass additional parameters::
+
+            {% action_url device "journal" pk=device.pk %}
+
+        Or assign the URL to a variable::
+
+            {% action_url device "edit" as edit_url %}
+    """
+
+    # Parse the token contents
+    bits = token.split_contents()
+    if len(bits) < 3:
+        raise template.TemplateSyntaxError(f"'{bits[0]}' takes at least two arguments, a model and an action.")
+
+    # Extract model and action
+    model = parser.compile_filter(bits[1])
+    action = bits[2].strip("\"'")  # Remove quotes from literal string
+    kwargs = {}
+    asvar = None
+    bits = bits[3:]
+
+    # Handle 'as' syntax for variable assignment
+    if len(bits) >= 2 and bits[-2] == "as":
+        asvar = bits[-1]
+        bits = bits[:-2]
+
+    # Parse remaining arguments as kwargs
+    for bit in bits:
+        if "=" not in bit:
+            raise template.TemplateSyntaxError(
+                f"'{token.contents.split()[0]}' keyword arguments must be in the format 'name=value'"
+            )
+        name, value = bit.split("=", 1)
+        kwargs[name] = parser.compile_filter(value)
+
+    return ActionURLNode(model, action, kwargs, asvar)
+
+
+@register.simple_tag()
+def qstring_update(request, **kwargs):
+    """
+    Append or update the page number in a querystring.
+    """
+    querydict = request.GET.copy()
+    for k, v in kwargs.items():
+        if v is not None:
+            querydict[k] = str(v)
+        elif k in querydict:
+            querydict.pop(k)
+    querystring = querydict.urlencode(safe="/")
+    if querystring:
+        return "?" + querystring
+    else:
+        return ""

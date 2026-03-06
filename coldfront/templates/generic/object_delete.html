@@ -1,5 +1,4 @@
 {% extends 'generic/base.html' %}
-{% load helpers %}
 {% load i18n %}
 
 {% comment %}
@@ -22,7 +21,7 @@ Context:
   <div class="modal modal-lg" tabindex="-1" style="display: block; position: static">
     <div class="modal-dialog">
       <div class="modal-content border-1 border-danger">
-        {% include 'htmx/delete_form.html' %}
+        <c-form.delete />
       </div>
     </div>
   </div>

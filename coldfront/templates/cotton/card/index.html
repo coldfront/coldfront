@@ -1,0 +1,7 @@
+<div class="card">
+  {% if header %}
+  <h2 class="card-header d-flex justify-content-between">{{ header }}</h2>
+  {% endif %}
+  {{ slot }}
+  {{ footer }}
+</div>

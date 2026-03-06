@@ -161,7 +161,6 @@ class MPTTColumn(tables.TemplateColumn):
     """
 
     template_code = """
-        {% load helpers %}
         {% if not table.order_by %}
           {% for i in record.level|as_range %}<i class="fa-regular fa-circle-dot"></i>{% endfor %}
         {% endif %}
@@ -213,9 +212,8 @@ class TagColumn(tables.TemplateColumn):
     """
 
     template_code = """
-    {% load helpers %}
     {% for tag in value.all %}
-        {% tag tag url_name %}
+        {% cotton ui.badge :value="tag" :link="{% url url_name %}?tag={{ tag.slug }}" :color="tag.color" only /%}
     {% empty %}
         <span class="text-muted">&mdash;</span>
     {% endfor %}
@@ -368,7 +366,6 @@ class ColoredLabelColumn(tables.TemplateColumn):
     """
 
     template_code = """
-{% load helpers %}
   {% if value %}
   <span class="badge" style="color: {{ value.color|fgcolor }}; background-color: #{{ value.color }}">
     <a href="{{ value.get_absolute_url }}">{{ value }}</a>
@@ -531,18 +528,22 @@ class ChoicesColumn(tables.Column):
 
         return ", ".join(value)
 
+
 class ManyToManyColumn(tables.ManyToManyColumn):
     """
     Overrides django-tables2's stock ManyToManyColumn to ensure that value() returns only plaintext data.
     """
+
     def value(self, value):
         items = [self.transform(item) for item in self.filter(value)]
         return self.separator.join(items)
+
 
 class ArrayColumn(tables.Column):
     """
     List array items as a comma-separated list.
     """
+
     def __init__(self, *args, max_items=None, func=str, **kwargs):
         self.max_items = max_items
         self.func = func
@@ -554,7 +555,7 @@ class ArrayColumn(tables.Column):
         # Limit the returned items to the specified maximum number (if any)
         if self.max_items:
             omitted_count = len(value) - self.max_items
-            value = value[:self.max_items - 1]
+            value = value[: self.max_items - 1]
 
         # Apply custom processing function (if any) per item
         if self.func:
@@ -562,6 +563,6 @@ class ArrayColumn(tables.Column):
 
         # Annotate omitted items (if applicable)
         if omitted_count > 0:
-            value.append(f'({omitted_count} more)')
+            value.append(f"({omitted_count} more)")
 
-        return ', '.join(value)
+        return ", ".join(value)
