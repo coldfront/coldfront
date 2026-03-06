@@ -5,6 +5,7 @@
 
 from django.http import HttpResponse
 from django.shortcuts import render
+from django_cotton import render_component
 from django_tables2.export import TableExport
 
 from coldfront.users.permissions import get_permission_for_model
@@ -126,14 +127,14 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
                 # Hide selection checkboxes
                 if "pk" in table.base_columns:
                     table.columns.hide("pk")
-            return render(
-                request,
-                "htmx/table.html",
-                {
-                    "table": table,
-                    "model": model,
-                    "actions": actions,
-                },
+            return HttpResponse(
+                render_component(
+                    request,
+                    "table.htmx",
+                    table=table,
+                    actions=actions,
+                    model=model,
+                )
             )
 
         filter_form = self.filterset_form(request.GET) if self.filterset_form else None

@@ -1,8 +1,6 @@
 {% extends 'base/base.html' %}
 {% block layout %}
 
-{% include "su/is_su.html" %}
-
 <div class="container-fluid">
   <div class="row">
    {% include 'base/sidebar.html' %}
@@ -39,7 +37,7 @@
           {% block header %}
 
           {# Alerts #}
-          {% include 'common/messages.html' %}
+          <c-alert.messages :messages="messages" only />
 
           {% endblock header %}
 

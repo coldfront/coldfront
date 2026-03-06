@@ -7,7 +7,6 @@ ALLOCATIONTYPE_ATTRIBUTES = """
 """
 
 ALLOCATION_RESOURCES = """
-{% load helpers %}
 {% for r in value.all %}
 <span class="badge" style="color: {{ r.resource_type.color|fgcolor }}; background-color: #{{ r.resource_type.color }}">
 <a href="{{ r.get_absolute_url }}">{{ r }}</a>

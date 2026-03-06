@@ -10,6 +10,7 @@ import re
 from django import template
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturalday, naturaltime
+from django.urls import NoReverseMatch, reverse
 from django.utils.html import escape, format_html
 from django.utils.timezone import localtime
 from markdown import markdown
@@ -17,6 +18,7 @@ from markdown.extensions.tables import TableExtension
 
 from coldfront.utils.html import clean_html, foreground_color
 from coldfront.utils.strings import title
+from coldfront.views import get_viewname
 
 register = template.Library()
 
@@ -181,3 +183,29 @@ def bettertitle(value):
     original case of all others.
     """
     return title(value)
+
+
+@register.filter()
+def getfield(form, fieldname):
+    """
+    Return the specified bound field of a Form.
+    """
+    try:
+        return form[fieldname]
+    except KeyError:
+        return None
+
+
+@register.filter()
+def validated_viewname(model, action):
+    """
+    Return the view name for the given model and action if valid, or None if invalid.
+    """
+    viewname = get_viewname(model, action)
+
+    # Validate the view name
+    try:
+        reverse(viewname)
+        return viewname
+    except NoReverseMatch:
+        return None

@@ -1,0 +1,8 @@
+{% cotton:vars type="warning" %}
+
+<div class="alert alert-{{ type }} d-flex align-items-center" role="alert">
+  <span class="text-{{ type }} fs-1">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+  </span>
+  {{ slot }}
+</div>

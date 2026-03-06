@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 OBJECTCHANGE_FULL_NAME = """
-{% load helpers %}
 {{ value.get_full_name|placeholder }}
 """
 

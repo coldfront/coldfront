@@ -6,80 +6,79 @@
 {% block subtitle %}{% endblock %}
 
 {% block content %}
-  <div class="row">
-    <div class="col-md-6">
-      <div class="card">
-        <h2 class="card-header">{% trans "User" %}</h2>
-        <table class="table table-hover attr-table">
-          <tr>
-            <th scope="row">{% trans "Username" %}</th>
-            <td>{{ object.username }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Full Name" %}</th>
-            <td>{{ object.get_full_name|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Email" %}</th>
-            <td>{{ object.email|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Account Created" %}</th>
-            <td>{{ object.date_joined|isodate }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Last Login" %}</th>
-            <td>{{ object.last_login|isodatetime:"minutes"|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Active" %}</th>
-            <td>{% checkmark object.is_active %}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Superuser" %}</th>
-            <td>{% checkmark object.is_superuser %}</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card">
-        <h2 class="card-header">{% trans "Assigned Groups" %}</h2>
-        <div class="list-group list-group-flush">
-          {% for group in object.groups.all %}
-            <a href="{% url 'users:group' pk=group.pk %}" class="list-group-item list-group-item-action">{{ group }}</a>
-          {% empty %}
-            <div class="list-group-item text-muted">{% trans "None" %}</div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="card">
-        <h2 class="card-header">{% trans "Assigned Permissions" %}</h2>
-        <div class="list-group list-group-flush">
-          {% for perm in object.object_permissions.all %}
-            <a href="{% url 'users:objectpermission' pk=perm.pk %}" class="list-group-item list-group-item-action">{{ perm }}</a>
-          {% empty %}
-            <div class="list-group-item text-muted">{% trans "None" %}</div>
-          {% endfor %}
-        </div>
-      </div>
-      <div class="card">
-        <h2 class="card-header">{% trans "Owner Membership" %}</h2>
-        <div class="list-group list-group-flush">
-          {% for owner in object.owners.all %}
-            <a href="{% url 'users:owner' pk=owner.pk %}" class="list-group-item list-group-item-action">{{ owner }}</a>
-          {% empty %}
-            <div class="list-group-item text-muted">{% trans "None" %}</div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </div>
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Username' %}">
+          {{ object.username }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Full Name' %}">
+          {{ object.get_full_name|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Email' %}">
+          {{ object.email|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Account Created' %}">
+          {{ object.date_joined|isodate }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Last Login' %}">
+          {{ object.last_login|isodatetime:"minutes"|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Active' %}">
+          <c-ui.checkmark :value="object.is_active" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Superuser' %}">
+          <c-ui.checkmark :value="object.is_superuser" />
+      </c-card.fields.item>
+    </c-card.fields>
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.list header="{% trans 'Assigned Groups' %}" only>
+      {% for group in object.groups.all %}
+        <c-card.list.item link="{% url 'users:group' pk=group.pk %}">
+            {{ group }}
+        </c-card.list.item>
+      {% empty %}
+        <c-card.list.item>
+            <span class="text-muted">{% trans "None" %}</span>
+        </c-card.list.item>
+      {% endfor %}
+    </c-card.list>
+
+    <c-card.list header="{% trans 'Assigned Permissions' %}" only>
+      {% for perm in object.object_permissions.all %}
+        <c-card.list.item link="{% url 'users:objectpermission' pk=perm.pk %}">
+            {{ perm }}
+        </c-card.list.item>
+      {% empty %}
+        <c-card.list.item>
+            <span class="text-muted">{% trans "None" %}</span>
+        </c-card.list.item>
+      {% endfor %}
+    </c-card.list>
+
+  </c-slot>
+
   {% if perms.core.view_objectchange %}
-    <div class="row">
-      <div class="col-md-12">
-        {% include 'users/inc/user_activity.html' with user=object table=changelog_table %}
-      </div>
-    </div>
+  <c-slot name="bottom">
+    <c-card.table :table="changelog_table" show_paginator=False only>
+      <c-slot name="header">
+        {% trans "Recent Activity" %}
+        <div class="card-actions">
+          <a href="{% url 'core:objectchange_list' %}?user_id={{ user.pk }}" class="btn btn-ghost-primary btn-sm">
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i> {% trans "View All" %}
+          </a>
+        </div>
+      </c-slot>
+    </c-card.table>
+  </c-slot>
   {% endif %}
+</c-layout.panels>
 {% endblock %}

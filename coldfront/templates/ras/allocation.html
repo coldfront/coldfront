@@ -1,79 +1,60 @@
 {% extends 'ras/base.html' %}
-{% load helpers %}
 {% load i18n %}
 
-{% block breadcrumbs %}
-  {{ block.super }}
-  {% if object.group %}
-    <li class="breadcrumb-item"><a href="{% url 'ras:allocation_list' %}?group_id={{ object.group.pk }}">{{ object.group }}</a></li>
-  {% endif %}
-{% endblock breadcrumbs %}
-
 {% block content %}
-  <div class="row">
-    <div class="col col-12 col-md-7">
-      <div class="card">
-        <h2 class="card-header">{% trans "Allocation" %}</h2>
-        <table class="table table-hover attr-table">
-          <tr>
-            <th scope="row">{% trans "Project" %}</th>
-            <td>{{ object.project|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Start Date" %}</th>
-            <td>{{ object.start_date|isodate }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "End Date" %}</th>
-            <td>{{ object.start_date|isodate }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Resources" %}</th>
-            <td>
-                {% for r in object.resources.all %}
-                <span class="badge" style="color: {{ r.resource_type.color|fgcolor }}; background-color: #{{ r.resource_type.color }}">
-                    {{ r|linkify }}
-                </span>
-                {% endfor %}
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Description" %}</th>
-            <td>{{ object.description|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Justification" %}</th>
-            <td>{{ object.justification|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">{% trans "Status" %}</th>
-            <td>{% badge object.status bg_color=object.get_status_color %}</td>
-          </tr>
-        </table>
-      </div>
-      {% include 'inc/panels/tags.html' %}
-    </div>
-    <div class="col col-md-5">
-        <div class="card">
-          <h2 class="card-header">{% trans "Attributes" %}</h2>
-          <table class="table table-hover attr-table">
-            <tr>
-              <th scope="row">{% trans "Allocation Type" %}</th>
-              <td>{{ object.allocation_type|linkify|placeholder }}</td>
-            </tr>
-            {% for k, v in object.attributes.items %}
-              <tr>
-                <th scope="row">{{ k }}</th>
-                <td>{{ v|placeholder }}</td>
-              </tr>
-            {% endfor %}
-          </table>
-        </div>
-        {% include 'inc/panels/custom_fields.html' %}
-    </div>
-  </div>
-  <div class="row">
-    <div class="col col-md-12">
-    </div>
-  </div>
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Project' %}">
+          {{ object.project|linkify }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Start Date' %}">
+          {{ object.start_date|isodate }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'End Date' %}">
+          {{ object.end_date|isodate }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Resources' %}">
+          <div>
+          {% for r in object.resources.all %}
+            <c-ui.badge :value="r" link="{{ r.get_absolute_url }}" :color="r.resource_type.color" />
+          {% endfor %}
+          </div>
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.description|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Justification' %}">
+          {{ object.justification|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Status' %}">
+          <c-ui.badge :value="object.status" :bg_color="object.get_status_color" />
+      </c-card.fields.item>
+    </c-card.fields>
+
+    <c-card.tags :object="object" only />
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.fields header="{% trans 'Attributes' %}" only>
+      <c-card.fields.item label="{% trans 'Allocation Type' %}">
+        {{ object.allocation_type|linkify|placeholder }}
+      </c-card.fields.item>
+
+      {% for k, v in object.attributes.items %}
+      <c-card.fields.item :label="k">
+        {{ v|placeholder }}
+      </c-card.fields.item>
+      {% endfor %}
+    </c-card.fields>
+
+    <c-card.custom_fields :object="object" only />
+  </c-slot>
+</c-layout.panels>
 {% endblock %}

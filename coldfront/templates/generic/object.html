@@ -1,7 +1,6 @@
 {% extends 'generic/base.html' %}
 {% load buttons %}
 {% load humanize %}
-{% load helpers %}
 {% load i18n %}
 {% load tabs %}
 
@@ -87,5 +86,5 @@ Context:
 {% endblock tabs %}
 
 {% block modals %}
-  {% include 'generic/htmx_modal.html' with size='lg' %}
+  <c-modal.htmx size="lg" />
 {% endblock %}

@@ -1,5 +1,4 @@
 {% extends 'generic/base.html' %}
-{% load helpers %}
 {% load i18n %}
 
 {% comment %}
@@ -59,7 +58,7 @@ Context:
 
       <div id="form_fields" hx-disinherit="hx-select hx-swap">
         {% block form %}
-          {% include 'htmx/form.html' %}
+          <c-form :form="form" />
         {% endblock form %}
       </div>
 
@@ -87,5 +86,5 @@ Context:
 {% endblock content %}
 
 {% block modals %}
-  {% include 'generic/htmx_modal.html' with size='lg' %}
+  <c-modal.htmx size="lg" />
 {% endblock %}

@@ -64,6 +64,7 @@ INSTALLED_APPS += [
     "django_htmx",
     "django_tables2",
     "django_jsonform",
+    "django_cotton.apps.SimpleAppConfig",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -103,6 +104,7 @@ MIDDLEWARE = [
     "simple_history.middleware.HistoryRequestMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "coldfront.middleware.ColdFrontMiddleware",
+    "coldfront.middleware.HtmxAuthRedirectMiddleware",
 ]
 
 # ------------------------------------------------------------------------------
@@ -130,11 +132,20 @@ TEMPLATES = [
             "/usr/share/coldfront/site/templates",
             PROJECT_ROOT("coldfront/templates"),
         ],
-        "APP_DIRS": True,
         "OPTIONS": {
+            "loaders": [
+                (
+                    "django.template.loaders.cached.Loader",
+                    [
+                        "django_cotton.cotton_loader.Loader",
+                        "django.template.loaders.filesystem.Loader",
+                    ],
+                )
+            ],
             "builtins": [
                 "coldfront.core.templatetags.builtins.filters",
                 "coldfront.core.templatetags.builtins.tags",
+                "django_cotton.templatetags.cotton",
             ],
             "context_processors": [
                 "django.template.context_processors.debug",

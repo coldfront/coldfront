@@ -117,6 +117,12 @@ class Allocation(PrimaryModel):
         "status",
     )
 
+    prerequisite_models = (
+        "ras.Project",
+        "ras.Resource",
+        "ras.AllocationType",
+    )
+
     class Meta:
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")

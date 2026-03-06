@@ -1,0 +1,15 @@
+<c-layout.panels.row>
+  <c-layout.panels.col>
+    {{ left }}
+  </c-layout.panels.col>
+  <c-layout.panels.col>
+    {{ right }}
+  </c-layout.panels.col>
+</c-layout.panels.row>
+{% if bottom %}
+<c-layout.panels.row>
+  <c-layout.panels.col>
+    {{ bottom }}
+  </c-layout.panels.col>
+</c-layout.panels.row>
+{% endif %}

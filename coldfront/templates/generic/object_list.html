@@ -1,7 +1,5 @@
 {% extends 'generic/base.html' %}
 {% load buttons %}
-{% load helpers %}
-{% load render_table from django_tables2 %}
 {% load static %}
 {% load tabs %}
 {% load i18n %}
@@ -39,14 +37,16 @@ Context:
     <li class="nav-item" role="presentation">
       <a class="nav-link active" id="object-list-tab" data-bs-toggle="tab" data-bs-target="#object-list" type="button" role="tab" aria-controls="edit-form" aria-selected="true">
         {% trans "Results" %}
-        <span class="badge text-bg-secondary total-object-count">{% if table.page.paginator.count %}{{ table.page.paginator.count }}{% else %}{{ total_count|default:"0" }}{% endif %}</span>
+        <c-ui.badge css_class="total-object-count" only>
+          <c-slot name="value">{% if table.page.paginator.count %}{{ table.page.paginator.count }}{% else %}{{ total_count|default:"0" }}{% endif %}</c-slot>
+        </c-ui.badge>
       </a>
     </li>
     {% if filter_form %}
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="filters-form-tab" data-bs-toggle="tab" data-bs-target="#filters-form" type="button" role="tab" aria-controls="object-list" aria-selected="false">
           {% trans "Filters" %}
-          {% if filter_form %}{% badge filter_form.changed_data|length bg_color="primary" %}{% endif %}
+          {% if filter_form %}<c-ui.badge :value="{{ filter_form.changed_data|length }}" bg_color="primary" only />{% endif %}
         </button>
       </li>
     {% endif %}
@@ -59,7 +59,7 @@ Context:
     <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
 
       {# Object table controls #}
-      {% include 'inc/table_controls_htmx.html' with table_modal="ObjectTable_config" %}
+      <c-table.controls :table="table" table_modal="ObjectTable_config" only />
 
       <form method="post" class="form form-horizontal">
         {% csrf_token %}
@@ -90,15 +90,11 @@ Context:
 
           {# Warn of any missing prerequisite objects #}
           {% if prerequisite_model %}
-            {% include 'inc/missing_prerequisites.html' %}
+            <c-alert.missing_prereqs :model="model" :prerequisite_model="prerequisite_model" only />
           {% endif %}
 
           {# Objects table #}
-          <div class="card">
-            <div class="htmx-container table-responsive" id="object_list">
-              {% include 'htmx/table.html' %}
-            </div>
-          </div>
+          <c-card.table.htmx :table="table" only />
           {# /Objects table #}
 
           {# Form buttons #}
@@ -119,7 +115,7 @@ Context:
     {# Filters tab #}
     {% if filter_form %}
       <div class="tab-pane show" id="filters-form" role="tabpanel" aria-labelledby="filters-form-tab">
-          {% include 'inc/filter_list.html' %}
+          <c-form.filters :filter_form="filter_form" only />
       </div>
     {% endif %}
     {# /Filters tab #}

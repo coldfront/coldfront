@@ -1,60 +1,52 @@
 {% extends 'core/base.html' %}
-{% load helpers %}
+{% load i18n %}
 
 {% block content %}
-  <div class="row mb-3">
-    <div class="col col-12 col-md-6">
-      <div class="card">
-        <h2 class="card-header">Custom Field Choice Set</h2>
-        <table class="table table-hover attr-table">
-          <tr>
-            <th scope="row">Name</th>
-            <td>{{ object.name }}</td>
-          </tr>
-          <tr>
-            <th scope="row">Description</th>
-            <td>{{ object.description|placeholder }}</td>
-          </tr>
-          <tr>
-            <th scope="row">Choices</th>
-            <td>{{ object.choices|length }}</td>
-          </tr>
-          <tr>
-            <th scope="row">Order Alphabetically</th>
-          <td>{% checkmark object.order_alphabetically %}</td>
-          </tr>
-          <tr>
-            <th scope="row">Used by</th>
-            <td>
-              <ul class="list-unstyled mb-0">
-                {% for cf in object.choices_for.all %}
-                  <li>{{ cf|linkify }}</li>
-                {% endfor %}
-              </ul>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div class="col col-12 col-md-6">
-      <div class="card">
-        <h2 class="card-header">Choices ({{ object.choices|length }})</h2>
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th>Value</th>
-              <th>Label</th>
-            </tr>
-          </thead>
-          {% for value in choices %}
-            <tr>
-                <td>{{ value|split:":"|first }}</td>
-              <td>{{ value|split:":"|last }}</td>
-            </tr>
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields header="{% trans 'Custom Field Choice Set' %}" only>
+      <c-card.fields.item label="{% trans 'Name' %}">
+          {{ object.name }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.description|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Choices' %}">
+          {{ object.choices|length }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Order Alphabetically' %}">
+          <c-ui.checkmark :value="object.order_alphabetically" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Used by' %}">
+        <ul class="list-unstyled mb-0">
+          {% for cf in object.choices_for.all %}
+            <li>{{ cf|linkify }}</li>
           {% endfor %}
-        </table>
-        {% include 'generic/paginator.html' with page=choices %}
-      </div>
-    </div>
-  </div>
+        </ul>
+      </c-card.fields.item>
+    </c-card.fields>
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.fields header="{% trans 'Choices' %}" only>
+      <c-card.fields.item label="{% trans 'Label' %}">
+          {% trans 'Value' %}
+      </c-card.fields.item>
+
+      {% for value in choices %}
+        <c-card.fields.item label="{{ value|split:":"|last|placeholder }}">
+            {{ value|split:":"|first }}
+        </c-card.fields.item>
+      {% endfor %}
+
+      <c-slot name="footer">
+        <c-table.paginator :page="choices" only />
+      </c-slot>
+    </c-card.fields>
+  </c-slot>
+</c-layout.panels>
 {% endblock %}

@@ -15,6 +15,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
+from django_cotton import render_component
 
 from coldfront.exceptions import AbortRequest, PermissionsViolation
 from coldfront.users.permissions import get_permission_for_model
@@ -100,7 +101,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
 
     template_name = "generic/object_edit.html"
     form = None
-    htmx_template_name = "htmx/form.html"
+    form_component_name = "form"
 
     def dispatch(self, request, *args, **kwargs):
         # Determine required permission based on whether we are editing an existing object
@@ -174,7 +175,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
 
         # If this is an HTMX request, return only the rendered form HTML
         if htmx_partial(request):
-            return render(request, self.htmx_template_name, context)
+            return HttpResponse(render_component(request, self.form_component_name, context))
 
         return render(
             request,
@@ -367,17 +368,17 @@ class ObjectDeleteView(GetReturnURLMixin, BaseObjectView):
         # If this is an HTMX request, return only the rendered deletion form as modal content
         if htmx_partial(request):
             form_url = get_action_url(self.queryset.model, action="delete", kwargs={"pk": obj.pk})
-            return render(
-                request,
-                "htmx/delete_form.html",
-                {
-                    "object": obj,
-                    "object_type": self.queryset.model._meta.verbose_name,
-                    "form": form,
-                    "form_url": form_url,
-                    "dependent_objects": dependent_objects,
+            return HttpResponse(
+                render_component(
+                    request,
+                    "form.delete",
+                    object=obj,
+                    object_type=self.queryset.model._meta.verbose_name,
+                    form=form,
+                    form_url=form_url,
+                    dependent_objects=dependent_objects,
                     **self.get_extra_context(request, obj),
-                },
+                )
             )
 
         return render(
@@ -515,14 +516,13 @@ class ObjectChildrenView(ObjectView, ActionsMixin, TableMixin):
 
         # If this is an HTMX request, return only the rendered table HTML
         if htmx_partial(request):
-            return render(
-                request,
-                "htmx/table.html",
-                {
-                    "object": instance,
-                    "table": table,
-                    "model": self.child_model,
-                },
+            return HttpResponse(
+                render_component(
+                    request,
+                    "table.htmx",
+                    table=table,
+                    model=self.child_model,
+                )
             )
 
         return render(

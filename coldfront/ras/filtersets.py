@@ -95,7 +95,9 @@ class AllocationFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
     def search(self, queryset, name, value):
         if not value.strip():
             return queryset
-        return queryset.filter(Q(description__icontains=value))
+        return queryset.filter(
+            Q(owner__username__icontains=value) | Q(resources__name__icontains=value) | Q(description__icontains=value)
+        )
 
 
 class AllocationTypeFilterSet(OrganizationalModelFilterSet):

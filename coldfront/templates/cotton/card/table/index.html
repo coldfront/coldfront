@@ -1,0 +1,9 @@
+{% load i18n %}
+
+{% cotton:vars :request="request" %}
+{% cotton:vars show_paginator=True %}
+{% cotton:vars table %}
+
+<c-card>
+    <c-table :table="table" :show_paginator="show_paginator" only />
+</c-card>

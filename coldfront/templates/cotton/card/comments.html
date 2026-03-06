@@ -1,0 +1,11 @@
+{% load i18n %}
+
+<c-card header='{% trans "Comments" %}'>
+  <div class="card-body">
+    {% if object.comments %}
+      {{ object.comments|markdown }}
+    {% else %}
+      <span class="text-muted">{% trans "None" %}</span>
+    {% endif %}
+  </div>
+</c-card>

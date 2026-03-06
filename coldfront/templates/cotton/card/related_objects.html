@@ -1,0 +1,14 @@
+{% load i18n %}
+
+<c-card.list header='{% trans "Related" %}' only>
+  {% for related_object_count in models %}
+    {% action_url related_object_count.queryset.model 'list' as list_url %}
+    <c-card.list.item link="{% if list_url %}{{ list_url }}?{{ related_object_count.filter_param }}={{ object.pk }}{% endif %}" :count="related_object_count.queryset.count">
+        {{ related_object_count.name }}
+    </c-card.list.item>
+  {% empty %}
+    <c-card.list.item>
+        {% trans "None" %}
+    </c-card.list.item>
+  {% endfor %}
+</c-card>
