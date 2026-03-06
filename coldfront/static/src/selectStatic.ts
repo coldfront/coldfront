@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 import TomSelect from 'tom-select';
-import type { TomOption } from 'tom-select/src/types/core.ts';
-import { escape_html } from 'tom-select/src/utils.ts';
+import type { TomOption } from 'tom-select/dist/esm/types/core.js';
+import { escape_html } from 'tom-select/dist/esm/utils.js';
 import { getElementsByQueryGenerator } from './util';
 
 // Initialize selection fields

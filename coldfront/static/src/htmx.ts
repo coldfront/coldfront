@@ -2,12 +2,10 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-import { initDataTable } from './dataTable';
 import { initBootstrap } from './bs';
 import { initColorSelects, initSelects } from './selectStatic';
 
 function initDepedencies(): void {
-  initDataTable();
   initBootstrap();
   initColorSelects();
   initSelects();

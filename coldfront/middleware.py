@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 import uuid
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlencode, urlparse
 
 from .registry import apply_request_processors
 
@@ -73,9 +73,9 @@ class HtmxAuthRedirectMiddleware:
             response.status_code = 204
 
             # Update the "?next" query parameter
-            query_params = urlparse.parse_qs(redirect_url.query)
+            query_params = parse_qs(redirect_url.query)
             query_params["next"] = [next_path]
-            new_query = urlparse.urlencode(query_params, doseq=True)
+            new_query = urlencode(query_params, doseq=True)
 
             # Set the new HX-Redirect header
             response.headers["HX-Redirect"] = f"{redirect_url.path}?{new_query}"

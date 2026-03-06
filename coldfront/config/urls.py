@@ -18,6 +18,7 @@ from django.views.generic import TemplateView
 
 from coldfront.auth.logout import HtmxLogoutView
 from coldfront.config.env import ENV, PROJECT_ROOT
+from coldfront.views import HomeView
 
 admin.site.site_header = "ColdFront Administration"
 admin.site.site_title = "ColdFront Administration"
@@ -25,6 +26,8 @@ admin.site.site_title = "ColdFront Administration"
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain"), name="robots"),
+    # Base views
+    path("", HomeView.as_view(), name="home"),
     # Login/logout
     path(
         "login",
