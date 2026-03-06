@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.ras.models import Resource, ResourceType
 from coldfront.tables import OrganizationalModelTable, PrimaryModelTable, columns
 
+from .template_code import ALLOCATIONTYPE_ATTRIBUTES
+
 
 class ResourceTypeTable(OrganizationalModelTable):
     name = tables.Column(
@@ -20,6 +22,14 @@ class ResourceTypeTable(OrganizationalModelTable):
         verbose_name=_("Resource Count"),
     )
     color = columns.ColorColumn()
+
+    attributes = columns.TemplateColumn(
+        template_code=ALLOCATIONTYPE_ATTRIBUTES,
+        accessor=tables.A("schema__properties"),
+        orderable=False,
+        verbose_name=_("Attributes"),
+    )
+
     tags = columns.TagColumn(
         url_name="ras:resourcetype_list",
     )
@@ -33,13 +43,14 @@ class ResourceTypeTable(OrganizationalModelTable):
             "resource_count",
             "color",
             "description",
+            "attributes",
             "slug",
             "tags",
             "created",
             "last_updated",
             "actions",
         )
-        default_columns = ("pk", "name", "color", "description")
+        default_columns = ("pk", "name", "color", "attributes", "description")
 
 
 class ResourceTable(PrimaryModelTable):

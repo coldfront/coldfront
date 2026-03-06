@@ -39,6 +39,7 @@ class ObjectTypeQuerySet(models.QuerySet):
 
 class ObjectTypeManager(models.Manager):
     def get_queryset(self):
+        # TODO: ignore legacy apps. Remove in future version
         return ObjectTypeQuerySet(self.model, using=self._db).exclude(app_label__in=LEGACY_APPS)
 
     def get_by_natural_key(self, app_label, model):

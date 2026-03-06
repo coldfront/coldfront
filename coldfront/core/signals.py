@@ -12,6 +12,7 @@ from django.db.models.fields.reverse_related import ManyToManyRel, ManyToOneRel
 from django.db.models.signals import m2m_changed, post_migrate, post_save, pre_delete
 from django.dispatch import receiver
 
+from coldfront.constants import LEGACY_APPS
 from coldfront.context import current_request
 from coldfront.core.choices import ObjectChangeActionChoices
 from coldfront.core.events import OBJECT_CREATED, OBJECT_DELETED, OBJECT_UPDATED
@@ -26,6 +27,10 @@ def update_object_types(sender, **kwargs):
     """
     for model in sender.get_models():
         app_label, model_name = model._meta.label_lower.split(".")
+
+        # TODO: ignore lecacy apps. Remove this in future version
+        if app_label in LEGACY_APPS:
+            continue
 
         # Determine whether model is public and its supported features
         is_public = ObjectType.model_is_public(model)

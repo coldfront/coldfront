@@ -7,11 +7,12 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.choices import ColorChoices
 from coldfront.models import OrganizationalModel, PrimaryModel
+from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
 from coldfront.ras.choices import ResourceStatusChoices
 from coldfront.utils.fields import ColorField, CounterCacheField
 
 
-class ResourceType(OrganizationalModel):
+class ResourceType(AttributeProfileMixin, OrganizationalModel):
     """
     Resources are organized by type; for example, "Cluster", "Cluster Partition", or "Storage".
     """
@@ -35,7 +36,7 @@ class ResourceType(OrganizationalModel):
         verbose_name_plural = _("resource types")
 
 
-class Resource(PrimaryModel):
+class Resource(CustomAttributesMixin, PrimaryModel):
     """
     A Resource represents something that can be allocated. Each Resource is assigned a ResourceType.
     """
@@ -79,3 +80,6 @@ class Resource(PrimaryModel):
 
     def get_status_color(self):
         return ResourceStatusChoices.colors.get(self.status)
+
+    def get_profile(self):
+        return self.resource_type
