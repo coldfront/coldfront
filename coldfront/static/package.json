@@ -14,9 +14,6 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.10",
-    "@types/chart.js": "^2.9.41",
-    "@types/jquery": "^3.5.33",
-    "@types/select2": "^4.0.63",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -31,13 +28,8 @@
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
-    "chart.js": "^4.5.1",
-    "datatables.net": "^2.3.5",
-    "datatables.net-bs5": "^2.3.5",
     "flatpickr": "^4.6.13",
     "htmx.org": "^2.0.8",
-    "jquery": "^3.7.1",
-    "select2": "^4.1.0-rc.0",
-    "tom-select": "^2.5.1"
+    "tom-select": "^2.5.2"
   }
 }
