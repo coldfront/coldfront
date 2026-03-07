@@ -83,6 +83,7 @@ ADMIN_MENU = Menu(
             items=(
                 get_model_item("users", "user", _("Users")),
                 get_model_item("users", "group", _("Groups")),
+                get_model_item("users", "token", _("API Tokens")),
                 get_model_item("users", "objectpermission", _("Permissions"), actions=["add"]),
             ),
         ),

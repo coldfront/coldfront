@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.models import ObjectType
-from coldfront.users.models import Group, ObjectPermission, User
+from coldfront.users.models import Group, ObjectPermission, Token, User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet
 
@@ -16,6 +16,7 @@ __all__ = (
     "GroupFilterSet",
     "ObjectPermissionFilterSet",
     "UserFilterSet",
+    "TokenFilterSet",
 )
 
 
@@ -142,3 +143,51 @@ class ObjectPermissionFilterSet(BaseFilterSet):
         if value:
             return queryset.filter(actions__contains=[action])
         return queryset.exclude(actions__contains=[action])
+
+
+class TokenFilterSet(BaseFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    user_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="user",
+        queryset=User.objects.all(),
+        distinct=False,
+        label=_("User"),
+    )
+    user = django_filters.ModelMultipleChoiceFilter(
+        field_name="user__username",
+        queryset=User.objects.all(),
+        distinct=False,
+        to_field_name="username",
+        label=_("User (name)"),
+    )
+    created = django_filters.DateTimeFilter()
+    created__gte = django_filters.DateTimeFilter(field_name="created", lookup_expr="gte")
+    created__lte = django_filters.DateTimeFilter(field_name="created", lookup_expr="lte")
+    expires = django_filters.DateTimeFilter()
+    expires__gte = django_filters.DateTimeFilter(field_name="expires", lookup_expr="gte")
+    expires__lte = django_filters.DateTimeFilter(field_name="expires", lookup_expr="lte")
+    last_used = django_filters.DateTimeFilter()
+    last_used__gte = django_filters.DateTimeFilter(field_name="last_used", lookup_expr="gte")
+    last_used__lte = django_filters.DateTimeFilter(field_name="last_used", lookup_expr="lte")
+
+    class Meta:
+        model = Token
+        fields = (
+            "id",
+            "key",
+            "pepper_id",
+            "enabled",
+            "write_enabled",
+            "description",
+            "created",
+            "expires",
+            "last_used",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(key=value) | Q(user__username__icontains=value) | Q(description__icontains=value))

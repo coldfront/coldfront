@@ -9,7 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.constants import BOOLEAN_WITH_BLANK_CHOICES
 from coldfront.forms import ColdFrontModelFilterSetForm
-from coldfront.users.models import Group, ObjectPermission, User
+from coldfront.users.models import Group, ObjectPermission, Token, User
+from coldfront.utils.forms.widgets import DateTimePicker
 
 
 class GroupFilterSetForm(ColdFrontModelFilterSetForm):
@@ -108,4 +109,47 @@ class ObjectPermissionFilterSetForm(ColdFrontModelFilterSetForm):
         required=False,
         widget=forms.Select(choices=BOOLEAN_WITH_BLANK_CHOICES),
         label=_("Can Delete"),
+    )
+
+
+class TokenFilterSetForm(ColdFrontModelFilterSetForm):
+    model = Token
+    fieldsets = (
+        Fieldset(
+            _("Search"),
+            "q",
+        ),
+        Fieldset(
+            _("Token"),
+            "user_id",
+            "enabled",
+            "write_enabled",
+            "expires",
+            "last_used",
+        ),
+    )
+    user_id = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        required=False,
+        label=_("User"),
+    )
+    enabled = forms.NullBooleanField(
+        required=False,
+        widget=forms.Select(choices=BOOLEAN_WITH_BLANK_CHOICES),
+        label=_("Enabled"),
+    )
+    write_enabled = forms.NullBooleanField(
+        required=False,
+        widget=forms.Select(choices=BOOLEAN_WITH_BLANK_CHOICES),
+        label=_("Write Enabled"),
+    )
+    expires = forms.DateTimeField(
+        required=False,
+        label=_("Expires"),
+        widget=DateTimePicker(),
+    )
+    last_used = forms.DateTimeField(
+        required=False,
+        label=_("Last Used"),
+        widget=DateTimePicker(),
     )

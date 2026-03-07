@@ -12,7 +12,7 @@ from coldfront.views import generic
 from coldfront.views.object_actions import AddObject, BulkExport
 
 from . import filtersets, forms, tables
-from .models import Group, ObjectPermission, User
+from .models import Group, ObjectPermission, Token, User
 
 #
 # Users
@@ -120,3 +120,34 @@ class ObjectPermissionEditView(generic.ObjectEditView):
 class ObjectPermissionDeleteView(generic.ObjectDeleteView):
     queryset = ObjectPermission.objects.all()
     filterset = filtersets.ObjectPermissionFilterSet
+
+
+#
+# Tokens
+#
+
+
+@register_model_view(Token, "list", path="", detail=False)
+class TokenListView(generic.ObjectListView):
+    queryset = Token.objects.all()
+    filterset = filtersets.TokenFilterSet
+    filterset_form = forms.TokenFilterSetForm
+    table = tables.TokenTable
+
+
+@register_model_view(Token)
+class TokenView(generic.ObjectView):
+    queryset = Token.objects.all()
+
+
+@register_model_view(Token, "add", detail=False)
+@register_model_view(Token, "edit")
+class TokenEditView(generic.ObjectEditView):
+    queryset = Token.objects.all()
+    form = forms.TokenForm
+    template_name = "users/token_edit.html"
+
+
+@register_model_view(Token, "delete")
+class TokenDeleteView(generic.ObjectDeleteView):
+    queryset = Token.objects.all()

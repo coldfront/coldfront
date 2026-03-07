@@ -6,8 +6,6 @@ from crispy_forms.bootstrap import AppendedText
 from crispy_forms.layout import Field
 from django.utils.html import format_html
 
-__all__ = ("Slug", "Date", "DateTime", "Time")
-
 
 class Date(Field):
     def __init__(self, name):
@@ -32,4 +30,14 @@ class Slug(AppendedText):
                 '<button id="reslug" type="button" title="Regenerate Slug" class="btn"> <i class="fa-solid fa-rotate"></i></button>'
             ),
             slug_source=slug_source,
+        )
+
+
+class CopyClipboard(AppendedText):
+    def __init__(self, name):
+        super().__init__(
+            name,
+            format_html(
+                f'<button type="button" title="Copy to clipboard" class="btn copy-content" data-clipboard-target="#id_{name}"><i class="fa-solid fa-copy"></i></button>'
+            ),
         )
