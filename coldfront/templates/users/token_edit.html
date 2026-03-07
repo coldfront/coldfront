@@ -1,0 +1,11 @@
+{% extends 'generic/object_edit.html' %}
+{% load i18n %}
+
+{% block alerts %}
+    {{ block.super }}
+    {% if not request.user.is_superuser %}
+        <c-alert type="warning">
+        Non-superusers should generally create and modify API tokens under their user profile.
+        </c-alert>
+    {% endif %}
+{% endblock %}

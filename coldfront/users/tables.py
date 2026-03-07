@@ -8,12 +8,13 @@ from django.utils.translation import gettext as _
 
 from coldfront.tables import ColdFrontTable, columns
 
-from .models import Group, ObjectPermission, User
+from .models import Group, ObjectPermission, Token, User
 
 __all__ = (
     "GroupTable",
     "ObjectPermissionTable",
     "UserTable",
+    "TokenTable",
 )
 
 
@@ -125,5 +126,56 @@ class ObjectPermissionTable(ColdFrontTable):
             "can_add",
             "can_change",
             "can_delete",
+            "description",
+        )
+
+
+TOKEN = """<samp><a href="{{ record.get_absolute_url }}">{{ record }}</a></samp>"""
+
+
+class TokenTable(ColdFrontTable):
+    user = tables.Column(linkify=True, verbose_name=_("User"))
+    token = columns.TemplateColumn(
+        verbose_name=_("token"),
+        template_code=TOKEN,
+        orderable=False,
+    )
+    enabled = columns.BooleanColumn(verbose_name=_("Enabled"))
+    write_enabled = columns.BooleanColumn(verbose_name=_("Write Enabled"))
+    created = columns.DateTimeColumn(
+        timespec="minutes",
+        verbose_name=_("Created"),
+    )
+    expires = columns.DateTimeColumn(
+        timespec="minutes",
+        verbose_name=_("Expires"),
+    )
+    last_used = columns.DateTimeColumn(
+        verbose_name=_("Last Used"),
+    )
+    actions = columns.ActionsColumn(
+        actions=("edit", "delete"),
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = Token
+        fields = (
+            "pk",
+            "id",
+            "token",
+            "pepper_id",
+            "user",
+            "description",
+            "enabled",
+            "write_enabled",
+            "created",
+            "expires",
+            "last_used",
+        )
+        default_columns = (
+            "token",
+            "user",
+            "enabled",
+            "write_enabled",
             "description",
         )

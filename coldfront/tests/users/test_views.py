@@ -3,8 +3,10 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
+from django.test import override_settings
+
 from coldfront.core.models import ObjectType
-from coldfront.users.models import Group, ObjectPermission, User
+from coldfront.users.models import Group, ObjectPermission, Token, User
 from coldfront.utils.testing import ViewTestCases
 
 
@@ -172,4 +174,45 @@ class ObjectPermissionTestCase(
 
         cls.bulk_edit_data = {
             "description": "New description",
+        }
+
+
+@override_settings(
+    API_TOKEN_PEPPERS={1: "SF1Rie3gurZikCPitWdx4V79Z0lH5p0D210ExSra"},
+)
+class TokenTestCase(
+    ViewTestCases.GetObjectViewTestCase,
+    ViewTestCases.CreateObjectViewTestCase,
+    ViewTestCases.EditObjectViewTestCase,
+    ViewTestCases.DeleteObjectViewTestCase,
+    ViewTestCases.ListObjectsViewTestCase,
+):
+    model = Token
+    maxDiff = None
+    validation_excluded_fields = ["token", "user"]
+
+    @classmethod
+    def setUpTestData(cls):
+        users = (
+            User(
+                username="username1", first_name="first1", last_name="last1", email="user1@foo.com", password="pass1xxx"
+            ),
+            User(
+                username="username2", first_name="first2", last_name="last2", email="user2@foo.com", password="pass2xxx"
+            ),
+        )
+        User.objects.bulk_create(users)
+        tokens = (
+            Token(user=users[0]),
+            Token(user=users[0]),
+            Token(user=users[1]),
+        )
+        for token in tokens:
+            token.save()
+
+        cls.form_data = {
+            "token": "4F9DAouzURLbicyoG55htImgqQ0b4UZHP5LUYgl5",
+            "user": users[0].pk,
+            "description": "Test token",
+            "enabled": True,
         }

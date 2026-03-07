@@ -15,6 +15,7 @@ import { initButtons } from './buttons';
 import { initBootstrap } from './bs';
 import { initNavLinks } from './sidenav';
 import { initTheme } from './theme';
+import { initClipboard } from './clipboard';
 
 function initDocument(): void {
   for (const init of [
@@ -29,6 +30,7 @@ function initDocument(): void {
     initNavLinks,
     initButtons,
     initTableConfig,
+    initClipboard,
   ]) {
     init();
   }

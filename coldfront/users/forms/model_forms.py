@@ -14,9 +14,10 @@ from django.core.exceptions import FieldError
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.models import ObjectType
+from coldfront.forms.layouts import CopyClipboard, DateTime
 from coldfront.forms.mixins import HorizontalFormMixin
 from coldfront.users.constants import CONSTRAINT_TOKEN_USER, OBJECTPERMISSION_OBJECT_TYPES
-from coldfront.users.models import Group, ObjectPermission, User
+from coldfront.users.models import Group, ObjectPermission, Token, User
 from coldfront.users.permissions import qs_filter_from_constraints
 from coldfront.utils.forms.fields import JSONField
 from coldfront.utils.forms.fields.content_types import ContentTypeMultipleChoiceField
@@ -327,3 +328,80 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
         instance.groups.set(self.cleaned_data["groups"])
 
         return instance
+
+
+class UserTokenForm(HorizontalFormMixin, forms.ModelForm):
+    token = forms.CharField(
+        label=_("Token"),
+        help_text=_(
+            "Tokens must be at least 40 characters in length. <strong>Be sure to record your token</strong> prior to "
+            "submitting this form, as it will no longer be accessible once the token has been created."
+        ),
+        widget=forms.TextInput(attrs={"data-clipboard": "true"}),
+    )
+
+    fieldsets = (
+        Fieldset(
+            _("Token"),
+            "user",
+            CopyClipboard("token"),
+            "enabled",
+            "write_enabled",
+            DateTime("expires"),
+            "description",
+        ),
+    )
+
+    class Meta:
+        model = Token
+        fields = [
+            "token",
+            "enabled",
+            "write_enabled",
+            "expires",
+            "description",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if self.instance.pk:
+            # Disable the user field for existing Tokens
+            self.fields["user"].disabled = True
+
+            # Omit the key field when editing an existing Token
+            del self.fields["token"]
+
+        # Generate an initial random key if none has been specified
+        elif self.instance._state.adding and not self.initial.get("token"):
+            self.initial["token"] = Token.generate()
+
+    def save(self, commit=True):
+        if self.instance._state.adding and self.cleaned_data.get("token"):
+            self.instance.token = self.cleaned_data["token"]
+
+        return super().save(commit=commit)
+
+
+class TokenForm(UserTokenForm):
+    user = forms.ModelChoiceField(
+        queryset=User.objects.order_by("username"),
+        label=_("User"),
+    )
+
+    class Meta(UserTokenForm.Meta):
+        fields = [
+            "token",
+            "user",
+            "enabled",
+            "write_enabled",
+            "expires",
+            "description",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # If not creating a new Token, disable the user field
+        if self.instance and not self.instance._state.adding:
+            self.fields["user"].disabled = True

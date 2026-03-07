@@ -1,0 +1,59 @@
+{% extends 'users/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Token" %} {{ object }}{% endblock %}
+
+{% block content %}
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Key' %}">
+          {{ object.key }}
+      </c-card.fields.item>
+
+     {% if request.user.is_superuser %}
+      <c-card.fields.item label="{% trans 'Pepper ID' %}">
+          {{ object.pepper_id }}
+      </c-card.fields.item>
+      {% endif %}
+
+      <c-card.fields.item label="{% trans 'User' %}">
+          {{ object.user|linkify }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Expires' %}">
+          {{ object.expires|isodatetime:"minutes"|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Last Used' %}">
+          {{ object.last_used|isodatetime:"minutes"|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Enabled' %}">
+          <c-ui.checkmark :value="object.enabled" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Write Enabled' %}">
+          <c-ui.checkmark :value="object.write_enabled" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.description|placeholder }}
+      </c-card.fields.item>
+
+    </c-card.fields>
+  </c-slot>
+  <c-slot name="right">
+    <c-card header="{% trans 'Token Example' %}">
+    <div class="card-body">
+<pre id="token-example">
+curl -X GET \
+  -H "Authorization: {{ object.get_auth_header_prefix }}<mark>&lt;TOKEN&gt;</mark>" \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json; indent=4" \
+  {{ request.scheme }}://{{ request.get_host }}/api
+    </div>
+    </c-card>
+  </c-slot>
+</c-layout.panels>
+{% endblock %}
