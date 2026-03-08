@@ -16,7 +16,7 @@ from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic import TemplateView
 
-from coldfront.auth.logout import HtmxLogoutView
+from coldfront.account.views import HtmxLogoutView
 from coldfront.config.env import ENV, PROJECT_ROOT
 from coldfront.views import HomeView
 
@@ -35,6 +35,8 @@ urlpatterns = [
         name="login",
     ),
     path("logout/", HtmxLogoutView.as_view(), name="logout"),
+    # User profile views
+    path("user/", include("coldfront.account.urls")),
     # ColdFront core apps
     path("users/", include("coldfront.users.urls")),
     path("core/", include("coldfront.core.urls")),

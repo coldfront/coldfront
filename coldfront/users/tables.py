@@ -136,7 +136,7 @@ TOKEN = """<samp><a href="{{ record.get_absolute_url }}">{{ record }}</a></samp>
 class TokenTable(ColdFrontTable):
     user = tables.Column(linkify=True, verbose_name=_("User"))
     token = columns.TemplateColumn(
-        verbose_name=_("token"),
+        verbose_name=_("Token"),
         template_code=TOKEN,
         orderable=False,
     )
