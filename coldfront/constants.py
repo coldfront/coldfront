@@ -7,6 +7,7 @@ CORE_APPS = (
     "users",
     "tenancy",
     "ras",
+    "account",
 )
 
 # ColdFront 1.x legacy apps

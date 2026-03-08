@@ -1,0 +1,17 @@
+{% extends 'account/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "My API Tokens" %}{% endblock %}
+
+{% block content %}
+<c-layout.row>
+    <c-layout.col css_class="m-3 text-end">
+        <c-button.add url="{% url 'account:usertoken_add' %}" label="{% trans "Add a Token" %}" />
+    </c-layout.col>
+</c-layout.row>
+<c-layout.row>
+    <c-layout.col>
+      <c-card.table :table="table" only />
+    </c-layout.col>
+</c-layout.row>
+{% endblock %}

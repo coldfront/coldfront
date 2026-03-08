@@ -146,7 +146,6 @@ PROJECT_UPDATE_FIELDS = ENV.list(
     ],
 )
 
-DEFAULT_PERMISSIONS = {}
 EXEMPT_VIEW_PERMISSIONS = []
 CHANGELOG_SKIP_EMPTY_CHANGES = True
 PAGINATE_COUNT = ENV.int("PAGINATE_COUNT", default=50)
@@ -154,6 +153,17 @@ MAX_PAGE_SIZE = ENV.int("MAX_PAGE_SIZE", default=1000)
 FILTERS_NULL_CHOICE_LABEL = "None"
 FILTERS_NULL_CHOICE_VALUE = "null"
 FIELD_CHOICES = {}
+
+DEFAULT_PERMISSIONS = ENV.dict(
+    "DEFAULT_PERMISSIONS",
+    default={
+        # Permit users to manage their own API tokens
+        "users.view_token": ({"user": "$user"},),
+        "users.add_token": ({"user": "$user"},),
+        "users.change_token": ({"user": "$user"},),
+        "users.delete_token": ({"user": "$user"},),
+    },
+)
 
 # Exclude potentially sensitive models from wildcard view exemption. These may still be exempted
 # by specifying the model individually in the EXEMPT_VIEW_PERMISSIONS configuration parameter.

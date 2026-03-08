@@ -21,8 +21,8 @@
 {% block subtitle %}{% endblock %}
 
 {% block content %}
-<c-layout.panels.row>
-  <c-layout.panels.col>
+<c-layout.row>
+  <c-layout.col>
 
     <c-card.fields header="{% trans "Change" %}" only>
       <c-card.fields.item label="{% trans 'Time' %}">
@@ -62,9 +62,9 @@
       </c-card.fields.item>
     </c-card.fields>
 
-  </c-layout.panels.col>
+  </c-layout.col>
 
-  <c-layout.panels.col>
+  <c-layout.col>
 
     <c-card only>
       <c-slot name="header">
@@ -97,13 +97,13 @@
       </div>
     </c-card>
 
-  </c-layout.panels.col>
+  </c-layout.col>
 
-</c-layout.panels.row>
+</c-layout.row>
 
-<c-layout.panels.row>
+<c-layout.row>
 
-  <c-layout.panels.col>
+  <c-layout.col>
 
     <c-card header="{% trans 'Pre-Change Data' %}" only>
       <div class="card-body">
@@ -123,9 +123,9 @@
       </div>
     </c-card>
 
-  </c-layout.panels.col>
+  </c-layout.col>
 
-  <c-layout.panels.col>
+  <c-layout.col>
 
     <c-card header="{% trans 'Post-Change Data' %}" only>
       <div class="card-body">
@@ -143,13 +143,13 @@
       </div>
     </c-card>
 
-  </c-layout.panels.col>
+  </c-layout.col>
 
-</c-layout.panels.row>
+</c-layout.row>
 
-<c-layout.panels.row>
+<c-layout.row>
 
-  <c-layout.panels.col>
+  <c-layout.col>
 
     <c-card.table :table="related_changes_table" :show_paginator=False only>
         <c-slot name="header">
@@ -166,7 +166,7 @@
         </c-slot>
     </c-card.table>
 
-  </c-layout.panels.col>
+  </c-layout.col>
 
-</c-layout.panels.row>
+</c-layout.row>
 {% endblock %}

@@ -179,6 +179,7 @@ class ObjectPermissionTestCase(
 
 @override_settings(
     API_TOKEN_PEPPERS={1: "SF1Rie3gurZikCPitWdx4V79Z0lH5p0D210ExSra"},
+    DEFAULT_PERMISSIONS={},
 )
 class TokenTestCase(
     ViewTestCases.GetObjectViewTestCase,

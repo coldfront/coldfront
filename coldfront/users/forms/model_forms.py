@@ -6,7 +6,7 @@
 import json
 from collections import defaultdict
 
-from crispy_forms.layout import Fieldset
+from crispy_forms.layout import Fieldset, Layout
 from django import forms
 from django.apps import apps
 from django.contrib.auth import password_validation
@@ -337,13 +337,10 @@ class UserTokenForm(HorizontalFormMixin, forms.ModelForm):
             "Tokens must be at least 40 characters in length. <strong>Be sure to record your token</strong> prior to "
             "submitting this form, as it will no longer be accessible once the token has been created."
         ),
-        widget=forms.TextInput(attrs={"data-clipboard": "true"}),
     )
 
     fieldsets = (
-        Fieldset(
-            _("Token"),
-            "user",
+        Layout(
             CopyClipboard("token"),
             "enabled",
             "write_enabled",
@@ -366,11 +363,9 @@ class UserTokenForm(HorizontalFormMixin, forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if self.instance.pk:
-            # Disable the user field for existing Tokens
-            self.fields["user"].disabled = True
-
             # Omit the key field when editing an existing Token
             del self.fields["token"]
+            self.fieldsets = (*self.fieldsets[1:],)
 
         # Generate an initial random key if none has been specified
         elif self.instance._state.adding and not self.initial.get("token"):
@@ -389,7 +384,19 @@ class TokenForm(UserTokenForm):
         label=_("User"),
     )
 
+    fieldsets = (
+        Layout(
+            CopyClipboard("token"),
+            "user",
+            "enabled",
+            "write_enabled",
+            DateTime("expires"),
+            "description",
+        ),
+    )
+
     class Meta(UserTokenForm.Meta):
+        model = Token
         fields = [
             "token",
             "user",

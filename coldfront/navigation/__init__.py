@@ -90,10 +90,11 @@ class Menu:
 #
 
 
-def get_model_item(app_label, model_name, label, actions=("add",)):
+def get_model_item(app_label, model_name, label, actions=("add",), staff_only=False):
     return MenuItem(
         link=f"{app_label}:{model_name}_list",
         link_text=label,
+        staff_only=staff_only,
         permissions=[f"{app_label}.view_{model_name}"],
         buttons=get_model_buttons(app_label, model_name, actions),
     )
