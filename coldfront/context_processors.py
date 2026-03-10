@@ -9,7 +9,7 @@ from contextlib import contextmanager
 
 from django.conf import settings as django_settings
 
-from coldfront.context import current_request, query_cache
+from coldfront.context import current_request, query_cache, signals_received
 from coldfront.registry import register_request_processor
 from coldfront.registry import registry as registry_
 
@@ -30,12 +30,14 @@ def event_tracking(request):
     """
     current_request.set(request)
     query_cache.set(defaultdict(dict))
+    signals_received.set(defaultdict(dict))
 
     yield
 
     # Clear context vars
     current_request.set(None)
     query_cache.set(None)
+    signals_received.set(None)
 
 
 def registry(request):

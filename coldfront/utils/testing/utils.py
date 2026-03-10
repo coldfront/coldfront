@@ -9,9 +9,11 @@ import re
 import string
 from contextlib import contextmanager
 
+from django.contrib.auth.models import Permission
 from django.utils.text import slugify
 
 from coldfront.core.models import Tag
+from coldfront.users.models import User
 
 
 def create_tags(*names):
@@ -73,3 +75,18 @@ def extract_form_failures(content):
     """
     FORM_ERROR_REGEX = r"<!-- FORM-ERROR (.*) -->"
     return re.findall(FORM_ERROR_REGEX, str(content))
+
+
+def create_test_user(username="testuser", permissions=None):
+    """
+    Create a User with the given permissions.
+    """
+    user = User.objects.create_user(username=username)
+    if permissions is None:
+        permissions = ()
+    for perm_name in permissions:
+        app, codename = perm_name.split(".")
+        perm = Permission.objects.get(content_type__app_label=app, codename=codename)
+        user.user_permissions.add(perm)
+
+    return user

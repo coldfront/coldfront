@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
-from threading import local
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,7 +12,7 @@ from django.db.models.signals import m2m_changed, post_migrate, post_save, pre_d
 from django.dispatch import receiver
 
 from coldfront.constants import LEGACY_APPS
-from coldfront.context import current_request
+from coldfront.context import current_request, signals_received
 from coldfront.core.choices import ObjectChangeActionChoices
 from coldfront.core.events import OBJECT_CREATED, OBJECT_DELETED, OBJECT_UPDATED
 from coldfront.core.models import CustomField, ObjectChange, ObjectType, Tag
@@ -117,10 +116,6 @@ def handle_changed_object(sender, instance, **kwargs):
         instance.refresh_from_db()
 
 
-# Used to track received signals per object
-_signals_received = local()
-
-
 @receiver(pre_delete)
 def handle_deleted_object(sender, instance, **kwargs):
     """
@@ -131,15 +126,17 @@ def handle_deleted_object(sender, instance, **kwargs):
     if request is None:
         return
 
+    _signals_received = signals_received.get()
+
     # Check whether we've already processed a pre_delete signal for this object. (This can
     # happen e.g. when both a parent object and its child are deleted simultaneously, due
     # to cascading deletion.)
-    if not hasattr(_signals_received, "pre_delete"):
-        _signals_received.pre_delete = set()
+    if "pre_delete" not in _signals_received:
+        _signals_received["pre_delete"] = set()
     signature = (ContentType.objects.get_for_model(instance), instance.pk)
-    if signature in _signals_received.pre_delete:
+    if signature in _signals_received["pre_delete"]:
         return
-    _signals_received.pre_delete.add(signature)
+    _signals_received["pre_delete"].add(signature)
 
     # Record an ObjectChange if applicable
     if hasattr(instance, "to_objectchange"):

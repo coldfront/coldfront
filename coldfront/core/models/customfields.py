@@ -212,7 +212,7 @@ class CustomField(CloningMixin, ChangeLoggedModel):
         on_delete=models.PROTECT,
         blank=True,
         null=True,
-        help_text=_("The type of NetBox object this field maps to (for object fields)"),
+        help_text=_("The type of ColdFront object this field maps to (for object fields)"),
     )
     name = models.CharField(
         verbose_name=_("name"),

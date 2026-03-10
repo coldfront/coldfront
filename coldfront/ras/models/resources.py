@@ -9,7 +9,7 @@ from coldfront.core.choices import ColorChoices
 from coldfront.models import OrganizationalModel, PrimaryModel
 from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
 from coldfront.ras.choices import ResourceStatusChoices
-from coldfront.utils.fields import ColorField, CounterCacheField
+from coldfront.utils.fields import ColorField
 
 
 class ResourceType(AttributeProfileMixin, OrganizationalModel):
@@ -26,12 +26,9 @@ class ResourceType(AttributeProfileMixin, OrganizationalModel):
         verbose_name=_("color"),
         default=ColorChoices.COLOR_GREY,
     )
-    resource_count = CounterCacheField(
-        to_model="ras.Resource",
-        to_field="resource_type",
-    )
 
     class Meta:
+        ordering = ["name"]
         verbose_name = _("resource type")
         verbose_name_plural = _("resource types")
 
@@ -72,6 +69,7 @@ class Resource(CustomAttributesMixin, PrimaryModel):
     )
 
     class Meta:
+        ordering = ["name"]
         verbose_name = _("resource")
         verbose_name_plural = _("resources")
 

@@ -65,6 +65,9 @@ INSTALLED_APPS += [
     "django_tables2",
     "django_jsonform",
     "django_cotton.apps.SimpleAppConfig",
+    "rest_framework",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:

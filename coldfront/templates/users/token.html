@@ -51,7 +51,7 @@ curl -X GET \
   -H "Authorization: {{ object.get_auth_header_prefix }}<mark>&lt;TOKEN&gt;</mark>" \
   -H "Content-Type: application/json" \
   -H "Accept: application/json; indent=4" \
-  {{ request.scheme }}://{{ request.get_host }}/api
+  {{ request.scheme }}://{{ request.get_host }}/api/
     </div>
     </c-card>
   </c-slot>
