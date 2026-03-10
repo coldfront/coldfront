@@ -232,7 +232,7 @@ class Migration(migrations.Migration):
                     "related_object_type",
                     models.ForeignKey(
                         blank=True,
-                        help_text="The type of NetBox object this field maps to (for object fields)",
+                        help_text="The type of ColdFront object this field maps to (for object fields)",
                         null=True,
                         on_delete=django.db.models.deletion.PROTECT,
                         to="contenttypes.contenttype",

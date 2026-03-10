@@ -1,0 +1,93 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+from django.utils.translation import gettext as _
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
+from rest_framework.fields import Field
+from rest_framework.serializers import ValidationError
+
+from coldfront.api.utils import get_serializer_for_model
+from coldfront.constants import CUSTOMFIELD_EMPTY_VALUES
+from coldfront.core.choices import CustomFieldTypeChoices
+from coldfront.core.models import CustomField
+
+#
+# Custom fields
+#
+
+
+class CustomFieldDefaultValues:
+    """
+    Return a dictionary of all CustomFields assigned to the parent model and their default values.
+    """
+
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        self.model = serializer_field.parent.Meta.model
+
+        # Populate the default value for each CustomField on the model
+        value = {}
+        for field in CustomField.objects.get_for_model(self.model):
+            if field.default is not None:
+                value[field.name] = field.default
+            else:
+                value[field.name] = None
+
+        return value
+
+
+@extend_schema_field(OpenApiTypes.OBJECT)
+class CustomFieldsDataField(Field):
+    def _get_custom_fields(self):
+        """
+        Cache CustomFields assigned to this model to avoid redundant database queries
+        """
+        if not hasattr(self, "_custom_fields"):
+            self._custom_fields = CustomField.objects.get_for_model(self.parent.Meta.model)
+        return self._custom_fields
+
+    def to_representation(self, obj):
+        data = {}
+        for cf in self._get_custom_fields():
+            value = cf.deserialize(obj.get(cf.name))
+            if value is not None and cf.type == CustomFieldTypeChoices.TYPE_OBJECT:
+                serializer = get_serializer_for_model(cf.related_object_type.model_class())
+                value = serializer(value, nested=True, context=self.parent.context).data
+            elif value is not None and cf.type == CustomFieldTypeChoices.TYPE_MULTIOBJECT:
+                serializer = get_serializer_for_model(cf.related_object_type.model_class())
+                value = serializer(value, nested=True, many=True, context=self.parent.context).data
+            data[cf.name] = value
+
+        return data
+
+    def to_internal_value(self, data):
+        if type(data) is not dict:
+            raise ValidationError(
+                "Invalid data format. Custom field data must be passed as a dictionary mapping field names to their "
+                "values."
+            )
+
+        # Serialize object and multi-object values
+        for cf in self._get_custom_fields():
+            if (
+                cf.name in data
+                and data[cf.name] not in CUSTOMFIELD_EMPTY_VALUES
+                and cf.type in (CustomFieldTypeChoices.TYPE_OBJECT, CustomFieldTypeChoices.TYPE_MULTIOBJECT)
+            ):
+                serializer_class = get_serializer_for_model(cf.related_object_type.model_class())
+                many = cf.type == CustomFieldTypeChoices.TYPE_MULTIOBJECT
+                serializer = serializer_class(data=data[cf.name], nested=True, many=many, context=self.parent.context)
+                if serializer.is_valid():
+                    data[cf.name] = [obj["id"] for obj in serializer.data] if many else serializer.data["id"]
+                else:
+                    raise ValidationError(_("Unknown related object(s): {name}").format(name=data[cf.name]))
+
+        # If updating an existing instance, start with existing custom_field_data
+        if self.parent.instance:
+            data = {**self.parent.instance.custom_field_data, **data}
+
+        return data

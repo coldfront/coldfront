@@ -1,0 +1,112 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+from django.utils.translation import gettext as _
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
+
+from coldfront.api.serializers import ChangeLogMessageSerializer, ValidatedModelSerializer
+from coldfront.api.serializers.fields import ChoiceField, ContentTypeField
+from coldfront.core.choices import (
+    CustomFieldFilterLogicChoices,
+    CustomFieldTypeChoices,
+    CustomFieldUIEditableChoices,
+    CustomFieldUIVisibleChoices,
+)
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType
+
+__all__ = (
+    "CustomFieldChoiceSetSerializer",
+    "CustomFieldSerializer",
+)
+
+
+class CustomFieldChoiceSetSerializer(ChangeLogMessageSerializer, ValidatedModelSerializer):
+    choices = serializers.ListField(child=serializers.CharField())
+    choices_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = CustomFieldChoiceSet
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "name",
+            "description",
+            "choices",
+            "order_alphabetically",
+            "choices_count",
+            "created",
+            "last_updated",
+        ]
+        brief_fields = ("id", "url", "display", "name", "description", "choices_count")
+
+
+class CustomFieldSerializer(ChangeLogMessageSerializer, ValidatedModelSerializer):
+    object_types = ContentTypeField(queryset=ObjectType.objects.with_feature("custom_fields"), many=True)
+    type = ChoiceField(choices=CustomFieldTypeChoices)
+    related_object_type = ContentTypeField(queryset=ObjectType.objects.all(), required=False, allow_null=True)
+    filter_logic = ChoiceField(choices=CustomFieldFilterLogicChoices, required=False)
+    data_type = serializers.SerializerMethodField()
+    choice_set = CustomFieldChoiceSetSerializer(nested=True, required=False, allow_null=True)
+    ui_visible = ChoiceField(choices=CustomFieldUIVisibleChoices, required=False)
+    ui_editable = ChoiceField(choices=CustomFieldUIEditableChoices, required=False)
+
+    class Meta:
+        model = CustomField
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "object_types",
+            "type",
+            "related_object_type",
+            "data_type",
+            "name",
+            "label",
+            "group_name",
+            "description",
+            "required",
+            "unique",
+            "search_weight",
+            "filter_logic",
+            "ui_visible",
+            "ui_editable",
+            "is_cloneable",
+            "default",
+            "related_object_filter",
+            "weight",
+            "validation_minimum",
+            "validation_maximum",
+            "validation_regex",
+            "choice_set",
+            "created",
+            "last_updated",
+        ]
+        brief_fields = ("id", "url", "display", "name", "description")
+
+    def validate_type(self, value):
+        if self.instance and self.instance.type != value:
+            raise serializers.ValidationError(_("Changing the type of custom fields is not supported."))
+
+        return value
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_data_type(self, obj):
+        types = CustomFieldTypeChoices
+        if obj.type == types.TYPE_INTEGER:
+            return "integer"
+        if obj.type == types.TYPE_DECIMAL:
+            return "decimal"
+        if obj.type == types.TYPE_BOOLEAN:
+            return "boolean"
+        if obj.type in types.TYPE_OBJECT:
+            return "object"
+        if obj.type in (types.TYPE_MULTISELECT, types.TYPE_MULTIOBJECT):
+            return "array"
+        return "string"

@@ -13,6 +13,7 @@ OBJECTPERMISSION_OBJECT_TYPES = (Q(public=True) & ~Q(app_label="core", model="ob
 CONSTRAINT_TOKEN_USER = "$user"
 
 # API tokens
+TOKEN_HEADER_PREFIX = "Bearer"
 TOKEN_PREFIX = "cft_"
 TOKEN_KEY_LENGTH = 12
 TOKEN_DEFAULT_LENGTH = 40

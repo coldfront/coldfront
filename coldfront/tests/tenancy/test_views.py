@@ -56,16 +56,44 @@ class TenantTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     def setUpTestData(cls):
 
         tenant_groups = (
-            TenantGroup(name="Tenant Group 1", slug="tenant-group-1"),
-            TenantGroup(name="Tenant Group 2", slug="tenant-group-2"),
+            TenantGroup(
+                name="Tenant Group 1",
+                slug="tenant-group-1",
+            ),
+            TenantGroup(
+                name="Tenant Group 2",
+                slug="tenant-group-2",
+            ),
         )
         for tenanantgroup in tenant_groups:
             tenanantgroup.save()
 
         tenants = (
-            Tenant(name="Tenant 1", slug="tenant-1", group=tenant_groups[0]),
-            Tenant(name="Tenant 2", slug="tenant-2", group=tenant_groups[0]),
-            Tenant(name="Tenant 3", slug="tenant-3", group=tenant_groups[0]),
+            Tenant(
+                name="Tenant 1",
+                slug="tenant-1",
+                group=tenant_groups[0],
+            ),
+            Tenant(
+                name="Tenant 2",
+                slug="tenant-2",
+                group=tenant_groups[0],
+            ),
+            Tenant(
+                name="Tenant 3",
+                slug="tenant-3",
+                group=tenant_groups[0],
+            ),
+            Tenant(
+                name="Tenant 4",
+                slug="tenant-4",
+                group=tenant_groups[0],
+            ),
+            Tenant(
+                name="Tenant 5",
+                slug="tenant-5",
+                group=tenant_groups[0],
+            ),
         )
         Tenant.objects.bulk_create(tenants)
 
@@ -77,23 +105,4 @@ class TenantTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "group": tenant_groups[1].pk,
             "description": "A new tenant",
             "tags": [t.pk for t in tags],
-        }
-
-        cls.csv_data = (
-            "name,slug",
-            "Tenant 4,tenant-4",
-            "Tenant 5,tenant-5",
-            "Tenant 6,tenant-6",
-        )
-
-        cls.csv_update_data = (
-            "id,name,description",
-            f"{tenants[0].pk},Tenant 7,New description 7",
-            f"{tenants[1].pk},Tenant 8,New description 8",
-            f"{tenants[2].pk},Tenant 9,New description 9",
-        )
-
-        cls.bulk_edit_data = {
-            "group": tenant_groups[1].pk,
-            "description": "Bulk edit description",
         }

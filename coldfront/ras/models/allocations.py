@@ -19,6 +19,7 @@ class AllocationType(AttributeProfileMixin, OrganizationalModel):
     clone_fields = ("schema",)
 
     class Meta:
+        ordering = ["name"]
         verbose_name = _("allocation type")
         verbose_name_plural = _("allocation types")
 
@@ -107,6 +108,7 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
     )
 
     class Meta:
+        ordering = ["start_date"]
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")
 

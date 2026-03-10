@@ -10,6 +10,7 @@ from coldfront.users.querysets import TreeManager
 
 __all__ = (
     "count_related",
+    "dict_to_filter_params",
     "reapply_model_ordering",
 )
 
@@ -38,3 +39,35 @@ def reapply_model_ordering(queryset: QuerySet) -> QuerySet:
 
     ordering = queryset.model._meta.ordering
     return queryset.order_by(*ordering)
+
+
+def dict_to_filter_params(d, prefix=""):
+    """
+    Translate a dictionary of attributes to a nested set of parameters suitable for QuerySet filtering. For example:
+
+        {
+            "name": "Foo",
+            "rack": {
+                "facility_id": "R101"
+            }
+        }
+
+    Becomes:
+
+        {
+            "name": "Foo",
+            "rack__facility_id": "R101"
+        }
+
+    And can be employed as filter parameters:
+
+        Device.objects.filter(**dict_to_filter(attrs_dict))
+    """
+    params = {}
+    for key, val in d.items():
+        k = prefix + key
+        if isinstance(val, dict):
+            params.update(dict_to_filter_params(val, k + "__"))
+        else:
+            params[k] = val
+    return params

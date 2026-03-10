@@ -74,6 +74,8 @@ class Token(models.Model):
     )
     pepper_id = models.PositiveSmallIntegerField(
         verbose_name=_("pepper ID"),
+        blank=True,
+        null=True,
         help_text=_("ID of the cryptographic pepper used to hash the token"),
     )
     hmac_digest = models.CharField(
@@ -144,7 +146,7 @@ class Token(models.Model):
             raise ValidationError(_("Unable to save tokens: API_TOKEN_PEPPERS is not defined."))
 
         if self._state.adding:
-            if self.pepper_id is not None and self.pepper_id not in settings.API_TOKEN_PEPPERS:
+            if self.pepper_id is not None and str(self.pepper_id) not in settings.API_TOKEN_PEPPERS:
                 raise ValidationError(
                     _("Invalid pepper ID: {id}. Check configured API_TOKEN_PEPPERS.").format(id=self.pepper_id)
                 )
@@ -202,7 +204,7 @@ class Token(models.Model):
 
         token = token.removeprefix(TOKEN_PREFIX)
         try:
-            pepper = settings.API_TOKEN_PEPPERS[self.pepper_id]
+            pepper = settings.API_TOKEN_PEPPERS[str(self.pepper_id)]
         except KeyError:
             # Invalid pepper ID
             return False

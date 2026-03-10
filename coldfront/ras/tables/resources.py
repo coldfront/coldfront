@@ -50,7 +50,7 @@ class ResourceTypeTable(OrganizationalModelTable):
             "last_updated",
             "actions",
         )
-        default_columns = ("pk", "name", "color", "attributes", "description")
+        default_columns = ("pk", "name", "resource_count", "color", "attributes", "description")
 
 
 class ResourceTable(PrimaryModelTable):

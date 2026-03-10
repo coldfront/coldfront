@@ -43,6 +43,7 @@ dependencies = [
     "django-vite>=3.1.0",
     "djangorestframework>=3.16.0",
     "doi2bib>=0.4.0",
+    "drf-spectacular[sidecar]>=0.29.0",
     "formencode>=2.1.1",
     "gunicorn>=23.0.0",
     "humanize>=4.12.2",

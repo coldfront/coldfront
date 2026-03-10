@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+import coldfront
 from coldfront.config.base import SETTINGS_EXPORT
 from coldfront.config.env import ENV
 
@@ -189,3 +190,60 @@ ALLOWED_URL_SCHEMES = [
     "vnc",
     "xmpp",
 ]
+
+REST_FRAMEWORK_VERSION = coldfront.VERSION
+REST_FRAMEWORK = {
+    "ALLOWED_VERSIONS": [REST_FRAMEWORK_VERSION],
+    "COERCE_DECIMAL_TO_STRING": False,
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+        "coldfront.api.authentication.TokenAuthentication",
+    ),
+    "DEFAULT_FILTER_BACKENDS": (
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
+    ),
+    "DEFAULT_METADATA_CLASS": "coldfront.api.metadata.BulkOperationMetadata",
+    "DEFAULT_PAGINATION_CLASS": "coldfront.api.paginator.OptionalLimitOffsetPagination",
+    "DEFAULT_PARSER_CLASSES": (
+        "rest_framework.parsers.JSONParser",
+        "rest_framework.parsers.MultiPartParser",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("coldfront.api.authentication.TokenPermissions",),
+    "DEFAULT_RENDERER_CLASSES": (
+        "rest_framework.renderers.JSONRenderer",
+        "coldfront.api.renderers.FormlessBrowsableAPIRenderer",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_VERSION": REST_FRAMEWORK_VERSION,
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.AcceptHeaderVersioning",
+    "SCHEMA_COERCE_METHOD_NAMES": {
+        # Default mappings
+        "retrieve": "read",
+        "destroy": "delete",
+        # Custom operations
+        #        'bulk_destroy': 'bulk_delete',
+    },
+    "VIEW_NAME_FUNCTION": "coldfront.api.utils.get_view_name",
+}
+
+#
+# DRF Spectacular
+#
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "ColdFront REST API",
+    "LICENSE": {"name": "AGPLv3"},
+    "VERSION": coldfront.VERSION,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "REDOC_DIST": "SIDECAR",
+    "SERVERS": [
+        {
+            "url": "",
+            "description": "ColdFront",
+        }
+    ],
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "POSTPROCESSING_HOOKS": [],
+}

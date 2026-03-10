@@ -1,0 +1,171 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import router, transaction
+from rest_framework import status
+from rest_framework.response import Response
+
+from coldfront.api.serializers.features import BulkOperationSerializer
+from coldfront.core.models import ObjectType
+
+__all__ = (
+    "CustomFieldsMixin",
+    "ObjectValidationMixin",
+    "SequentialBulkCreatesMixin",
+)
+
+
+class CustomFieldsMixin:
+    """
+    For models which support custom fields, populate the `custom_fields` context.
+    """
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+
+        if hasattr(self.queryset.model, "custom_fields"):
+            object_type = ObjectType.objects.get_for_model(self.queryset.model)
+            context.update(
+                {
+                    "custom_fields": object_type.custom_fields.all(),
+                }
+            )
+
+        return context
+
+
+class SequentialBulkCreatesMixin:
+    """
+    Perform bulk creation of new objects sequentially, rather than all at once. This ensures that any validation
+    which depends on the evaluation of existing objects functions appropriately.
+    """
+
+    def create(self, request, *args, **kwargs):
+        with transaction.atomic(using=router.db_for_write(self.queryset.model)):
+            if not isinstance(request.data, list):
+                # Creating a single object
+                return super().create(request, *args, **kwargs)
+
+            return_data = []
+            for data in request.data:
+                serializer = self.get_serializer(data=data)
+                serializer.is_valid(raise_exception=True)
+                self.perform_create(serializer)
+                return_data.append(serializer.data)
+
+            headers = self.get_success_headers(serializer.data)
+
+            return Response(return_data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class ObjectValidationMixin:
+    def _validate_objects(self, instance):
+        """
+        Check that the provided instance or list of instances are matched by the current queryset. This confirms that
+        any newly created or modified objects abide by the attributes granted by any applicable ObjectPermissions.
+        """
+        if type(instance) is list:
+            # Check that all instances are still included in the view's queryset
+            conforming_count = self.queryset.filter(pk__in=[obj.pk for obj in instance]).count()
+            if conforming_count != len(instance):
+                raise ObjectDoesNotExist
+        elif not self.queryset.filter(pk=instance.pk).exists():
+            raise ObjectDoesNotExist
+
+
+class BulkUpdateModelMixin:
+    """
+    Support bulk modification of objects using the list endpoint for a model. Accepts a PATCH action with a list of one
+    or more JSON objects, each specifying the numeric ID of an object to be updated as well as the attributes to be set.
+    For example:
+
+    PATCH /api/dcim/sites/
+    [
+        {
+            "id": 123,
+            "name": "New name"
+        },
+        {
+            "id": 456,
+            "status": "planned"
+        }
+    ]
+    """
+
+    def get_bulk_update_queryset(self):
+        return self.get_queryset()
+
+    def bulk_update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        serializer = BulkOperationSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        qs = self.get_bulk_update_queryset().filter(pk__in=[o["id"] for o in serializer.data])
+
+        # Map update data by object ID
+        update_data = {obj.pop("id"): obj for obj in request.data}
+
+        object_pks = self.perform_bulk_update(qs, update_data, partial=partial)
+
+        # Prefetch related objects for all updated instances
+        qs = self.get_queryset().filter(pk__in=object_pks)
+        serializer = self.get_serializer(qs, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def perform_bulk_update(self, objects, update_data, partial):
+        updated_pks = []
+        with transaction.atomic(using=router.db_for_write(self.queryset.model)):
+            for obj in objects:
+                data = update_data.get(obj.id)
+                if hasattr(obj, "snapshot"):
+                    obj.snapshot()
+                serializer = self.get_serializer(obj, data=data, partial=partial)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                updated_pks.append(obj.pk)
+
+        return updated_pks
+
+    def bulk_partial_update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return self.bulk_update(request, *args, **kwargs)
+
+
+class BulkDestroyModelMixin:
+    """
+    Support bulk deletion of objects using the list endpoint for a model. Accepts a DELETE action with a list of one
+    or more JSON objects, each specifying the numeric ID of an object to be deleted. For example:
+
+    DELETE /api/dcim/sites/
+    [
+        {"id": 123},
+        {"id": 456}
+    ]
+    """
+
+    def get_bulk_destroy_queryset(self):
+        return self.get_queryset()
+
+    def bulk_destroy(self, request, *args, **kwargs):
+        serializer = BulkOperationSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        qs = self.get_bulk_destroy_queryset().filter(pk__in=[o["id"] for o in serializer.validated_data])
+
+        # Compile any changelog messages to be recorded on the objects being deleted
+        changelog_messages = {o["id"]: o.get("changelog_message") for o in serializer.validated_data}
+
+        self.perform_bulk_destroy(qs, changelog_messages)
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def perform_bulk_destroy(self, objects, changelog_messages=None):
+        changelog_messages = changelog_messages or {}
+        with transaction.atomic(using=router.db_for_write(self.queryset.model)):
+            for obj in objects:
+                if hasattr(obj, "snapshot"):
+                    obj.snapshot()
+                obj._changelog_message = changelog_messages.get(obj.pk)
+                self.perform_destroy(obj)

@@ -36,6 +36,7 @@ class Project(OrganizationalModel):
     )
 
     class Meta:
+        ordering = ["name"]
         verbose_name = _("project")
         verbose_name_plural = _("projects")
 

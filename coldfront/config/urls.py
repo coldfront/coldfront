@@ -14,9 +14,12 @@ from django.contrib.auth.views import LoginView
 from django.core import serializers
 from django.http import HttpResponse
 from django.urls import include, path
+from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 from coldfront.account.views import HtmxLogoutView
+from coldfront.api.views import APIRootView, AuthenticationCheckView, StatusView
 from coldfront.config.env import ENV, PROJECT_ROOT
 from coldfront.views import HomeView
 
@@ -42,6 +45,22 @@ urlpatterns = [
     path("core/", include("coldfront.core.urls")),
     path("tenancy/", include("coldfront.tenancy.urls")),
     path("ras/", include("coldfront.ras.urls")),
+    # REST API
+    path("api/", APIRootView.as_view(), name="api-root"),
+    path("api/status/", StatusView.as_view(), name="api-status"),
+    path("api/authentication-check/", AuthenticationCheckView.as_view(), name="api-authentication-check"),
+    path("api/users/", include("coldfront.users.api.urls")),
+    path("api/tenancy/", include("coldfront.tenancy.api.urls")),
+    path("api/core/", include("coldfront.core.api.urls")),
+    path("api/ras/", include("coldfront.ras.api.urls")),
+    # REST API schema
+    path(
+        "api/schema/",
+        cache_page(timeout=86400, key_prefix=f"api_schema_{settings.VERSION}")(SpectacularAPIView.as_view()),
+        name="schema",
+    ),
+    path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="api_docs"),
+    path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="api_redocs"),
 ]
 
 if "mozilla_django_oidc" in settings.INSTALLED_APPS:
