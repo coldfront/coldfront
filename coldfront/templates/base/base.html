@@ -1,6 +1,7 @@
 {% load django_htmx %}
 {% load i18n %}
 {% load static %}
+{% load plugins %}
 {% load django_vite %}
 
 <!DOCTYPE html>
@@ -29,6 +30,7 @@
 
   {# Additional <head> content #}
   {% block head %}{% endblock %}
+  {% plugin_head %}
 </head>
 
 <body hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>

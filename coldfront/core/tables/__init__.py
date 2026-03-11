@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+from .plugins import CatalogPluginTable, PluginVersionTable
 from .tables import CustomFieldChoiceSetTable, CustomFieldTable, ObjectChangeTable, TaggedItemTable, TagTable
 
 __all__ = (
@@ -10,4 +11,6 @@ __all__ = (
     "ObjectChangeTable",
     "CustomFieldChoiceSetTable",
     "CustomFieldTable",
+    "CatalogPluginTable",
+    "PluginVersionTable",
 )

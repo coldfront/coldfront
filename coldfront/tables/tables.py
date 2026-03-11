@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
+from copy import deepcopy
 from functools import cached_property
 from urllib.parse import urlencode
 
@@ -18,7 +19,9 @@ from django.utils.translation import gettext_lazy as _
 from django_tables2.data import TableQuerysetData
 
 from coldfront.constants import EMPTY_TABLE_TEXT
-from coldfront.core.models import ObjectType
+from coldfront.core.choices import CustomFieldUIVisibleChoices
+from coldfront.core.models import CustomField, ObjectType
+from coldfront.registry import registry
 from coldfront.tables import columns
 from coldfront.utils.html import highlight
 from coldfront.utils.strings import title
@@ -223,6 +226,23 @@ class ColdFrontTable(BaseTable):
     def __init__(self, *args, extra_columns=None, **kwargs):
         if extra_columns is None:
             extra_columns = []
+
+        if registered_columns := registry["tables"].get(self.__class__):
+            extra_columns.extend(
+                [
+                    # Create a copy to avoid modifying the original Column
+                    (name, deepcopy(column))
+                    for name, column in registered_columns.items()
+                ]
+            )
+
+        # Add columns for custom fields
+        custom_fields = [
+            cf
+            for cf in CustomField.objects.get_for_model(self._meta.model)
+            if cf.ui_visible != CustomFieldUIVisibleChoices.HIDDEN
+        ]
+        extra_columns.extend([(f"cf_{cf.name}", columns.CustomFieldColumn(cf)) for cf in custom_fields])
 
         super().__init__(*args, extra_columns=extra_columns, **kwargs)
 

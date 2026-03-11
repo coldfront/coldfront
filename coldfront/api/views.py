@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
+from coldfront.plugins.utils import get_installed_plugins
 from coldfront.users.api.serializers import UserSerializer
 
 
@@ -37,6 +38,7 @@ class APIRootView(APIView):
                 "tenancy": reverse("tenancy-api:api-root", request=request, format=format),
                 "core": reverse("core-api:api-root", request=request, format=format),
                 "ras": reverse("ras-api:api-root", request=request, format=format),
+                "plugins": reverse("plugins-api:api-root", request=request, format=format),
             }
         )
 
@@ -54,6 +56,7 @@ class StatusView(APIView):
             {
                 "django-version": DJANGO_VERSION,
                 "coldfront-version": settings.VERSION,
+                "plugins": get_installed_plugins(),
                 "python-version": platform.python_version(),
             }
         )

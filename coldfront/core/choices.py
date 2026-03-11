@@ -142,3 +142,43 @@ class CustomFieldUIEditableChoices(ChoiceSet):
         (NO, _("No"), "red"),
         (HIDDEN, _("Hidden"), "gray"),
     )
+
+
+#
+# Button color choices
+#
+
+
+class ButtonColorChoices(ChoiceSet):
+    DEFAULT = "default"
+    BLUE = "blue"
+    INDIGO = "indigo"
+    PURPLE = "purple"
+    PINK = "pink"
+    RED = "red"
+    ORANGE = "orange"
+    YELLOW = "yellow"
+    GREEN = "green"
+    TEAL = "teal"
+    CYAN = "cyan"
+    GRAY = "gray"
+    GREY = "gray"  # Backward compatability for <3.2
+    BLACK = "black"
+    WHITE = "white"
+
+    CHOICES = (
+        (DEFAULT, _("Default")),
+        (BLUE, _("Blue")),
+        (INDIGO, _("Indigo")),
+        (PURPLE, _("Purple")),
+        (PINK, _("Pink")),
+        (RED, _("Red")),
+        (ORANGE, _("Orange")),
+        (YELLOW, _("Yellow")),
+        (GREEN, _("Green")),
+        (TEAL, _("Teal")),
+        (CYAN, _("Cyan")),
+        (GRAY, _("Gray")),
+        (BLACK, _("Black")),
+        (WHITE, _("White")),
+    )

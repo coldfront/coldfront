@@ -21,6 +21,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from coldfront.account.views import HtmxLogoutView
 from coldfront.api.views import APIRootView, AuthenticationCheckView, StatusView
 from coldfront.config.env import ENV, PROJECT_ROOT
+from coldfront.plugins.urls import plugin_api_patterns, plugin_patterns
 from coldfront.views import HomeView
 
 admin.site.site_header = "ColdFront Administration"
@@ -61,6 +62,9 @@ urlpatterns = [
     ),
     path("api/schema/swagger-ui/", SpectacularSwaggerView.as_view(url_name="schema"), name="api_docs"),
     path("api/schema/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="api_redocs"),
+    # Plugins
+    path("plugins/", include((plugin_patterns, "plugins"))),
+    path("api/plugins/", include((plugin_api_patterns, "plugins-api"))),
 ]
 
 if "mozilla_django_oidc" in settings.INSTALLED_APPS:

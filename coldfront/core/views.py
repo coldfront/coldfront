@@ -3,15 +3,22 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import EmptyPage
 from django.db.models import Count, Q
+from django.http import Http404
+from django.shortcuts import render
+from django.utils.translation import gettext as _
+from django.views.generic import View
+from django_cotton import render_component
 
 from coldfront.registry import register_model_view
 from coldfront.tables.paginator import EnhancedPaginator, get_paginate_count
 from coldfront.utils.data import shallow_compare_dict
 from coldfront.utils.query import count_related
 from coldfront.views import generic
+from coldfront.views.htmx import htmx_partial
 from coldfront.views.object_actions import BulkExport
 
 from . import (
@@ -20,6 +27,8 @@ from . import (
     tables,
 )
 from .models import CustomField, CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
+from .plugins import get_local_plugins
+from .tables import CatalogPluginTable, PluginVersionTable
 
 
 @register_model_view(Tag, "list", path="", detail=False)
@@ -231,3 +240,68 @@ class CustomFieldEditView(generic.ObjectEditView):
 @register_model_view(CustomField, "delete")
 class CustomFieldDeleteView(generic.ObjectDeleteView):
     queryset = CustomField.objects.select_related("choice_set")
+
+
+#
+# Plugins
+#
+
+
+class BasePluginView(UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_plugins(self, request):
+        plugins = {}
+        return get_local_plugins(plugins)
+
+
+class PluginListView(BasePluginView):
+    def get(self, request):
+        q = request.GET.get("q", None)
+
+        plugins = self.get_plugins(request).values()
+        if q:
+            plugins = [obj for obj in plugins if q.casefold() in obj.title_short.casefold()]
+
+        plugins = [plugin for plugin in plugins if not plugin.hidden]
+
+        table = CatalogPluginTable(plugins)
+        table.configure(request)
+
+        # If this is an HTMX request, return only the rendered table HTML
+        if htmx_partial(request):
+            return render_component(
+                request,
+                "table.htmx",
+                table=table,
+            )
+
+        return render(
+            request,
+            "core/plugin_list.html",
+            {
+                "table": table,
+            },
+        )
+
+
+class PluginView(BasePluginView):
+    def get(self, request, name):
+
+        plugins = self.get_plugins(request)
+        if name not in plugins:
+            raise Http404(_("Plugin {name} not found").format(name=name))
+        plugin = plugins[name]
+
+        table = PluginVersionTable(plugin.release_recent_history)
+        table.configure(request)
+
+        return render(
+            request,
+            "core/plugin.html",
+            {
+                "plugin": plugin,
+                "table": table,
+            },
+        )
