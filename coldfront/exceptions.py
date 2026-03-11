@@ -3,11 +3,7 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
-__all__ = (
-    "AbortRequest",
-    "AbortTransaction",
-    "PermissionsViolation",
-)
+from django.core.exceptions import ImproperlyConfigured
 
 
 class PermissionsViolation(Exception):
@@ -34,3 +30,7 @@ class AbortRequest(Exception):
 
     def __init__(self, message):
         self.message = message
+
+
+class IncompatiblePluginError(ImproperlyConfigured):
+    pass

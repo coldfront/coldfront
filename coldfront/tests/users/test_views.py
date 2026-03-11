@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
-from django.test import override_settings
 
 from coldfront.core.models import ObjectType
 from coldfront.users.models import Group, ObjectPermission, Token, User
@@ -177,10 +176,6 @@ class ObjectPermissionTestCase(
         }
 
 
-@override_settings(
-    API_TOKEN_PEPPERS={"1": "SF1Rie3gurZikCPitWdx4V79Z0lH5p0D210ExSra"},
-    DEFAULT_PERMISSIONS={},
-)
 class TokenTestCase(
     ViewTestCases.GetObjectViewTestCase,
     ViewTestCases.CreateObjectViewTestCase,

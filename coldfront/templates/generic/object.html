@@ -1,5 +1,6 @@
 {% extends 'generic/base.html' %}
 {% load buttons %}
+{% load plugins %}
 {% load humanize %}
 {% load i18n %}
 {% load tabs %}
@@ -60,6 +61,8 @@ Context:
 
 {% block controls %}
   <div class="btn-list justify-content-end mb-2">
+    {% plugin_buttons object %}
+
     {# Add/edit/delete/etc. buttons #}
     {% block control-buttons %}
 
@@ -88,3 +91,7 @@ Context:
 {% block modals %}
   <c-modal.htmx size="lg" />
 {% endblock %}
+
+{% block alerts %}
+  {% plugin_alerts object %}
+{% endblock alerts %}

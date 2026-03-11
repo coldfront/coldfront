@@ -7,7 +7,9 @@ from functools import cache
 
 from django.utils.translation import gettext_lazy as _
 
-from . import Menu, MenuGroup, get_model_item
+from coldfront.registry import registry
+
+from . import Menu, MenuGroup, MenuItem, get_model_item
 
 #
 # Nav menus
@@ -88,6 +90,16 @@ ADMIN_MENU = Menu(
             ),
         ),
         MenuGroup(
+            label=_("System"),
+            items=(
+                MenuItem(
+                    link="core:plugin_list",
+                    link_text=_("Plugins"),
+                    staff_only=True,
+                ),
+            ),
+        ),
+        MenuGroup(
             label=_("Logging"),
             items=(get_model_item("core", "objectchange", _("Change Log"), actions=[]),),
         ),
@@ -110,15 +122,15 @@ def get_menus():
     ]
 
     # Add top-level plugin menus
-    # for menu in registry["plugins"]["menus"]:
-    #    menus.append(menu)
+    for menu in registry["plugins"]["menus"]:
+        menus.append(menu)
 
     # Add the default "plugins" menu
-    # if registry["plugins"]["menu_items"]:
-    #    # Build the default plugins menu
-    #    groups = [MenuGroup(label=label, items=items) for label, items in registry["plugins"]["menu_items"].items()]
-    #    plugins_menu = Menu(label=_("Plugins"), icon_class="fa-solid fa-puzzle-piece", groups=groups)
-    #    menus.append(plugins_menu)
+    if registry["plugins"]["menu_items"]:
+        # Build the default plugins menu
+        groups = [MenuGroup(label=label, items=items) for label, items in registry["plugins"]["menu_items"].items()]
+        plugins_menu = Menu(label=_("Plugins"), icon_class="fa-solid fa-puzzle-piece", groups=groups)
+        menus.append(plugins_menu)
 
     # Add the admin menu last
     menus.append(ADMIN_MENU)

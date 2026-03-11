@@ -1,5 +1,6 @@
 {% extends 'generic/base.html' %}
 {% load buttons %}
+{% load plugins %}
 {% load static %}
 {% load tabs %}
 {% load i18n %}
@@ -27,6 +28,7 @@ Context:
 
 {% block controls %}
   <div class="btn-list">
+    {% plugin_list_buttons model %}
     {% block extra_controls %}{% endblock %}
     {% action_buttons actions model %}
   </div>

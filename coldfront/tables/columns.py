@@ -15,10 +15,13 @@ from django.contrib.humanize.templatetags.humanize import naturalday
 from django.db.models import DateField, DateTimeField
 from django.template import Context, Template
 from django.urls import reverse
+from django.utils.dateparse import parse_date
 from django.utils.html import escape, format_html
 from django.utils.translation import gettext_lazy as _
 from django_tables2.columns import library
+from django_tables2.utils import Accessor
 
+from coldfront.core.choices import CustomFieldTypeChoices
 from coldfront.core.models import ObjectType
 from coldfront.users.permissions import get_permission_for_model
 from coldfront.views import get_action_url
@@ -566,3 +569,53 @@ class ArrayColumn(tables.Column):
             value.append(f"({omitted_count} more)")
 
         return ", ".join(value)
+
+
+class CustomFieldColumn(tables.Column):
+    """
+    Display custom fields in the appropriate format.
+    """
+
+    def __init__(self, customfield, *args, **kwargs):
+        self.customfield = customfield
+        kwargs["accessor"] = Accessor(f"custom_field_data__{customfield.name}")
+        if "verbose_name" not in kwargs:
+            kwargs["verbose_name"] = customfield.label or customfield.name
+        # We can't logically sort on FK values
+        if customfield.type in (CustomFieldTypeChoices.TYPE_OBJECT, CustomFieldTypeChoices.TYPE_MULTIOBJECT):
+            kwargs["orderable"] = False
+
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def _linkify_item(item):
+        if hasattr(item, "get_absolute_url"):
+            return f'<a href="{item.get_absolute_url()}">{escape(item)}</a>'
+        return escape(item)
+
+    def render(self, value):
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_BOOLEAN and value is True:
+            return format_html('<i class="fa-solid fa-square-check text-success"></i>')
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_BOOLEAN and value is False:
+            return format_html('<i class="fa-solid fa-rectangle-xmark text-danger"></i>')
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_SELECT:
+            return self.customfield.get_choice_label(value)
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_MULTISELECT:
+            return ", ".join(self.customfield.get_choice_label(v) for v in value)
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_MULTIOBJECT:
+            return format_html(", ".join(self._linkify_item(obj) for obj in self.customfield.deserialize(value)))
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_LONGTEXT and value:
+            return format_html(value)
+        if self.customfield.type == CustomFieldTypeChoices.TYPE_DATE and value:
+            return parse_date(value).isoformat()
+        if value is not None:
+            obj = self.customfield.deserialize(value)
+            return format_html(self._linkify_item(obj))
+        return self.default
+
+    def value(self, value):
+        if isinstance(value, list):
+            return ",".join(str(v) for v in self.customfield.deserialize(value))
+        if value is not None:
+            return self.customfield.deserialize(value)
+        return self.default

@@ -15,28 +15,8 @@ coldfront_configs = [
     "logging.py",
     "core.py",
     "email.py",
+    "plugins.py",
 ]
-
-# ColdFront plugin settings
-plugin_configs = {
-    "PLUGIN_SLURM": "plugins/slurm.py",
-    "PLUGIN_IQUOTA": "plugins/iquota.py",
-    "PLUGIN_FREEIPA": "plugins/freeipa.py",
-    "PLUGIN_SYSMON": "plugins/system_monitor.py",
-    "PLUGIN_XDMOD": "plugins/xdmod.py",
-    "PLUGIN_AUTH_OIDC": "plugins/openid.py",
-    "PLUGIN_AUTH_LDAP": "plugins/ldap.py",
-    "PLUGIN_LDAP_USER_SEARCH": "plugins/ldap_user_search.py",
-    "PLUGIN_API": "plugins/api.py",
-    "PLUGIN_AUTO_COMPUTE_ALLOCATION": "plugins/auto_compute_allocation.py",
-    "PLUGIN_PROJECT_OPENLDAP": "plugins/project_openldap.py",
-}
-
-# This allows plugins to be enabled via environment variables. Can alternatively
-# add the relevant configs to local_settings.py
-for key, pc in plugin_configs.items():
-    if ENV.bool(key, default=False):
-        coldfront_configs.append(pc)
 
 # Local settings overrides
 local_configs = [

@@ -14,6 +14,7 @@ from django.core.exceptions import (
 from django.db.models.fields.related import ManyToOneRel, RelatedField
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
+from rest_framework.permissions import BasePermission
 from rest_framework.serializers import Serializer
 from rest_framework.views import get_view_name as drf_get_view_name
 
@@ -22,6 +23,15 @@ from coldfront.utils.query import count_related, dict_to_filter_params
 from coldfront.utils.strings import title
 
 from .exceptions import SerializerNotFound
+
+
+class IsSuperuser(BasePermission):
+    """
+    Allows access only to superusers.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_superuser)
 
 
 def get_related_object_by_attrs(queryset, attrs):

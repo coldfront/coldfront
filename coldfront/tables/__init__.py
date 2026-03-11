@@ -9,6 +9,7 @@ from .columns import (
     ColoredLabelColumn,
     ContentTypeColumn,
     ContentTypesColumn,
+    CustomFieldColumn,
     LinkedCountColumn,
     MPTTColumn,
     TagColumn,
@@ -23,6 +24,7 @@ from .tables import (
     PrimaryModelTable,
     SearchTable,
 )
+from .utils import register_table_column
 
 __all__ = (
     "BaseTable",
@@ -42,4 +44,6 @@ __all__ = (
     "TagColumn",
     "ToggleColumn",
     "TemplateColumn",
+    "CustomFieldColumn",
+    "register_table_column",
 )

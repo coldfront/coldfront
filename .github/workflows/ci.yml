@@ -68,7 +68,7 @@ jobs:
         run: uv run coldfront makemigrations --check
 
       - name: Run tests
-        run: uv run -m coverage run -m pytest --ignore=coldfront/legacy
+        run: COLDFRONT_ENV=.env.testing uv run -m coverage run -m pytest --ignore=coldfront/legacy
 
       - name: Show coverage report
         run: uv run -m coverage report --skip-covered --omit '*/migrations/*,*/tests/*'

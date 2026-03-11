@@ -1,6 +1,7 @@
 {% extends 'base/base.html' %}
-{% block layout %}
+{% load plugins %}
 
+{% block layout %}
 <div class="container-fluid">
   <div class="row">
    {% include 'base/sidebar.html' %}
@@ -16,6 +17,7 @@
             </form>
 
             <div class="d-flex align-items-center">
+              {% plugin_navbar %}
               <button id="theme-toggle" class="btn btn-outline-secondary me-2" title="Toggle dark mode">
                 <i class="fas fa-lightbulb"></i>
               </button>
