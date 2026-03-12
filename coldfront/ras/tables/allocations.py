@@ -74,6 +74,12 @@ class AllocationTypeTable(OrganizationalModelTable):
         linkify=True,
     )
 
+    allocation_count = columns.LinkedCountColumn(
+        viewname="ras:allocation_list",
+        url_params={"allocation_type_id": "pk"},
+        verbose_name=_("Allocation Count"),
+    )
+
     attributes = columns.TemplateColumn(
         template_code=ALLOCATIONTYPE_ATTRIBUTES,
         accessor=tables.A("schema__properties"),
@@ -93,9 +99,10 @@ class AllocationTypeTable(OrganizationalModelTable):
             "name",
             "description",
             "attributes",
+            "allocation_count",
             "tags",
             "created",
             "last_updated",
             "actions",
         )
-        default_columns = ("name", "description", "attributes")
+        default_columns = ("name", "allocation_count", "description", "attributes")

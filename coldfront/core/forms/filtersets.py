@@ -15,13 +15,13 @@ from coldfront.core.choices import (
 )
 from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectChange, ObjectType, Tag
 from coldfront.forms import PrimaryModelFilterSetForm
-from coldfront.forms.layouts import DateTime
-from coldfront.users.models import User
-from coldfront.utils.forms import add_blank_choice
-from coldfront.utils.forms.fields.content_types import (
+from coldfront.forms.fields import (
     ContentTypeChoiceField,
     ContentTypeMultipleChoiceField,
 )
+from coldfront.forms.layouts import DateTime
+from coldfront.users.models import User
+from coldfront.utils.forms import add_blank_choice
 
 
 class TagFilterForm(PrimaryModelFilterSetForm):

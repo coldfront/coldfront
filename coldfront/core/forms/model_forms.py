@@ -11,11 +11,10 @@ from django_jsonform.models.fields import JSONFormField
 
 from coldfront.core.choices import CustomFieldTypeChoices
 from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, Tag
+from coldfront.forms.fields import ContentTypeChoiceField, ContentTypeMultipleChoiceField, JSONField, SlugField
 from coldfront.forms.layouts import Slug
 from coldfront.forms.mixins import ChangelogMessageMixin, HorizontalFormMixin
-from coldfront.utils.forms.fields import JSONField, SlugField
-from coldfront.utils.forms.fields.content_types import ContentTypeChoiceField, ContentTypeMultipleChoiceField
-from coldfront.utils.forms.utils import get_field_value
+from coldfront.utils.forms import get_field_value
 
 
 class TagForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):

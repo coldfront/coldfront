@@ -20,7 +20,9 @@ from .models import Allocation, AllocationType, Project, Resource, ResourceType
 
 @register_model_view(ResourceType, "list", path="", detail=False)
 class ResourceTypeListView(generic.ObjectListView):
-    queryset = ResourceType.objects.all()
+    queryset = ResourceType.objects.annotate(
+        resource_count=count_related(Resource, "resource_type"),
+    )
     filterset = filtersets.ResourceTypeFilterSet
     filterset_form = forms.ResourceTypeFilterSetForm
     table = tables.ResourceTypeTable
@@ -184,7 +186,9 @@ class AllocationDeleteView(generic.ObjectDeleteView):
 
 @register_model_view(AllocationType, "list", path="", detail=False)
 class AllocationTypeListView(generic.ObjectListView):
-    queryset = AllocationType.objects.annotate(instance_count=count_related(Allocation, "allocation_type"))
+    queryset = AllocationType.objects.annotate(
+        allocation_count=count_related(Allocation, "allocation_type"),
+    )
     filterset = filtersets.AllocationTypeFilterSet
     filterset_form = forms.AllocationTypeFilterSetForm
     table = tables.AllocationTypeTable

@@ -109,7 +109,7 @@ MIDDLEWARE = [
     "django_htmx.middleware.HtmxMiddleware",
     "coldfront.auth.middleware.RemoteUserMiddleware",
     "coldfront.middleware.ColdFrontMiddleware",
-    "coldfront.middleware.HtmxAuthRedirectMiddleware",
+    "coldfront.auth.middleware.HtmxAuthRedirectMiddleware",
 ]
 
 # ------------------------------------------------------------------------------

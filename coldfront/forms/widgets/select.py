@@ -5,20 +5,6 @@
 
 from django import forms
 
-from coldfront.core.choices import ColorChoices
-from coldfront.utils.forms import add_blank_choice
-
-
-class ColorSelect(forms.Select):
-    """
-    Extends the built-in Select widget to colorize each <option>.
-    """
-
-    def __init__(self, *args, **kwargs):
-        kwargs["choices"] = add_blank_choice(ColorChoices)
-        super().__init__(*args, **kwargs)
-        self.attrs["class"] = "color-select"
-
 
 class HTMXSelect(forms.Select):
     """

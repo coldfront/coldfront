@@ -6,7 +6,7 @@
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 
-from coldfront.utils.forms.fields import SlugField
+from coldfront.forms.fields import SlugField
 
 from .mixins import ChangelogMessageMixin, CheckLastUpdatedMixin, CustomFieldsMixin, HorizontalFormMixin, TagsMixin
 

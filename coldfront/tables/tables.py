@@ -18,7 +18,6 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django_tables2.data import TableQuerysetData
 
-from coldfront.constants import EMPTY_TABLE_TEXT
 from coldfront.core.choices import CustomFieldUIVisibleChoices
 from coldfront.core.models import CustomField, ObjectType
 from coldfront.registry import registry
@@ -27,6 +26,7 @@ from coldfront.utils.html import highlight
 from coldfront.utils.strings import title
 from coldfront.views import get_action_url
 
+from .constants import EMPTY_TABLE_TEXT
 from .paginator import EnhancedPaginator, get_paginate_count
 from .template_code import SEARCH_RESULT_ATTRS
 

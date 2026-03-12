@@ -47,6 +47,18 @@
   </c-slot>
 
   <c-slot name="right">
+    <c-card.list header="{% trans 'Object Types' %}" only>
+      {% for object_type in object.object_types.all %}
+        <c-card.list.item>
+            {{ object_type }}
+        </c-card.list.item>
+      {% empty %}
+        <c-card.list.item>
+            <span class="text-muted">{% trans "None" %}</span>
+        </c-card.list.item>
+      {% endfor %}
+    </c-card.list>
+
     <c-card.list header="{% trans 'Assigned Users' %}" only>
       {% for user in object.users.all %}
         <c-card.list.item link="{% url 'users:user' pk=user.pk %}">

@@ -30,8 +30,7 @@ from coldfront.models import ChangeLoggedModel
 from coldfront.models.features import CloningMixin
 from coldfront.users.querysets import RestrictedQuerySet
 from coldfront.utils.data import datetime_from_timestamp
-from coldfront.utils.forms.utils import add_blank_choice
-from coldfront.utils.forms.widgets import DatePicker, DateTimePicker
+from coldfront.utils.forms import add_blank_choice
 from coldfront.utils.validators import validate_regex
 
 from .object_types import ObjectType
@@ -612,11 +611,13 @@ class CustomField(CloningMixin, ChangeLoggedModel):
 
         # Date
         elif self.type == CustomFieldTypeChoices.TYPE_DATE:
-            field = forms.DateField(required=required, initial=initial, widget=DatePicker())
+            field = forms.DateField(required=required, initial=initial)
+            field.widget.attrs.update({"class": "date-picker", "placeholder": "YYYY-MM-DD"})
 
         # Date & time
         elif self.type == CustomFieldTypeChoices.TYPE_DATETIME:
-            field = forms.DateTimeField(required=required, initial=initial, widget=DateTimePicker())
+            field = forms.DateTimeField(required=required, initial=initial)
+            field.widget.attrs.update({"class": "datetime-picker", "placeholder": "YYYY-MM-DD hh:mm:ss"})
 
         # Select
         elif self.type in (CustomFieldTypeChoices.TYPE_SELECT, CustomFieldTypeChoices.TYPE_MULTISELECT):

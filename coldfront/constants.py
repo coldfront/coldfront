@@ -22,9 +22,6 @@ LEGACY_APPS = (
     "user",
 )
 
-# Placeholder text for empty tables
-EMPTY_TABLE_TEXT = "No results found"
-
 CUSTOMFIELD_EMPTY_VALUES = (None, "", [])
 
 HTML_ALLOWED_TAGS = {

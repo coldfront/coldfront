@@ -8,7 +8,7 @@ from django.db import migrations, models
 
 import coldfront.core.utils
 import coldfront.models.deletion
-import coldfront.utils.fields
+import coldfront.models.fields
 from coldfront.utils.migrator import migrate_resources
 
 
@@ -34,13 +34,7 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=100, unique=True, verbose_name="name")),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
                 ("slug", models.SlugField(max_length=100, unique=True, verbose_name="slug")),
-                ("color", coldfront.utils.fields.ColorField(default="9e9e9e", max_length=6, verbose_name="color")),
-                (
-                    "resource_count",
-                    coldfront.utils.fields.CounterCacheField(
-                        default=0, editable=False, to_field="resource_type", to_model="ras.Resource"
-                    ),
-                ),
+                ("color", coldfront.models.fields.ColorField(default="9e9e9e", max_length=6, verbose_name="color")),
                 (
                     "tags",
                     taggit.managers.TaggableManager(
