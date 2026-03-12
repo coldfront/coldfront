@@ -107,6 +107,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "coldfront.auth.middleware.RemoteUserMiddleware",
     "coldfront.middleware.ColdFrontMiddleware",
     "coldfront.middleware.HtmxAuthRedirectMiddleware",
 ]

@@ -70,9 +70,6 @@ urlpatterns = [
 if "mozilla_django_oidc" in settings.INSTALLED_APPS:
     urlpatterns.append(path("oidc/", include("mozilla_django_oidc.urls")))
 
-if "django_su.backends.SuBackend" in settings.AUTHENTICATION_BACKENDS:
-    urlpatterns.append(path("su/", include("django_su.urls")))
-
 
 def export_as_json(modeladmin, request, queryset):
     response = HttpResponse(content_type="application/json")

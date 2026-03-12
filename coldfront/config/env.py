@@ -14,7 +14,7 @@ env_paths = [
 ]
 
 if ENV.str("COLDFRONT_ENV", default="") != "":
-    env_paths.insert(0, environ.Path(ENV.str("COLDFRONT_ENV")))
+    env_paths = [environ.Path(ENV.str("COLDFRONT_ENV"))]
 
 # Read in any environment files
 for e in env_paths:
