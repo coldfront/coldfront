@@ -1,7 +1,7 @@
-# SPDX-FileCopyrightText: (C) ColdFront Authors
 # SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+# SPDX-FileCopyrightText: (C) ColdFront Authors
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
+# SPDX-License-Identifier: Apache-2.0
 
 OBJECTCHANGE_FULL_NAME = """
 {{ value.get_full_name|placeholder }}

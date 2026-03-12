@@ -37,4 +37,4 @@ There is a large, active community around ColdFront and we invite you to [join u
 
 ## License
 
-ColdFront is released under the AGPLv3 license. See REUSE.toml.
+ColdFront is released under the Apache 2.0 license. See REUSE.toml.

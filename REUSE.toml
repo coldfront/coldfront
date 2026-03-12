@@ -26,7 +26,7 @@ path = [
     "**.webmanifest",
 ]
 SPDX-FileCopyrightText = "(C) ColdFront Authors"
-SPDX-License-Identifier = "AGPL-3.0-or-later"
+SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
@@ -57,11 +57,4 @@ path = [
     "coldfront/static/bundles/fa-*.woff2",
 ]
 SPDX-FileCopyrightText = "Copyright (c) 2011-2025 The Bootstrap Authors"
-SPDX-License-Identifier = "MIT"
-
-[[annotations]]
-path = [
-    "coldfront/static/bundles/c3.js",
-]
-SPDX-FileCopyrightText = "Copyright (c) 2013 Masayuki Tanaka"
 SPDX-License-Identifier = "MIT"

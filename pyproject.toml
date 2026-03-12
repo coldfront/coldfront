@@ -13,7 +13,7 @@ authors = [
 ]
 description = "HPC Resource Allocation System"
 readme = "README.md"
-license = "AGPL-3.0-or-later"
+license = "Apache-2.0"
 license-files = ["LICENSES/*.txt"]
 keywords = ["high-performance-computing", "resource-allocation"]
 classifiers = [

@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: (C) ColdFront Authors
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 
 import coldfront
 from coldfront.config.base import SETTINGS_EXPORT
@@ -233,7 +233,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "ColdFront REST API",
-    "LICENSE": {"name": "AGPLv3"},
+    "LICENSE": {"name": "Apache 2.0"},
     "VERSION": coldfront.VERSION,
     "COMPONENT_SPLIT_REQUEST": True,
     "REDOC_DIST": "SIDECAR",

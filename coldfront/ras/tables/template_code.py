@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: (C) ColdFront Authors
 #
-# SPDX-License-Identifier: AGPL-3.0-or-later
+# SPDX-License-Identifier: Apache-2.0
 
 ALLOCATIONTYPE_ATTRIBUTES = """
 {% if value %}{% for attr in value %}{{ attr }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}
