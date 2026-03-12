@@ -6,7 +6,7 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 import coldfront.models.deletion
-import coldfront.utils.fields
+import coldfront.models.fields
 
 
 class Migration(migrations.Migration):
@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ("created", models.DateTimeField(auto_now_add=True, null=True, verbose_name="created")),
                 ("last_updated", models.DateTimeField(auto_now=True, null=True, verbose_name="last updated")),
                 ("id", models.BigAutoField(primary_key=True, serialize=False)),
-                ("color", coldfront.utils.fields.ColorField(default="9e9e9e", max_length=6, verbose_name="color")),
+                ("color", coldfront.models.fields.ColorField(default="9e9e9e", max_length=6, verbose_name="color")),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
                 ("weight", models.PositiveSmallIntegerField(default=1000, verbose_name="weight")),
                 (

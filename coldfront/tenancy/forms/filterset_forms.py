@@ -7,8 +7,8 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import NestedGroupModelFilterSetForm, PrimaryModelFilterSetForm
+from coldfront.forms.fields import TagFilterField
 from coldfront.tenancy.models import Tenant, TenantGroup
-from coldfront.utils.forms.fields import TagFilterField
 
 
 class TenantGroupFilterSetForm(NestedGroupModelFilterSetForm):

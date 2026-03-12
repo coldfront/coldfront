@@ -8,8 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.core.choices import ColorChoices
 from coldfront.models import OrganizationalModel, PrimaryModel
 from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
+from coldfront.models.fields import ColorField
 from coldfront.ras.choices import ResourceStatusChoices
-from coldfront.utils.fields import ColorField
 
 
 class ResourceType(AttributeProfileMixin, OrganizationalModel):

@@ -9,9 +9,9 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.forms import OrganizationalModelForm, PrimaryModelForm
 from coldfront.forms.layouts import DateTime, Slug
 from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesMixin
+from coldfront.forms.widgets import HTMXSelect
 from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
 from coldfront.tenancy.forms import TenancyForm
-from coldfront.utils.forms.widgets import HTMXSelect
 
 
 class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):

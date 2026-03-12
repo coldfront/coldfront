@@ -31,7 +31,8 @@ class ContentTypeChoiceField(ContentTypeChoiceMixin, forms.ModelChoiceField):
     Selection field for a single content type.
     """
 
-    pass
+    def __init__(self, queryset, *args, **kwargs):
+        super().__init__(queryset, *args, **kwargs)
 
 
 class ContentTypeMultipleChoiceField(ContentTypeChoiceMixin, forms.ModelMultipleChoiceField):
@@ -39,4 +40,5 @@ class ContentTypeMultipleChoiceField(ContentTypeChoiceMixin, forms.ModelMultiple
     Selection field for one or more content types.
     """
 
-    pass
+    def __init__(self, queryset, *args, **kwargs):
+        super().__init__(queryset, *args, **kwargs)

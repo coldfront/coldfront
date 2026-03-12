@@ -4,7 +4,7 @@
 
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.utils.choices import ChoiceSet
+from coldfront.choices import ChoiceSet
 
 
 class ResourceStatusChoices(ChoiceSet):

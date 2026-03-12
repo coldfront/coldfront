@@ -9,8 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.constants import BOOLEAN_WITH_BLANK_CHOICES
 from coldfront.forms import ColdFrontModelFilterSetForm
+from coldfront.forms.layouts import DateTime
 from coldfront.users.models import Group, ObjectPermission, Token, User
-from coldfront.utils.forms.widgets import DateTimePicker
 
 
 class GroupFilterSetForm(ColdFrontModelFilterSetForm):
@@ -124,8 +124,8 @@ class TokenFilterSetForm(ColdFrontModelFilterSetForm):
             "user_id",
             "enabled",
             "write_enabled",
-            "expires",
-            "last_used",
+            DateTime("expires"),
+            DateTime("last_used"),
         ),
     )
     user_id = forms.ModelMultipleChoiceField(
@@ -146,10 +146,8 @@ class TokenFilterSetForm(ColdFrontModelFilterSetForm):
     expires = forms.DateTimeField(
         required=False,
         label=_("Expires"),
-        widget=DateTimePicker(),
     )
     last_used = forms.DateTimeField(
         required=False,
         label=_("Last Used"),
-        widget=DateTimePicker(),
     )

@@ -4,24 +4,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later AND Apache-2.0
 
 import json
-from collections import defaultdict
 
 from crispy_forms.layout import Fieldset, Layout
 from django import forms
-from django.apps import apps
 from django.contrib.auth import password_validation
 from django.core.exceptions import FieldError
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.models import ObjectType
+from coldfront.forms.fields import JSONField
+from coldfront.forms.fields.content_types import ContentTypeMultipleChoiceField
 from coldfront.forms.layouts import CopyClipboard, DateTime
 from coldfront.forms.mixins import HorizontalFormMixin
 from coldfront.users.constants import CONSTRAINT_TOKEN_USER, OBJECTPERMISSION_OBJECT_TYPES
 from coldfront.users.models import Group, ObjectPermission, Token, User
 from coldfront.users.permissions import qs_filter_from_constraints
-from coldfront.utils.forms.fields import JSONField
-from coldfront.utils.forms.fields.content_types import ContentTypeMultipleChoiceField
-from coldfront.utils.strings import title
 
 
 class UserForm(HorizontalFormMixin, forms.ModelForm):
@@ -161,28 +158,10 @@ class GroupForm(HorizontalFormMixin, forms.ModelForm):
         return instance
 
 
-def get_object_types_choices():
-    """
-    Generate choices for object types grouped by app label using optgroups.
-    Returns nested structure: [(app_label, [(id, model_name), ...]), ...]
-    """
-    app_label_map = {app_config.label: app_config.verbose_name for app_config in apps.get_app_configs()}
-    choices_by_app = defaultdict(list)
-
-    for ot in ObjectType.objects.filter(OBJECTPERMISSION_OBJECT_TYPES).order_by("app_label", "model"):
-        app_label = app_label_map.get(ot.app_label, ot.app_label)
-
-        model_class = ot.model_class()
-        model_name = model_class._meta.verbose_name if model_class else ot.model
-        choices_by_app[app_label].append((ot.pk, title(model_name)))
-
-    return list(choices_by_app.items())
-
-
 class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
     object_types = ContentTypeMultipleChoiceField(
         label=_("Object types"),
-        queryset=ObjectType.objects.all(),
+        queryset=ObjectType.objects.filter(OBJECTPERMISSION_OBJECT_TYPES),
         help_text=_("Select the types of objects to which the permission will apply."),
     )
     can_view = forms.BooleanField(required=False)

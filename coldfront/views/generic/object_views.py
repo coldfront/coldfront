@@ -18,8 +18,9 @@ from django.utils.translation import gettext_lazy as _
 from django_cotton import render_component
 
 from coldfront.exceptions import AbortRequest, PermissionsViolation
+from coldfront.forms import DeleteForm
 from coldfront.users.permissions import get_permission_for_model
-from coldfront.utils.forms import DeleteForm, restrict_form_fields
+from coldfront.utils.forms import restrict_form_fields
 from coldfront.utils.querydict import normalize_querydict, prepare_cloned_fields
 from coldfront.utils.request import safe_for_redirect
 from coldfront.views import get_action_url, handle_protectederror

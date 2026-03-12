@@ -15,8 +15,8 @@ from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CustomFieldUIEditableChoices
 from coldfront.core.models import CustomField, ObjectType, Tag
-from coldfront.utils.forms.fields import JSONField
-from coldfront.utils.forms.utils import get_field_value
+from coldfront.forms.fields import JSONField
+from coldfront.utils.forms import get_field_value
 from coldfront.utils.jsonschema import JSONSchemaProperty
 
 __all__ = ("TagsMixin",)

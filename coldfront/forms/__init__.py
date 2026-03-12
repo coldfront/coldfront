@@ -8,6 +8,7 @@ from .filterset_forms import (
     OrganizationalModelFilterSetForm,
     PrimaryModelFilterSetForm,
 )
+from .forms import ConfirmationForm, DeleteForm, FilterForm, TableConfigForm
 from .model_forms import ColdFrontModelForm, NestedGroupModelForm, OrganizationalModelForm, PrimaryModelForm
 
 __all__ = (
@@ -19,4 +20,8 @@ __all__ = (
     "OrganizationalModelFilterSetForm",
     "NestedGroupModelForm",
     "NestedGroupModelFilterSetForm",
+    "ConfirmationForm",
+    "DeleteForm",
+    "TableConfigForm",
+    "FilterForm",
 )

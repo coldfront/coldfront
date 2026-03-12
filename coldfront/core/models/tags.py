@@ -12,8 +12,8 @@ from taggit.models import GenericTaggedItemBase, TagBase
 from coldfront.core.choices import ColorChoices
 from coldfront.models import ChangeLoggedModel
 from coldfront.models.features import CloningMixin
+from coldfront.models.fields import ColorField
 from coldfront.users.querysets import RestrictedQuerySet
-from coldfront.utils.fields import ColorField
 
 
 class Tag(CloningMixin, ChangeLoggedModel, TagBase):

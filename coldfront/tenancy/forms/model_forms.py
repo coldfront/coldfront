@@ -7,9 +7,9 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import NestedGroupModelForm
+from coldfront.forms.fields import SlugField
 from coldfront.forms.layouts import Slug
 from coldfront.tenancy.models import Tenant, TenantGroup
-from coldfront.utils.forms.fields import SlugField
 
 __all__ = ("TenantGroupForm", "TenantForm")
 

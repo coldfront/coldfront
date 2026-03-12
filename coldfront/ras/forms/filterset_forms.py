@@ -7,10 +7,10 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import OrganizationalModelFilterSetForm, PrimaryModelFilterSetForm
+from coldfront.forms.fields import TagFilterField
 from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
 from coldfront.tenancy.forms import TenancyFilterSetForm
-from coldfront.utils.forms.fields import TagFilterField
 
 
 class ResourceTypeFilterSetForm(OrganizationalModelFilterSetForm):

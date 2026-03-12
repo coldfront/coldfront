@@ -35,8 +35,4 @@ class Migration(migrations.Migration):
             name="resourcetype",
             options={"ordering": ["name"], "verbose_name": "resource type", "verbose_name_plural": "resource types"},
         ),
-        migrations.RemoveField(
-            model_name="resourcetype",
-            name="resource_count",
-        ),
     ]

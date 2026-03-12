@@ -7,7 +7,7 @@ from django import template
 
 from coldfront.core.choices import CustomFieldTypeChoices
 from coldfront.core.utils import ActionURLNode
-from coldfront.utils.forms import TableConfigForm
+from coldfront.forms import TableConfigForm
 
 register = template.Library()
 
