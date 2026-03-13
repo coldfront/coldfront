@@ -3,11 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .allocations import AllocationFilterSet, AllocationTypeFilterSet
-from .projects import ProjectFilterSet
+from .projects import ProjectFilterSet, ProjectUserFilterSet
 from .resources import ResourceFilterSet, ResourceTypeFilterSet
 
 __all__ = (
     "ProjectFilterSet",
+    "ProjectUserFilterSet",
     "AllocationFilterSet",
     "AllocationTypeFilterSet",
     "ResourceFilterSet",
