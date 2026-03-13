@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
-from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
+from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
 from coldfront.users.models import User
 from coldfront.utils.testing import ViewTestCases, create_tags
 
@@ -110,4 +110,40 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "allocation_type": allocation_type.pk,
             "status": AllocationStatusChoices.STATUS_ACTIVE,
             "tags": [t.pk for t in tags],
+        }
+
+
+class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
+    model = ProjectUser
+
+    @classmethod
+    def setUpTestData(cls):
+        owner = User.objects.create(username="pi")
+        users = (
+            User(username="User1"),
+            User(username="User2"),
+            User(username="User3"),
+        )
+        for user in users:
+            user.save()
+
+        projects = (
+            Project(name="Project 1", owner=owner),
+            Project(name="Project 2", owner=owner),
+            Project(name="Project 3", owner=owner),
+        )
+        for project in projects:
+            project.save()
+
+        project_users = (
+            ProjectUser(user=users[0], project=projects[0]),
+            ProjectUser(user=users[1], project=projects[1]),
+            ProjectUser(user=users[2], project=projects[2]),
+        )
+        for pu in project_users:
+            pu.save()
+
+        cls.form_data = {
+            "project": projects[1].pk,
+            "user": users[0].pk,
         }

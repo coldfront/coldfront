@@ -7,10 +7,11 @@ from .filterset_forms import (
     AllocationFilterSetForm,
     AllocationTypeFilterSetForm,
     ProjectFilterSetForm,
+    ProjectUserFilterSetForm,
     ResourceFilterSetForm,
     ResourceTypeFilterSetForm,
 )
-from .projects import ProjectForm
+from .projects import ProjectForm, ProjectUserForm
 from .resources import ResourceForm, ResourceTypeForm
 
 __all__ = (
@@ -20,6 +21,8 @@ __all__ = (
     "AllocationTypeFilterSetForm",
     "ProjectForm",
     "ProjectFilterSetForm",
+    "ProjectUserForm",
+    "ProjectUserFilterSetForm",
     "ResourceForm",
     "ResourceFilterSetForm",
     "ResourceTypeForm",

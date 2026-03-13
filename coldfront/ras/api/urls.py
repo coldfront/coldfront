@@ -11,6 +11,7 @@ router.APIRootView = views.RASRootView
 
 # Projects
 router.register("projects", views.ProjectViewSet)
+router.register("project-users", views.ProjectUserViewSet)
 
 # Resources
 router.register("resources", views.ResourceViewSet)

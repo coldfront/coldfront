@@ -4,9 +4,9 @@
 
 from django.db.models import Q
 
-from coldfront.ras.models import Project
+from coldfront.ras.models import Project, ProjectUser
 from coldfront.tenancy.filtersets import TenancyFilterSet
-from coldfront.views.filtersets import OrganizationalModelFilterSet
+from coldfront.views.filtersets import OrganizationalModelFilterSet, PrimaryModelFilterSet
 
 
 class ProjectFilterSet(OrganizationalModelFilterSet, TenancyFilterSet):
@@ -24,3 +24,21 @@ class ProjectFilterSet(OrganizationalModelFilterSet, TenancyFilterSet):
         if not value.strip():
             return queryset
         return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+
+
+class ProjectUserFilterSet(PrimaryModelFilterSet):
+    class Meta:
+        model = ProjectUser
+        fields = (
+            "id",
+            "project_id",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(
+            Q(user__username__icontains=value)
+            | Q(user__first_name__icontains=value)
+            | Q(user__last_name__icontains=value)
+        )

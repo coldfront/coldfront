@@ -21,7 +21,10 @@ ORGANIZATION_MENU = Menu(
     groups=(
         MenuGroup(
             label=_("Projects"),
-            items=(get_model_item("ras", "project", _("Projects")),),
+            items=(
+                get_model_item("ras", "project", _("Projects")),
+                get_model_item("ras", "projectuser", _("Project Users")),
+            ),
         ),
         MenuGroup(
             label=_("Tenancy"),

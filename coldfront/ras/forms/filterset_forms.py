@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.forms import OrganizationalModelFilterSetForm, PrimaryModelFilterSetForm
 from coldfront.forms.fields import TagFilterField
 from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
-from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
+from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
 from coldfront.tenancy.forms import TenancyFilterSetForm
 
 
@@ -148,6 +148,25 @@ class AllocationTypeFilterSetForm(OrganizationalModelFilterSetForm):
         Fieldset(
             "Allocation Type",
             "q",
+            "tag",
+        ),
+    )
+
+
+class ProjectUserFilterSetForm(PrimaryModelFilterSetForm):
+    model = ProjectUser
+    project_id = forms.ModelChoiceField(
+        queryset=Project.objects.all(),
+        required=False,
+        label=_("Project"),
+    )
+    tag = TagFilterField(model)
+
+    fieldsets = (
+        Fieldset(
+            _("User"),
+            "q",
+            "project_id",
             "tag",
         ),
     )

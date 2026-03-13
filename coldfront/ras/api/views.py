@@ -6,7 +6,7 @@ from rest_framework.routers import APIRootView
 
 from coldfront.api.viewsets import ColdFrontModelViewSet
 from coldfront.ras import filtersets
-from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
+from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
 
 from . import serializers
 
@@ -29,6 +29,12 @@ class ProjectViewSet(ColdFrontModelViewSet):
     queryset = Project.objects.all()
     serializer_class = serializers.ProjectSerializer
     filterset_class = filtersets.ProjectFilterSet
+
+
+class ProjectUserViewSet(ColdFrontModelViewSet):
+    queryset = ProjectUser.objects.all()
+    serializer_class = serializers.ProjectUserSerializer
+    filterset_class = filtersets.ProjectUserFilterSet
 
 
 #

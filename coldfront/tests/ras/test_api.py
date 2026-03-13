@@ -5,7 +5,7 @@
 from django.urls import reverse
 
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
-from coldfront.ras.models import Allocation, AllocationType, Project, Resource, ResourceType
+from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
 from coldfront.users.models import User
 from coldfront.utils.testing import APITestCase, APIViewTestCases
 
@@ -63,6 +63,60 @@ class ProjectTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new project",
                 "owner": users[2].pk,
                 "status": ProjectStatusChoices.STATUS_NEW,
+            },
+        ]
+
+
+class ProjectUserTest(APIViewTestCases.APIViewTestCase):
+    model = ProjectUser
+    brief_fields = ["display", "id", "project", "url", "user"]
+
+    @classmethod
+    def setUpTestData(cls):
+        owner = User.objects.create(username="pi")
+        users = (
+            User(username="User1"),
+            User(username="User2"),
+            User(username="User3"),
+            User(username="User4"),
+            User(username="User5"),
+            User(username="User6"),
+        )
+        for user in users:
+            user.save()
+
+        projects = (
+            Project(name="Project 1", owner=owner),
+            Project(name="Project 2", owner=owner),
+            Project(name="Project 3", owner=owner),
+        )
+        for project in projects:
+            project.save()
+
+        project_users = (
+            ProjectUser(user=users[0], project=projects[0]),
+            ProjectUser(user=users[1], project=projects[1]),
+            ProjectUser(user=users[2], project=projects[0]),
+        )
+        for pu in project_users:
+            pu.save()
+
+        cls.bulk_update_data = {
+            "project": projects[2].pk,
+        }
+
+        cls.create_data = [
+            {
+                "user": users[3].pk,
+                "project": projects[2].pk,
+            },
+            {
+                "user": users[4].pk,
+                "project": projects[1].pk,
+            },
+            {
+                "user": users[5].pk,
+                "project": projects[0].pk,
             },
         ]
 

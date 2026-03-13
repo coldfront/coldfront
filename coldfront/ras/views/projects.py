@@ -5,7 +5,7 @@
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.ras import filtersets, forms, tables
-from coldfront.ras.models import Allocation, Project
+from coldfront.ras.models import Allocation, Project, ProjectUser
 from coldfront.registry import register_model_view
 from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
@@ -52,8 +52,30 @@ class ProjectDeleteView(generic.ObjectDeleteView):
     queryset = Project.objects.all()
 
 
+@register_model_view(Project, "users")
+class ProjectUserTabView(generic.ObjectChildrenView):
+    actions = (BulkExport,)
+    queryset = Project.objects.all()
+    child_model = ProjectUser
+    table = tables.ProjectUserTable
+    filterset = filtersets.ProjectUserFilterSet
+    filterset_form = forms.ProjectUserFilterSetForm
+    template_name = "ras/project/users.html"
+    tab = ViewTab(label=_("Users"), badge=lambda obj: obj.users.count(), permission="ras.view_project", weight=100)
+
+    def get_children(self, request, parent):
+        return parent.users.restrict(request.user, "view")
+
+    def get_table(self, *args, **kwargs):
+        table = super().get_table(*args, **kwargs)
+        # TODO: hide this column by default? add created?
+        table.columns.hide("project")
+        table.columns.show("created")
+        return table
+
+
 @register_model_view(Project, "allocations")
-class ProjectAllocationsView(generic.ObjectChildrenView):
+class ProjectAllocationTabView(generic.ObjectChildrenView):
     actions = (BulkExport,)
     queryset = Project.objects.all()
     child_model = Allocation
@@ -62,8 +84,38 @@ class ProjectAllocationsView(generic.ObjectChildrenView):
     filterset_form = forms.AllocationFilterSetForm
     template_name = "ras/project/allocations.html"
     tab = ViewTab(
-        label=_("Allocations"), badge=lambda obj: obj.allocations.count(), permission="ras.view_allocation", weight=510
+        label=_("Allocations"), badge=lambda obj: obj.allocations.count(), permission="ras.view_allocation", weight=200
     )
 
     def get_children(self, request, parent):
         return parent.allocations.restrict(request.user, "view")
+
+
+#
+# Project Users
+#
+
+
+@register_model_view(ProjectUser, "list", path="", detail=False)
+class ProjectUserListView(generic.ObjectListView):
+    queryset = ProjectUser.objects.all()
+    filterset = filtersets.ProjectUserFilterSet
+    filterset_form = forms.ProjectUserFilterSetForm
+    table = tables.ProjectUserTable
+
+
+@register_model_view(ProjectUser)
+class ProjectUserView(generic.ObjectView):
+    queryset = ProjectUser.objects.all()
+
+
+@register_model_view(ProjectUser, "add", detail=False)
+@register_model_view(ProjectUser, "edit")
+class ProjectUserEditView(generic.ObjectEditView):
+    queryset = ProjectUser.objects.all()
+    form = forms.ProjectUserForm
+
+
+@register_model_view(ProjectUser, "delete")
+class ProjectUserDeleteView(generic.ObjectDeleteView):
+    queryset = ProjectUser.objects.all()

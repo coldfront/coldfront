@@ -1,0 +1,37 @@
+{% extends 'ras/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Username' %}">
+          {{ object.user.username }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'First Name' %}">
+          {{ object.user.first_name }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Last Name' %}">
+          {{ object.user.last_name }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Email Name' %}">
+          {{ object.user.email }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Date Added' %}">
+          {{ object.created|isodate }}
+      </c-card.fields.item>
+
+    </c-card.fields>
+
+    <c-card.tags :object="object" only />
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.custom_fields :object="object" only />
+  </c-slot>
+</c-layout.panels>
+{% endblock %}
