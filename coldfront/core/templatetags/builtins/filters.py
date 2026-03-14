@@ -209,3 +209,15 @@ def validated_viewname(model, action):
         return viewname
     except NoReverseMatch:
         return None
+
+
+@register.filter(name="widget_type")
+def widget_type(field):
+    """
+    Return the widget type
+    """
+    if hasattr(field, "widget"):
+        return field.widget.__class__.__name__.lower()
+    if hasattr(field, "field"):
+        return field.field.widget.__class__.__name__.lower()
+    return None

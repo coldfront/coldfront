@@ -72,6 +72,12 @@ class TagDeleteView(generic.ObjectDeleteView):
     queryset = Tag.objects.all()
 
 
+@register_model_view(Tag, "bulk_import", path="import", detail=False)
+class TagBulkImportView(generic.BulkImportView):
+    queryset = Tag.objects.all()
+    model_form = forms.TagImportForm
+
+
 #
 # Change logging
 #
@@ -197,6 +203,12 @@ class CustomFieldChoiceSetDeleteView(generic.ObjectDeleteView):
     queryset = CustomFieldChoiceSet.objects.all()
 
 
+@register_model_view(CustomFieldChoiceSet, "bulk_import", path="import", detail=False)
+class CustomFieldChoiceSetBulkImportView(generic.BulkImportView):
+    queryset = CustomFieldChoiceSet.objects.all()
+    model_form = forms.CustomFieldChoiceSetImportForm
+
+
 #
 # Custom fields
 #
@@ -240,6 +252,12 @@ class CustomFieldEditView(generic.ObjectEditView):
 @register_model_view(CustomField, "delete")
 class CustomFieldDeleteView(generic.ObjectDeleteView):
     queryset = CustomField.objects.select_related("choice_set")
+
+
+@register_model_view(CustomField, "bulk_import", path="import", detail=False)
+class CustomFieldBulkImportView(generic.BulkImportView):
+    queryset = CustomField.objects.select_related("choice_set")
+    model_form = forms.CustomFieldImportForm
 
 
 #

@@ -360,7 +360,16 @@ class CustomAttributesMixin(models.Model):
         """
         Return the attribute profile
         """
-        raise ImproperlyConfigured(f"{self.__class__.__name__} does not override get_profile method.")
+        if not hasattr(self, "profile_field_name"):
+            raise ImproperlyConfigured(
+                f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
+                f"override its get_profile() method."
+            )
+
+        if hasattr(self, self.profile_field_name):
+            return getattr(self, self.profile_field_name)
+
+        return None
 
     @property
     def attributes(self):

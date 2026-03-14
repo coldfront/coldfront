@@ -61,18 +61,18 @@ def action_url(parser, token):
     The first argument is a model or instance. The second argument is the action name.
     Additional keyword arguments can be passed for URL parameters.
 
-    For example, if you have a Device model and want to link to its edit action::
+    For example, if you have a Project model and want to link to its edit action::
 
-        {% action_url device "edit" %}
-        This will generate a URL like ``/dcim/devices/123/edit/``.
+        {% action_url project "edit" %}
+        This will generate a URL like ``/ras/projects/123/edit/``.
 
         You can also pass additional parameters::
 
-            {% action_url device "journal" pk=device.pk %}
+            {% action_url project "edit" pk=project.pk %}
 
         Or assign the URL to a variable::
 
-            {% action_url device "edit" as edit_url %}
+            {% action_url project "edit" as edit_url %}
     """
 
     # Parse the token contents

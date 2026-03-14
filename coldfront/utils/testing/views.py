@@ -3,13 +3,17 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import csv
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import ForeignKey
 from django.test import override_settings
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
-from coldfront.core.choices import ObjectChangeActionChoices
+from coldfront.core.choices import CSVDelimiterChoices, ImportFormatChoices, ObjectChangeActionChoices
 from coldfront.core.models import ObjectChange, ObjectType
 from coldfront.models.features import ChangeLoggingMixin
 from coldfront.users.models import ObjectPermission
@@ -463,6 +467,218 @@ class ViewTestCases:
             self.assertHttpStatus(response, 200)
             self.assertEqual(response.get("Content-Type"), "text/csv; charset=utf-8")
 
+    class BulkImportObjectsViewTestCase(ModelViewTestCase):
+        """
+        Create multiple instances from imported data.
+
+        :csv_data: CSV data for bulk import testing. Supports two formats:
+
+            1. Tuple/list format (backwards compatible):
+                csv_data = (
+                    "name,slug,description",
+                    "Object 1,object-1,First object",
+                    "Object 2,object-2,Second object",
+                )
+
+            2. Dictionary format for multiple scenarios:
+                csv_data = {
+                    'default': (
+                        "name,slug,description",
+                        "Object 1,object-1,First object",
+                    ),
+                    'with_optional_fields': (
+                        "name,slug,description,comments",
+                        "Object 2,object-2,Second object,With comments",
+                    )
+                }
+
+            When using dictionary format, test_bulk_import_objects_with_permission()
+            runs each scenario as a separate subtest with clear output:
+
+                test_bulk_import_objects_with_permission (scenario=default) ... ok
+                test_bulk_import_objects_with_permission (scenario=with_optional_fields) ... ok
+        """
+
+        csv_data = ()
+
+        def get_scenarios(self):
+            return self.csv_data.keys() if isinstance(self.csv_data, dict) else ["default"]
+
+        def _get_csv_data(self, scenario_name="default"):
+            """
+            Get CSV data for testing. Supports both tuple/list and dictionary formats.
+            """
+            if isinstance(self.csv_data, dict):
+                if scenario_name not in self.csv_data:
+                    available = ", ".join(self.csv_data.keys())
+                    raise ValueError(f"Scenario '{scenario_name}' not found in csv_data. Available: {available}")
+                return "\n".join(self.csv_data[scenario_name])
+            if isinstance(self.csv_data, (tuple, list)):
+                return "\n".join(self.csv_data)
+            raise TypeError(f"csv_data must be a tuple, list, or dictionary, got {type(self.csv_data)}")
+
+        def _get_update_csv_data(self):
+            return self.csv_update_data, "\n".join(self.csv_update_data)
+
+        def test_bulk_import_objects_without_permission(self):
+            data = {
+                "data": self._get_csv_data(),
+                "format": ImportFormatChoices.CSV,
+                "csv_delimiter": CSVDelimiterChoices.AUTO,
+            }
+
+            # Test GET without permission
+            with disable_warnings("django.request"):
+                self.assertHttpStatus(self.client.get(self._get_url("bulk_import")), 403)
+
+            # Try POST without permission
+            response = self.client.post(self._get_url("bulk_import"), data)
+            with disable_warnings("django.request"):
+                self.assertHttpStatus(response, 403)
+
+        @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], EXEMPT_EXCLUDE_MODELS=[])
+        def test_bulk_import_objects_with_permission(self, post_import_callback=None):
+            # Assign model-level permission once for all scenarios
+            obj_perm = ObjectPermission(name="Test permission", actions=["add"])
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Try GET with model-level permission (only once)
+            self.assertHttpStatus(self.client.get(self._get_url("bulk_import")), 200)
+
+            # Test each scenario
+            for scenario_name in self.get_scenarios():
+                with self.cleanupSubTest(scenario=scenario_name):
+                    self._test_bulk_import_with_permission_scenario(scenario_name)
+
+                    if post_import_callback:
+                        post_import_callback(scenario_name)
+
+        def _test_bulk_import_with_permission_scenario(self, scenario_name):
+            """
+            Helper method to test a single bulk import scenario.
+            """
+            initial_count = self._get_queryset().count()
+
+            # Get CSV data for this scenario
+            scenario_data = self._get_csv_data(scenario_name)
+            expected_new_objects = len(scenario_data.splitlines()) - 1
+
+            data = {
+                "data": scenario_data,
+                "format": ImportFormatChoices.CSV,
+                "csv_delimiter": CSVDelimiterChoices.AUTO,
+            }
+
+            # If supported, add a changelog message
+            if issubclass(self.model, ChangeLoggingMixin):
+                data["changelog_message"] = get_random_string(10)
+
+            # Test POST with permission
+            response = self.client.post(self._get_url("bulk_import"), data)
+            self.assertHttpStatus(response, 302)
+
+            # Verify object count increase
+            self.assertEqual(self._get_queryset().count(), initial_count + expected_new_objects)
+
+            # Verify ObjectChange creation
+            if issubclass(self.model, ChangeLoggingMixin):
+                request_id = response.headers.get("X-Request-ID")
+                self.assertIsNotNone(request_id, "Unable to determine request ID from response")
+                objectchanges = ObjectChange.objects.filter(
+                    changed_object_type=ContentType.objects.get_for_model(self.model),
+                    request_id=request_id,
+                    action=ObjectChangeActionChoices.ACTION_CREATE,
+                )
+                self.assertEqual(len(objectchanges), expected_new_objects)
+
+                for oc in objectchanges:
+                    self.assertEqual(oc.message, data["changelog_message"])
+
+        @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"])
+        def test_bulk_update_objects_with_permission(self):
+            if not hasattr(self, "csv_update_data"):
+                raise NotImplementedError(_("The test must define csv_update_data."))
+
+            initial_count = self._get_queryset().count()
+            array, csv_data = self._get_update_csv_data()
+            data = {
+                "format": ImportFormatChoices.CSV,
+                "data": csv_data,
+                "csv_delimiter": CSVDelimiterChoices.AUTO,
+            }
+
+            # Assign model-level permission
+            obj_perm = ObjectPermission(name="Test permission", actions=["add"])
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Test POST with permission
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_import"), data), 302)
+            self.assertEqual(initial_count, self._get_queryset().count())
+
+            reader = csv.DictReader(array, delimiter=",")
+            check_data = list(reader)
+            for line in check_data:
+                obj = self.model.objects.get(id=line["id"])
+                for attr, value in line.items():
+                    if attr != "id":
+                        field = self.model._meta.get_field(attr)
+                        value = getattr(obj, attr)
+                        # cannot verify FK fields as don't know what name the CSV maps to
+                        if value is not None and not isinstance(field, ForeignKey):
+                            self.assertEqual(value, value)
+
+        @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], EXEMPT_EXCLUDE_MODELS=[])
+        def test_bulk_import_objects_with_constrained_permission(self, post_import_callback=None):
+            # Assign constrained permission (deny all initially)
+            obj_perm = ObjectPermission(
+                name="Test permission",
+                constraints={"pk": 0},  # Dummy permission to deny all
+                actions=["add"],
+            )
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Test each scenario with constrained permissions
+            for scenario_name in self.get_scenarios():
+                with self.cleanupSubTest(scenario=scenario_name):
+                    self._test_bulk_import_constrained_scenario(scenario_name, obj_perm)
+
+                    if post_import_callback:
+                        post_import_callback(scenario_name)
+
+        def _test_bulk_import_constrained_scenario(self, scenario_name, obj_perm):
+            """
+            Helper method to test a single bulk import scenario with constrained permissions.
+            """
+            initial_count = self._get_queryset().count()
+
+            # Get CSV data for this scenario
+            scenario_data = self._get_csv_data(scenario_name)
+            expected_new_objects = len(scenario_data.splitlines()) - 1
+
+            data = {
+                "data": scenario_data,
+                "format": ImportFormatChoices.CSV,
+                "csv_delimiter": CSVDelimiterChoices.AUTO,
+            }
+
+            # Attempt to import non-permitted objects (should fail)
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_import"), data), 200)
+            self.assertEqual(self._get_queryset().count(), initial_count)
+
+            # Update permission constraints to allow all
+            obj_perm.constraints = {"pk__gt": 0}  # Dummy permission to allow all
+            obj_perm.save()
+
+            # Import permitted objects (should succeed)
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_import"), data), 302)
+            self.assertEqual(self._get_queryset().count(), initial_count + expected_new_objects)
+
     class PrimaryObjectViewTestCase(
         GetObjectViewTestCase,
         GetObjectChangelogViewTestCase,
@@ -470,6 +686,7 @@ class ViewTestCases:
         EditObjectViewTestCase,
         DeleteObjectViewTestCase,
         ListObjectsViewTestCase,
+        BulkImportObjectsViewTestCase,
     ):
         """
         TestCase suitable for all primary objects
@@ -484,6 +701,7 @@ class ViewTestCases:
         EditObjectViewTestCase,
         DeleteObjectViewTestCase,
         ListObjectsViewTestCase,
+        BulkImportObjectsViewTestCase,
     ):
         """
         TestCase suitable for all organizational objects

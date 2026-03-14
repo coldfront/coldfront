@@ -25,9 +25,11 @@ from .projects import (
     ProjectView,
 )
 from .resources import (
+    ResourceBulkImportView,
     ResourceDeleteView,
     ResourceEditView,
     ResourceListView,
+    ResourceTypeBulkImportView,
     ResourceTypeDeleteView,
     ResourceTypeEditView,
     ResourceTypeListView,
@@ -44,6 +46,7 @@ __all__ = (
     "AllocationTypeListView",
     "AllocationTypeView",
     "AllocationView",
+    "AllocationTypeBulkImportView",
     "ProjectAllocationTabView",
     "ProjectUserTabView",
     "ProjectDeleteView",
@@ -62,4 +65,6 @@ __all__ = (
     "ResourceTypeListView",
     "ResourceTypeView",
     "ResourceView",
+    "ResourceBulkImportView",
+    "ResourceTypeBulkImportView",
 )

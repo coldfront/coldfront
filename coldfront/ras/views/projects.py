@@ -52,6 +52,12 @@ class ProjectDeleteView(generic.ObjectDeleteView):
     queryset = Project.objects.all()
 
 
+@register_model_view(Project, "bulk_import", path="import", detail=False)
+class ProjectBulkImportView(generic.BulkImportView):
+    queryset = Project.objects.all()
+    model_form = forms.ProjectImportForm
+
+
 @register_model_view(Project, "users")
 class ProjectUserTabView(generic.ObjectChildrenView):
     actions = (BulkExport,)
@@ -119,3 +125,9 @@ class ProjectUserEditView(generic.ObjectEditView):
 @register_model_view(ProjectUser, "delete")
 class ProjectUserDeleteView(generic.ObjectDeleteView):
     queryset = ProjectUser.objects.all()
+
+
+@register_model_view(ProjectUser, "bulk_import", path="import", detail=False)
+class ProjectUserBulkImportView(generic.BulkImportView):
+    queryset = ProjectUser.objects.all()
+    model_form = forms.ProjectUserImportForm

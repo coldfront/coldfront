@@ -5,9 +5,11 @@
 from crispy_forms.layout import Fieldset
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.forms import OrganizationalModelForm, PrimaryModelForm
+from coldfront.forms import OrganizationalModelForm, PrimaryModelForm, PrimaryModelImportForm
+from coldfront.forms.fields import CSVModelChoiceField
 from coldfront.ras.models import Project, ProjectUser
-from coldfront.tenancy.forms import TenancyForm
+from coldfront.tenancy.forms import TenancyForm, TenancyImportForm
+from coldfront.users.models import User
 
 
 class ProjectForm(TenancyForm, OrganizationalModelForm):
@@ -53,3 +55,58 @@ class ProjectUserForm(PrimaryModelForm):
             "user",
         ),
     )
+
+
+class ProjectImportForm(TenancyImportForm, PrimaryModelImportForm):
+    owner = CSVModelChoiceField(
+        label=_("Owner"),
+        queryset=User.objects.all(),
+        required=True,
+        to_field_name="username",
+        help_text=_("Owner of the project"),
+        error_messages={
+            "invalid_choice": _("User not found."),
+        },
+    )
+
+    class Meta:
+        model = Project
+        fields = [
+            "name",
+            "owner",
+            "status",
+            "description",
+            "tags",
+            "tenant",
+            "tenant_group",
+        ]
+
+
+class ProjectUserImportForm(PrimaryModelImportForm):
+    user = CSVModelChoiceField(
+        label=_("User"),
+        queryset=User.objects.all(),
+        required=True,
+        to_field_name="username",
+        help_text=_("User to add to project"),
+        error_messages={
+            "invalid_choice": _("User not found."),
+        },
+    )
+
+    project = CSVModelChoiceField(
+        label=_("Project"),
+        queryset=Project.objects.all(),
+        required=True,
+        to_field_name="name",
+        error_messages={
+            "invalid_choice": _("Project not found."),
+        },
+    )
+
+    class Meta:
+        model = ProjectUser
+        fields = [
+            "user",
+            "project",
+        ]
