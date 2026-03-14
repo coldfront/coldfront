@@ -9,8 +9,10 @@ from collections import Counter
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import router, transaction
+from django.db.models import ProtectedError, RestrictedError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.utils.html import format_html
 from django.utils.translation import gettext as _
 from django_cotton import render_component
 from django_tables2.export import TableExport
@@ -19,16 +21,17 @@ from mptt.models import MPTTModel
 from coldfront.core.choices import CustomFieldUIEditableChoices
 from coldfront.core.models import CustomField
 from coldfront.exceptions import AbortRequest, PermissionsViolation
-from coldfront.forms import BulkImportForm
+from coldfront.forms import BulkDeleteForm, BulkImportForm
 from coldfront.models.features import ChangeLoggingMixin
 from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.forms import restrict_form_fields
 from coldfront.utils.query import reapply_model_ordering
+from coldfront.utils.request import safe_for_redirect
 from coldfront.utils.strings import title
-from coldfront.views import get_action_url
+from coldfront.views import get_action_url, handle_protectederror
 from coldfront.views.htmx import htmx_partial
 from coldfront.views.mixins import GetReturnURLMixin
-from coldfront.views.object_actions import AddObject, BulkExport, BulkImport
+from coldfront.views.object_actions import AddObject, BulkDelete, BulkExport, BulkImport
 
 from .base import BaseMultiObjectView
 from .mixins import ActionsMixin, TableMixin
@@ -48,11 +51,7 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
     filterset = None
     filterset_form = None
     # actions = (AddObject, BulkImport, BulkExport, BulkEdit, BulkRename, BulkDelete)
-    actions = (
-        AddObject,
-        BulkImport,
-        BulkExport,
-    )
+    actions = (AddObject, BulkImport, BulkExport, BulkDelete)
 
     def get_required_permission(self):
         return get_permission_for_model(self.queryset.model, "view")
@@ -403,17 +402,11 @@ class BulkImportView(GetReturnURLMixin, BaseMultiObjectView):
 
         if form.is_valid():
             logger.debug("Import form validation was successful")
-            redirect_url = get_action_url(model, action="list")
 
-            # TODO: Add background jobs?
-            # If indicated, defer this request to a background job & redirect the user
-            # if form.cleaned_data["background_job"]:
-            #     job_name = _("Bulk import {count} {object_type}").format(
-            #         count=len(form.cleaned_data["data"]),
-            #         object_type=model._meta.verbose_name_plural,
-            #     )
-            #     if process_request_as_job(self.__class__, request, name=job_name):
-            #         return redirect(redirect_url)
+            redirect_url = get_action_url(model, action="list")
+            return_url = request.GET.get("return_url") or request.POST.get("return_url")
+            if return_url and safe_for_redirect(return_url):
+                redirect_url = return_url
 
             try:
                 # Iterate through data and bind each record to a new model form instance.
@@ -448,6 +441,112 @@ class BulkImportView(GetReturnURLMixin, BaseMultiObjectView):
                 "model": model,
                 "form": form,
                 "fields": self._get_form_fields(),
+                "return_url": self.get_return_url(request),
+                **self.get_extra_context(request),
+            },
+        )
+
+
+class BulkDeleteView(GetReturnURLMixin, BaseMultiObjectView):
+    """
+    Delete objects in bulk.
+
+    Attributes:
+        filterset: FilterSet to apply when deleting by QuerySet
+        table: The table used to display devices being deleted
+    """
+
+    template_name = "generic/bulk_delete.html"
+    filterset = None
+    table = None
+
+    def get_required_permission(self):
+        return get_permission_for_model(self.queryset.model, "delete")
+
+    #
+    # Request handlers
+    #
+
+    def get(self, request):
+        return redirect(self.get_return_url(request))
+
+    def post(self, request, **kwargs):
+        logger = logging.getLogger("netbox.views.BulkDeleteView")
+        model = self.queryset.model
+
+        # Are we deleting *all* objects in the queryset or just a selected subset?
+        if request.POST.get("_all"):
+            qs = model.objects.all()
+            if self.filterset is not None:
+                qs = self.filterset(request.GET, qs, request=request).qs
+            pk_list = qs.only("pk").values_list("pk", flat=True)
+        else:
+            pk_list = [int(pk) for pk in request.POST.getlist("pk")]
+
+        if "_confirm" in request.POST:
+            form = BulkDeleteForm(model, request.POST)
+            if form.is_valid():
+                logger.debug("Form validation was successful")
+
+                # Delete objects
+                queryset = self.queryset.filter(pk__in=pk_list)
+                deleted_count = queryset.count()
+                try:
+                    with transaction.atomic(using=router.db_for_write(model)):
+                        for obj in queryset:
+                            # Take a snapshot of change-logged models
+                            if hasattr(obj, "snapshot"):
+                                obj.snapshot()
+
+                            # Attach the changelog message (if any) to the object
+                            obj._changelog_message = form.cleaned_data.get("changelog_message")
+
+                            # Delete the object
+                            obj.delete()
+
+                    msg = _("Deleted {count} {object_type}").format(
+                        count=deleted_count, object_type=model._meta.verbose_name_plural
+                    )
+                    logger.info(msg)
+
+                    messages.success(request, msg)
+
+                except (ProtectedError, RestrictedError) as e:
+                    logger.warning(f"Caught {type(e)} while attempting to delete objects")
+                    handle_protectederror(queryset, request, e)
+
+                except AbortRequest as e:
+                    logger.debug(e.message)
+                    messages.error(request, format_html(e.message))
+
+                return redirect(self.get_return_url(request))
+
+            logger.debug("Form validation failed")
+
+        else:
+            form = BulkDeleteForm(
+                model,
+                initial={
+                    "pk": pk_list,
+                    "return_url": self.get_return_url(request),
+                },
+            )
+
+        # Retrieve objects being deleted
+        table = self.table(self.queryset.filter(pk__in=pk_list), orderable=False)
+        if not table.rows:
+            messages.warning(
+                request, _("No {object_type} were selected.").format(object_type=model._meta.verbose_name_plural)
+            )
+            return redirect(self.get_return_url(request))
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "model": model,
+                "form": form,
+                "table": table,
                 "return_url": self.get_return_url(request),
                 **self.get_extra_context(request),
             },

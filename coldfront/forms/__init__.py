@@ -14,7 +14,7 @@ from .filterset_forms import (
     OrganizationalModelFilterSetForm,
     PrimaryModelFilterSetForm,
 )
-from .forms import BulkImportForm, ConfirmationForm, DeleteForm, FilterForm, TableConfigForm
+from .forms import BulkDeleteForm, BulkImportForm, ConfirmationForm, DeleteForm, FilterForm, TableConfigForm
 from .model_forms import (
     ColdFrontModelForm,
     CSVModelForm,
@@ -42,4 +42,5 @@ __all__ = (
     "ColdFrontModelImportForm",
     "OrganizationalModelImportForm",
     "PrimaryModelImportForm",
+    "BulkDeleteForm",
 )

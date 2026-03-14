@@ -61,6 +61,13 @@ class UserBulkImportView(generic.BulkImportView):
     model_form = forms.UserImportForm
 
 
+@register_model_view(User, "bulk_delete", path="delete", detail=False)
+class UserBulkDeleteView(generic.BulkDeleteView):
+    queryset = User.objects.all()
+    filterset = filtersets.UserFilterSet
+    table = tables.UserTable
+
+
 #
 # Groups
 #
@@ -96,6 +103,13 @@ class GroupDeleteView(generic.ObjectDeleteView):
 class GroupBulkImportView(generic.BulkImportView):
     queryset = Group.objects.all()
     model_form = forms.GroupImportForm
+
+
+@register_model_view(Group, "bulk_delete", path="delete", detail=False)
+class GroupBulkDeleteView(generic.BulkDeleteView):
+    queryset = Group.objects.annotate(users_count=Count("user")).order_by("name")
+    filterset = filtersets.GroupFilterSet
+    table = tables.GroupTable
 
 
 #
@@ -134,6 +148,13 @@ class ObjectPermissionDeleteView(generic.ObjectDeleteView):
     filterset = filtersets.ObjectPermissionFilterSet
 
 
+@register_model_view(ObjectPermission, "bulk_delete", path="delete", detail=False)
+class ObjectPermissionBulkDeleteView(generic.BulkDeleteView):
+    queryset = ObjectPermission.objects.all()
+    filterset = filtersets.ObjectPermissionFilterSet
+    table = tables.ObjectPermissionTable
+
+
 #
 # Tokens
 #
@@ -169,3 +190,9 @@ class TokenDeleteView(generic.ObjectDeleteView):
 class TokenBulkImportView(generic.BulkImportView):
     queryset = Token.objects.all()
     model_form = forms.TokenImportForm
+
+
+@register_model_view(Token, "bulk_delete", path="delete", detail=False)
+class TokenBulkDeleteView(generic.BulkDeleteView):
+    queryset = Token.objects.all()
+    table = tables.TokenTable

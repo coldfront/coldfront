@@ -9,7 +9,7 @@ from coldfront.ras.models import Allocation, Project, ProjectUser
 from coldfront.registry import register_model_view
 from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
-from coldfront.views.object_actions import BulkExport
+from coldfront.views.object_actions import BulkDelete, BulkExport
 
 #
 # Projects
@@ -58,9 +58,16 @@ class ProjectBulkImportView(generic.BulkImportView):
     model_form = forms.ProjectImportForm
 
 
+@register_model_view(Project, "bulk_delete", path="delete", detail=False)
+class ProjectBulkDeleteView(generic.BulkDeleteView):
+    queryset = Project.objects.all()
+    filterset = filtersets.ProjectFilterSet
+    table = tables.ProjectTable
+
+
 @register_model_view(Project, "users")
 class ProjectUserTabView(generic.ObjectChildrenView):
-    actions = (BulkExport,)
+    actions = (BulkExport, BulkDelete)
     queryset = Project.objects.all()
     child_model = ProjectUser
     table = tables.ProjectUserTable
@@ -131,3 +138,10 @@ class ProjectUserDeleteView(generic.ObjectDeleteView):
 class ProjectUserBulkImportView(generic.BulkImportView):
     queryset = ProjectUser.objects.all()
     model_form = forms.ProjectUserImportForm
+
+
+@register_model_view(ProjectUser, "bulk_delete", path="delete", detail=False)
+class ProjectUserBulkDeleteView(generic.BulkDeleteView):
+    queryset = ProjectUser.objects.all()
+    filterset = filtersets.ProjectUserFilterSet
+    table = tables.ProjectUserTable

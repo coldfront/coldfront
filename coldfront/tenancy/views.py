@@ -55,6 +55,19 @@ class TenantGroupBulkImportView(generic.BulkImportView):
     model_form = forms.TenantGroupImportForm
 
 
+@register_model_view(TenantGroup, "bulk_delete", path="delete", detail=False)
+class TenantGroupBulkDeleteView(generic.BulkDeleteView):
+    queryset = TenantGroup.objects.add_related_count(
+        TenantGroup.objects.all(),
+        Tenant,
+        "group",
+        "tenant_count",
+        cumulative=True,
+    )
+    filterset = filtersets.TenantGroupFilterSet
+    table = tables.TenantGroupTable
+
+
 #
 #  Tenants
 #
@@ -94,3 +107,10 @@ class TenantDeleteView(generic.ObjectDeleteView):
 class TenantBulkImportView(generic.BulkImportView):
     queryset = Tenant.objects.all()
     model_form = forms.TenantImportForm
+
+
+@register_model_view(Tenant, "bulk_delete", path="delete", detail=False)
+class TenantBulkDeleteView(generic.BulkDeleteView):
+    queryset = Tenant.objects.all()
+    filterset = filtersets.TenantFilterSet
+    table = tables.TenantTable
