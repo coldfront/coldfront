@@ -82,7 +82,7 @@ class BulkUpdateModelMixin:
     or more JSON objects, each specifying the numeric ID of an object to be updated as well as the attributes to be set.
     For example:
 
-    PATCH /api/dcim/sites/
+    PATCH /api/ras/projects/
     [
         {
             "id": 123,
@@ -139,7 +139,7 @@ class BulkDestroyModelMixin:
     Support bulk deletion of objects using the list endpoint for a model. Accepts a DELETE action with a list of one
     or more JSON objects, each specifying the numeric ID of an object to be deleted. For example:
 
-    DELETE /api/dcim/sites/
+    DELETE /api/ras/projects/
     [
         {"id": 123},
         {"id": 456}

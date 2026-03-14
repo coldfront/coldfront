@@ -30,7 +30,9 @@ Context:
         <c-card.table.htmx :table="table" only />
         <div class="d-print-none mt-2">
             {% block bulk_controls %}
-              {% action_buttons actions model multi=True return_url=request.path %}
+              {% if table.rows %}
+                {% action_buttons actions model multi=True return_url=request.path %}
+              {% endif %}
               {% block bulk_extra_controls %}{% endblock %}
             {% endblock bulk_controls %}
         </div>

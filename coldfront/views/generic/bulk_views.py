@@ -394,7 +394,7 @@ class BulkImportView(GetReturnURLMixin, BaseMultiObjectView):
         )
 
     def post(self, request):
-        logger = logging.getLogger("netbox.views.BulkImportView")
+        logger = logging.getLogger("coldfront.views.BulkImportView")
         model = self.model_form._meta.model
         form = BulkImportForm(request.POST, request.FILES)
         if not issubclass(model, ChangeLoggingMixin):
@@ -453,7 +453,7 @@ class BulkDeleteView(GetReturnURLMixin, BaseMultiObjectView):
 
     Attributes:
         filterset: FilterSet to apply when deleting by QuerySet
-        table: The table used to display devices being deleted
+        table: The table used to display objects being deleted
     """
 
     template_name = "generic/bulk_delete.html"
@@ -471,7 +471,7 @@ class BulkDeleteView(GetReturnURLMixin, BaseMultiObjectView):
         return redirect(self.get_return_url(request))
 
     def post(self, request, **kwargs):
-        logger = logging.getLogger("netbox.views.BulkDeleteView")
+        logger = logging.getLogger("coldfront.views.BulkDeleteView")
         model = self.queryset.model
 
         # Are we deleting *all* objects in the queryset or just a selected subset?

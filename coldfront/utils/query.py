@@ -61,7 +61,7 @@ def dict_to_filter_params(d, prefix=""):
 
     And can be employed as filter parameters:
 
-        Device.objects.filter(**dict_to_filter(attrs_dict))
+        Project.objects.filter(**dict_to_filter(attrs_dict))
     """
     params = {}
     for key, val in d.items():

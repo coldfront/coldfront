@@ -173,14 +173,15 @@ class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             Project(name="Project 1", owner=owner),
             Project(name="Project 2", owner=owner),
             Project(name="Project 3", owner=owner),
+            Project(name="Project 4", owner=owner),
         )
         for project in projects:
             project.save()
 
         project_users = (
             ProjectUser(user=users[0], project=projects[0]),
-            ProjectUser(user=users[1], project=projects[1]),
-            ProjectUser(user=users[2], project=projects[2]),
+            ProjectUser(user=users[1], project=projects[0]),
+            ProjectUser(user=users[2], project=projects[0]),
         )
         for pu in project_users:
             pu.save()
@@ -193,13 +194,13 @@ class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         cls.csv_data = (
             "user,project",
             "User1,Project 3",
-            "User2,Project 2",
-            "User3,Project 1",
+            "User2,Project 3",
+            "User3,Project 3",
         )
 
         cls.csv_update_data = (
             "id,project",
-            f"{project_users[0].pk},Project 3",
-            f"{project_users[1].pk},Project 3",
-            f"{project_users[2].pk},Project 3",
+            f"{project_users[0].pk},Project 4",
+            f"{project_users[1].pk},Project 4",
+            f"{project_users[2].pk},Project 4",
         )

@@ -25,7 +25,7 @@ class TreeNodeMultipleChoiceFilter(django_filters.ModelMultipleChoiceFilter):
 
 class ContentTypeFilter(django_filters.CharFilter):
     """
-    Allow specifying a ContentType by <app_label>.<model> (e.g. "dcim.site").
+    Allow specifying a ContentType by <app_label>.<model> (e.g. "ras.project").
     """
 
     def filter(self, qs, value):
