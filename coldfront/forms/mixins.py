@@ -263,3 +263,39 @@ class CustomAttributesMixin(forms.Form):
             }
 
         return super()._post_clean()
+
+
+class CustomAttributesImportMixin(forms.Form):
+    """
+    Extend a Form to include custom attribute support for CSV uploads.
+
+    Attributes:
+        profile_field_name: The name of the ModelChoiceField for the attribute profile
+    """
+
+    profile_field_name = None
+
+    def _get_profile_field_name(self):
+        """
+        Return the profile form field name.
+        """
+        if self.profile_field_name is None:
+            raise ImproperlyConfigured(
+                f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
+                f"override its _get_profile_field_name() method."
+            )
+
+        return self.profile_field_name
+
+    def clean(self):
+        super().clean()
+
+        # Attribute data may be included only if a resource type is specified
+        if self.cleaned_data.get("attribute_data") and not self.cleaned_data.get(self._get_profile_field_name()):
+            raise forms.ValidationError(
+                _(f"{self._get_profile_field_name()} must be specified if attribute data is provided.")
+            )
+
+        # Default attribute_data to an empty dictionary if a resource type is specified (to enforce schema validation)
+        if self.cleaned_data.get(self._get_profile_field_name()) and not self.cleaned_data.get("attribute_data"):
+            self.cleaned_data["attribute_data"] = {}

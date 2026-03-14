@@ -6,12 +6,13 @@ from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.forms import OrganizationalModelForm, PrimaryModelForm
+from coldfront.forms import OrganizationalModelForm, PrimaryModelForm, PrimaryModelImportForm
+from coldfront.forms.fields import CSVModelChoiceField
 from coldfront.forms.layouts import Slug
-from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesMixin
+from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
 from coldfront.forms.widgets import HTMXSelect
 from coldfront.ras.models import Resource, ResourceType
-from coldfront.tenancy.forms import TenancyForm
+from coldfront.tenancy.forms import TenancyForm, TenancyImportForm
 
 
 class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
@@ -57,6 +58,8 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
             "status",
             "description",
             "tags",
+            "tenant",
+            "tenant_group",
         ]
 
     @property
@@ -79,4 +82,47 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
                 "tenant_group",
                 "tenant",
             ),
+        ]
+
+
+class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, PrimaryModelImportForm):
+    resource_type = CSVModelChoiceField(
+        label=_("Resource Type"),
+        queryset=ResourceType.objects.all(),
+        to_field_name="name",
+        help_text=_("Resource Type"),
+    )
+
+    attribute_data = forms.JSONField(
+        label=_("Attributes"),
+        required=False,
+        help_text=_("Attribute values for the assigned resource type, passed as a dictionary"),
+    )
+
+    profile_field_name = "resource_type"
+
+    class Meta:
+        model = Resource
+        fields = [
+            "name",
+            "resource_type",
+            "status",
+            "description",
+            "attribute_data",
+            "tags",
+            "tenant",
+            "tenant_group",
+        ]
+
+
+class ResourceTypeImportForm(PrimaryModelImportForm):
+    class Meta:
+        model = ResourceType
+        fields = [
+            "name",
+            "slug",
+            "color",
+            "description",
+            "schema",
+            "tags",
         ]

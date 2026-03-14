@@ -107,13 +107,12 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         "ras.AllocationType",
     )
 
+    profile_field_name = "allocation_type"
+
     class Meta:
         ordering = ["start_date"]
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")
-
-    def get_profile(self):
-        return self.allocation_type
 
     def get_status_color(self):
         return AllocationStatusChoices.colors.get(self.status)

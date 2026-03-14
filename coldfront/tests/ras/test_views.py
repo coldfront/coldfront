@@ -39,6 +39,20 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
             "tags": [t.pk for t in tags],
         }
 
+        cls.csv_data = (
+            "name,description,status,owner",
+            "Project 4,Fourth project,new,User1",
+            "Project 5,Fifth project,new,User2",
+            "Project 6,Sixth project,new,User3",
+        )
+
+        cls.csv_update_data = (
+            "id,name,description",
+            f"{projects[0].pk},Project 7,Fourth project7",
+            f"{projects[1].pk},Project 8,Fifth project8",
+            f"{projects[2].pk},Project 9,Sixth project9",
+        )
+
 
 class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     model = Resource
@@ -65,6 +79,20 @@ class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "status": ResourceStatusChoices.STATUS_ACTIVE,
             "tags": [t.pk for t in tags],
         }
+
+        cls.csv_data = (
+            "name,description,status,resource_type",
+            "Resource 4,Fourth resource,active,Cluster",
+            "Resource 5,Fifth resource,active,Cluster",
+            "Resource 6,Sixth resource,active,Cluster",
+        )
+
+        cls.csv_update_data = (
+            "id,name,description",
+            f"{resources[0].pk},Resource 7,Fourth resource7",
+            f"{resources[1].pk},Resource 8,Fifth resource8",
+            f"{resources[2].pk},Resource 9,Sixth resource9",
+        )
 
 
 class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
@@ -112,6 +140,20 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "tags": [t.pk for t in tags],
         }
 
+        cls.csv_data = (
+            "justification,description,status,owner,project,allocation_type,resources",
+            "need resources4,Fourth allocation,active,User1,Project 1,Storage,Resource 1",
+            "need resources5,Fifth allocation,active,User1,Project 1,Storage,Resource 2",
+            "need resources6,Sixth allocation,active,User1,Project 1,Storage,Resource 3",
+        )
+
+        cls.csv_update_data = (
+            "id,description",
+            f"{allocations[0].pk},Fourth allocation7",
+            f"{allocations[1].pk},Fifth allocation8",
+            f"{allocations[2].pk},Sixth allocation9",
+        )
+
 
 class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     model = ProjectUser
@@ -147,3 +189,17 @@ class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "project": projects[1].pk,
             "user": users[0].pk,
         }
+
+        cls.csv_data = (
+            "user,project",
+            "User1,Project 3",
+            "User2,Project 2",
+            "User3,Project 1",
+        )
+
+        cls.csv_update_data = (
+            "id,project",
+            f"{project_users[0].pk},Project 3",
+            f"{project_users[1].pk},Project 3",
+            f"{project_users[2].pk},Project 3",
+        )

@@ -68,6 +68,8 @@ class Resource(CustomAttributesMixin, PrimaryModel):
         "status",
     )
 
+    profile_field_name = "resource_type"
+
     class Meta:
         ordering = ["name"]
         verbose_name = _("resource")
@@ -80,4 +82,7 @@ class Resource(CustomAttributesMixin, PrimaryModel):
         return ResourceStatusChoices.colors.get(self.status)
 
     def get_profile(self):
-        return self.resource_type
+        if hasattr(self, "resource_type"):
+            return self.resource_type
+
+        return None

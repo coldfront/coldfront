@@ -23,8 +23,8 @@ from .object_types import ObjectType
 class ObjectChange(models.Model):
     """
     Record a change to an object and the user account associated with that change. A change record may optionally
-    indicate an object related to the one being changed. For example, a change to an interface may also indicate the
-    parent device. This will ensure changes made to component models appear in the parent model's changelog.
+    indicate an object related to the one being changed. This will ensure
+    changes made to component models appear in the parent model's changelog.
     """
 
     time = models.DateTimeField(

@@ -80,3 +80,13 @@ BOOLEAN_WITH_BLANK_CHOICES = (
     ("True", "Yes"),
     ("False", "No"),
 )
+
+#
+# CSV-style format delimiters
+#
+CSV_DELIMITERS = {
+    "comma": ",",
+    "semicolon": ";",
+    "pipe": "|",
+    "tab": "\t",
+}

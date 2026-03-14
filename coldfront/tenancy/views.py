@@ -49,6 +49,12 @@ class TenantGroupDeleteView(generic.ObjectDeleteView):
     queryset = TenantGroup.objects.all()
 
 
+@register_model_view(TenantGroup, "bulk_import", path="import", detail=False)
+class TenantGroupBulkImportView(generic.BulkImportView):
+    queryset = TenantGroup.objects.all()
+    model_form = forms.TenantGroupImportForm
+
+
 #
 #  Tenants
 #
@@ -82,3 +88,9 @@ class TenantEditView(generic.ObjectEditView):
 @register_model_view(Tenant, "delete")
 class TenantDeleteView(generic.ObjectDeleteView):
     queryset = Tenant.objects.all()
+
+
+@register_model_view(Tenant, "bulk_import", path="import", detail=False)
+class TenantBulkImportView(generic.BulkImportView):
+    queryset = Tenant.objects.all()
+    model_form = forms.TenantImportForm

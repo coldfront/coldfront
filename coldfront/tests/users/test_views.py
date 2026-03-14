@@ -15,6 +15,7 @@ class UserTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.BulkImportObjectsViewTestCase,
 ):
     model = User
     maxDiff = None
@@ -102,6 +103,7 @@ class GroupTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.BulkImportObjectsViewTestCase,
 ):
     model = Group
     maxDiff = None
@@ -120,7 +122,12 @@ class GroupTestCase(
             "name": "groupx",
         }
 
-        cls.csv_data = ("name", "group4group5group6")
+        cls.csv_data = (
+            "name",
+            "group4",
+            "group5",
+            "group6",
+        )
 
         cls.csv_update_data = (
             "id,name",
@@ -162,15 +169,6 @@ class ObjectPermissionTestCase(
             "actions": '["view", "edit", "delete"]',
         }
 
-        cls.csv_data = ("name", "permission4permission5permission6")
-
-        cls.csv_update_data = (
-            "id,name,actions",
-            f"{permissions[0].pk},permission7",
-            f"{permissions[1].pk},permission8",
-            f"{permissions[2].pk},permission9",
-        )
-
         cls.bulk_edit_data = {
             "description": "New description",
         }
@@ -182,6 +180,7 @@ class TokenTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.BulkImportObjectsViewTestCase,
 ):
     model = Token
     maxDiff = None
@@ -212,3 +211,17 @@ class TokenTestCase(
             "description": "Test token",
             "enabled": True,
         }
+
+        cls.csv_data = (
+            "token,user,description,enabled,write_enabled",
+            f"zjebxBPzICiPbWz0Wtx0fTL7bCKXKGTYhNzkgC2S,{users[0].pk},Test token,true,true",
+            f"9Z5kGtQWba60Vm226dPDfEAV6BhlTr7H5hAXAfbF,{users[1].pk},Test token,true,false",
+            f"njpMnNT6r0k0MDccoUhTYYlvP9BvV3qLzYN2p6Uu,{users[1].pk},Test token,false,true",
+        )
+
+        cls.csv_update_data = (
+            "id,description",
+            f"{tokens[0].pk},New description",
+            f"{tokens[1].pk},New description",
+            f"{tokens[2].pk},New description",
+        )

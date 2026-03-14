@@ -5,17 +5,11 @@
 
 from django import forms
 from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext as _
 
 from coldfront.forms.fields import SlugField
 
 from .mixins import ChangelogMessageMixin, CheckLastUpdatedMixin, CustomFieldsMixin, HorizontalFormMixin, TagsMixin
-
-__all__ = (
-    "NestedGroupModelForm",
-    "ColdFrontModelForm",
-    "OrganizationalModelForm",
-    "PrimaryModelForm",
-)
 
 
 class ColdFrontModelForm(
@@ -97,3 +91,32 @@ class NestedGroupModelForm(ColdFrontModelForm):
     slug = SlugField()
 
     pass
+
+
+class CSVModelForm(forms.ModelForm):
+    """
+    ModelForm used for the import of objects in CSV format.
+    """
+
+    id = forms.IntegerField(
+        label=_("ID"),
+        required=False,
+        help_text=_("Numeric ID of an existing object to update (if not creating a new object)"),
+    )
+
+    def __init__(self, *args, headers=None, **kwargs):
+        self.headers = headers or {}
+        super().__init__(*args, **kwargs)
+
+        # Modify the model form to accommodate any customized to_field_name properties
+        for field, to_field in self.headers.items():
+            if to_field is not None:
+                self.fields[field].to_field_name = to_field
+
+    def clean(self):
+        # Flag any invalid CSV headers
+        for header in self.headers:
+            if header not in self.fields:
+                raise forms.ValidationError(_("Unrecognized header: {name}").format(name=header))
+
+        return super().clean()

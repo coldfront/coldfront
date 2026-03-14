@@ -55,6 +55,12 @@ class UserDeleteView(generic.ObjectDeleteView):
     queryset = User.objects.all()
 
 
+@register_model_view(User, "bulk_import", path="import", detail=False)
+class UserBulkImportView(generic.BulkImportView):
+    queryset = User.objects.all()
+    model_form = forms.UserImportForm
+
+
 #
 # Groups
 #
@@ -84,6 +90,12 @@ class GroupEditView(generic.ObjectEditView):
 @register_model_view(Group, "delete")
 class GroupDeleteView(generic.ObjectDeleteView):
     queryset = Group.objects.all()
+
+
+@register_model_view(Group, "bulk_import", path="import", detail=False)
+class GroupBulkImportView(generic.BulkImportView):
+    queryset = Group.objects.all()
+    model_form = forms.GroupImportForm
 
 
 #
@@ -151,3 +163,9 @@ class TokenEditView(generic.ObjectEditView):
 @register_model_view(Token, "delete")
 class TokenDeleteView(generic.ObjectDeleteView):
     queryset = Token.objects.all()
+
+
+@register_model_view(Token, "bulk_import", path="import", detail=False)
+class TokenBulkImportView(generic.BulkImportView):
+    queryset = Token.objects.all()
+    model_form = forms.TokenImportForm

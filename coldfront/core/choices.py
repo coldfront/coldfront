@@ -6,6 +6,7 @@
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.choices import ChoiceSet
+from coldfront.constants import CSV_DELIMITERS
 
 
 class ObjectChangeActionChoices(ChoiceSet):
@@ -182,3 +183,43 @@ class ButtonColorChoices(ChoiceSet):
         (BLACK, _("Black")),
         (WHITE, _("White")),
     )
+
+
+class CSVDelimiterChoices(ChoiceSet):
+    AUTO = "auto"
+    COMMA = CSV_DELIMITERS["comma"]
+    SEMICOLON = CSV_DELIMITERS["semicolon"]
+    PIPE = CSV_DELIMITERS["pipe"]
+    TAB = CSV_DELIMITERS["tab"]
+
+    CHOICES = [
+        (AUTO, _("Auto-detect")),
+        (COMMA, _("Comma")),
+        (SEMICOLON, _("Semicolon")),
+        (PIPE, _("Pipe")),
+        (TAB, _("Tab")),
+    ]
+
+
+class ImportMethodChoices(ChoiceSet):
+    DIRECT = "direct"
+    UPLOAD = "upload"
+
+    CHOICES = [
+        (DIRECT, _("Direct")),
+        (UPLOAD, _("Upload")),
+    ]
+
+
+class ImportFormatChoices(ChoiceSet):
+    AUTO = "auto"
+    CSV = "csv"
+    JSON = "json"
+    YAML = "yaml"
+
+    CHOICES = [
+        (AUTO, _("Auto-detect")),
+        (CSV, "CSV"),
+        (JSON, "JSON"),
+        (YAML, "YAML"),
+    ]

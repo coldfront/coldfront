@@ -61,6 +61,14 @@ class CustomFieldTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     def setUpTestData(cls):
 
         tenant_type = ObjectType.objects.get_for_model(Tenant)
+        CustomFieldChoiceSet.objects.create(
+            name="Choice Set 1",
+            choices=(
+                "A:A",
+                "B:B",
+                "C:C",
+            ),
+        )
 
         custom_fields = (
             CustomField(name="field1", label="Field 1", type=CustomFieldTypeChoices.TYPE_TEXT),
@@ -84,3 +92,18 @@ class CustomFieldTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "ui_visible": CustomFieldUIVisibleChoices.ALWAYS,
             "ui_editable": CustomFieldUIEditableChoices.YES,
         }
+
+        cls.csv_data = (
+            "name,label,type,object_types,related_object_type,weight,search_weight,filter_logic,choice_set,validation_minimum,validation_maximum,validation_regex,ui_visible,ui_editable",
+            "field4,Field 4,text,ras.project,,100,1000,exact,,,,[a-z]{3},always,yes",
+            "field5,Field 5,integer,ras.project,,100,2000,exact,,1,100,,always,yes",
+            "field6,Field 6,select,ras.project,,100,3000,exact,Choice Set 1,,,,always,yes",
+            "field7,Field 7,object,ras.project,ras.allocation,100,4000,exact,,,,,always,yes",
+        )
+
+        cls.csv_update_data = (
+            "id,label",
+            f"{custom_fields[0].pk},New label 1",
+            f"{custom_fields[1].pk},New label 2",
+            f"{custom_fields[2].pk},New label 3",
+        )
