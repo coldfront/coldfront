@@ -233,3 +233,20 @@ class BulkImportForm(HorizontalFormMixin, ChangelogMessageMixin, forms.Form):
             raise forms.ValidationError({self.data_field: f"Invalid YAML data: {err}"})
 
         return records
+
+
+class BulkDeleteForm(ConfirmationForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=None,
+        widget=forms.MultipleHiddenInput,
+    )
+    changelog_message = forms.CharField(required=False, max_length=200)
+
+    def __init__(self, model, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["pk"].queryset = model.objects.all()
+
+        # Hide the changelog_message filed if the model doesn't support change logging
+        if model is None or not issubclass(model, ChangeLoggingMixin):
+            self.fields.pop("changelog_message")

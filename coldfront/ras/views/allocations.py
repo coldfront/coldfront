@@ -52,6 +52,13 @@ class AllocationBulkImportView(generic.BulkImportView):
     model_form = forms.AllocationImportForm
 
 
+@register_model_view(Allocation, "bulk_delete", path="delete", detail=False)
+class AllocationBulkDeleteView(generic.BulkDeleteView):
+    queryset = Allocation.objects.all()
+    filterset = filtersets.AllocationFilterSet
+    table = tables.AllocationTable
+
+
 #
 # Allocation types
 #
@@ -93,3 +100,10 @@ class AllocationTypeDeleteView(generic.ObjectDeleteView):
 class AllocationTypeBulkImportView(generic.BulkImportView):
     queryset = AllocationType.objects.all()
     model_form = forms.AllocationTypeImportForm
+
+
+@register_model_view(AllocationType, "bulk_delete", path="delete", detail=False)
+class AllocationTypeBulkDeleteView(generic.BulkDeleteView):
+    queryset = AllocationType.objects.all()
+    filterset = filtersets.AllocationTypeFilterSet
+    table = tables.AllocationTypeTable

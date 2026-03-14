@@ -679,6 +679,91 @@ class ViewTestCases:
             self.assertHttpStatus(self.client.post(self._get_url("bulk_import"), data), 302)
             self.assertEqual(self._get_queryset().count(), initial_count + expected_new_objects)
 
+    class BulkDeleteObjectsViewTestCase(ModelViewTestCase):
+        """
+        Delete multiple instances.
+        """
+
+        def test_bulk_delete_objects_without_permission(self):
+            pk_list = self._get_queryset().values_list("pk", flat=True)[:3]
+            data = {
+                "pk": pk_list,
+                "confirm": True,
+                "_confirm": True,  # Form button
+            }
+
+            # Test GET without permission
+            with disable_warnings("django.request"):
+                self.assertHttpStatus(self.client.get(self._get_url("bulk_delete")), 403)
+
+            # Try POST without permission
+            with disable_warnings("django.request"):
+                self.assertHttpStatus(self.client.post(self._get_url("bulk_delete"), data), 403)
+
+        def test_bulk_delete_objects_with_permission(self):
+            pk_list = list(self._get_queryset().values_list("pk", flat=True))[:3]
+            data = {
+                "pk": pk_list,
+                "confirm": True,
+                "_confirm": True,  # Form button
+            }
+
+            # If supported, add a changelog message
+            if issubclass(self.model, ChangeLoggingMixin):
+                data["changelog_message"] = get_random_string(10)
+
+            # Assign unconstrained permission
+            obj_perm = ObjectPermission(name="Test permission", actions=["delete"])
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Try POST with model-level permission
+            response = self.client.post(self._get_url("bulk_delete"), data)
+            self.assertHttpStatus(response, 302)
+            self.assertFalse(self._get_queryset().filter(pk__in=pk_list).exists())
+
+            # Verify ObjectChange creation
+            if issubclass(self.model, ChangeLoggingMixin):
+                objectchanges = ObjectChange.objects.filter(
+                    changed_object_type=ContentType.objects.get_for_model(self.model), changed_object_id__in=pk_list
+                )
+                self.assertEqual(len(objectchanges), len(pk_list))
+                for oc in objectchanges:
+                    self.assertEqual(oc.action, ObjectChangeActionChoices.ACTION_DELETE)
+                    self.assertEqual(oc.message, data["changelog_message"])
+
+        def test_bulk_delete_objects_with_constrained_permission(self):
+            pk_list = self._get_queryset().values_list("pk", flat=True)
+            data = {
+                "pk": pk_list,
+                "confirm": True,
+                "_confirm": True,  # Form button
+            }
+
+            # Assign constrained permission
+            obj_perm = ObjectPermission(
+                name="Test permission",
+                constraints={"pk": 0},  # Dummy permission to deny all
+                actions=["delete"],
+            )
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Attempt to bulk delete non-permitted objects
+            initial_count = self._get_queryset().count()
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_delete"), data), 302)
+            self.assertEqual(self._get_queryset().count(), initial_count)
+
+            # Update permission constraints
+            obj_perm.constraints = {"pk__gt": 0}  # Dummy permission to allow all
+            obj_perm.save()
+
+            # Bulk delete permitted objects
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_delete"), data), 302)
+            self.assertEqual(self._get_queryset().count(), 0)
+
     class PrimaryObjectViewTestCase(
         GetObjectViewTestCase,
         GetObjectChangelogViewTestCase,
@@ -687,6 +772,7 @@ class ViewTestCases:
         DeleteObjectViewTestCase,
         ListObjectsViewTestCase,
         BulkImportObjectsViewTestCase,
+        BulkDeleteObjectsViewTestCase,
     ):
         """
         TestCase suitable for all primary objects
@@ -702,6 +788,7 @@ class ViewTestCases:
         DeleteObjectViewTestCase,
         ListObjectsViewTestCase,
         BulkImportObjectsViewTestCase,
+        BulkDeleteObjectsViewTestCase,
     ):
         """
         TestCase suitable for all organizational objects

@@ -7,5 +7,9 @@
            class="btn btn-primary">
             <i class="fa-solid fa-plus" aria-hidden="true"></i> {% trans "Add User" %}
         </a>
+        <a href="{% url 'ras:projectuser_bulk_import' %}?project={{ object.pk }}&return_url={% url 'ras:project_users' pk=object.pk %}"
+           class="btn btn-success">
+            <i class="fa-solid fa-upload" aria-hidden="true"></i> {% trans "Import Users" %}
+        </a>
     {% endif %}
 {% endblock extra_controls %}
