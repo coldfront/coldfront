@@ -102,9 +102,11 @@ Context:
           {# Form buttons #}
           <div class="btn-list d-print-none">
             {% block bulk_buttons %}
+              {% if table.rows %}
               <div class="bulk-action-buttons">
                 {% action_buttons actions model multi=True %}
               </div>
+              {% endif %}
             {% endblock %}
           </div>
           {# /Form buttons #}

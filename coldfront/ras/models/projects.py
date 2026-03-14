@@ -66,6 +66,7 @@ class ProjectUser(ColdFrontModel):
 
     class Meta:
         ordering = ["id"]
+        unique_together = ("user", "project")
         verbose_name = _("project user")
         verbose_name_plural = _("project users")
 

@@ -261,14 +261,14 @@ class ObjectType(ContentType):
     @staticmethod
     def identifier_string(object_type):
         """
-        Return a "raw" ObjectType identifier string suitable for bulk import/export (e.g. "dcim.site").
+        Return a "raw" ObjectType identifier string suitable for bulk import/export (e.g. "ras.project").
         """
         return f"{object_type.app_label}.{object_type.model}"
 
     @staticmethod
     def display_name(object_type, include_app=True):
         """
-        Return a human-friendly ObjectType name (e.g. "DCIM > Site").
+        Return a human-friendly ObjectType name (e.g. "RAS > Project").
         """
         try:
             meta = object_type.model_class()._meta

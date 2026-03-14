@@ -23,12 +23,6 @@ from .fields import (
 )
 
 __all__ = (
-    "QueryField",
-    "SlugField",
-    "TagFilterField",
-    "JSONField",
-    "ContentTypeChoiceField",
-    "ContentTypeMultipleChoiceField",
     "CSVChoiceField",
     "CSVContentTypeField",
     "CSVModelChoiceField",
@@ -36,4 +30,10 @@ __all__ = (
     "CSVMultipleChoiceField",
     "CSVMultipleContentTypeField",
     "CSVTypedChoiceField",
+    "ContentTypeChoiceField",
+    "ContentTypeMultipleChoiceField",
+    "JSONField",
+    "QueryField",
+    "SlugField",
+    "TagFilterField",
 )

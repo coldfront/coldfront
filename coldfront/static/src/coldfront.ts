@@ -7,7 +7,7 @@ import 'bootstrap';
 import 'htmx.org';
 import { initDateSelector } from './dateSelector';
 import { initForm } from './form';
-import { initColorSelects, initSelects } from './selectStatic';
+import { initSelects } from './select';
 import { initQuickSearch } from './search';
 import { initHtmx } from './htmx';
 import { initTableConfig } from './tableConfig';
@@ -24,7 +24,6 @@ function initDocument(): void {
     initDateSelector,
     initForm,
     initSelects,
-    initColorSelects,
     initQuickSearch,
     initHtmx,
     initNavLinks,

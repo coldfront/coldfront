@@ -32,6 +32,10 @@ Context:
   </ul>
 {% endblock tabs %}
 
+{% block alerts %}
+<c-alert.messages :form="form" only />
+{% endblock %}
+
 {% block content %}
 
   {# Data Import Form #}

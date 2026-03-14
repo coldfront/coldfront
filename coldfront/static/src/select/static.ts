@@ -6,10 +6,10 @@
 import TomSelect from 'tom-select';
 import type { TomOption } from 'tom-select/dist/esm/types/core.js';
 import { escape_html } from 'tom-select/dist/esm/utils.js';
-import { getElementsByQueryGenerator } from './util';
+import { getElementsByQueryGenerator } from '../util';
 
 // Initialize selection fields
-export function initSelects(): void {
+export function initStaticSelects(): void {
   for (const element of getElementsByQueryGenerator(
     'select:not(.tomselected):not(.no-ts):not([size]):not(.color-select):not(.flatpickr-monthDropdown-months)'
   )) {

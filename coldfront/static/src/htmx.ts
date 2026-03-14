@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { initBootstrap } from './bs';
-import { initColorSelects, initSelects } from './selectStatic';
+import { initSelects } from './select';
 
 function initDepedencies(): void {
   initBootstrap();
-  initColorSelects();
   initSelects();
 }
 
