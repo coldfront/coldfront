@@ -1,0 +1,36 @@
+// SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+// SPDX-FileCopyrightText: (C) ColdFront Authors
+//
+// SPDX-License-Identifier: Apache-2.0
+
+interface PluginConfig {
+  [plugin: string]: object;
+}
+
+export function getPlugins(element: HTMLSelectElement): object {
+  const plugins: PluginConfig = {};
+
+  // Enable "clear all" button for non-required fields
+  if (!element.required) {
+    plugins.clear_button = {
+      html: (data: Record<string, string>) =>
+        `<i class="fa-solid fa-circle-xmark ${data.className}" title="${data.title}"></i>`,
+    };
+  }
+
+  // Enable individual "remove" buttons for items on multi-select fields
+  if (element.hasAttribute('multiple')) {
+    plugins.remove_button = {
+      title: 'Remove',
+    };
+  }
+
+  // Enable drag-and-drop reordering of items on multi-select fields
+  if (element.hasAttribute('multiple')) {
+    plugins.drag_drop = {};
+  }
+
+  return {
+    plugins: plugins,
+  };
+}

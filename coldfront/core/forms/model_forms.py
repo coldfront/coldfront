@@ -11,7 +11,13 @@ from django_jsonform.models.fields import JSONFormField
 
 from coldfront.core.choices import CustomFieldTypeChoices
 from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, Tag
-from coldfront.forms.fields import ContentTypeChoiceField, ContentTypeMultipleChoiceField, JSONField, SlugField
+from coldfront.forms.fields import (
+    ContentTypeChoiceField,
+    ContentTypeMultipleChoiceField,
+    DynamicModelChoiceField,
+    JSONField,
+    SlugField,
+)
 from coldfront.forms.layouts import Slug
 from coldfront.forms.mixins import ChangelogMessageMixin, HorizontalFormMixin
 from coldfront.utils.forms import get_field_value
@@ -20,7 +26,9 @@ from coldfront.utils.forms import get_field_value
 class TagForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
     slug = SlugField()
     object_types = ContentTypeMultipleChoiceField(
-        label=_("Object types"), queryset=ObjectType.objects.with_feature("tags"), required=False
+        label=_("Object types"),
+        queryset=ObjectType.objects.with_feature("tags"),
+        required=False,
     )
 
     class Meta:
@@ -82,16 +90,24 @@ class CustomFieldForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelFor
         queryset=ObjectType.objects.with_feature("custom_fields"),
         help_text=_("The type(s) of object that have this custom field"),
     )
-    default = JSONField(label=_("Default value"), required=False)
+    default = JSONField(
+        label=_("Default value"),
+        required=False,
+    )
     related_object_type = ContentTypeChoiceField(
         label=_("Related object type"),
         queryset=ObjectType.objects.public(),
         help_text=_("Type of the related object (for object/multi-object fields only)"),
     )
     related_object_filter = JSONField(
-        label=_("Related object filter"), required=False, help_text=_("Specify query parameters as a JSON object.")
+        label=_("Related object filter"),
+        required=False,
+        help_text=_("Specify query parameters as a JSON object."),
     )
-    choice_set = forms.ModelChoiceField(queryset=CustomFieldChoiceSet.objects.all(), required=False)
+    choice_set = DynamicModelChoiceField(
+        queryset=CustomFieldChoiceSet.objects.all(),
+        required=False,
+    )
 
     comments = forms.CharField(required=False)
 

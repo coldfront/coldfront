@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django.forms",
 ]
 
 INSTALLED_APPS += [
@@ -174,6 +175,9 @@ if len(SITE_TEMPLATES) > 0:
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+# This allows us to override Django's stock form widget templates
+FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
 
 SETTINGS_EXPORT = []
 

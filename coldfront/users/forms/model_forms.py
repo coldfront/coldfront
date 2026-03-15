@@ -12,8 +12,11 @@ from django.core.exceptions import FieldError
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.models import ObjectType
-from coldfront.forms.fields import JSONField
-from coldfront.forms.fields.content_types import ContentTypeMultipleChoiceField
+from coldfront.forms.fields import (
+    ContentTypeMultipleChoiceField,
+    DynamicModelMultipleChoiceField,
+    JSONField,
+)
 from coldfront.forms.layouts import CopyClipboard, DateTime
 from coldfront.forms.mixins import HorizontalFormMixin
 from coldfront.users.constants import CONSTRAINT_TOKEN_USER, OBJECTPERMISSION_OBJECT_TYPES
@@ -33,12 +36,12 @@ class UserForm(HorizontalFormMixin, forms.ModelForm):
         required=True,
         help_text=_("Enter the same password as before, for verification."),
     )
-    groups = forms.ModelMultipleChoiceField(
+    groups = DynamicModelMultipleChoiceField(
         label=_("Groups"),
         required=False,
         queryset=Group.objects.all(),
     )
-    object_permissions = forms.ModelMultipleChoiceField(
+    object_permissions = DynamicModelMultipleChoiceField(
         required=False,
         label=_("Permissions"),
         queryset=ObjectPermission.objects.all(),
@@ -112,9 +115,15 @@ class UserForm(HorizontalFormMixin, forms.ModelForm):
 
 
 class GroupForm(HorizontalFormMixin, forms.ModelForm):
-    users = forms.ModelMultipleChoiceField(label=_("Users"), required=False, queryset=User.objects.all())
-    object_permissions = forms.ModelMultipleChoiceField(
-        required=False, label=_("Permissions"), queryset=ObjectPermission.objects.all()
+    users = DynamicModelMultipleChoiceField(
+        label=_("Users"),
+        required=False,
+        queryset=User.objects.all(),
+    )
+    object_permissions = DynamicModelMultipleChoiceField(
+        required=False,
+        label=_("Permissions"),
+        queryset=ObjectPermission.objects.all(),
     )
 
     fieldsets = (
@@ -173,8 +182,16 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
         required=False,
         help_text=_("JSON array of actions granted in addition to those listed above"),
     )
-    users = forms.ModelMultipleChoiceField(label=_("Users"), required=False, queryset=User.objects.all())
-    groups = forms.ModelMultipleChoiceField(label=_("Groups"), required=False, queryset=Group.objects.all())
+    users = DynamicModelMultipleChoiceField(
+        label=_("Users"),
+        required=False,
+        queryset=User.objects.all(),
+    )
+    groups = DynamicModelMultipleChoiceField(
+        label=_("Groups"),
+        required=False,
+        queryset=Group.objects.all(),
+    )
     constraints = JSONField(
         required=False,
         label=_("Constraints"),
