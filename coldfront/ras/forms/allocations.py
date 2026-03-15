@@ -7,7 +7,12 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import OrganizationalModelForm, PrimaryModelForm, PrimaryModelImportForm
-from coldfront.forms.fields import CSVModelChoiceField, CSVModelMultipleChoiceField
+from coldfront.forms.fields import (
+    CSVModelChoiceField,
+    CSVModelMultipleChoiceField,
+    DynamicModelChoiceField,
+    DynamicModelMultipleChoiceField,
+)
 from coldfront.forms.layouts import DateTime
 from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
 from coldfront.forms.widgets import HTMXSelect
@@ -22,6 +27,21 @@ class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
         label=_("Allocation Type"),
         required=False,
         widget=HTMXSelect(),
+    )
+    project = DynamicModelChoiceField(
+        label=_("Project"),
+        queryset=Project.objects.all(),
+        required=True,
+    )
+    resources = DynamicModelMultipleChoiceField(
+        label=_("Resource"),
+        queryset=Resource.objects.all(),
+        required=True,
+    )
+    owner = DynamicModelChoiceField(
+        label=_("User"),
+        queryset=User.objects.all(),
+        required=True,
     )
 
     profile_field_name = "allocation_type"

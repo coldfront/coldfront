@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import NestedGroupModelForm
-from coldfront.forms.fields import SlugField
+from coldfront.forms.fields import DynamicModelChoiceField, SlugField
 from coldfront.forms.layouts import Slug
 from coldfront.tenancy.models import Tenant, TenantGroup
 
@@ -15,6 +15,12 @@ __all__ = ("TenantGroupForm", "TenantForm")
 
 
 class TenantGroupForm(NestedGroupModelForm):
+    parent = DynamicModelChoiceField(
+        label=_("Parent"),
+        queryset=TenantGroup.objects.all(),
+        required=False,
+    )
+
     class Meta:
         model = TenantGroup
         fields = [
@@ -39,6 +45,11 @@ class TenantGroupForm(NestedGroupModelForm):
 
 class TenantForm(NestedGroupModelForm):
     slug = SlugField()
+    group = DynamicModelChoiceField(
+        label=_("Group"),
+        queryset=TenantGroup.objects.all(),
+        required=False,
+    )
 
     class Meta:
         model = Tenant
@@ -63,12 +74,12 @@ class TenantForm(NestedGroupModelForm):
 
 
 class TenancyForm(forms.Form):
-    tenant_group = forms.ModelChoiceField(
-        label=_("Tenant group"),
+    tenant_group = DynamicModelChoiceField(
+        label=_("Tenant Group"),
         queryset=TenantGroup.objects.all(),
         required=False,
     )
-    tenant = forms.ModelChoiceField(
+    tenant = DynamicModelChoiceField(
         label=_("Tenant"),
         queryset=Tenant.objects.all(),
         required=False,

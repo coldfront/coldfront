@@ -11,7 +11,7 @@ import { getElementsByQueryGenerator } from '../util';
 // Initialize selection fields
 export function initStaticSelects(): void {
   for (const element of getElementsByQueryGenerator(
-    'select:not(.tomselected):not(.no-ts):not([size]):not(.color-select):not(.flatpickr-monthDropdown-months)'
+    'select:not(.tomselected):not(.no-ts):not([size]):not(.api-select):not(.color-select):not(.flatpickr-monthDropdown-months)'
   )) {
     const select = element as HTMLSelectElement;
     new TomSelect(select, {
