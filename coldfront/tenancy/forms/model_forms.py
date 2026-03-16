@@ -65,7 +65,7 @@ class TenantForm(NestedGroupModelForm):
         Fieldset(
             "Tenant",
             "name",
-            Slug("slug"),
+            Slug(),
             "group",
             "description",
             "tags",
@@ -83,4 +83,5 @@ class TenancyForm(forms.Form):
         label=_("Tenant"),
         queryset=Tenant.objects.all(),
         required=False,
+        quick_add=True,
     )

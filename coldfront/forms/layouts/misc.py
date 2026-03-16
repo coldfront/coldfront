@@ -23,13 +23,13 @@ class Time(Field):
 
 
 class Slug(AppendedText):
-    def __init__(self, name="slug", slug_source="name"):
+    def __init__(self, name="slug"):
         super().__init__(
             name,
             format_html(
-                '<button id="reslug" type="button" title="Regenerate Slug" class="btn"> <i class="fa-solid fa-rotate"></i></button>'
+                '<button type="button" title="Regenerate Slug" class="btn reslug"> <i class="fa-solid fa-rotate"></i></button>'
             ),
-            slug_source=slug_source,
+            css_class="slug-field",
         )
 
 

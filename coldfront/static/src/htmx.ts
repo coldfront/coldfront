@@ -3,13 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { initBootstrap } from './bs';
+import { initButtons } from './buttons';
+import { initClipboard } from './clipboard';
+import { initQuickAdd } from './quickAdd';
 import { initSelects } from './select';
 import { initObjectSelector } from './objectSelector';
 
 function initDepedencies(): void {
   initBootstrap();
   initSelects();
+  initButtons();
   initObjectSelector();
+  initClipboard();
+  initQuickAdd();
 }
 
 /**

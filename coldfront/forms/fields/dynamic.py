@@ -192,7 +192,7 @@ class DynamicModelChoiceMixin:
 
 class DynamicModelChoiceField(DynamicModelChoiceMixin, forms.ModelChoiceField):
     """
-    Dynamic selection field for a single object, backed by NetBox's REST API.
+    Dynamic selection field for a single object, backed by ColdFront's REST API.
     """
 
     def clean(self, value):
