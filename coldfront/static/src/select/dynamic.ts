@@ -15,7 +15,9 @@ const MAX_OPTIONS = 100;
 
 // Render the HTML for a dropdown option
 function renderOption(data: TomOption, escape: typeof escape_html) {
-  let html = '<div>';
+  let html = '<div class="row">';
+
+  html = `${html}<div class="col">`;
 
   // If the option has a `depth` property, indent its label
   if (typeof data.depth === 'number' && data.depth > 0) {
@@ -32,6 +34,14 @@ function renderOption(data: TomOption, escape: typeof escape_html) {
   if (data['description']) {
     html = `${html}<br /><small class="text-secondary">${escape(data['description'])}</small>`;
   }
+  html = `${html}</div>`;
+
+  if (data['extra_columns']) {
+    for (const col of data['extra_columns']) {
+      html = `${html}<div class="col">${escape(col)}</div>`;
+    }
+  }
+
   html = `${html}</div>`;
 
   return html;

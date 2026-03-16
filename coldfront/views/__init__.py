@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .utils import ViewTab, get_action_url, get_viewname, handle_protectederror
-from .views import HomeView
+from .views import HomeView, ObjectSelectorView
 
 __all__ = (
     "get_action_url",
@@ -11,4 +11,5 @@ __all__ = (
     "ViewTab",
     "handle_protectederror",
     "HomeView",
+    "ObjectSelectorView",
 )

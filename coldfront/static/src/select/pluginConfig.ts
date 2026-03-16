@@ -30,6 +30,26 @@ export function getPlugins(element: HTMLSelectElement): object {
     plugins.drag_drop = {};
   }
 
+  if (element.hasAttribute('ts-extra-columns-field')) {
+    const title = (element.getAttribute('ts-title-field') as string) || '';
+    const headers = title.split(',');
+    plugins.dropdown_header = {
+      title: headers.shift(),
+      html: function (data: Record<string, string>) {
+        let html = `<div class="${data.headerClass}">`;
+        html = `${html}<div class="row ${data.titleRowClass}">`;
+        html = `${html}<div class="col"><span class="${data.labelClass}">${data.title}</span></div>`;
+
+        for (const col of headers) {
+          html = `${html}<div class="col"><span class="${data.labelClass}">${col}</span></div>`;
+        }
+        html = `${html}</div>`;
+        html = `${html}</div>`;
+        return html;
+      },
+    };
+  }
+
   return {
     plugins: plugins,
   };

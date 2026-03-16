@@ -4,10 +4,12 @@
 
 import { initBootstrap } from './bs';
 import { initSelects } from './select';
+import { initObjectSelector } from './objectSelector';
 
 function initDepedencies(): void {
   initBootstrap();
   initSelects();
+  initObjectSelector();
 }
 
 /**

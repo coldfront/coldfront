@@ -22,7 +22,7 @@ class AppTest(APITestCase):
 
 class UserTest(APIViewTestCases.APIViewTestCase):
     model = User
-    brief_fields = ["display", "id", "url", "username"]
+    brief_fields = ["display", "email", "first_name", "id", "last_name", "url", "username"]
     validation_excluded_fields = ["password"]
     bulk_update_data = {
         "email": "test@example.com",

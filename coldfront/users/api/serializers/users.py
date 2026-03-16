@@ -34,7 +34,11 @@ class GroupSerializer(ValidatedModelSerializer):
 
 class UserSerializer(ValidatedModelSerializer):
     groups = SerializedPKRelatedField(
-        queryset=Group.objects.all(), serializer=GroupSerializer, nested=True, required=False, many=True
+        queryset=Group.objects.all(),
+        serializer=GroupSerializer,
+        nested=True,
+        required=False,
+        many=True,
     )
     permissions = SerializedPKRelatedField(
         source="object_permissions",
@@ -63,7 +67,7 @@ class UserSerializer(ValidatedModelSerializer):
             "groups",
             "permissions",
         )
-        brief_fields = ("id", "url", "display", "username")
+        brief_fields = ("id", "url", "display", "username", "first_name", "last_name", "email")
         extra_kwargs = {"password": {"write_only": True}}
 
     def validate(self, data):

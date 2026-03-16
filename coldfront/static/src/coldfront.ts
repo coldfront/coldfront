@@ -16,6 +16,7 @@ import { initBootstrap } from './bs';
 import { initNavLinks } from './sidenav';
 import { initTheme } from './theme';
 import { initClipboard } from './clipboard';
+import { initObjectSelector } from './objectSelector';
 
 function initDocument(): void {
   for (const init of [
@@ -30,6 +31,7 @@ function initDocument(): void {
     initButtons,
     initTableConfig,
     initClipboard,
+    initObjectSelector,
   ]) {
     init();
   }
