@@ -17,6 +17,7 @@ import { initNavLinks } from './sidenav';
 import { initTheme } from './theme';
 import { initClipboard } from './clipboard';
 import { initObjectSelector } from './objectSelector';
+import { initQuickAdd } from './quickAdd';
 
 function initDocument(): void {
   for (const init of [
@@ -32,6 +33,7 @@ function initDocument(): void {
     initTableConfig,
     initClipboard,
     initObjectSelector,
+    initQuickAdd,
   ]) {
     init();
   }

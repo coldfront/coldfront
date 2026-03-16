@@ -25,7 +25,7 @@ class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
     allocation_type = forms.ModelChoiceField(
         queryset=AllocationType.objects.all(),
         label=_("Allocation Type"),
-        required=False,
+        required=True,
         widget=HTMXSelect(),
     )
     project = DynamicModelChoiceField(

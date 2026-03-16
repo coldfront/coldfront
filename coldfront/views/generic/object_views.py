@@ -172,7 +172,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
         # If the form is being displayed within a "quick add" widget,
         # use the appropriate template
         if request.GET.get("_quickadd"):
-            return render(request, "htmx/quick_add.html", context)
+            return render(request, "generic/quick_add.html", context)
 
         # If this is an HTMX request, return only the rendered form HTML
         if htmx_partial(request):
@@ -239,7 +239,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
                 if "_quickadd" in request.POST:
                     return render(
                         request,
-                        "htmx/quick_add_created.html",
+                        "generic/quick_add_created.html",
                         {
                             "object": obj,
                         },
@@ -290,7 +290,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
 
         # Form was submitted via a "quick add" widget
         if "_quickadd" in request.POST:
-            return render(request, "htmx/quick_add.html", context)
+            return render(request, "generic/quick_add.html", context)
 
         return render(request, self.template_name, context)
 

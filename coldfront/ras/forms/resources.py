@@ -44,7 +44,7 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
     resource_type = forms.ModelChoiceField(
         queryset=ResourceType.objects.all(),
         label=_("Resource Type"),
-        required=False,
+        required=True,
         widget=HTMXSelect(),
     )
 

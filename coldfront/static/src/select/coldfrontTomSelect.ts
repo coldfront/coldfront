@@ -359,7 +359,7 @@ export class ColdFrontTomSelect extends TomSelect {
         );
       }
       // Subscribe to changes dispatched by this state manager.
-      this.input.addEventListener(`netbox.select.onload.${dep}`, (event) =>
+      this.input.addEventListener(`coldfront.select.onload.${dep}`, (event) =>
         this.handleEvent(event)
       );
     }

@@ -25,12 +25,14 @@ function slugify(slug: string, chars: number): string {
  * For any slug fields, add event listeners to handle automatically generating slug values.
  */
 export function initReslug(): void {
-  for (const element of getElementsByQueryGenerator('#reslug')) {
+  for (const element of getElementsByQueryGenerator('button.reslug')) {
     const slugButton = element as HTMLButtonElement;
     const form = slugButton.form;
     if (form == null) continue;
 
-    const slugField = form.querySelector('#id_slug') as HTMLInputElement;
+    const slugField = form.querySelector(
+      'input.slug-field'
+    ) as HTMLInputElement;
     if (slugField == null) continue;
 
     const sourceId = slugField.getAttribute('slug-source');

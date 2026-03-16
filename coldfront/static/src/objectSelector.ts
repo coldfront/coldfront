@@ -22,12 +22,12 @@ function handleSelection(link: HTMLAnchorElement): void {
   const label = link.getAttribute('data-label');
   const value = link.getAttribute('data-value');
 
-  //@ts-expect-error 2551
+  //@ts-expect-error tomselect added on init
   target.tomselect.addOption({
     id: value,
     display: label,
   });
-  //@ts-expect-error 2551
+  //@ts-expect-error tomselect added on init
   target.tomselect.addItem(value);
 }
 
