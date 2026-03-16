@@ -45,6 +45,12 @@ class ProjectUserForm(PrimaryModelForm):
         label=_("User"),
         queryset=User.objects.all(),
         required=True,
+        selector=True,
+        context={
+            "label": "username",
+            "title": "Username,First Name,Last Name,Email",
+            "extra-columns": "first_name,last_name,email",
+        },
     )
 
     class Meta:

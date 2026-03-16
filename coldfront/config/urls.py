@@ -22,7 +22,7 @@ from coldfront.account.views import HtmxLogoutView
 from coldfront.api.views import APIRootView, AuthenticationCheckView, StatusView
 from coldfront.config.env import ENV, PROJECT_ROOT
 from coldfront.plugins.urls import plugin_api_patterns, plugin_patterns
-from coldfront.views import HomeView
+from coldfront.views import HomeView, ObjectSelectorView
 
 admin.site.site_header = "ColdFront Administration"
 admin.site.site_title = "ColdFront Administration"
@@ -40,6 +40,8 @@ urlpatterns = [
     ),
     path("logout/", HtmxLogoutView.as_view(), name="logout"),
     # User profile views
+    # HTMX views
+    path("htmx/object-selector/", ObjectSelectorView.as_view(), name="htmx_object_selector"),
     path("user/", include("coldfront.account.urls")),
     # ColdFront core apps
     path("users/", include("coldfront.users.urls")),

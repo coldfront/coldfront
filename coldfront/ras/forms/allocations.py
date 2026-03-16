@@ -37,6 +37,7 @@ class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
         label=_("Resource"),
         queryset=Resource.objects.all(),
         required=True,
+        selector=True,
     )
     owner = DynamicModelChoiceField(
         label=_("User"),
