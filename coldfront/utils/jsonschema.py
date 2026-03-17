@@ -67,6 +67,7 @@ class JSONSchemaProperty:
     type: PropertyTypeEnum = PropertyTypeEnum.STRING.value
     title: str | None = None
     description: str | None = None
+    requiredAction: str | None = None
     default: Any = None
     enum: list | None = None
 

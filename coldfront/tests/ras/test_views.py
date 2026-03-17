@@ -4,6 +4,7 @@
 
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
+from coldfront.tenancy.models import Tenant
 from coldfront.users.models import User
 from coldfront.utils.testing import ViewTestCases, create_tags
 
@@ -52,6 +53,34 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
             f"{projects[1].pk},Project 8,Fifth project8",
             f"{projects[2].pk},Project 9,Sixth project9",
         )
+
+    def test_tenant_validation_enforced(self):
+        """
+        Test that editing a tenant on a project is restricted.
+        """
+        tenant = Tenant.objects.create(name="Tenant 1")
+
+        self.add_permissions("ras.add_project")
+        data = {
+            "name": "Project X",
+            "description": "A new project",
+            "status": ProjectStatusChoices.STATUS_NEW,
+            "tenant": tenant.pk,
+        }
+
+        request = {
+            "path": self._get_url("add"),
+            "data": data,
+        }
+
+        # No perms
+        response = self.client.post(**request)
+        self.assertHttpStatus(response, 200)
+
+        # With perms
+        self.add_permissions("tenancy.view_tenant")
+        response = self.client.post(**request)
+        self.assertHttpStatus(response, 302)
 
 
 class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):

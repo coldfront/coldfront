@@ -82,6 +82,16 @@ class ObjectPermission(models.Model):
     def can_delete(self):
         return "delete" in self.actions
 
+    @property
+    def additional_actions(self):
+        actions = []
+        for a in self.actions:
+            if a in ["view", "add", "change", "delete"]:
+                continue
+            actions.append(a)
+
+        return actions
+
     def list_constraints(self):
         """
         Return all constraint sets as a list (even if only a single set is defined).

@@ -5,10 +5,15 @@
 from crispy_forms.layout import Fieldset
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.forms import OrganizationalModelForm, PrimaryModelForm, PrimaryModelImportForm
+from coldfront.forms import (
+    OrganizationalModelForm,
+    PrimaryModelForm,
+    PrimaryModelImportForm,
+    TenancyForm,
+    TenancyImportForm,
+)
 from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField
 from coldfront.ras.models import Project, ProjectUser
-from coldfront.tenancy.forms import TenancyForm, TenancyImportForm
 from coldfront.users.models import User
 
 
@@ -30,12 +35,6 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
             "name",
             "status",
             "description",
-            "tags",
-        ),
-        Fieldset(
-            _("Tenant"),
-            "tenant_group",
-            "tenant",
         ),
     )
 

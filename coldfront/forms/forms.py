@@ -13,10 +13,11 @@ from django.utils.translation import gettext as _
 
 from coldfront.constants import CSV_DELIMITERS
 from coldfront.core.choices import CSVDelimiterChoices, ImportFormatChoices, ImportMethodChoices
-from coldfront.forms.fields import QueryField
+from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField, QueryField
 from coldfront.forms.mixins import ChangelogMessageMixin, HorizontalFormMixin
 from coldfront.forms.utils import parse_csv
 from coldfront.models.features import ChangeLoggingMixin
+from coldfront.tenancy.models import Tenant, TenantGroup
 
 
 class ConfirmationForm(forms.Form):
@@ -250,3 +251,35 @@ class BulkDeleteForm(ConfirmationForm):
         # Hide the changelog_message filed if the model doesn't support change logging
         if model is None or not issubclass(model, ChangeLoggingMixin):
             self.fields.pop("changelog_message")
+
+
+class TenancyForm(forms.Form):
+    tenant_group = DynamicModelChoiceField(
+        label=_("Tenant Group"),
+        queryset=TenantGroup.objects.all(),
+        required=False,
+    )
+    tenant = DynamicModelChoiceField(
+        label=_("Tenant"),
+        queryset=Tenant.objects.all(),
+        required=False,
+        quick_add=True,
+    )
+
+
+class TenancyImportForm(forms.Form):
+    tenant_group = CSVModelChoiceField(
+        label=_("Group"),
+        queryset=TenantGroup.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text=_("Assigned tenant group"),
+    )
+
+    tenant = CSVModelChoiceField(
+        label=_("Tenant"),
+        queryset=Tenant.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text=_("Assigned tenant"),
+    )

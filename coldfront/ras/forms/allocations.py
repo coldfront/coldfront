@@ -6,7 +6,13 @@ from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.forms import OrganizationalModelForm, PrimaryModelForm, PrimaryModelImportForm
+from coldfront.forms import (
+    OrganizationalModelForm,
+    PrimaryModelForm,
+    PrimaryModelImportForm,
+    TenancyForm,
+    TenancyImportForm,
+)
 from coldfront.forms.fields import (
     CSVModelChoiceField,
     CSVModelMultipleChoiceField,
@@ -17,7 +23,6 @@ from coldfront.forms.layouts import DateTime
 from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
 from coldfront.forms.widgets import HTMXSelect
 from coldfront.ras.models import Allocation, AllocationType, Project, Resource
-from coldfront.tenancy.forms import TenancyForm, TenancyImportForm
 from coldfront.users.models import User
 
 
@@ -77,17 +82,11 @@ class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
                 "status",
                 "description",
                 "justification",
-                "tags",
             ),
             Fieldset(
                 "Allocation Type",
                 "allocation_type",
                 *self.attr_fields,
-            ),
-            Fieldset(
-                _("Tenant"),
-                "tenant_group",
-                "tenant",
             ),
         ]
 
@@ -108,7 +107,6 @@ class AllocationTypeForm(AttributeProfileForm, OrganizationalModelForm):
             "name",
             "description",
             "schema",
-            "tags",
         ),
     )
 

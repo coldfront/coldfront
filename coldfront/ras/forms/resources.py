@@ -6,13 +6,18 @@ from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.forms import OrganizationalModelForm, PrimaryModelForm, PrimaryModelImportForm
+from coldfront.forms import (
+    OrganizationalModelForm,
+    PrimaryModelForm,
+    PrimaryModelImportForm,
+    TenancyForm,
+    TenancyImportForm,
+)
 from coldfront.forms.fields import CSVModelChoiceField
 from coldfront.forms.layouts import Slug
 from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
 from coldfront.forms.widgets import HTMXSelect
 from coldfront.ras.models import Resource, ResourceType
-from coldfront.tenancy.forms import TenancyForm, TenancyImportForm
 
 
 class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
@@ -35,7 +40,6 @@ class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
             "color",
             "description",
             "schema",
-            "tags",
         ),
     )
 
@@ -70,17 +74,11 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
                 "name",
                 "status",
                 "description",
-                "tags",
             ),
             Fieldset(
                 "Resource Type",
                 "resource_type",
                 *self.attr_fields,
-            ),
-            Fieldset(
-                _("Tenant"),
-                "tenant_group",
-                "tenant",
             ),
         ]
 

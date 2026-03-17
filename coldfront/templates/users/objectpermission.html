@@ -38,6 +38,11 @@
       <c-card.fields.item label="{% trans 'Delete' %}">
           <c-ui.checkmark :value="object.can_delete" />
       </c-card.fields.item>
+      {% for a in object.additional_actions %}
+          <c-card.fields.item label="{{ a }}">
+              <c-ui.checkmark :value="True" />
+          </c-card.fields.item>
+    {% endfor %}
     </c-card.fields>
 
     <c-card.code header="{% trans 'Constraints' %}">
