@@ -127,6 +127,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
+    def __str__(self):
+        if not self.get_full_name():
+            return self.username
+
+        return f"{self.username} ({self.get_full_name()})"
+
 
 class Group(models.Model):
     """

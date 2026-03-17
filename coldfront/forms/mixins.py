@@ -16,6 +16,7 @@ from django.utils.translation import gettext as _
 from coldfront.core.choices import CustomFieldUIEditableChoices
 from coldfront.core.models import CustomField, ObjectType, Tag
 from coldfront.forms.fields import JSONField
+from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.forms import get_field_value
 from coldfront.utils.jsonschema import JSONSchemaProperty
 
@@ -37,8 +38,14 @@ class HorizontalFormMixin:
         helper.form_class = "form-horizontal"
         helper.label_class = "col-lg-3 text-end"
         helper.field_class = "col-lg-6"
-        helper.layout = Layout(*self.fieldsets)
+        helper.layout = self.get_layout()
         return helper
+
+    def get_layout(self):
+        """
+        The crispy layout for the form. Sub-classes can override for custom layout
+        """
+        return Layout(*self.fieldsets)
 
 
 class TagsMixin(forms.Form):
@@ -151,12 +158,25 @@ class CustomFieldsMixin:
         return ObjectType.objects.get_for_model(self.model)
 
     def _get_custom_fields(self, content_type):
-        # Return only custom fields that are not hidden from the UI
-        return [
-            cf
-            for cf in CustomField.objects.get_for_model(content_type.model_class())
-            if cf.ui_editable != CustomFieldUIEditableChoices.HIDDEN
-        ]
+        fields = []
+
+        for cf in CustomField.objects.get_for_model(content_type.model_class()):
+            # Return only custom fields that are not hidden from the UI
+            if cf.ui_editable == CustomFieldUIEditableChoices.HIDDEN:
+                continue
+
+            if cf.required_action:
+                if not hasattr(self, "user"):
+                    continue
+
+                # Return custom fields only if the user has been granted the required action
+                perm = get_permission_for_model(content_type.model_class(), cf.required_action)
+                if not self.user.has_perms([perm]):
+                    continue
+
+            fields.append(cf)
+
+        return fields
 
     def _get_form_field(self, customfield):
         return customfield.to_form_field()
@@ -234,8 +254,7 @@ class CustomAttributesMixin(forms.Form):
 
         return self.profile_field_name
 
-    @staticmethod
-    def _get_attr_form_fields(profile):
+    def _get_attr_form_fields(self, profile):
         """
         Return a dictionary mapping of attribute names to form fields, suitable for extending
         the form per the selected profile.
@@ -249,6 +268,18 @@ class CustomAttributesMixin(forms.Form):
         attr_fields = {}
         for name, options in properties.items():
             prop = JSONSchemaProperty(**options)
+            if prop.requiredAction:
+                if not getattr(self, "user", None):
+                    continue
+
+                if not getattr(self._meta, "model", None):
+                    continue
+
+                content_type = ObjectType.objects.get_for_model(self._meta.model)
+                perm = get_permission_for_model(content_type.model_class(), prop.requiredAction)
+                if not self.user.has_perms([perm]):
+                    continue
+
             attr_fields[name] = prop.to_form_field(name, required=name in required_fields)
 
         return dict(sorted(attr_fields.items()))

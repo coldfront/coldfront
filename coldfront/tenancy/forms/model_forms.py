@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from crispy_forms.layout import Fieldset
-from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import NestedGroupModelForm
@@ -70,18 +69,4 @@ class TenantForm(NestedGroupModelForm):
             "description",
             "tags",
         ),
-    )
-
-
-class TenancyForm(forms.Form):
-    tenant_group = DynamicModelChoiceField(
-        label=_("Tenant Group"),
-        queryset=TenantGroup.objects.all(),
-        required=False,
-    )
-    tenant = DynamicModelChoiceField(
-        label=_("Tenant"),
-        queryset=Tenant.objects.all(),
-        required=False,
-        quick_add=True,
     )

@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import (
@@ -25,7 +24,13 @@ class TenantGroupImportForm(NestedGroupModelImportForm):
 
     class Meta:
         model = TenantGroup
-        fields = ("name", "slug", "parent", "description", "tags")
+        fields = (
+            "name",
+            "slug",
+            "parent",
+            "description",
+            "tags",
+        )
 
 
 class TenantImportForm(PrimaryModelImportForm):
@@ -40,22 +45,10 @@ class TenantImportForm(PrimaryModelImportForm):
 
     class Meta:
         model = Tenant
-        fields = ("name", "slug", "group", "description", "tags")
-
-
-class TenancyImportForm(forms.Form):
-    tenant_group = CSVModelChoiceField(
-        label=_("Group"),
-        queryset=TenantGroup.objects.all(),
-        required=False,
-        to_field_name="name",
-        help_text=_("Assigned tenant group"),
-    )
-
-    tenant = CSVModelChoiceField(
-        label=_("Tenant"),
-        queryset=Tenant.objects.all(),
-        required=False,
-        to_field_name="name",
-        help_text=_("Assigned tenant"),
-    )
+        fields = (
+            "name",
+            "slug",
+            "group",
+            "description",
+            "tags",
+        )

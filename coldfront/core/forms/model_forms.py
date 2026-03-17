@@ -130,6 +130,7 @@ class CustomFieldForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelFor
             "filter_logic",
             "ui_visible",
             "ui_editable",
+            "required_action",
             "weight",
             "is_cloneable",
         ),

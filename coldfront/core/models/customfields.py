@@ -337,6 +337,13 @@ class CustomField(CloningMixin, ChangeLoggedModel):
         verbose_name=_("UI editable"),
         help_text=_("Specifies whether the custom field value can be edited in the UI"),
     )
+    required_action = models.CharField(
+        max_length=50,
+        verbose_name=_("Required Action"),
+        help_text=_("Specifies the required action that must be granted to the user in order to edit the custom field"),
+        blank=True,
+        null=True,
+    )
     is_cloneable = models.BooleanField(
         default=False, verbose_name=_("is cloneable"), help_text=_("Replicate this value when cloning objects")
     )

@@ -83,6 +83,10 @@
       <c-card.fields.item label="{% trans 'UI Editable' %}">
           {{ object.get_ui_editable_display }}
       </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Required Action' %}">
+          {{ object.required_action|placeholder }}
+      </c-card.fields.item>
     </c-card.fields>
 
     <c-card.comments :object="object" />

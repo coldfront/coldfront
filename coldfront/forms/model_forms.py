@@ -3,12 +3,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from crispy_forms.layout import Fieldset, Layout
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext as _
 
 from coldfront.forms.fields import SlugField
 
+from .forms import TenancyForm
 from .mixins import ChangelogMessageMixin, CheckLastUpdatedMixin, CustomFieldsMixin, HorizontalFormMixin, TagsMixin
 
 
@@ -24,7 +26,12 @@ class ColdFrontModelForm(
     Base form for creating & editing ColdFront models.
     """
 
+    user = None
     fieldsets = ()
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
 
     def _get_content_type(self):
         return ContentType.objects.get_for_model(self._meta.model)
@@ -65,6 +72,47 @@ class ColdFrontModelForm(
                 self.instance.custom_field_data[key] = customfield.serialize(value)
 
         return super().clean()
+
+    def get_layout(self):
+        """
+        Override crispy layout to include Tenant and Tag fieldsets if user has view permissions.
+        """
+        if not self.user:
+            return Layout(*self.fieldsets)
+
+        fieldsets = [*self.fieldsets]
+
+        if (
+            issubclass(self.__class__, TenancyForm)
+            and self.user.has_perms(["tenancy.view_tenant"])
+            and ("tenant" in self._meta.fields or "tenant_group" in self._meta.fields)
+        ):
+            tenant_fields = []
+            if "tenant_group" in self._meta.fields:
+                tenant_fields.append("tenant_group")
+            if "tenant" in self._meta.fields:
+                tenant_fields.append("tenant")
+
+            fieldsets.append(
+                Fieldset(
+                    _("Tenant"),
+                    *tenant_fields,
+                )
+            )
+
+        if (
+            issubclass(self.__class__, TagsMixin)
+            and "tags" in self._meta.fields
+            and self.user.has_perms(["core.view_tag"])
+        ):
+            fieldsets.append(
+                Fieldset(
+                    _("Tags"),
+                    "tags",
+                )
+            )
+
+        return Layout(*fieldsets)
 
 
 class PrimaryModelForm(ColdFrontModelForm):

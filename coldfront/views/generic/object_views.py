@@ -18,7 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from django_cotton import render_component
 
 from coldfront.exceptions import AbortRequest, PermissionsViolation
-from coldfront.forms import DeleteForm
+from coldfront.forms import ColdFrontModelForm, DeleteForm
 from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.forms import restrict_form_fields
 from coldfront.utils.querydict import normalize_querydict, prepare_cloned_fields
@@ -160,7 +160,11 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
 
         initial_data = normalize_querydict(request.GET)
         form_prefix = "quickadd" if request.GET.get("_quickadd") else None
-        form = self.form(instance=obj, initial=initial_data, prefix=form_prefix)
+        if issubclass(self.form, ColdFrontModelForm):
+            form = self.form(instance=obj, initial=initial_data, prefix=form_prefix, user=request.user)
+        else:
+            form = self.form(instance=obj, initial=initial_data, prefix=form_prefix)
+
         restrict_form_fields(form, request.user)
 
         context = {
@@ -208,6 +212,12 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
 
         form_prefix = "quickadd" if request.GET.get("_quickadd") else None
         form = self.form(data=request.POST, files=request.FILES, instance=obj, prefix=form_prefix)
+        if issubclass(self.form, ColdFrontModelForm):
+            form = self.form(
+                data=request.POST, files=request.FILES, instance=obj, prefix=form_prefix, user=request.user
+            )
+        else:
+            form = self.form(data=request.POST, files=request.FILES, instance=obj, prefix=form_prefix)
         restrict_form_fields(form, request.user)
 
         if form.is_valid():
