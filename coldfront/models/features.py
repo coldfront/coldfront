@@ -337,6 +337,10 @@ class AttributeProfileMixin(models.Model):
         verbose_name=_("schema"),
     )
 
+    is_default = models.BooleanField(
+        default=False,
+    )
+
     class Meta:
         abstract = True
 

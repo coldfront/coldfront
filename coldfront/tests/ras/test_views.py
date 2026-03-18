@@ -3,7 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
-from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
+from coldfront.ras.models import (
+    Allocation,
+    AllocationType,
+    AllocationUser,
+    Project,
+    ProjectUser,
+    Resource,
+    ResourceType,
+)
 from coldfront.tenancy.models import Tenant
 from coldfront.users.models import User
 from coldfront.utils.testing import ViewTestCases, create_tags
@@ -92,9 +100,9 @@ class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         resource_type = ResourceType.objects.create(name="Cluster")
 
         resources = (
-            Resource(name="Resource 1", resource_type=resource_type),
-            Resource(name="Resource 2", resource_type=resource_type),
-            Resource(name="Resource 3", resource_type=resource_type),
+            Resource(name="Resource 1", slug="r-1", resource_type=resource_type),
+            Resource(name="Resource 2", slug="r-2", resource_type=resource_type),
+            Resource(name="Resource 3", slug="r-3", resource_type=resource_type),
         )
         for resource in resources:
             resource.save()
@@ -103,6 +111,7 @@ class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
 
         cls.form_data = {
             "name": "Resource X",
+            "slug": "r-x",
             "description": "A new resource",
             "resource_type": resource_type.pk,
             "status": ResourceStatusChoices.STATUS_ACTIVE,
@@ -110,17 +119,17 @@ class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         }
 
         cls.csv_data = (
-            "name,description,status,resource_type",
-            "Resource 4,Fourth resource,active,Cluster",
-            "Resource 5,Fifth resource,active,Cluster",
-            "Resource 6,Sixth resource,active,Cluster",
+            "name,slug,description,status,resource_type",
+            "Resource 4,r-4,Fourth resource,active,Cluster",
+            "Resource 5,r-5,Fifth resource,active,Cluster",
+            "Resource 6,r-6,Sixth resource,active,Cluster",
         )
 
         cls.csv_update_data = (
             "id,name,description",
-            f"{resources[0].pk},Resource 7,Fourth resource7",
-            f"{resources[1].pk},Resource 8,Fifth resource8",
-            f"{resources[2].pk},Resource 9,Sixth resource9",
+            f"{resources[0].pk},Resource 7,Seven resource7",
+            f"{resources[1].pk},Resource 8,Eight resource8",
+            f"{resources[2].pk},Resource 9,Nine resource9",
         )
 
 
@@ -134,9 +143,9 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         resource_type = ResourceType.objects.create(name="Cluster")
 
         resources = (
-            Resource(name="Resource 1", resource_type=resource_type),
-            Resource(name="Resource 2", resource_type=resource_type),
-            Resource(name="Resource 3", resource_type=resource_type),
+            Resource(name="Resource 1", slug="r-1", resource_type=resource_type),
+            Resource(name="Resource 2", slug="r-2", resource_type=resource_type),
+            Resource(name="Resource 3", slug="r-3", resource_type=resource_type),
         )
         for resource in resources:
             resource.save()
@@ -232,4 +241,81 @@ class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{project_users[0].pk},Project 4",
             f"{project_users[1].pk},Project 4",
             f"{project_users[2].pk},Project 4",
+        )
+
+
+class AllocationUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
+    model = AllocationUser
+
+    @classmethod
+    def setUpTestData(cls):
+        owner = User.objects.create(username="pi")
+        users = (
+            User(username="User1"),
+            User(username="User2"),
+            User(username="User3"),
+        )
+        for user in users:
+            user.save()
+
+        project = Project.objects.create(name="Project 1", owner=owner)
+
+        project_users = (
+            ProjectUser(user=users[0], project=project),
+            ProjectUser(user=users[1], project=project),
+            ProjectUser(user=users[2], project=project),
+        )
+        for pu in project_users:
+            pu.save()
+
+        resource_type = ResourceType.objects.create(name="Cluster")
+        resources = (
+            Resource(name="Resource 1", slug="r-1", resource_type=resource_type),
+            Resource(name="Resource 2", slug="r-2", resource_type=resource_type),
+            Resource(name="Resource 3", slug="r-3", resource_type=resource_type),
+        )
+        for resource in resources:
+            resource.save()
+
+        allocation_type = AllocationType.objects.create(name="Storage")
+
+        allocations = (
+            Allocation(justification="Need resources 1", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 2", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 3", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 4", project=project, owner=owner, allocation_type=allocation_type),
+        )
+        for allocation in allocations:
+            allocation.save()
+
+        allocations[0].resources.add(resources[0])
+        allocations[0].resources.add(resources[1])
+        allocations[1].resources.add(resources[1])
+        allocations[2].resources.add(resources[2])
+
+        allocation_users = (
+            AllocationUser(user=users[0], allocation=allocations[0]),
+            AllocationUser(user=users[1], allocation=allocations[0]),
+            AllocationUser(user=users[2], allocation=allocations[0]),
+        )
+        for au in allocation_users:
+            au.save()
+
+        cls.form_data = {
+            "allocation": allocations[1].pk,
+            "user": users[0].pk,
+        }
+
+        cls.csv_data = (
+            "user,allocation.slug",
+            f"User1,{allocations[2].slug}",
+            f"User2,{allocations[2].slug}",
+            f"User3,{allocations[2].slug}",
+        )
+
+        cls.csv_update_data = (
+            "id,allocation",
+            f"{allocation_users[0].pk},{allocations[3].slug}",
+            f"{allocation_users[1].pk},{allocations[3].slug}",
+            f"{allocation_users[2].pk},{allocations[3].slug}",
         )

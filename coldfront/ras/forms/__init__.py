@@ -2,10 +2,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .allocations import AllocationForm, AllocationImportForm, AllocationTypeForm, AllocationTypeImportForm
+from .allocations import (
+    AllocationForm,
+    AllocationImportForm,
+    AllocationTypeForm,
+    AllocationTypeImportForm,
+    AllocationUserForm,
+    AllocationUserImportForm,
+)
 from .filterset_forms import (
     AllocationFilterSetForm,
     AllocationTypeFilterSetForm,
+    AllocationUserFilterSetForm,
     ProjectFilterSetForm,
     ProjectUserFilterSetForm,
     ResourceFilterSetForm,
@@ -16,10 +24,13 @@ from .resources import ResourceForm, ResourceImportForm, ResourceTypeForm, Resou
 
 __all__ = (
     "AllocationForm",
+    "AllocationUserForm",
     "AllocationImportForm",
+    "AllocationUserImportForm",
     "AllocationTypeForm",
     "AllocationTypeImportForm",
     "AllocationFilterSetForm",
+    "AllocationUserFilterSetForm",
     "AllocationTypeFilterSetForm",
     "ProjectForm",
     "ProjectImportForm",

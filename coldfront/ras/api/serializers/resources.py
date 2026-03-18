@@ -5,11 +5,13 @@
 from coldfront.api.serializers import (
     AttributeProfileModelSerializer,
     CustomAttributeModelSerializer,
+    NestedGroupModelSerializer,
     OrganizationalModelSerializer,
-    PrimaryModelSerializer,
 )
 from coldfront.api.serializers.fields import RelatedObjectCountField
 from coldfront.ras.models import Resource, ResourceType
+
+from .nested import NestedResourceSerializer
 
 
 class ResourceTypeSerializer(AttributeProfileModelSerializer, OrganizationalModelSerializer):
@@ -36,7 +38,8 @@ class ResourceTypeSerializer(AttributeProfileModelSerializer, OrganizationalMode
         brief_fields = ("id", "url", "display", "name", "description", "slug")
 
 
-class ResourceSerializer(CustomAttributeModelSerializer, PrimaryModelSerializer):
+class ResourceSerializer(CustomAttributeModelSerializer, NestedGroupModelSerializer):
+    parent = NestedResourceSerializer(required=False, allow_null=True, default=None)
     allocation_count = RelatedObjectCountField("allocations")
     resource_type = ResourceTypeSerializer(nested=True)
 
@@ -48,6 +51,9 @@ class ResourceSerializer(CustomAttributeModelSerializer, PrimaryModelSerializer)
             "display_url",
             "display",
             "name",
+            "slug",
+            "parent",
+            "_depth",
             "description",
             "status",
             "resource_type",
@@ -58,4 +64,4 @@ class ResourceSerializer(CustomAttributeModelSerializer, PrimaryModelSerializer)
             "allocation_count",
             "attributes",
         ]
-        brief_fields = ("id", "url", "display", "name", "description", "status")
+        brief_fields = ("id", "url", "display", "name", "slug", "description", "status", "_depth")

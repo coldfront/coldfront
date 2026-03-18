@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from crispy_forms.layout import Fieldset
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import (
@@ -15,6 +16,7 @@ from coldfront.forms import (
 from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField
 from coldfront.ras.models import Project, ProjectUser
 from coldfront.users.models import User
+from coldfront.utils.forms import get_field_value
 
 
 class ProjectForm(TenancyForm, OrganizationalModelForm):
@@ -67,6 +69,15 @@ class ProjectUserForm(PrimaryModelForm):
         ),
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if project_id := get_field_value(self, "project"):
+            try:
+                Project.objects.get(pk=project_id)
+                self.fields["project"].widget.attrs["data-readonly"] = "readonly"
+            except ObjectDoesNotExist:
+                pass
+
 
 class ProjectImportForm(TenancyImportForm, PrimaryModelImportForm):
     owner = CSVModelChoiceField(
@@ -89,7 +100,6 @@ class ProjectImportForm(TenancyImportForm, PrimaryModelImportForm):
             "description",
             "tags",
             "tenant",
-            "tenant_group",
         ]
 
 

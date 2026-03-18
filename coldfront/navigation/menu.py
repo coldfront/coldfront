@@ -20,17 +20,24 @@ ORGANIZATION_MENU = Menu(
     icon_class="fa-solid fa-sitemap",
     groups=(
         MenuGroup(
-            label=_("Projects"),
-            items=(
-                get_model_item("ras", "project", _("Projects")),
-                get_model_item("ras", "projectuser", _("Project Users")),
-            ),
-        ),
-        MenuGroup(
             label=_("Tenancy"),
             items=(
                 get_model_item("tenancy", "tenant", _("Tenants")),
                 get_model_item("tenancy", "tenantgroup", _("Tenant Groups")),
+            ),
+        ),
+    ),
+)
+
+PROJECTS_MENU = Menu(
+    label=_("Projects"),
+    icon_class="fa-solid fa-folder",
+    groups=(
+        MenuGroup(
+            label=_("Projects"),
+            items=(
+                get_model_item("ras", "project", _("Projects")),
+                get_model_item("ras", "projectuser", _("Project Users")),
             ),
         ),
     ),
@@ -44,6 +51,7 @@ ALLOCATIONS_MENU = Menu(
             label=_("Allocations"),
             items=(
                 get_model_item("ras", "allocation", _("Allocations")),
+                get_model_item("ras", "allocationuser", _("Allocation Users")),
                 get_model_item("ras", "allocationtype", _("Allocation Types")),
             ),
         ),
@@ -118,9 +126,10 @@ def get_menus():
     The result is cached since menus don't change without a Django restart.
     """
     menus = [
-        ORGANIZATION_MENU,
+        PROJECTS_MENU,
         ALLOCATIONS_MENU,
         RESOURCES_MENU,
+        ORGANIZATION_MENU,
         CUSTOMIZATION_MENU,
     ]
 

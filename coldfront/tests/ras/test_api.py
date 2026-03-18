@@ -5,7 +5,15 @@
 from django.urls import reverse
 
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
-from coldfront.ras.models import Allocation, AllocationType, Project, ProjectUser, Resource, ResourceType
+from coldfront.ras.models import (
+    Allocation,
+    AllocationType,
+    AllocationUser,
+    Project,
+    ProjectUser,
+    Resource,
+    ResourceType,
+)
 from coldfront.users.models import User
 from coldfront.utils.testing import APITestCase, APIViewTestCases
 
@@ -21,7 +29,7 @@ class AppTest(APITestCase):
 
 class ProjectTest(APIViewTestCases.APIViewTestCase):
     model = Project
-    brief_fields = ["description", "display", "id", "name", "status", "url"]
+    brief_fields = ["description", "display", "id", "name", "slug", "status", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -160,7 +168,7 @@ class ResourceTypeTest(APIViewTestCases.APIViewTestCase):
 
 class ResourceTest(APIViewTestCases.APIViewTestCase):
     model = Resource
-    brief_fields = ["description", "display", "id", "name", "status", "url"]
+    brief_fields = ["_depth", "description", "display", "id", "name", "slug", "status", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -171,9 +179,9 @@ class ResourceTest(APIViewTestCases.APIViewTestCase):
         resource_type = ResourceType.objects.create(name="Cluster", slug="cluster")
 
         resources = (
-            Resource(name="Resource 1", resource_type=resource_type),
-            Resource(name="Resource 2", resource_type=resource_type),
-            Resource(name="Resource 3", resource_type=resource_type),
+            Resource(name="Resource 1", slug="r-1", resource_type=resource_type),
+            Resource(name="Resource 2", slug="r-2", resource_type=resource_type),
+            Resource(name="Resource 3", slug="r-3", resource_type=resource_type),
         )
         for resource in resources:
             resource.save()
@@ -181,18 +189,21 @@ class ResourceTest(APIViewTestCases.APIViewTestCase):
         cls.create_data = [
             {
                 "name": "Resource X",
+                "slug": "r-x",
                 "description": "A new resource",
                 "resource_type": resource_type.pk,
                 "status": ResourceStatusChoices.STATUS_ACTIVE,
             },
             {
                 "name": "Resource Y",
+                "slug": "r-y",
                 "description": "A new resource",
                 "resource_type": resource_type.pk,
                 "status": ResourceStatusChoices.STATUS_ACTIVE,
             },
             {
                 "name": "Resource Z",
+                "slug": "r-z",
                 "description": "A new resource",
                 "resource_type": resource_type.pk,
                 "status": ResourceStatusChoices.STATUS_ACTIVE,
@@ -236,7 +247,7 @@ class AllocationTypeTest(APIViewTestCases.APIViewTestCase):
 
 class AllocationTest(APIViewTestCases.APIViewTestCase):
     model = Allocation
-    brief_fields = ["description", "display", "id", "status", "url"]
+    brief_fields = ["description", "display", "id", "slug", "status", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -248,9 +259,9 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
         resource_type = ResourceType.objects.create(name="Cluster")
 
         resources = (
-            Resource(name="Resource 1", resource_type=resource_type),
-            Resource(name="Resource 2", resource_type=resource_type),
-            Resource(name="Resource 3", resource_type=resource_type),
+            Resource(name="Resource 1", slug="r-1", resource_type=resource_type),
+            Resource(name="Resource 2", slug="r-2", resource_type=resource_type),
+            Resource(name="Resource 3", slug="r-3", resource_type=resource_type),
         )
         for resource in resources:
             resource.save()
@@ -297,5 +308,77 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "resources": [resources[1].pk],
                 "allocation_type": allocation_type.pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
+            },
+        ]
+
+
+class AllocatoinUserTest(APIViewTestCases.APIViewTestCase):
+    model = AllocationUser
+    brief_fields = ["allocation", "display", "id", "url", "user"]
+
+    @classmethod
+    def setUpTestData(cls):
+        owner = User.objects.create(username="pi")
+        users = (
+            User(username="User1"),
+            User(username="User2"),
+            User(username="User3"),
+            User(username="User4"),
+            User(username="User5"),
+            User(username="User6"),
+        )
+        for user in users:
+            user.save()
+
+        project = Project.objects.create(name="Project 1", owner=owner)
+        resource_type = ResourceType.objects.create(name="Cluster")
+
+        resources = (
+            Resource(name="Resource 1", slug="r-1", resource_type=resource_type),
+            Resource(name="Resource 2", slug="r-2", resource_type=resource_type),
+            Resource(name="Resource 3", slug="r-3", resource_type=resource_type),
+        )
+        for resource in resources:
+            resource.save()
+
+        allocation_type = AllocationType.objects.create(name="Storage")
+
+        allocations = (
+            Allocation(justification="Need resources 1", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 2", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 3", project=project, owner=owner, allocation_type=allocation_type),
+        )
+        for allocation in allocations:
+            allocation.save()
+
+        allocations[0].resources.add(resources[0])
+        allocations[0].resources.add(resources[1])
+        allocations[1].resources.add(resources[1])
+        allocations[2].resources.add(resources[2])
+
+        allocation_users = (
+            AllocationUser(user=users[0], allocation=allocations[0]),
+            AllocationUser(user=users[1], allocation=allocations[1]),
+            AllocationUser(user=users[2], allocation=allocations[0]),
+        )
+        for pu in allocation_users:
+            pu.save()
+
+        cls.bulk_update_data = {
+            "allocation": allocations[2].pk,
+        }
+
+        cls.create_data = [
+            {
+                "user": users[3].pk,
+                "allocation": allocations[2].pk,
+            },
+            {
+                "user": users[4].pk,
+                "allocation": allocations[1].pk,
+            },
+            {
+                "user": users[5].pk,
+                "allocation": allocations[0].pk,
             },
         ]

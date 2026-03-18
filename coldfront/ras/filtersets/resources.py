@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from coldfront.ras.choices import ResourceStatusChoices
 from coldfront.ras.models import Resource, ResourceType
 from coldfront.tenancy.filtersets import TenancyFilterSet
-from coldfront.views.filtersets import AttributeFilterSetMixin, OrganizationalModelFilterSet, PrimaryModelFilterSet
+from coldfront.views.filtersets import AttributeFilterSetMixin, NestedGroupModelFilterSet, OrganizationalModelFilterSet
 
 
 class ResourceTypeFilterSet(OrganizationalModelFilterSet):
@@ -23,13 +23,12 @@ class ResourceTypeFilterSet(OrganizationalModelFilterSet):
         )
 
 
-class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryModelFilterSet):
+class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, NestedGroupModelFilterSet):
     resource_type_id = django_filters.ModelMultipleChoiceFilter(
         queryset=ResourceType.objects.all(),
         distinct=False,
         label=_("Resource type (ID)"),
     )
-
     resource_type = django_filters.ModelMultipleChoiceFilter(
         field_name="resource_type__slug",
         queryset=ResourceType.objects.all(),
@@ -37,7 +36,18 @@ class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryModelF
         to_field_name="slug",
         label=_("Resource type (slug)"),
     )
-
+    parent_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=Resource.objects.all(),
+        distinct=False,
+        label=_("Parent resource (ID)"),
+    )
+    parent = django_filters.ModelMultipleChoiceFilter(
+        field_name="parent__slug",
+        queryset=Resource.objects.all(),
+        distinct=False,
+        to_field_name="slug",
+        label=_("Parent resource (slug)"),
+    )
     status = django_filters.MultipleChoiceFilter(
         choices=ResourceStatusChoices,
         distinct=False,
@@ -49,6 +59,7 @@ class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryModelF
         fields = (
             "id",
             "name",
+            "slug",
             "status",
             "description",
         )

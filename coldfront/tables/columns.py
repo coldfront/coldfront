@@ -194,7 +194,11 @@ class LinkedCountColumn(tables.Column):
 
     def render(self, record, value):
         if value:
-            url = reverse(self.viewname, kwargs=self.view_kwargs)
+            kargs = {}
+            for k, v in self.view_kwargs.items():
+                kargs[k] = getattr(record, v)
+
+            url = reverse(self.viewname, kwargs=kargs)
             if self.url_params:
                 url += "?" + "&".join(
                     [

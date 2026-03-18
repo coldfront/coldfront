@@ -255,27 +255,22 @@ class BulkDeleteForm(ConfirmationForm):
 
 class TenancyForm(forms.Form):
     tenant_group = DynamicModelChoiceField(
-        label=_("Tenant Group"),
+        label=_("Tenant group"),
         queryset=TenantGroup.objects.all(),
         required=False,
+        null_option="None",
+        initial_params={"tenants": "$tenant"},
     )
     tenant = DynamicModelChoiceField(
         label=_("Tenant"),
         queryset=Tenant.objects.all(),
         required=False,
         quick_add=True,
+        query_params={"group_id": "$tenant_group"},
     )
 
 
 class TenancyImportForm(forms.Form):
-    tenant_group = CSVModelChoiceField(
-        label=_("Group"),
-        queryset=TenantGroup.objects.all(),
-        required=False,
-        to_field_name="name",
-        help_text=_("Assigned tenant group"),
-    )
-
     tenant = CSVModelChoiceField(
         label=_("Tenant"),
         queryset=Tenant.objects.all(),

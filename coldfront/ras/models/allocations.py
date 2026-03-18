@@ -6,8 +6,9 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.models import OrganizationalModel, PrimaryModel
+from coldfront.models import ColdFrontModel, OrganizationalModel, PrimaryModel
 from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
+from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import AllocationStatusChoices
 
 
@@ -29,6 +30,9 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
     An Allocation provides users access to resources.
     """
 
+    slug = AutoSlugField(
+        verbose_name=_("slug"),
+    )
     allocation_type = models.ForeignKey(
         to="ras.AllocationType",
         on_delete=models.PROTECT,
@@ -36,58 +40,49 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         blank=True,
         null=True,
     )
-
     project = models.ForeignKey(
         to="ras.Project",
         on_delete=models.PROTECT,
         related_name="allocations",
     )
-
     resources = models.ManyToManyField(
         to="ras.Resource",
         related_name="allocations",
         help_text=_("The resources for this allocation"),
     )
-
     owner = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
-        related_name="allocations",
+        related_name="owned_allocations",
         on_delete=models.PROTECT,
         null=False,
     )
-
     status = models.CharField(
         verbose_name=_("status"),
         max_length=50,
         choices=AllocationStatusChoices,
         default=AllocationStatusChoices.STATUS_NEW,
     )
-
     start_date = models.DateTimeField(
         verbose_name=_("start date"),
         blank=True,
         null=True,
     )
-
     end_date = models.DateTimeField(
         verbose_name=_("end date"),
         blank=True,
         null=True,
     )
-
     justification = models.TextField(
         verbose_name=_("justification"),
         blank=True,
         null=True,
     )
-
     description = models.CharField(
         verbose_name=_("description"),
         max_length=200,
         blank=True,
         null=True,
     )
-
     tenant = models.ForeignKey(
         to="tenancy.Tenant",
         on_delete=models.PROTECT,
@@ -104,7 +99,6 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
     prerequisite_models = (
         "ras.Project",
         "ras.Resource",
-        "ras.AllocationType",
     )
 
     profile_field_name = "allocation_type"
@@ -118,4 +112,33 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         return AllocationStatusChoices.colors.get(self.status)
 
     def __str__(self):
-        return f"Allocation-{self.id}"
+        return f"Allocation {self.slug}"
+
+
+class AllocationUser(ColdFrontModel):
+    """A user that is a member of an allocation"""
+
+    allocation = models.ForeignKey(
+        to="ras.Allocation",
+        on_delete=models.PROTECT,
+        related_name="users",
+    )
+    user = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        related_name="allocations",
+        on_delete=models.PROTECT,
+        null=False,
+    )
+
+    clone_fields = ("allocation",)
+
+    prerequisite_models = ("ras.Allocation",)
+
+    class Meta:
+        ordering = ["id"]
+        unique_together = ("user", "allocation")
+        verbose_name = _("allocation user")
+        verbose_name_plural = _("allocation users")
+
+    def __str__(self):
+        return self.user.username

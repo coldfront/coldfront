@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.ras import filtersets, forms, tables
 from coldfront.ras.models import Allocation, Project, ProjectUser
 from coldfront.registry import register_model_view
+from coldfront.utils.query import count_related
 from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
 from coldfront.views.object_actions import BulkDelete, BulkExport
@@ -18,7 +19,10 @@ from coldfront.views.object_actions import BulkDelete, BulkExport
 
 @register_model_view(Project, "list", path="", detail=False)
 class ProjectListView(generic.ObjectListView):
-    queryset = Project.objects.all()
+    queryset = Project.objects.annotate(
+        user_count=count_related(ProjectUser, "project"),
+        allocation_count=count_related(Allocation, "project"),
+    )
     filterset = filtersets.ProjectFilterSet
     filterset_form = forms.ProjectFilterSetForm
     table = tables.ProjectTable

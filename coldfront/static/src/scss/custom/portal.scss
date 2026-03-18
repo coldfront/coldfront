@@ -163,3 +163,9 @@ pre.block {
   background-color: #ffffff;
   opacity: 1;
 }
+
+// Read-only tom-select
+select[data-readonly] + .ts-wrapper {
+  opacity: 0.5;
+  pointer-events: none;
+}

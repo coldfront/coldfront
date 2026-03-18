@@ -7,11 +7,16 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import ColdFrontModel, OrganizationalModel
+from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import ProjectStatusChoices
 
 
 class Project(OrganizationalModel):
     """A project is a container for housing research summary information related to allocation requests"""
+
+    slug = AutoSlugField(
+        verbose_name=_("slug"),
+    )
 
     status = models.CharField(
         verbose_name=_("status"),

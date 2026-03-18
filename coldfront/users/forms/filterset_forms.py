@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.constants import BOOLEAN_WITH_BLANK_CHOICES
 from coldfront.forms import ColdFrontModelFilterSetForm
 from coldfront.forms.layouts import DateTime
+from coldfront.ras.models import Project
 from coldfront.users.models import Group, ObjectPermission, Token, User
 
 
@@ -23,21 +24,10 @@ class GroupFilterSetForm(ColdFrontModelFilterSetForm):
 
 
 class UserFilterSetForm(ColdFrontModelFilterSetForm):
-    model = User
-    fieldsets = (
-        Fieldset(
-            _("Search"),
-            "q",
-        ),
-        Fieldset(
-            _("Group"),
-            "group_id",
-        ),
-        Fieldset(
-            _("Status"),
-            "is_active",
-            "is_superuser",
-        ),
+    project_id = forms.ModelMultipleChoiceField(
+        queryset=Project.objects.all(),
+        required=False,
+        label=_("Project"),
     )
     group_id = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
@@ -55,28 +45,23 @@ class UserFilterSetForm(ColdFrontModelFilterSetForm):
         label=_("Is Superuser"),
     )
 
-
-class ObjectPermissionFilterSetForm(ColdFrontModelFilterSetForm):
-    model = ObjectPermission
+    model = User
     fieldsets = (
         Fieldset(
             _("Search"),
             "q",
-        ),
-        Fieldset(
-            _("Permission"),
-            "enabled",
             "group_id",
-            "user_id",
+            "project_id",
         ),
         Fieldset(
-            _("Actions"),
-            "can_view",
-            "can_add",
-            "can_change",
-            "can_delete",
+            _("Status"),
+            "is_active",
+            "is_superuser",
         ),
     )
+
+
+class ObjectPermissionFilterSetForm(ColdFrontModelFilterSetForm):
     enabled = forms.NullBooleanField(
         label=_("Enabled"), required=False, widget=forms.Select(choices=BOOLEAN_WITH_BLANK_CHOICES)
     )
@@ -111,23 +96,29 @@ class ObjectPermissionFilterSetForm(ColdFrontModelFilterSetForm):
         label=_("Can Delete"),
     )
 
-
-class TokenFilterSetForm(ColdFrontModelFilterSetForm):
-    model = Token
+    model = ObjectPermission
     fieldsets = (
         Fieldset(
             _("Search"),
             "q",
         ),
         Fieldset(
-            _("Token"),
-            "user_id",
+            _("Permission"),
             "enabled",
-            "write_enabled",
-            DateTime("expires"),
-            DateTime("last_used"),
+            "group_id",
+            "user_id",
+        ),
+        Fieldset(
+            _("Actions"),
+            "can_view",
+            "can_add",
+            "can_change",
+            "can_delete",
         ),
     )
+
+
+class TokenFilterSetForm(ColdFrontModelFilterSetForm):
     user_id = forms.ModelMultipleChoiceField(
         queryset=User.objects.all(),
         required=False,
@@ -150,4 +141,20 @@ class TokenFilterSetForm(ColdFrontModelFilterSetForm):
     last_used = forms.DateTimeField(
         required=False,
         label=_("Last Used"),
+    )
+
+    model = Token
+    fieldsets = (
+        Fieldset(
+            _("Search"),
+            "q",
+        ),
+        Fieldset(
+            _("Token"),
+            "user_id",
+            "enabled",
+            "write_enabled",
+            DateTime("expires"),
+            DateTime("last_used"),
+        ),
     )
