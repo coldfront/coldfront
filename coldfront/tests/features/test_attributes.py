@@ -36,6 +36,7 @@ class ResourceTypeTestCase(TestCase):
         resources = (
             Resource(
                 name="Resource 1",
+                slug="r-1",
                 resource_type=resource_types[0],
                 attribute_data={
                     "string": "string1",
@@ -46,6 +47,7 @@ class ResourceTypeTestCase(TestCase):
             ),
             Resource(
                 name="Resource 2",
+                slug="r-2",
                 resource_type=resource_types[1],
                 attribute_data={
                     "string": "string2",
@@ -56,6 +58,7 @@ class ResourceTypeTestCase(TestCase):
             ),
             Resource(
                 name="Resource 3",
+                slug="r-3",
                 resource_type=resource_types[2],
                 attribute_data={
                     "string": "string3",

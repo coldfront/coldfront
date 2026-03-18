@@ -1,0 +1,15 @@
+{% extends 'generic/object_children.html' %}
+{% load i18n %}
+
+{% block extra_controls %}
+    {% if perms.ras.add_projectuser %}
+        <a href="{% url 'ras:allocationuser_add' %}?allocation={{ object.pk }}&return_url={% url 'ras:allocation_users' pk=object.pk %}"
+           class="btn btn-primary">
+            <i class="fa-solid fa-plus" aria-hidden="true"></i> {% trans "Add User" %}
+        </a>
+        <a href="{% url 'ras:allocationuser_bulk_import' %}?allocation={{ object.pk }}&return_url={% url 'ras:allocation_users' pk=object.pk %}"
+           class="btn btn-success">
+            <i class="fa-solid fa-upload" aria-hidden="true"></i> {% trans "Import Users" %}
+        </a>
+    {% endif %}
+{% endblock extra_controls %}

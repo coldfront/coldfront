@@ -9,7 +9,7 @@ from coldfront.api.serializers import (
     PrimaryModelSerializer,
 )
 from coldfront.api.serializers.fields import RelatedObjectCountField, SerializedPKRelatedField
-from coldfront.ras.models import Allocation, AllocationType, Resource
+from coldfront.ras.models import Allocation, AllocationType, AllocationUser, Resource
 from coldfront.users.api.serializers import UserSerializer
 
 from .projects import ProjectSerializer
@@ -58,6 +58,7 @@ class AllocationSerializer(CustomAttributeModelSerializer, PrimaryModelSerialize
             "url",
             "display_url",
             "display",
+            "slug",
             "description",
             "justification",
             "status",
@@ -74,4 +75,24 @@ class AllocationSerializer(CustomAttributeModelSerializer, PrimaryModelSerialize
             "attributes",
             "resources",
         ]
-        brief_fields = ("id", "url", "display", "id", "description", "status")
+        brief_fields = ("id", "url", "display", "id", "slug", "description", "status")
+
+
+class AllocationUserSerializer(PrimaryModelSerializer):
+    user = UserSerializer(nested=True)
+    allocation = AllocationSerializer(nested=True)
+
+    class Meta:
+        model = AllocationUser
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "user",
+            "allocation",
+            "custom_fields",
+            "created",
+            "last_updated",
+        ]
+        brief_fields = ("id", "url", "display", "user", "allocation")

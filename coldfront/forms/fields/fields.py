@@ -38,12 +38,12 @@ class SlugField(forms.SlugField):
         self.slug_source = slug_source
 
     def get_bound_field(self, form, field_name):
+        self.widget.attrs["slug-source"] = self.slug_source
+
         if prefix := form.prefix:
             if self.slug_source and not self.slug_source.startswith(f"{prefix}-"):
                 self.slug_source = f"{prefix}-{self.slug_source}"
                 self.widget.attrs["slug-source"] = self.slug_source
-        else:
-            self.widget.attrs["slug-source"] = self.slug_source
 
         return super().get_bound_field(form, field_name)
 

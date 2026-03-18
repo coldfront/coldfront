@@ -2,13 +2,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.utils.translation import gettext_lazy as _
 
 from coldfront.ras import filtersets, forms, tables
-from coldfront.ras.models import Allocation, AllocationType
+from coldfront.ras.models import Allocation, AllocationType, AllocationUser, Resource
 from coldfront.registry import register_model_view
 from coldfront.utils.query import count_related
-from coldfront.views import generic
+from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
+from coldfront.views.object_actions import BulkDelete, BulkExport
 
 #
 # Allocations
@@ -59,6 +61,48 @@ class AllocationBulkDeleteView(generic.BulkDeleteView):
     table = tables.AllocationTable
 
 
+@register_model_view(Allocation, "users")
+class AllocationUserTabView(generic.ObjectChildrenView):
+    actions = (BulkExport, BulkDelete)
+    queryset = Allocation.objects.all()
+    child_model = AllocationUser
+    table = tables.AllocationUserTable
+    filterset = filtersets.AllocationUserFilterSet
+    template_name = "ras/allocation/users.html"
+    tab = ViewTab(label=_("Users"), badge=lambda obj: obj.users.count(), permission="ras.view_allocation", weight=100)
+
+    def get_children(self, request, parent):
+        return parent.users.restrict(request.user, "view")
+
+    def get_table(self, *args, **kwargs):
+        table = super().get_table(*args, **kwargs)
+        # TODO: hide this column by default? add created?
+        table.columns.hide("allocation")
+        table.columns.show("created")
+        return table
+
+
+@register_model_view(Allocation, "resources")
+class AllocationResourceTabView(generic.ObjectChildrenView):
+    actions = (BulkExport, BulkDelete)
+    queryset = Allocation.objects.all()
+    child_model = Resource
+    table = tables.ResourceTable
+    filterset = filtersets.ResourceFilterSet
+    template_name = "ras/allocation/resources.html"
+    tab = ViewTab(
+        label=_("Resources"), badge=lambda obj: obj.resources.count(), permission="ras.view_allocation", weight=110
+    )
+
+    def get_children(self, request, parent):
+        return parent.resources.restrict(request.user, "view")
+
+    def get_table(self, *args, **kwargs):
+        table = super().get_table(*args, **kwargs)
+        table.columns.hide("allocation_count")
+        return table
+
+
 #
 # Allocation types
 #
@@ -107,3 +151,46 @@ class AllocationTypeBulkDeleteView(generic.BulkDeleteView):
     queryset = AllocationType.objects.all()
     filterset = filtersets.AllocationTypeFilterSet
     table = tables.AllocationTypeTable
+
+
+#
+# Allocation Users
+#
+
+
+@register_model_view(AllocationUser, "list", path="", detail=False)
+class AllocationUserListView(generic.ObjectListView):
+    queryset = AllocationUser.objects.all()
+    filterset = filtersets.AllocationUserFilterSet
+    filterset_form = forms.AllocationUserFilterSetForm
+    table = tables.AllocationUserTable
+
+
+@register_model_view(AllocationUser)
+class AllocationUserView(generic.ObjectView):
+    queryset = AllocationUser.objects.all()
+
+
+@register_model_view(AllocationUser, "add", detail=False)
+@register_model_view(AllocationUser, "edit")
+class AllocationUserEditView(generic.ObjectEditView):
+    queryset = AllocationUser.objects.all()
+    form = forms.AllocationUserForm
+
+
+@register_model_view(AllocationUser, "delete")
+class AllocationUserDeleteView(generic.ObjectDeleteView):
+    queryset = AllocationUser.objects.all()
+
+
+@register_model_view(AllocationUser, "bulk_import", path="import", detail=False)
+class AllocationUserBulkImportView(generic.BulkImportView):
+    queryset = AllocationUser.objects.all()
+    model_form = forms.AllocationUserImportForm
+
+
+@register_model_view(AllocationUser, "bulk_delete", path="delete", detail=False)
+class AllocationUserBulkDeleteView(generic.BulkDeleteView):
+    queryset = AllocationUser.objects.all()
+    filterset = filtersets.AllocationUserFilterSet
+    table = tables.AllocationUserTable

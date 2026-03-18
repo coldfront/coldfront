@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import NestedGroupModelFilterSetForm, PrimaryModelFilterSetForm
-from coldfront.forms.fields import TagFilterField
+from coldfront.forms.fields import DynamicModelMultipleChoiceField, TagFilterField
 from coldfront.tenancy.models import Tenant, TenantGroup
 
 
@@ -44,13 +44,16 @@ class TenantFilterSetForm(PrimaryModelFilterSetForm):
 
 
 class TenancyFilterSetForm(forms.Form):
-    tenant_group_id = forms.ModelMultipleChoiceField(
+    tenant_group_id = DynamicModelMultipleChoiceField(
         queryset=TenantGroup.objects.all(),
         required=False,
+        null_option="None",
         label=_("Tenant group"),
     )
-    tenant_id = forms.ModelMultipleChoiceField(
+    tenant_id = DynamicModelMultipleChoiceField(
         queryset=Tenant.objects.all(),
         required=False,
+        null_option="None",
+        query_params={"group_id": "$tenant_group_id"},
         label=_("Tenant"),
     )

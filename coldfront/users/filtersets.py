@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.models import ObjectType
+from coldfront.ras.models import Project
 from coldfront.users.models import Group, ObjectPermission, Token, User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet
@@ -66,6 +67,11 @@ class UserFilterSet(BaseFilterSet):
         field_name="object_permissions",
         queryset=ObjectPermission.objects.all(),
         label=_("Permission (ID)"),
+    )
+    project_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="projects__project_id",
+        queryset=Project.objects.all(),
+        label=_("Project"),
     )
 
     class Meta:

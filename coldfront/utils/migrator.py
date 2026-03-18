@@ -9,14 +9,12 @@ from coldfront.legacy.project.models import Project as _Project
 from coldfront.legacy.resource.models import Resource as _Resource
 from coldfront.legacy.resource.models import ResourceType as _ResourceType
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
-from coldfront.ras.models import Allocation, Project, Resource, ResourceType
+from coldfront.ras.models import Allocation, AllocationUser, Project, ProjectUser, Resource, ResourceType
 
 
-def migrate_resources(apps, schema_editor):
-    db_alias = schema_editor.connection.alias
-
-    for rt in _ResourceType.objects.using(db_alias).all():
-        ResourceType.objects.using(db_alias).get_or_create(
+def migrate_resources():
+    for rt in _ResourceType.objects.all():
+        ResourceType.objects.get_or_create(
             id=rt.id,
             name=rt.name,
             slug=slugify(rt.name),
@@ -25,11 +23,12 @@ def migrate_resources(apps, schema_editor):
             last_updated=rt.modified,
         )
 
-    for r in _Resource.objects.using(db_alias).all():
+    for r in _Resource.objects.all():
         status = ResourceStatusChoices.STATUS_ACTIVE if r.is_available else ResourceStatusChoices.STATUS_OFFLINE
-        Resource.objects.using(db_alias).get_or_create(
+        Resource.objects.get_or_create(
             id=r.id,
             name=r.name,
+            slug=slugify(r.name),
             resource_type_id=r.resource_type_id,
             status=status,
             description=r.description,
@@ -38,17 +37,15 @@ def migrate_resources(apps, schema_editor):
         )
 
 
-def migrate_projects(apps, schema_editor):
-    db_alias = schema_editor.connection.alias
-
-    for p in _Project.objects.using(db_alias).all():
+def migrate_projects():
+    for p in _Project.objects.all():
         status = ProjectStatusChoices.STATUS_NEW
         if p.status.name == "Archived":
             status = ProjectStatusChoices.STATUS_ARCHIVED
         elif p.status.name == "Active":
             status = ProjectStatusChoices.STATUS_ACTIVE
 
-        Project.objects.using(db_alias).get_or_create(
+        Project.objects.get_or_create(
             id=p.id,
             name=p.title,
             status=status,
@@ -58,18 +55,24 @@ def migrate_projects(apps, schema_editor):
             last_updated=p.modified,
         )
 
+        for u in p.projectuser_set.filter(status__name="Active"):
+            ProjectUser.objects.get_or_create(
+                project_id=p.id,
+                user_id=u.user.id,
+                created=u.created,
+                last_updated=u.modified,
+            )
 
-def migrate_allocations(apps, schema_editor):
-    db_alias = schema_editor.connection.alias
 
-    for a in _Allocation.objects.using(db_alias).all():
+def migrate_allocations():
+    for a in _Allocation.objects.all():
         status = AllocationStatusChoices.STATUS_NEW
         if a.status.name == "Active":
             status = AllocationStatusChoices.STATUS_ACTIVE
         elif a.status.name == "Denied":
             status = AllocationStatusChoices.STATUS_DENIED
 
-        allocation, _ = Allocation.objects.using(db_alias).get_or_create(
+        allocation, _ = Allocation.objects.get_or_create(
             id=a.id,
             project_id=a.project_id,
             start_date=a.start_date,
@@ -83,5 +86,19 @@ def migrate_allocations(apps, schema_editor):
         )
 
         for r in a.resources.all():
-            resource = Resource.objects.using(db_alias).get(pk=r.id)
+            resource = Resource.objects.get(pk=r.id)
             allocation.resources.add(resource)
+
+        for u in a.allocationuser_set.filter(status__name="Active"):
+            AllocationUser.objects.get_or_create(
+                allocation_id=a.id,
+                user_id=u.user.id,
+                created=u.created,
+                last_updated=u.modified,
+            )
+
+
+def migrate_all():
+    migrate_resources()
+    migrate_projects()
+    migrate_allocations()

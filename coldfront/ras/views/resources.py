@@ -4,7 +4,7 @@
 
 
 from coldfront.ras import filtersets, forms, tables
-from coldfront.ras.models import Resource, ResourceType
+from coldfront.ras.models import Allocation, Resource, ResourceType
 from coldfront.registry import register_model_view
 from coldfront.utils.query import count_related
 from coldfront.views import generic
@@ -67,7 +67,9 @@ class ResourceTypeBulkDeleteView(generic.BulkDeleteView):
 
 @register_model_view(Resource, "list", path="", detail=False)
 class ResourceListView(generic.ObjectListView):
-    queryset = Resource.objects.all()
+    queryset = Resource.objects.annotate(
+        allocation_count=count_related(Allocation, "resources"),
+    )
     filterset = filtersets.ResourceFilterSet
     filterset_form = forms.ResourceFilterSetForm
     table = tables.ResourceTable

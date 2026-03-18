@@ -284,6 +284,7 @@ dependencies = [
     { name = "nh3" },
     { name = "python-dateutil" },
     { name = "redis" },
+    { name = "shortuuid" },
     { name = "tablib" },
 ]
 
@@ -371,6 +372,7 @@ requires-dist = [
     { name = "python-dateutil", specifier = ">=2.9.0.post0" },
     { name = "redis", specifier = ">=5.2.1" },
     { name = "setuptools", marker = "extra == 'freeipa'", specifier = "==80.6.0" },
+    { name = "shortuuid", specifier = ">=1.0.13" },
     { name = "tablib", specifier = ">=3.9.0" },
 ]
 provides-extras = ["ldap", "freeipa", "iquota", "oidc", "mysql", "pg"]
@@ -1974,6 +1976,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/bb/c6/4af6938e3c7321dab335c384d2ce4f604adc81099f124257de71599e301b/setuptools-80.6.0.tar.gz", hash = "sha256:79cf4c44dfd0b5fb890be2dccc3fbd405253ce3baedd2700b54880a75219ea25", size = 1319406, upload-time = "2025-05-14T19:50:17.167Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/57/28/46ef5c181f4aa677d0d773da770a8c111e29f21ad67ed1d1b8e414d3fa0b/setuptools-80.6.0-py3-none-any.whl", hash = "sha256:3f6586e9196c76f59857319fdca6571efd156a4b57d6069fd774145c4b5655a2", size = 1201126, upload-time = "2025-05-14T19:50:15.138Z" },
+]
+
+[[package]]
+name = "shortuuid"
+version = "1.0.13"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/e2/bcf761f3bff95856203f9559baf3741c416071dd200c0fc19fad7f078f86/shortuuid-1.0.13.tar.gz", hash = "sha256:3bb9cf07f606260584b1df46399c0b87dd84773e7b25912b7e391e30797c5e72", size = 9662, upload-time = "2024-03-11T20:11:06.879Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c0/44/21d6bf170bf40b41396480d8d49ad640bca3f2b02139cd52aa1e272830a5/shortuuid-1.0.13-py3-none-any.whl", hash = "sha256:a482a497300b49b4953e15108a7913244e1bb0d41f9d332f5e9925dba33a3c5a", size = 10529, upload-time = "2024-03-11T20:11:04.807Z" },
 ]
 
 [[package]]

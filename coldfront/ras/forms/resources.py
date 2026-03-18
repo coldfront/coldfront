@@ -7,13 +7,14 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import (
+    NestedGroupModelForm,
+    NestedGroupModelImportForm,
     OrganizationalModelForm,
-    PrimaryModelForm,
     PrimaryModelImportForm,
     TenancyForm,
     TenancyImportForm,
 )
-from coldfront.forms.fields import CSVModelChoiceField
+from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField, SlugField
 from coldfront.forms.layouts import Slug
 from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
 from coldfront.forms.widgets import HTMXSelect
@@ -21,6 +22,8 @@ from coldfront.ras.models import Resource, ResourceType
 
 
 class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
+    slug = SlugField()
+
     class Meta:
         model = ResourceType
         fields = [
@@ -29,6 +32,7 @@ class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
             "color",
             "description",
             "schema",
+            "is_default",
             "tags",
         ]
 
@@ -36,20 +40,27 @@ class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
         Fieldset(
             _("Resource Type"),
             "name",
-            Slug("slug"),
+            Slug(),
             "color",
             "description",
             "schema",
+            "is_default",
         ),
     )
 
 
-class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
+class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
     resource_type = forms.ModelChoiceField(
         queryset=ResourceType.objects.all(),
         label=_("Resource Type"),
-        required=True,
+        required=False,
         widget=HTMXSelect(),
+    )
+
+    parent = DynamicModelChoiceField(
+        label=_("Parent"),
+        queryset=Resource.objects.all(),
+        required=False,
     )
 
     profile_field_name = "resource_type"
@@ -58,12 +69,14 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
         model = Resource
         fields = [
             "name",
+            "slug",
+            "parent",
             "resource_type",
             "status",
             "description",
             "tags",
-            "tenant",
             "tenant_group",
+            "tenant",
         ]
 
     @property
@@ -72,6 +85,8 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
             Fieldset(
                 _("Resource"),
                 "name",
+                Slug(),
+                "parent",
                 "status",
                 "description",
             ),
@@ -83,7 +98,15 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
         ]
 
 
-class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, PrimaryModelImportForm):
+class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, NestedGroupModelImportForm):
+    parent = CSVModelChoiceField(
+        label=_("Parent"),
+        queryset=Resource.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text=_("Parent resource"),
+    )
+
     resource_type = CSVModelChoiceField(
         label=_("Resource Type"),
         queryset=ResourceType.objects.all(),
@@ -103,13 +126,14 @@ class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, Primary
         model = Resource
         fields = [
             "name",
+            "slug",
             "resource_type",
+            "parent",
             "status",
             "description",
             "attribute_data",
             "tags",
             "tenant",
-            "tenant_group",
         ]
 
 
@@ -122,5 +146,6 @@ class ResourceTypeImportForm(PrimaryModelImportForm):
             "color",
             "description",
             "schema",
+            "is_default",
             "tags",
         ]
