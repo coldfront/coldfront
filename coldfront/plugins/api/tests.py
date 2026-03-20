@@ -12,6 +12,7 @@ from coldfront.core.allocation.models import Allocation
 from coldfront.core.project.models import Project
 from coldfront.core.test_helpers.factories import (
     AllocationAttributeFactory,
+    AllocationAttributeUsageFactory,
     AllocationFactory,
     AllocationUserFactory,
     PAttributeTypeFactory,
@@ -43,7 +44,9 @@ class ColdfrontAPI(APITestCase):
             allocation = AllocationFactory(project=project)
             allocation.resources.add(ResourceFactory(name="test"))
             AllocationUserFactory(allocation=allocation, user=self.admin_user)
-            AllocationAttributeFactory(allocation=allocation)
+            allocation_attribute = AllocationAttributeFactory(allocation=allocation)
+            allocation_attribute.allocation_attribute_type.name
+            AllocationAttributeUsageFactory(allocation_attribute=allocation_attribute, value=1024)
             self.pi_user = project.pi
 
     def test_requires_login(self):
@@ -92,11 +95,15 @@ class ColdfrontAPI(APITestCase):
         for alloc in response.json():
             self.assertIsNone(alloc["allocation_users"])
             self.assertEqual(len(alloc["allocation_attributes"]), 1)
+            self.assertEqual(alloc["allocation_attributes"][0]["value"], "2048")
+            self.assertEqual(alloc["allocation_attributes"][0]["usage"], 1024)
 
         response = self.client.get("/api/allocations/?allocation_users=true&allocation_attributes=true", format="json")
         for alloc in response.json():
             self.assertEqual(len(alloc["allocation_users"]), 1)
             self.assertEqual(len(alloc["allocation_attributes"]), 1)
+            self.assertEqual(alloc["allocation_attributes"][0]["value"], "2048")
+            self.assertEqual(alloc["allocation_attributes"][0]["usage"], 1024)
 
     def test_project_api_permissions(self):
         """Confirm permissions for project API:

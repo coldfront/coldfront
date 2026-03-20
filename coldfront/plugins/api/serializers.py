@@ -75,10 +75,11 @@ class AllocationUserSerializer(serializers.ModelSerializer):
 
 class AllocationAttributeSerializer(serializers.ModelSerializer):
     allocation_attribute_type = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    usage = serializers.FloatField(source="allocationattributeusage.value", required=False, read_only=True)
 
     class Meta:
         model = AllocationAttribute
-        fields = ("allocation_attribute_type", "value")
+        fields = ("allocation_attribute_type", "value", "usage")
 
 
 class AllocationRequestSerializer(serializers.ModelSerializer):
