@@ -45,6 +45,7 @@ class Command(BaseCommand):
             ("InstallDate", "Date"),
             ("WarrantyExpirationDate", "Date"),
             ("allocation_limit", "Int"),
+            ("form_description", "Text"),
         ):
             ResourceAttributeType.objects.get_or_create(
                 name=resource_attribute_type, attribute_type=AttributeType.objects.get(name=attribute_type)
