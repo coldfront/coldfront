@@ -36,6 +36,6 @@ def generate_fairshare_institution_name(project_obj):
     else:
         gen_fairshare_institution_name = "{institution}".format(**FAIRSHARE_INSTITUTION_NAME_VARS)
 
-    logger.info(f"Generated fairshare institution name {gen_fairshare_institution_name}")
+    logger.info("Generated fairshare institution name %s", gen_fairshare_institution_name)
 
     return gen_fairshare_institution_name
