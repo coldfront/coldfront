@@ -80,6 +80,8 @@ def add_project(project_obj):
     add_posixgroup_to_openldap(posixgroup_dn, openldap_posixgroup_description, gid_int)
 
     # 3) add the PI to the posixgroup
+    # since this task runs synchronously right at the moment of project creation,
+    # there are no other users to add besides the PI
     add_members_to_openldap_posixgroup(posixgroup_dn, [project_obj.pi.username])
 
 
