@@ -31,7 +31,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install the project
-        run: uv sync --locked --dev
+        run: uv sync --locked --dev --extra ldap3
 
       - name: Install frontend packages
         run: npm --prefix coldfront/static install
@@ -62,7 +62,7 @@ jobs:
         run: uv run reuse lint
 
       - name: Run tests
-        run: uv run coldfront test
+        run: PLUGIN_SLURM=true PLUGIN_PROJECT_OPENLDAP=true PROJECT_OPENLDAP_GID_START=-1 uv run coldfront test
 
       - name: Check for migrations
         run: uv run coldfront makemigrations --check
