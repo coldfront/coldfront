@@ -2,6 +2,8 @@
 {% block breadcrumbs %}
   {% if object.tenant %}
     <li class="breadcrumb-item">{{ object.tenant|linkify }}</li>
+  {% elif object.project and object.project.tenant %}
+  <li class="breadcrumb-item">{{ object.project.tenant|linkify }}</li>
   {% endif %}
   {% if object.project %}
     <li class="breadcrumb-item">{{ object.project|linkify }}</li>

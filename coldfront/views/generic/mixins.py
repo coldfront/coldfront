@@ -24,15 +24,16 @@ class ActionsMixin:
 
     actions = tuple()
 
-    def get_permitted_actions(self, user, model=None):
+    def get_permitted_actions(self, user, model=None, actions=None):
         """
         Return a tuple of actions for which the given user is permitted to do.
         """
+        actions = actions or self.actions
         model = model or self.queryset.model
 
         # Resolve required permissions for each action
         permitted_actions = []
-        for action in self.actions:
+        for action in actions:
             required_permissions = [get_permission_for_model(model, perm) for perm in action.permissions_required]
             if not required_permissions or user.has_perms(required_permissions):
                 permitted_actions.append(action)

@@ -68,7 +68,7 @@ class ResourceTypeBulkDeleteView(generic.BulkDeleteView):
 @register_model_view(Resource, "list", path="", detail=False)
 class ResourceListView(generic.ObjectListView):
     queryset = Resource.objects.annotate(
-        allocation_count=count_related(Allocation, "resources"),
+        allocation_count=count_related(Allocation, "resource"),
     )
     filterset = filtersets.ResourceFilterSet
     filterset_form = forms.ResourceFilterSetForm

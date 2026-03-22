@@ -1,12 +1,37 @@
 {% extends 'ras/base.html' %}
+{% load buttons %}
 {% load i18n %}
+
+{% block breadcrumbs %}
+  {% if object.tenant %}
+  <li class="breadcrumb-item"><a href="{% url 'ras:project_list' %}?tenant_id={{ object.tenant.id }}">{{ object.tenant }}</a></li>
+  {% elif object.project.tenant %}
+  <li class="breadcrumb-item"><a href="{% url 'ras:project_list' %}?tenant_id={{ object.project.tenant.id }}">{{ object.project.tenant }}</a></li>
+  {% endif %}
+  <li class="breadcrumb-item">{{ object.project|linkify }}</li>
+  <li class="breadcrumb-item"><a href="{% url 'ras:project_allocations' pk=object.project.pk %}">Allocations</a></li>
+{% endblock %}
+
+{% block extra_controls %}
+  {% if transitions %}
+  {% action_buttons transitions object %}
+  {% endif %}
+{% endblock extra_controls %}
 
 {% block content %}
 <c-layout.panels>
   <c-slot name="left">
-    <c-card.fields :object="object" only>
+    <c-card.fields only>
+      <c-slot name="header">
+          {{ object }}  <c-ui.badge value="{{object.status|title}}" :bg_color="object.get_status_color" />
+      </c-slot>
+
       <c-card.fields.item label="{% trans 'Project' %}">
           {{ object.project|linkify }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Owner' %}">
+          {{ object.owner }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Start Date' %}">
@@ -19,9 +44,7 @@
 
       <c-card.fields.item label="{% trans 'Resources' %}">
           <div>
-          {% for r in object.resources.all %}
-            <c-ui.badge :value="r" link="{{ r.get_absolute_url }}" :color="r.resource_type.color" />
-          {% endfor %}
+            <c-ui.badge :value="r" link="{{ object.resource.get_absolute_url }}" :color="object.resource.resource_type.color" />
           </div>
       </c-card.fields.item>
 
@@ -33,26 +56,22 @@
           {{ object.justification|placeholder }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Status' %}">
-          <c-ui.badge :value="object.status" :bg_color="object.get_status_color" />
-      </c-card.fields.item>
     </c-card.fields>
 
+    <c-card.comments :object="object" only />
     <c-card.tags :object="object" only />
   </c-slot>
 
   <c-slot name="right">
-    <c-card.fields header="{% trans 'Attributes' %}" only>
-      <c-card.fields.item label="{% trans 'Allocation Type' %}">
-        {{ object.allocation_type|linkify|placeholder }}
-      </c-card.fields.item>
-
+      {% if object.attributes %}
+      <c-card.fields header="{% trans 'Attributes' %}" only>
       {% for k, v in object.attributes.items %}
       <c-card.fields.item :label="k">
         {{ v|placeholder }}
       </c-card.fields.item>
       {% endfor %}
     </c-card.fields>
+    {% endif %}
 
     <c-card.custom_fields :object="object" only />
   </c-slot>

@@ -15,7 +15,11 @@ const MAX_OPTIONS = 100;
 
 // Render the HTML for a dropdown option
 function renderOption(data: TomOption, escape: typeof escape_html) {
-  let html = '<div class="row">';
+  let html = '';
+
+  if (data['extra_columns']) {
+    html = '<div class="row">';
+  }
 
   html = `${html}<div class="col">`;
 
@@ -40,9 +44,8 @@ function renderOption(data: TomOption, escape: typeof escape_html) {
     for (const col of data['extra_columns']) {
       html = `${html}<div class="col">${escape(col)}</div>`;
     }
+    html = `${html}</div>`;
   }
-
-  html = `${html}</div>`;
 
   return html;
 }

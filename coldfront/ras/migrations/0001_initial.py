@@ -26,45 +26,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="AllocationType",
-            fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("created", models.DateTimeField(auto_now_add=True, null=True, verbose_name="created")),
-                ("last_updated", models.DateTimeField(auto_now=True, null=True, verbose_name="last updated")),
-                (
-                    "custom_field_data",
-                    models.JSONField(blank=True, default=dict, encoder=coldfront.core.utils.CustomFieldJSONEncoder),
-                ),
-                (
-                    "schema",
-                    models.JSONField(
-                        blank=True,
-                        null=True,
-                        validators=[coldfront.utils.jsonschema.validate_schema],
-                        verbose_name="schema",
-                    ),
-                ),
-                ("is_default", models.BooleanField(default=False)),
-                ("name", models.CharField(max_length=100, unique=True, verbose_name="name")),
-                ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
-                (
-                    "tags",
-                    taggit.managers.TaggableManager(
-                        help_text="A comma-separated list of tags.",
-                        through="core.TaggedItem",
-                        to="core.Tag",
-                        verbose_name="Tags",
-                    ),
-                ),
-            ],
-            options={
-                "verbose_name": "allocation type",
-                "verbose_name_plural": "allocation types",
-                "ordering": ["name"],
-            },
-            bases=(coldfront.models.deletion.DeleteMixin, models.Model),
-        ),
-        migrations.CreateModel(
             name="Project",
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
@@ -206,7 +167,15 @@ class Migration(migrations.Migration):
                 (
                     "status",
                     models.CharField(
-                        choices=[("expired", "Expired"), ("active", "Active"), ("new", "New"), ("denied", "Denied")],
+                        choices=[
+                            ("new", "New"),
+                            ("active", "Active"),
+                            ("denied", "Denied"),
+                            ("expired", "Expired"),
+                            ("approved", "Approved"),
+                            ("revoked", "Revoked"),
+                            ("renew", "Renew"),
+                        ],
                         default="new",
                         max_length=50,
                         verbose_name="status",
@@ -216,6 +185,7 @@ class Migration(migrations.Migration):
                 ("end_date", models.DateTimeField(blank=True, null=True, verbose_name="end date")),
                 ("justification", models.TextField(blank=True, null=True, verbose_name="justification")),
                 ("description", models.CharField(blank=True, max_length=200, null=True, verbose_name="description")),
+                ("comments", models.TextField(blank=True, verbose_name="comments")),
                 (
                     "owner",
                     models.ForeignKey(
@@ -244,25 +214,18 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "allocation_type",
-                    models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.PROTECT,
-                        related_name="allocations",
-                        to="ras.allocationtype",
-                    ),
-                ),
-                (
                     "project",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.PROTECT, related_name="allocations", to="ras.project"
                     ),
                 ),
                 (
-                    "resources",
-                    models.ManyToManyField(
-                        help_text="The resources for this allocation", related_name="allocations", to="ras.resource"
+                    "resource",
+                    models.ForeignKey(
+                        help_text="The resource for this allocation",
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="allocations",
+                        to="ras.resource",
                     ),
                 ),
             ],
@@ -295,6 +258,15 @@ class Migration(migrations.Migration):
                 ("is_default", models.BooleanField(default=False)),
                 ("name", models.CharField(max_length=100, unique=True, verbose_name="name")),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
+                (
+                    "allocation_schema",
+                    models.JSONField(
+                        blank=True,
+                        null=True,
+                        validators=[coldfront.utils.jsonschema.validate_schema],
+                        verbose_name="schema",
+                    ),
+                ),
                 ("slug", models.SlugField(max_length=100, unique=True, verbose_name="slug")),
                 ("color", coldfront.models.fields.ColorField(default="9e9e9e", max_length=6, verbose_name="color")),
                 (

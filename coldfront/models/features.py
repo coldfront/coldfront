@@ -360,18 +360,24 @@ class CustomAttributesMixin(models.Model):
     class Meta:
         abstract = True
 
-    def get_profile(self):
+    def _get_profile(self):
         """
         Return the attribute profile
         """
         if not hasattr(self, "profile_field_name"):
             raise ImproperlyConfigured(
                 f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
-                f"override its get_profile() method."
+                f"override its _get_profile() method."
             )
 
         if hasattr(self, self.profile_field_name):
             return getattr(self, self.profile_field_name)
+
+        return None
+
+    def _get_schema(self, profile):
+        if hasattr(profile, "schema"):
+            return profile.schema
 
         return None
 
@@ -380,11 +386,16 @@ class CustomAttributesMixin(models.Model):
         """
         Returns a human-friendly representation of the attributes defined according to its type profile.
         """
-        profile = self.get_profile()
-        if not self.attribute_data or profile is None or not profile.schema:
+        profile = self._get_profile()
+        if not self.attribute_data or profile is None:
             return {}
+
+        schema = self._get_schema(profile)
+        if not profile.schema:
+            return {}
+
         attrs = {}
-        for name, options in profile.schema.get("properties", {}).items():
+        for name, options in schema.get("properties", {}).items():
             key = options.get("title", title(name))
             attrs[key] = self.attribute_data.get(name)
         return dict(sorted(attrs.items()))
@@ -393,10 +404,10 @@ class CustomAttributesMixin(models.Model):
         super().clean()
 
         # Validate any attributes against the assigned profile type's schema
-        profile = self.get_profile()
-        if profile and profile.schema:
+        profile = self._get_profile()
+        if profile and self._get_schema(profile):
             try:
-                jsonschema.validate(self.attribute_data, schema=profile.schema)
+                jsonschema.validate(self.attribute_data, schema=self._get_schema(profile))
             except JSONValidationError as e:
                 raise ValidationError(_("Invalid schema: {error}").format(error=e))
         else:

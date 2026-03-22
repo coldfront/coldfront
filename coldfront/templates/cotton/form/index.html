@@ -1,9 +1,11 @@
 {% load crispy_forms_tags %}
 {% load i18n %}
 
+{% cotton:vars show_custom_fields=True %}
+
 {% crispy form %}
 
-{% if form.custom_fields %}
+{% if show_custom_fields and form.custom_fields %}
 <fieldset> <legend class="col-9 offset-3">{% trans "Custom Fields" %}</legend>
 
 {% for group, fields in form.custom_field_groups.items %}
@@ -17,5 +19,5 @@
   {% endfor %}
 {% endfor %}
 
-  </fieldset>
+</fieldset>
 {% endif %}

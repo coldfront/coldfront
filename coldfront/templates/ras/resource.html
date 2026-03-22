@@ -19,6 +19,7 @@
     </c-card.fields>
 
     <c-card.tags :object="object" only />
+    <c-card.related_objects :object="object" :models="related_models" only />
   </c-slot>
 
   <c-slot name="right">
@@ -34,7 +35,6 @@
       {% endfor %}
     </c-card.fields>
 
-    <c-card.related_objects :object="object" :models="related_models" only />
     <c-card.custom_fields :object="object" only />
   </c-slot>
 </c-layout.panels>

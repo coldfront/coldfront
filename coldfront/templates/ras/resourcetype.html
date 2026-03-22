@@ -5,6 +5,10 @@
 <c-layout.panels>
   <c-slot name="left">
     <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Slug' %}">
+          {{ object.slug }}
+      </c-card.fields.item>
+
       <c-card.fields.item label="{% trans 'Color' %}">
           <c-ui.color_label :hex="object.color" />
       </c-card.fields.item>
@@ -23,9 +27,18 @@
   </c-slot>
 
   <c-slot name="bottom">
-    <c-card.code header="{% trans 'Schema' %}">
-    {{ object.schema|json }}
-    </c-card.code>
+    <c-layout.row>
+      <c-layout.col>
+        <c-card.code header="{% trans 'Resource Attribute Schema' %}">
+        {{ object.schema|json }}
+        </c-card.code>
+      </c-layout.col>
+      <c-layout.col>
+        <c-card.code header="{% trans 'Allocation Attribute Schema' %}">
+        {{ object.allocation_schema|json }}
+        </c-card.code>
+      </c-layout.col>
+    </c-layout.row>
   </c-slot>
 </c-layout.panels>
 {% endblock %}

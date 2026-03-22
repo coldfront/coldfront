@@ -155,7 +155,8 @@ FILTERS_NULL_CHOICE_LABEL = "None"
 FILTERS_NULL_CHOICE_VALUE = "null"
 FIELD_CHOICES = {}
 AUTO_SLUG_PREFIX = ENV.str("AUTO_SLUG_PREFIX", default="CF-")
-AUTO_SLUG_FUNC = ENV.str("AUTO_SLUG_FUNC", default="")
+AUTO_SLUG_FUNC = ENV.str("AUTO_SLUG_FUNC", default="coldfront.models.utils.auto_generate_slug")
+ALLOCATION_WORKFLOW = ENV.str("ALLOCATION_WORKFLOW", default="coldfront.ras.flows.AllocationStatusFlow")
 
 DEFAULT_PERMISSIONS = ENV.dict(
     "DEFAULT_PERMISSIONS",

@@ -272,6 +272,7 @@ dependencies = [
     { name = "django-split-settings" },
     { name = "django-tables2" },
     { name = "django-taggit" },
+    { name = "django-viewflow" },
     { name = "django-vite" },
     { name = "djangorestframework" },
     { name = "doi2bib" },
@@ -353,6 +354,7 @@ requires-dist = [
     { name = "django-split-settings", specifier = ">=1.3.2" },
     { name = "django-tables2", specifier = ">=2.8.0" },
     { name = "django-taggit", specifier = ">=6.1.0" },
+    { name = "django-viewflow", specifier = ">=2.2.15" },
     { name = "django-vite", specifier = ">=3.1.0" },
     { name = "djangorestframework", specifier = ">=3.16.0" },
     { name = "doi2bib", specifier = ">=0.4.0" },
@@ -818,6 +820,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/9d/dc/8242d9fbf0ae64feccbdd781fa741db5cf0521127a26ed9361e5f2f31f1b/django_upgrade-1.29.1.tar.gz", hash = "sha256:8c53b6bcd326a638a5dc908a707f26d71593bad5789b33775c90a8dc8a76afd5", size = 39638, upload-time = "2025-10-23T16:34:57.003Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f0/b0/c9fe7b4dbfcacb2402169f8189d4f7fa1609237317d714f01143d167db1c/django_upgrade-1.29.1-py3-none-any.whl", hash = "sha256:39a4d71365189ce8a5ccab534b2d1f0ed69c71bea7f1ef4c46041918d5247e64", size = 68847, upload-time = "2025-10-23T16:34:55.511Z" },
+]
+
+[[package]]
+name = "django-viewflow"
+version = "2.2.15"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+    { name = "django-filter" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5f/14/9ab44ab9f8b34a374fc6ad4eadf49d535657cb4a2b5270a675de87f987f9/django_viewflow-2.2.15.tar.gz", hash = "sha256:8b9714d7736969289e037c739bc1e20a143c525b3d087a7bce349a5f6b4f53e0", size = 15451029, upload-time = "2025-12-24T10:40:49.723Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9d/7e/bebaca789fdf3834b2b9bbf538ab1446e6148e8b457b9ad0edb07ce99a11/django_viewflow-2.2.15-py3-none-any.whl", hash = "sha256:1883bacda185d315e637b69e9153062ba5d3f12c933039eaa16d5d397747fd99", size = 15616870, upload-time = "2025-12-24T10:37:57.546Z" },
 ]
 
 [[package]]

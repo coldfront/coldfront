@@ -224,7 +224,7 @@ class CustomAttributesMixin(forms.Form):
         # Track type-specific attribute fields
         self.attr_fields = []
 
-        # Retrieve assigned AllocationType, if any
+        # Retrieve assigned profile, if any
         if not (id := get_field_value(self, self._get_profile_field_name())):
             return
         if not (profile := self.fields[self._get_profile_field_name()].queryset.filter(pk=id).first()):
@@ -254,16 +254,24 @@ class CustomAttributesMixin(forms.Form):
 
         return self.profile_field_name
 
+    def _get_schema(self, profile):
+        if hasattr(profile, "schema"):
+            return profile.schema
+
+        return None
+
     def _get_attr_form_fields(self, profile):
         """
         Return a dictionary mapping of attribute names to form fields, suitable for extending
         the form per the selected profile.
         """
-        if not profile.schema:
+
+        schema = self._get_schema(profile)
+        if not schema:
             return {}
 
-        properties = profile.schema.get("properties", {})
-        required_fields = profile.schema.get("required", [])
+        properties = schema.get("properties", {})
+        required_fields = schema.get("required", [])
 
         attr_fields = {}
         for name, options in properties.items():
@@ -321,7 +329,7 @@ class CustomAttributesImportMixin(forms.Form):
     def clean(self):
         super().clean()
 
-        # Attribute data may be included only if a resource type is specified
+        # Attribute data may be included only if a profile is specified
         if self.cleaned_data.get("attribute_data") and not self.cleaned_data.get(self._get_profile_field_name()):
             raise forms.ValidationError(
                 _(f"{self._get_profile_field_name()} must be specified if attribute data is provided.")

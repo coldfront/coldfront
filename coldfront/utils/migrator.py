@@ -72,6 +72,8 @@ def migrate_allocations():
         elif a.status.name == "Denied":
             status = AllocationStatusChoices.STATUS_DENIED
 
+        r = a.resources.first()
+        resource = Resource.objects.get(pk=r.id)
         allocation, _ = Allocation.objects.get_or_create(
             id=a.id,
             project_id=a.project_id,
@@ -80,14 +82,11 @@ def migrate_allocations():
             justification=a.justification,
             description=a.description,
             status=status,
+            resource=resource,
             owner_id=a.project.pi_id,
             created=a.created,
             last_updated=a.modified,
         )
-
-        for r in a.resources.all():
-            resource = Resource.objects.get(pk=r.id)
-            allocation.resources.add(resource)
 
         for u in a.allocationuser_set.filter(status__name="Active"):
             AllocationUser.objects.get_or_create(

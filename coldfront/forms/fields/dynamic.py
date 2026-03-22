@@ -83,7 +83,7 @@ class DynamicModelChoiceMixin:
     """
 
     filter = django_filters.ModelChoiceFilter
-    widget = widgets.APISelect
+    widget = widgets.APISelectWidget
 
     def __init__(
         self,
@@ -211,7 +211,7 @@ class DynamicModelMultipleChoiceField(DynamicModelChoiceMixin, forms.ModelMultip
     """
 
     filter = django_filters.ModelMultipleChoiceFilter
-    widget = widgets.APISelectMultiple
+    widget = widgets.APISelectMultipleWidget
 
     def clean(self, value):
         value = value or []

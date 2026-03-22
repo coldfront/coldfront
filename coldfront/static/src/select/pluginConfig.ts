@@ -30,6 +30,10 @@ export function getPlugins(element: HTMLSelectElement): object {
     plugins.drag_drop = {};
   }
 
+  if (element.hasAttribute('ts-checkbox-field')) {
+    plugins.checkbox_options = {};
+  }
+
   if (element.hasAttribute('ts-extra-columns-field')) {
     const title = (element.getAttribute('ts-title-field') as string) || '';
     const headers = title.split(',');

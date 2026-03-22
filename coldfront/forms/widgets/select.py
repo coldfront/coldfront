@@ -6,7 +6,7 @@
 from django import forms
 
 
-class HTMXSelect(forms.Select):
+class HTMXSelectWidget(forms.Select):
     """
     Selection widget that will re-generate the HTML form upon the selection of a new option.
     """

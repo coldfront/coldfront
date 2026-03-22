@@ -2,15 +2,26 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from django.shortcuts import get_object_or_404
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.ras import filtersets, forms, tables
-from coldfront.ras.models import Allocation, AllocationType, AllocationUser, Resource
+from coldfront.ras import filtersets, flows, forms, tables
+from coldfront.ras import object_actions as actions
+from coldfront.ras.flows import AllocationStatusFlow
+from coldfront.ras.models import Allocation, AllocationUser, Project, Resource
+from coldfront.ras.object_actions import RequestAllocation
 from coldfront.registry import register_model_view
-from coldfront.utils.query import count_related
 from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
 from coldfront.views.object_actions import BulkDelete, BulkExport
+
+try:
+    ALLOCATION_WORKFLOW = import_string(settings.ALLOCATION_WORKFLOW)
+except ImportError:
+    raise ImproperlyConfigured("ALLOCATION_WORKFLOW was set but cannot be imported. Please check your config settings.")
 
 #
 # Allocations
@@ -27,7 +38,16 @@ class AllocationListView(generic.ObjectListView):
 
 @register_model_view(Allocation)
 class AllocationView(GetRelatedModelsMixin, generic.ObjectView):
-    queryset = Allocation.objects.prefetch_related("resources__resource_type")
+    queryset = Allocation.objects.all()
+    flow = flows.AllocationStatusFlow
+
+    def get_extra_context(self, request, instance):
+        # Get the outgoing transitions for the current status so we can display the appropriate buttons
+        actions = AllocationStatusFlow.get_actions(instance.get_outgoing_transitions())
+        transitions = self.get_permitted_actions(request.user, model=Allocation, actions=actions) if actions else None
+        return {
+            "transitions": transitions,
+        }
 
 
 @register_model_view(Allocation, "add", detail=False)
@@ -78,6 +98,7 @@ class AllocationUserTabView(generic.ObjectChildrenView):
         table = super().get_table(*args, **kwargs)
         # TODO: hide this column by default? add created?
         table.columns.hide("allocation")
+        table.columns.hide("project")
         table.columns.show("created")
         return table
 
@@ -91,11 +112,14 @@ class AllocationResourceTabView(generic.ObjectChildrenView):
     filterset = filtersets.ResourceFilterSet
     template_name = "ras/allocation/resources.html"
     tab = ViewTab(
-        label=_("Resources"), badge=lambda obj: obj.resources.count(), permission="ras.view_allocation", weight=110
+        label=_("Resources"),
+        badge=lambda obj: obj.resource.get_descendants(include_self=True).count(),
+        permission="ras.view_allocation",
+        weight=110,
     )
 
     def get_children(self, request, parent):
-        return parent.resources.restrict(request.user, "view")
+        return parent.resource.get_descendants(include_self=True)
 
     def get_table(self, *args, **kwargs):
         table = super().get_table(*args, **kwargs)
@@ -104,53 +128,61 @@ class AllocationResourceTabView(generic.ObjectChildrenView):
 
 
 #
-# Allocation types
+# Allocation status workflow
 #
 
 
-@register_model_view(AllocationType, "list", path="", detail=False)
-class AllocationTypeListView(generic.ObjectListView):
-    queryset = AllocationType.objects.annotate(
-        allocation_count=count_related(Allocation, "allocation_type"),
-    )
-    filterset = filtersets.AllocationTypeFilterSet
-    filterset_form = forms.AllocationTypeFilterSetForm
-    table = tables.AllocationTypeTable
+class BaseAllocationFlowView(generic.ObjectFlowView):
+    queryset = Allocation.objects.all()
+    form = forms.AllocationReviewForm
+    flow = ALLOCATION_WORKFLOW
 
 
-@register_model_view(AllocationType)
-class AllocationTypeView(GetRelatedModelsMixin, generic.ObjectView):
-    queryset = AllocationType.objects.all()
+# Allocations are requested from a project
+@register_model_view(Project, "allocationrequest", path="allocation-request")
+class AllocationRequestView(BaseAllocationFlowView):
+    template_name = "ras/project/allocation_request.html"
+    form = forms.AllocationRequestForm
+    action = RequestAllocation
 
-    def get_extra_context(self, request, instance):
-        return {
-            "related_models": self.get_related_models(request, instance),
-        }
+    def get_object(self, **kwargs):
+        project = get_object_or_404(Project.objects.all(), **kwargs)
+        return Allocation(project=project, tenant=project.tenant)
 
+    def alter_object(self, obj, request, url_args, url_kwargs):
+        obj.owner = request.user
+        return obj
 
-@register_model_view(AllocationType, "add", detail=False)
-@register_model_view(AllocationType, "edit")
-class AllocationTypeEditView(generic.ObjectEditView):
-    queryset = AllocationType.objects.all()
-    form = forms.AllocationTypeForm
-
-
-@register_model_view(AllocationType, "delete")
-class AllocationTypeDeleteView(generic.ObjectDeleteView):
-    queryset = AllocationType.objects.all()
-
-
-@register_model_view(AllocationType, "bulk_import", path="import", detail=False)
-class AllocationTypeBulkImportView(generic.BulkImportView):
-    queryset = AllocationType.objects.all()
-    model_form = forms.AllocationTypeImportForm
+    def post_save(self, obj, form, request):
+        # Create the allocation users
+        for user in form.cleaned_data["users"]:
+            AllocationUser.objects.create(user=user, allocation=obj)
 
 
-@register_model_view(AllocationType, "bulk_delete", path="delete", detail=False)
-class AllocationTypeBulkDeleteView(generic.BulkDeleteView):
-    queryset = AllocationType.objects.all()
-    filterset = filtersets.AllocationTypeFilterSet
-    table = tables.AllocationTypeTable
+@register_model_view(Allocation, "approve")
+class AllocationApproveView(BaseAllocationFlowView):
+    action = actions.ApproveAllocation
+
+
+@register_model_view(Allocation, "deny")
+class AllocationDenyView(BaseAllocationFlowView):
+    action = actions.DenyAllocation
+
+
+@register_model_view(Allocation, "revoke")
+class AllocationRevokeView(BaseAllocationFlowView):
+    action = actions.RevokeAllocation
+
+
+@register_model_view(Allocation, "renew")
+class AllocationRenewView(BaseAllocationFlowView):
+    action = actions.RenewAllocation
+
+
+@register_model_view(Allocation, "activate")
+class AllocationActivateView(BaseAllocationFlowView):
+    form = forms.AllocationActivateForm
+    action = actions.ActivateAllocation
 
 
 #

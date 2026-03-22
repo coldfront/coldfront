@@ -48,12 +48,14 @@ class AllocationStatusChoices(ChoiceSet):
     STATUS_EXPIRED = "expired"
     STATUS_APPROVED = "approved"
     STATUS_REVOKED = "revoked"
+    STATUS_RENEW = "renew"
 
     CHOICES = [
         (STATUS_NEW, _("New"), "info"),
         (STATUS_ACTIVE, _("Active"), "success"),
         (STATUS_DENIED, _("Denied"), "danger"),
         (STATUS_EXPIRED, _("Expired"), "warning"),
-        (STATUS_APPROVED, _("Approved"), "success"),
+        (STATUS_APPROVED, _("Approved"), "primary"),
         (STATUS_REVOKED, _("Revoked"), "danger"),
+        (STATUS_RENEW, _("Renew"), "info"),
     ]

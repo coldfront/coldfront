@@ -33,6 +33,7 @@ class ObjectAction:
 
     Params:
         name: The action name appended to the module for view resolution
+        transition: The transition name if this action is associated with a workflow
         label: Human-friendly label for the rendered button
         template_name: Name of the HTML template which renders the button
         multi: Set to True if this action is performed by selecting multiple objects (i.e. using a table)
@@ -41,6 +42,7 @@ class ObjectAction:
     """
 
     name = ""
+    transition = None
     label = None
     template_name = None
     multi = False
@@ -83,7 +85,6 @@ class ObjectAction:
         }
 
         return render_component(ctx["request"], cls.template_name, ctx)
-        # return loader.render_to_string(cls.template_name, ctx)
 
 
 class AddObject(ObjectAction):

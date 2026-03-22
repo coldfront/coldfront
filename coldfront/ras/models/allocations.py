@@ -6,23 +6,11 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.models import ColdFrontModel, OrganizationalModel, PrimaryModel
-from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
+from coldfront.models import ColdFrontModel, PrimaryModel
+from coldfront.models.features import CustomAttributesMixin
 from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import AllocationStatusChoices
-
-
-class AllocationType(AttributeProfileMixin, OrganizationalModel):
-    """
-    An AllocationType defines the attributes which can be set on one or more Allocations.
-    """
-
-    clone_fields = ("schema",)
-
-    class Meta:
-        ordering = ["name"]
-        verbose_name = _("allocation type")
-        verbose_name_plural = _("allocation types")
+from coldfront.ras.flows import AllocationStatusFlow
 
 
 class Allocation(CustomAttributesMixin, PrimaryModel):
@@ -33,22 +21,16 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
     slug = AutoSlugField(
         verbose_name=_("slug"),
     )
-    allocation_type = models.ForeignKey(
-        to="ras.AllocationType",
-        on_delete=models.PROTECT,
-        related_name="allocations",
-        blank=True,
-        null=True,
-    )
     project = models.ForeignKey(
         to="ras.Project",
         on_delete=models.PROTECT,
         related_name="allocations",
     )
-    resources = models.ManyToManyField(
+    resource = models.ForeignKey(
         to="ras.Resource",
+        on_delete=models.PROTECT,
         related_name="allocations",
-        help_text=_("The resources for this allocation"),
+        help_text=_("The resource for this allocation"),
     )
     owner = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -83,6 +65,10 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         blank=True,
         null=True,
     )
+    comments = models.TextField(
+        verbose_name=_("comments"),
+        blank=True,
+    )
     tenant = models.ForeignKey(
         to="tenancy.Tenant",
         on_delete=models.PROTECT,
@@ -101,15 +87,25 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         "ras.Resource",
     )
 
-    profile_field_name = "allocation_type"
+    profile_field_name = "resource"
 
     class Meta:
         ordering = ["start_date"]
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")
 
+    def _get_schema(self, profile):
+        if profile and profile.resource_type:
+            return profile.resource_type.allocation_schema
+
     def get_status_color(self):
         return AllocationStatusChoices.colors.get(self.status)
+
+    def get_outgoing_transitions(self):
+        if not self.status:
+            return []
+
+        return [t.slug for t in AllocationStatusFlow.status.get_outgoing_transitions(self.status)]
 
     def __str__(self):
         return f"Allocation {self.slug}"

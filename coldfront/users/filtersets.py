@@ -6,9 +6,11 @@
 import django_filters
 from django.db.models import Q
 from django.utils.translation import gettext as _
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema_field
 
 from coldfront.core.models import ObjectType
-from coldfront.ras.models import Project
+from coldfront.ras.models import Allocation, Project
 from coldfront.users.models import Group, ObjectPermission, Token, User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet
@@ -73,6 +75,12 @@ class UserFilterSet(BaseFilterSet):
         queryset=Project.objects.all(),
         label=_("Project"),
     )
+    allocation_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="allocations__allocation_id",
+        queryset=Allocation.objects.all(),
+        label=_("Allocation"),
+    )
+    available_for_allocation = django_filters.CharFilter(method="get_for_allocation")
 
     class Meta:
         model = User
@@ -97,6 +105,22 @@ class UserFilterSet(BaseFilterSet):
             | Q(last_name__icontains=value)
             | Q(email__icontains=value)
         )
+
+    @extend_schema_field(OpenApiTypes.STR)
+    def get_for_allocation(self, queryset, name, value):
+        """
+        Filter users that are a project but not on an allocation.
+
+        - value = <project_id>_<allocation_id>
+        """
+        ids = value.split("_")
+        if len(ids) != 2:
+            return queryset.none()
+
+        try:
+            return queryset.filter(Q(projects__project_id=int(ids[0])) & ~Q(allocations__allocation_id=int(ids[1])))
+        except ValueError:
+            return queryset.none()
 
 
 class ObjectPermissionFilterSet(BaseFilterSet):

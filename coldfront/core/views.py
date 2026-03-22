@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import EmptyPage
 from django.db.models import Count, Q
-from django.http import Http404
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 from django.views.generic import View
@@ -29,6 +29,7 @@ from . import (
 from .models import CustomField, CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
 from .plugins import get_local_plugins
 from .tables import CatalogPluginTable, PluginVersionTable
+from .templatetags.builtins.filters import render_markdown
 
 
 @register_model_view(Tag, "list", path="", detail=False)
@@ -345,3 +346,18 @@ class PluginView(BasePluginView):
                 "table": table,
             },
         )
+
+
+#
+# Markdown
+#
+
+
+class RenderMarkdownView(LoginRequiredMixin, View):
+    def post(self, request):
+        form = forms.RenderMarkdownForm(request.POST)
+        if not form.is_valid():
+            HttpResponseBadRequest()
+        rendered = render_markdown(form.cleaned_data["text"])
+
+        return HttpResponse(rendered)

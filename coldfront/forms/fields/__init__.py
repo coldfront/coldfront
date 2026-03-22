@@ -22,6 +22,7 @@ from .dynamic import (
     DynamicMultipleChoiceField,
 )
 from .fields import (
+    CommentField,
     JSONField,
     QueryField,
     SlugField,
@@ -30,6 +31,7 @@ from .fields import (
 
 __all__ = (
     "CSVChoiceField",
+    "CommentField",
     "CSVContentTypeField",
     "CSVModelChoiceField",
     "CSVModelMultipleChoiceField",

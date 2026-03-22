@@ -61,6 +61,8 @@ class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, NestedGroupMo
             "name",
             "slug",
             "status",
+            "resource_type",
+            "parent",
             "description",
         )
 

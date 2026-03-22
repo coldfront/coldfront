@@ -2,68 +2,185 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from crispy_forms.layout import Fieldset
+from crispy_forms.layout import Fieldset, Layout
 from django import forms
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import (
-    OrganizationalModelForm,
     PrimaryModelForm,
     PrimaryModelImportForm,
     TenancyForm,
     TenancyImportForm,
 )
 from coldfront.forms.fields import (
+    CommentField,
     CSVModelChoiceField,
-    CSVModelMultipleChoiceField,
     DynamicModelChoiceField,
     DynamicModelMultipleChoiceField,
 )
 from coldfront.forms.layouts import DateTime
-from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
-from coldfront.forms.widgets import HTMXSelect
-from coldfront.ras.models import Allocation, AllocationType, AllocationUser, Project, ProjectUser, Resource
+from coldfront.forms.mixins import CustomAttributesImportMixin, CustomAttributesMixin, HorizontalFormMixin
+from coldfront.forms.widgets import HTMXSelectWidget
+from coldfront.ras.models import Allocation, AllocationUser, Project, Resource
 from coldfront.users.models import User
 from coldfront.utils.forms import get_field_value
 
 
-class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
-    allocation_type = forms.ModelChoiceField(
-        queryset=AllocationType.objects.all(),
-        label=_("Allocation Type"),
+class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
+    project = forms.ModelChoiceField(
+        label=_("Project"),
+        queryset=Project.objects.all(),
         required=False,
-        widget=HTMXSelect(),
+        disabled=True,
+        widget=forms.HiddenInput(),
     )
+    resource = forms.ModelChoiceField(
+        queryset=Resource.objects.all(),
+        label=_("Resource"),
+        required=False,
+        widget=HTMXSelectWidget(),
+        help_text=_("Select a resources for this allocation request"),
+    )
+    justification = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 5}),
+        help_text=_(
+            "Please provide the justification for how you intend to use the resource to further the research goals of your project"
+        ),
+    )
+    users = DynamicModelMultipleChoiceField(
+        label=_("Users"),
+        queryset=User.objects.all(),
+        required=False,
+        context={
+            "checkbox": "true",
+        },
+        help_text=_("Please choose users"),
+    )
+
+    profile_field_name = "resource"
+
+    class Meta:
+        model = Allocation
+        fields = [
+            "project",
+            "resource",
+            "justification",
+            "users",
+        ]
+
+    @property
+    def fieldsets(self):
+        return [
+            Fieldset(
+                "Allocation Request",
+                "project",
+                "resource",
+                *self.attr_fields,
+                "justification",
+                "users",
+            ),
+        ]
+
+    def _get_schema(self, profile):
+        if profile and profile.resource_type:
+            return profile.resource_type.allocation_schema
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Limit users queryset to those which belong to the project
+        if project_id := get_field_value(self, "project"):
+            project = Project.objects.filter(pk=project_id).first()
+            self.fields["users"].queryset = User.objects.filter(projects__project_id=project.pk)
+            self.fields["users"].widget.add_query_params({"project_id": project.pk})
+        else:
+            self.fields["users"].choices = ()
+            self.fields["users"].widget.attrs["disabled"] = True
+
+
+class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
+    project = forms.ModelChoiceField(
+        label=_("Project"),
+        queryset=Project.objects.all(),
+        required=False,
+        disabled=True,
+    )
+    resource = forms.ModelChoiceField(
+        queryset=Resource.objects.all(),
+        label=_("Resource"),
+        required=False,
+        disabled=True,
+    )
+    owner = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        label=_("Owner"),
+        required=False,
+        disabled=True,
+    )
+    comments = CommentField()
+
+    class Meta:
+        model = Allocation
+        fields = [
+            "project",
+            "resource",
+            "owner",
+            "comments",
+        ]
+
+    @property
+    def fieldsets(self):
+        return [
+            Layout(
+                "project",
+                "resource",
+                "owner",
+                "comments",
+            ),
+        ]
+
+
+class AllocationBaseForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
     project = DynamicModelChoiceField(
         label=_("Project"),
         queryset=Project.objects.all(),
         required=True,
     )
-    resources = DynamicModelMultipleChoiceField(
-        label=_("Resource"),
+
+    resource = forms.ModelChoiceField(
         queryset=Resource.objects.all(),
-        required=True,
-        selector=True,
+        label=_("Resource"),
+        required=False,
+        widget=HTMXSelectWidget(),
+        help_text=_("Select a resources for this allocation request"),
     )
     owner = DynamicModelChoiceField(
         label=_("User"),
         queryset=User.objects.all(),
         required=True,
     )
+    comments = CommentField()
 
-    profile_field_name = "allocation_type"
+    profile_field_name = "resource"
 
+    def _get_schema(self, profile):
+        if profile and profile.resource_type:
+            return profile.resource_type.allocation_schema
+
+
+class AllocationForm(AllocationBaseForm):
     class Meta:
         model = Allocation
         fields = [
-            "allocation_type",
             "project",
-            "resources",
+            "resource",
             "owner",
             "start_date",
             "end_date",
             "status",
+            "comments",
             "description",
             "justification",
             "tags",
@@ -75,9 +192,13 @@ class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
     def fieldsets(self):
         return [
             Fieldset(
+                _("Resource"),
+                "resource",
+                *self.attr_fields,
+            ),
+            Fieldset(
                 _("Allocation"),
                 "project",
-                "resources",
                 "owner",
                 DateTime("start_date"),
                 DateTime("end_date"),
@@ -86,55 +207,54 @@ class AllocationForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
                 "justification",
             ),
             Fieldset(
-                "Allocation Type",
-                "allocation_type",
-                *self.attr_fields,
+                _("Comments"),
+                "comments",
             ),
         ]
 
 
-class AllocationTypeForm(AttributeProfileForm, OrganizationalModelForm):
+class AllocationActivateForm(AllocationBaseForm):
     class Meta:
-        model = AllocationType
+        model = Allocation
         fields = [
-            "name",
-            "schema",
+            "project",
+            "resource",
+            "owner",
+            "start_date",
+            "end_date",
+            "comments",
             "description",
-            "is_default",
+            "justification",
             "tags",
+            "tenant",
+            "tenant_group",
         ]
 
-    fieldsets = (
-        Fieldset(
-            _("Allocation Type"),
-            "name",
-            "description",
-            "schema",
-            "is_default",
-        ),
-    )
-
-
-class AllocationTypeImportForm(PrimaryModelImportForm):
-    class Meta:
-        model = AllocationType
-        fields = [
-            "name",
-            "schema",
-            "description",
-            "is_default",
-            "tags",
+    @property
+    def fieldsets(self):
+        return [
+            Fieldset(
+                _("Resource"),
+                "resource",
+                *self.attr_fields,
+            ),
+            Fieldset(
+                _("Allocation"),
+                "project",
+                "owner",
+                DateTime("start_date"),
+                DateTime("end_date"),
+                "description",
+                "justification",
+            ),
+            Fieldset(
+                _("Comments"),
+                "comments",
+            ),
         ]
 
 
 class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, PrimaryModelImportForm):
-    allocation_type = CSVModelChoiceField(
-        label=_("Allocation Type"),
-        queryset=AllocationType.objects.all(),
-        to_field_name="name",
-        help_text=_("Allocation Type"),
-    )
-
     attribute_data = forms.JSONField(
         label=_("Attributes"),
         required=False,
@@ -162,8 +282,8 @@ class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, Prima
         },
     )
 
-    resources = CSVModelMultipleChoiceField(
-        label=_("Resources"),
+    resource = CSVModelChoiceField(
+        label=_("Resource"),
         queryset=Resource.objects.all(),
         required=True,
         to_field_name="name",
@@ -172,14 +292,13 @@ class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, Prima
         },
     )
 
-    profile_field_name = "allocation_type"
+    profile_field_name = "resource"
 
     class Meta:
         model = Allocation
         fields = [
-            "allocation_type",
             "project",
-            "resources",
+            "resource",
             "owner",
             "start_date",
             "end_date",
@@ -192,11 +311,16 @@ class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, Prima
 
 
 class AllocationUserForm(PrimaryModelForm):
+    allocation = forms.ModelChoiceField(
+        queryset=Allocation.objects.all(),
+        label=_("Allocation"),
+        required=True,
+        widget=HTMXSelectWidget(),
+    )
     user = DynamicModelChoiceField(
         label=_("User"),
         queryset=User.objects.all(),
         required=True,
-        selector=True,
         context={
             "label": "username",
             "title": "Username,First Name,Last Name,Email",
@@ -224,20 +348,14 @@ class AllocationUserForm(PrimaryModelForm):
         if allocation_id := get_field_value(self, "allocation"):
             try:
                 allocation = Allocation.objects.get(pk=allocation_id)
-                self.fields["user"].widget.add_query_params({"project_id": allocation.project_id})
-                self.fields["allocation"].widget.attrs["data-readonly"] = "readonly"
+                self.fields["user"].queryset = User.objects.filter(
+                    Q(projects__project_id=allocation.project_id) & ~Q(allocations__allocation_id=allocation.pk)
+                )
+                self.fields["user"].widget.add_query_params(
+                    {"available_for_allocation": f"{allocation.project_id}_{allocation.pk}"}
+                )
             except ObjectDoesNotExist:
                 pass
-
-    def clean(self):
-        super().clean()
-        allocation = self.cleaned_data["allocation"]
-        user = self.cleaned_data["user"]
-        try:
-            ProjectUser.objects.get(project_id=allocation.project_id, user_id=user.id)
-        except ObjectDoesNotExist:
-            # TODO: should we enforce this?
-            raise forms.ValidationError(_("You can only add users that are on the same project as the allocation."))
 
 
 class AllocationUserImportForm(PrimaryModelImportForm):
@@ -248,7 +366,7 @@ class AllocationUserImportForm(PrimaryModelImportForm):
         to_field_name="username",
         help_text=_("User to add to allocation"),
         error_messages={
-            "invalid_choice": _("User not found."),
+            "invalid_choice": _("User not found, is not in this project, or has already been added to the allocation."),
         },
     )
 
@@ -268,3 +386,25 @@ class AllocationUserImportForm(PrimaryModelImportForm):
             "user",
             "allocation",
         ]
+
+    def __init__(self, data=None, *args, **kwargs):
+        super().__init__(data, *args, **kwargs)
+
+        # Limit users to those belonging to the same project
+        if self.is_bound and "allocation" in self.data:
+            try:
+                allocation = self.fields["allocation"].to_python(self.data["allocation"])
+            except forms.ValidationError:
+                allocation = None
+        else:
+            try:
+                allocation = self.instance.allocation
+            except Allocation.DoesNotExist:
+                allocation = None
+
+        if allocation:
+            self.fields["user"].queryset = User.objects.filter(
+                Q(projects__project_id=allocation.project_id) & ~Q(allocations__allocation_id=allocation.pk)
+            )
+        else:
+            self.fields["user"].queryset = User.objects.none()
