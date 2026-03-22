@@ -14,14 +14,24 @@ from coldfront.forms import (
     TenancyForm,
     TenancyImportForm,
 )
-from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField, SlugField
+from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField, JSONField, SlugField
 from coldfront.forms.layouts import Slug
-from coldfront.forms.mixins import AttributeProfileForm, CustomAttributesImportMixin, CustomAttributesMixin
-from coldfront.forms.widgets import HTMXSelect
+from coldfront.forms.mixins import CustomAttributesImportMixin, CustomAttributesMixin
+from coldfront.forms.widgets import HTMXSelectWidget
 from coldfront.ras.models import Resource, ResourceType
 
 
-class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
+class ResourceTypeForm(OrganizationalModelForm):
+    schema = JSONField(
+        label=_("Resource Attribute Schema"),
+        required=False,
+        help_text=_("Enter a valid JSON schema to define supported attributes."),
+    )
+    allocation_schema = JSONField(
+        label=_("Allocation Attribute Schema"),
+        required=False,
+        help_text=_("Enter a valid JSON schema to define supported attributes."),
+    )
     slug = SlugField()
 
     class Meta:
@@ -32,6 +42,7 @@ class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
             "color",
             "description",
             "schema",
+            "allocation_schema",
             "is_default",
             "tags",
         ]
@@ -44,6 +55,7 @@ class ResourceTypeForm(AttributeProfileForm, OrganizationalModelForm):
             "color",
             "description",
             "schema",
+            "allocation_schema",
             "is_default",
         ),
     )
@@ -54,7 +66,7 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
         queryset=ResourceType.objects.all(),
         label=_("Resource Type"),
         required=False,
-        widget=HTMXSelect(),
+        widget=HTMXSelectWidget(),
     )
 
     parent = DynamicModelChoiceField(

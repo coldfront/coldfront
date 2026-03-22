@@ -1,0 +1,61 @@
+{% extends 'generic/base.html' %}
+{% load buttons %}
+{% load i18n %}
+
+{% comment %}
+Blocks:
+  - title:      Page title
+  - controls:   Control elements displayed between the header and content
+  - tabs:       Page tabs
+  - content:    Primary page content
+    - form:     Content within the <form> element
+    - buttons:  Form submission buttons
+  - modals:     Any pre-loaded modals
+
+Context:
+  - object:      Python instance of the object being edited
+  - form:        The edit form
+  - return_url:  The URL to which the user is redirected after submitting the form
+{% endcomment %}
+
+{% block title %}
+    {{ object }}
+{% endblock title %}
+
+{% block tabs %}
+  <ul class="nav nav-tabs">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="edit-form-tab" data-bs-toggle="tab" data-bs-target="#edit-form" type="button" role="tab" aria-controls="edit-form" aria-selected="true">
+         {{ flow.label }} {{ action.label }}
+      </button>
+    </li>
+  </ul>
+{% endblock tabs %}
+
+{% block content %}
+  <div class="tab-pane show active" id="edit-form" role="tabpanel" aria-labelledby="object-list-tab">
+
+    {% block object_info %}
+    {% endblock %}
+
+    <form action="" method="post" enctype="multipart/form-data" class="object-edit mt-5">
+
+      <div id="form_fields" hx-disinherit="hx-select hx-swap">
+        {% block form %}
+          <c-form :form="form" />
+        {% endblock form %}
+      </div>
+
+      <div class="col-lg-9 text-end">
+        {% block buttons %}
+          <a href="{{ return_url }}" class="btn btn-outline-secondary btn-float">{% trans "Cancel" %}</a>
+          {% action_buttons action object type="submit"%}
+        {% endblock buttons %}
+      </div>
+    </form>
+  </div>
+{% endblock content %}
+
+{% block modals %}
+  <c-modal.htmx size="lg" />
+{% endblock %}

@@ -10,7 +10,7 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
 
-class APISelect(forms.Select):
+class APISelectWidget(forms.Select):
     """
     A select widget populated via an API call
 
@@ -170,5 +170,5 @@ class APISelect(forms.Select):
         self.add_query_params({key: value})
 
 
-class APISelectMultiple(APISelect, forms.SelectMultiple):
+class APISelectMultipleWidget(APISelectWidget, forms.SelectMultiple):
     pass

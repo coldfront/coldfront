@@ -262,7 +262,7 @@ class ActionsColumn(tables.Column):
     actions = {
         "edit": ActionsItem("Edit", "pencil", "change", "warning"),
         "delete": ActionsItem("Delete", "trash-can", "delete", "danger"),
-        "changelog": ActionsItem("Changelog", "history"),
+        "changelog": ActionsItem("Changelog", "history", "change"),
     }
 
     def __init__(self, *args, actions=("edit", "delete", "changelog"), extra_buttons="", split_actions=True, **kwargs):
@@ -309,7 +309,7 @@ class ActionsColumn(tables.Column):
                 if len(self.actions) == 1 or (self.split_actions and idx == 0):
                     dropdown_class = attrs.css_class
                     button = (
-                        f'<a class="btn btn-sm btn-{attrs.css_class}" href="{url}{url_appendix}" type="button" '
+                        f'<a class="btn btn-sm btn-{attrs.css_class}" href="{url}{url_appendix}" title="{attrs.title}" type="button" '
                         f'aria-label="{attrs.title}">'
                         f'<i class="fa-solid fa-{attrs.icon}"></i></a>'
                     )

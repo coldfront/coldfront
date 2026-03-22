@@ -78,7 +78,12 @@ class ProjectUserTabView(generic.ObjectChildrenView):
     filterset = filtersets.ProjectUserFilterSet
     filterset_form = forms.ProjectUserFilterSetForm
     template_name = "ras/project/users.html"
-    tab = ViewTab(label=_("Users"), badge=lambda obj: obj.users.count(), permission="ras.view_project", weight=100)
+    tab = ViewTab(
+        label=_("Users"),
+        badge=lambda obj: obj.users.count(),
+        permission="ras.view_project",
+        weight=100,
+    )
 
     def get_children(self, request, parent):
         return parent.users.restrict(request.user, "view")
@@ -101,7 +106,10 @@ class ProjectAllocationTabView(generic.ObjectChildrenView):
     filterset_form = forms.AllocationFilterSetForm
     template_name = "ras/project/allocations.html"
     tab = ViewTab(
-        label=_("Allocations"), badge=lambda obj: obj.allocations.count(), permission="ras.view_allocation", weight=200
+        label=_("Allocations"),
+        badge=lambda obj: obj.allocations.count(),
+        permission="ras.view_allocation",
+        weight=200,
     )
 
     def get_children(self, request, parent):

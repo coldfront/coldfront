@@ -1,0 +1,21 @@
+{% if type == "link" %}
+<a title="{% if title %}{{ title }}{% else %}{{ label }}{% endif %}" href="{{ url }}" class="btn {%if small %}btn-sm{%endif%} {{ css_class }}">
+    <i class="{{ icon }}" aria-hidden="true"></i> {{ label }}
+</a>
+{% else %}
+<button
+  title="{% if title %}{{ title }}{% else %}{{ label }}{% endif %}"
+  class="btn {{ css_class }}"
+  {% if type == "submit" %}
+  type="submit"
+  {% else %}
+  type="button"
+  data-bs-toggle="modal"
+  data-bs-target="#htmx-modal"
+  hx-get="{{ url }}?_modal=True"
+  hx-target="#htmx-modal-content"
+  {% endif %}
+>
+  <i class="{{ icon }}"></i> {{ label }}
+</button>
+{% endif %}

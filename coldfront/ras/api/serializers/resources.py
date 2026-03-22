@@ -29,6 +29,7 @@ class ResourceTypeSerializer(AttributeProfileModelSerializer, OrganizationalMode
             "description",
             "color",
             "schema",
+            "allocation_schema",
             "tags",
             "custom_fields",
             "created",

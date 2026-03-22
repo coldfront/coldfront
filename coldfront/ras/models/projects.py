@@ -12,7 +12,7 @@ from coldfront.ras.choices import ProjectStatusChoices
 
 
 class Project(OrganizationalModel):
-    """A project is a container for housing research summary information related to allocation requests"""
+    """A project is a container for housing research summary information related to allocations"""
 
     slug = AutoSlugField(
         verbose_name=_("slug"),

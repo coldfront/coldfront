@@ -2,11 +2,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .apiselect import APISelect, APISelectMultiple
-from .select import HTMXSelect
+from .apiselect import APISelectMultipleWidget, APISelectWidget
+from .select import HTMXSelectWidget
+from .widgets import MarkdownWidget
 
 __all__ = (
-    "HTMXSelect",
-    "APISelect",
-    "APISelectMultiple",
+    "HTMXSelectWidget",
+    "APISelectWidget",
+    "APISelectMultipleWidget",
+    "MarkdownWidget",
 )

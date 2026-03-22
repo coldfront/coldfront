@@ -7,11 +7,10 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import OrganizationalModelFilterSetForm, PrimaryModelFilterSetForm
-from coldfront.forms.fields import TagFilterField
+from coldfront.forms.fields import DynamicModelMultipleChoiceField, TagFilterField
 from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
-    AllocationType,
     AllocationUser,
     Project,
     ProjectUser,
@@ -45,6 +44,11 @@ class ResourceFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
         choices=ResourceStatusChoices,
         required=False,
     )
+    parent_id = DynamicModelMultipleChoiceField(
+        queryset=Resource.objects.all(),
+        required=False,
+        label=_("Parent"),
+    )
     tag = TagFilterField(model)
 
     fieldsets = (
@@ -52,6 +56,7 @@ class ResourceFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
             _("Resource"),
             "resource_type_id",
             "status",
+            "parent_id",
             "tag",
         ),
         Fieldset(
@@ -99,15 +104,12 @@ class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetFor
 
 class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
     model = Allocation
-    allocation_type_id = forms.ModelMultipleChoiceField(
-        queryset=AllocationType.objects.all(), required=False, label=_("Allocation Type")
-    )
     project_id = forms.ModelChoiceField(
         queryset=Project.objects.all(),
         required=False,
         label=_("Project"),
     )
-    resources = forms.ModelMultipleChoiceField(
+    resource_id = forms.ModelMultipleChoiceField(
         queryset=Resource.objects.all(),
         required=False,
         label=_("Resources"),
@@ -132,9 +134,8 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
     fieldsets = (
         Fieldset(
             _("Allocation"),
-            "allocation_type_id",
             "project_id",
-            "resources",
+            "resource_id",
             "status",
             "last_name",
             "username",
@@ -144,19 +145,6 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
             _("Tenant"),
             "tenant_group_id",
             "tenant_id",
-        ),
-    )
-
-
-class AllocationTypeFilterSetForm(OrganizationalModelFilterSetForm):
-    model = AllocationType
-    tag = TagFilterField(model)
-
-    fieldsets = (
-        Fieldset(
-            "Allocation Type",
-            "q",
-            "tag",
         ),
     )
 

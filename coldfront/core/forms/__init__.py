@@ -4,6 +4,7 @@
 
 from .bulk_import import CustomFieldChoiceSetImportForm, CustomFieldImportForm, TagImportForm
 from .filtersets import CustomFieldChoiceSetFilterForm, CustomFieldFilterForm, ObjectChangeFilterForm, TagFilterForm
+from .misc import RenderMarkdownForm
 from .model_forms import CustomFieldChoiceSetForm, CustomFieldForm, TagForm
 
 __all__ = (
@@ -17,4 +18,5 @@ __all__ = (
     "CustomFieldImportForm",
     "CustomFieldFilterForm",
     "ObjectChangeFilterForm",
+    "RenderMarkdownForm",
 )

@@ -2,10 +2,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from coldfront.core.choices import CSVDelimiterChoices, ImportFormatChoices
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
-    AllocationType,
     AllocationUser,
     Project,
     ProjectUser,
@@ -150,20 +150,13 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         for resource in resources:
             resource.save()
 
-        allocation_type = AllocationType.objects.create(name="Storage")
-
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=user, allocation_type=allocation_type),
-            Allocation(justification="Need resources 2", project=project, owner=user, allocation_type=allocation_type),
-            Allocation(justification="Need resources 3", project=project, owner=user, allocation_type=allocation_type),
+            Allocation(justification="Need resources 1", project=project, owner=user, resource=resources[0]),
+            Allocation(justification="Need resources 2", project=project, owner=user, resource=resources[1]),
+            Allocation(justification="Need resources 3", project=project, owner=user, resource=resources[2]),
         )
         for allocation in allocations:
             allocation.save()
-
-        allocations[0].resources.add(resources[0])
-        allocations[0].resources.add(resources[1])
-        allocations[1].resources.add(resources[1])
-        allocations[2].resources.add(resources[2])
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
@@ -172,17 +165,16 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "description": "A new Allocation",
             "owner": user.pk,
             "project": project.pk,
-            "resources": [resources[0].pk, resources[1].pk],
-            "allocation_type": allocation_type.pk,
+            "resource": resources[0].pk,
             "status": AllocationStatusChoices.STATUS_ACTIVE,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "justification,description,status,owner,project,allocation_type,resources",
-            "need resources4,Fourth allocation,active,User1,Project 1,Storage,Resource 1",
-            "need resources5,Fifth allocation,active,User1,Project 1,Storage,Resource 2",
-            "need resources6,Sixth allocation,active,User1,Project 1,Storage,Resource 3",
+            "justification,description,status,owner,project,resource",
+            "need resources4,Fourth allocation,active,User1,Project 1,Resource 1",
+            "need resources5,Fifth allocation,active,User1,Project 1,Resource 2",
+            "need resources6,Sixth allocation,active,User1,Project 1,Resource 3",
         )
 
         cls.csv_update_data = (
@@ -277,21 +269,14 @@ class AllocationUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         for resource in resources:
             resource.save()
 
-        allocation_type = AllocationType.objects.create(name="Storage")
-
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=owner, allocation_type=allocation_type),
-            Allocation(justification="Need resources 2", project=project, owner=owner, allocation_type=allocation_type),
-            Allocation(justification="Need resources 3", project=project, owner=owner, allocation_type=allocation_type),
-            Allocation(justification="Need resources 4", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 1", project=project, owner=owner, resource=resources[0]),
+            Allocation(justification="Need resources 2", project=project, owner=owner, resource=resources[1]),
+            Allocation(justification="Need resources 3", project=project, owner=owner, resource=resources[1]),
+            Allocation(justification="Need resources 4", project=project, owner=owner, resource=resources[2]),
         )
         for allocation in allocations:
             allocation.save()
-
-        allocations[0].resources.add(resources[0])
-        allocations[0].resources.add(resources[1])
-        allocations[1].resources.add(resources[1])
-        allocations[2].resources.add(resources[2])
 
         allocation_users = (
             AllocationUser(user=users[0], allocation=allocations[0]),
@@ -319,3 +304,52 @@ class AllocationUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{allocation_users[1].pk},{allocations[3].slug}",
             f"{allocation_users[2].pk},{allocations[3].slug}",
         )
+
+    def test_adding_users_from_different_project(self):
+        """
+        Test that users added to an allocation must belong to the same project is enforced
+        """
+
+        initial_count = AllocationUser.objects.count()
+        user = User.objects.create(username="UserNew")
+        project = Project.objects.create(name="Project New", owner=user)
+        ProjectUser(user=user, project=project)
+
+        allocation = Allocation.objects.first()
+        self.assertNotEqual(project, allocation.project)
+
+        self.add_permissions("ras.add_allocationuser", "ras.view_allocation", "users.view_user")
+
+        data = {
+            "allocation": allocation.pk,
+            "user": user.pk,
+        }
+
+        request = {
+            "path": self._get_url("add"),
+            "data": data,
+        }
+
+        response = self.client.post(**request)
+        self.assertHttpStatus(response, 200)
+        self.assertEqual(initial_count, AllocationUser.objects.count())
+
+        csv_data = (
+            "user,allocation.slug",
+            f"{user.username},{allocation.slug}",
+        )
+
+        data = {
+            "data": csv_data,
+            "format": ImportFormatChoices.CSV,
+            "csv_delimiter": CSVDelimiterChoices.AUTO,
+        }
+
+        request = {
+            "path": self._get_url("bulk_import"),
+            "data": data,
+        }
+
+        response = self.client.post(**request)
+        self.assertHttpStatus(response, 302)
+        self.assertEqual(initial_count, AllocationUser.objects.count())

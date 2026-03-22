@@ -27,11 +27,38 @@
 
     </c-card.fields>
 
+    <c-card.custom_fields :object="object" only />
     <c-card.tags :object="object" only />
   </c-slot>
 
   <c-slot name="right">
-    <c-card.custom_fields :object="object" only />
+    <c-card.fields header="{% trans 'Project' %}" only>
+      <c-card.fields.item label="{% trans 'Name' %}">
+          {{ object.allocation.project|linkify }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+          {{ object.allocation.project.description|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Owner' %}">
+          {{ object.allocation.project.owner }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Allocation' %}">
+          {{ object.allocation|linkify }} <c-ui.badge value="{{object.allocation.status|title}}" :bg_color="object.get_status_color" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Start' %}">
+          {{ object.allocation.start_date|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'End' %}">
+          {{ object.allocation.end_date|placeholder }}
+      </c-card.fields.item>
+
+    </c-card.fields>
+
   </c-slot>
 </c-layout.panels>
 {% endblock %}

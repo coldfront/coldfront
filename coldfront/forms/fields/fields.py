@@ -12,6 +12,8 @@ from django.forms.fields import InvalidJSONInput
 from django.forms.fields import JSONField as _JSONField
 from django.utils.translation import gettext_lazy as _
 
+from coldfront.forms import widgets
+
 
 class QueryField(forms.CharField):
     """
@@ -93,3 +95,19 @@ class JSONField(_JSONField):
             except json.decoder.JSONDecodeError:
                 return f'"{value}"'
         return json.dumps(value, sort_keys=True, indent=4, ensure_ascii=False, cls=self.encoder)
+
+
+class CommentField(forms.CharField):
+    """
+    A textarea with support for Markdown rendering.
+    """
+
+    widget = widgets.MarkdownWidget
+    label = _("Comments")
+    help_text = _(
+        '<i class="fa-solid fa-circle-info"></i> '
+        '<a href="{url}" target="_blank" tabindex="-1">Markdown</a> syntax is supported'
+    ).format(url="#")
+
+    def __init__(self, *, label=label, help_text=help_text, required=False, **kwargs):
+        super().__init__(label=label, help_text=help_text, required=required, **kwargs)

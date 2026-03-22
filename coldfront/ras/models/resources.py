@@ -12,12 +12,22 @@ from coldfront.models import NestedGroupModel, OrganizationalModel
 from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
 from coldfront.models.fields import ColorField
 from coldfront.ras.choices import ResourceStatusChoices
+from coldfront.utils.jsonschema import validate_schema
 
 
 class ResourceType(AttributeProfileMixin, OrganizationalModel):
     """
-    Resources are organized by type; for example, "Cluster", "Cluster Partition", or "Storage".
+    ResourceType's help organize resources; for example, "Cluster", "Cluster
+    Partition", or "Storage". They also can include a schema's for storing
+    custom attributes on resources and their allocations.
     """
+
+    allocation_schema = models.JSONField(
+        blank=True,
+        null=True,
+        validators=[validate_schema],
+        verbose_name=_("schema"),
+    )
 
     slug = models.SlugField(
         verbose_name=_("slug"),
@@ -37,7 +47,9 @@ class ResourceType(AttributeProfileMixin, OrganizationalModel):
 
 class Resource(CustomAttributesMixin, NestedGroupModel):
     """
-    A Resource represents something that can be allocated. Each Resource is assigned a ResourceType.
+    Resource's are assets that can be allocated to users. Each Resource can be
+    assigned a ResourceType and an optional parent resource to create
+    hierachical relationships.
     """
 
     name = models.CharField(

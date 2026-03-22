@@ -5,9 +5,15 @@
 import { initMoveButtons } from './moveOptions';
 import { initReslug } from './reslug';
 import { initSelectAll } from './selectAll';
+import { initMarkdownPreviews } from './markdownPreview';
 
 export function initButtons(): void {
-  for (const func of [initMoveButtons, initReslug, initSelectAll]) {
+  for (const func of [
+    initMoveButtons,
+    initReslug,
+    initSelectAll,
+    initMarkdownPreviews,
+  ]) {
     func();
   }
 }

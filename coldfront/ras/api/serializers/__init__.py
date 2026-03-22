@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .allocations import AllocationSerializer, AllocationTypeSerializer, AllocationUserSerializer
+from .allocations import AllocationSerializer, AllocationUserSerializer
 from .projects import ProjectSerializer, ProjectUserSerializer
 from .resources import ResourceSerializer, ResourceTypeSerializer
 
@@ -13,5 +13,4 @@ __all__ = (
     "ResourceTypeSerializer",
     "AllocationSerializer",
     "AllocationUserSerializer",
-    "AllocationTypeSerializer",
 )

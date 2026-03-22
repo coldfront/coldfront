@@ -6,6 +6,7 @@
 import TomSelect from 'tom-select';
 import type { TomOption } from 'tom-select/dist/esm/types/core.js';
 import { escape_html } from 'tom-select/dist/esm/utils.js';
+import { getPlugins } from './pluginConfig';
 import { getElementsByQueryGenerator } from '../util';
 
 // Initialize selection fields
@@ -15,6 +16,7 @@ export function initStaticSelects(): void {
   )) {
     const select = element as HTMLSelectElement;
     new TomSelect(select, {
+      ...getPlugins(select),
       maxOptions: undefined,
     });
   }

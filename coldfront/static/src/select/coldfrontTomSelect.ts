@@ -54,7 +54,7 @@ export class ColdFrontTomSelect extends TomSelect {
     if (extra_columns) {
       this.extra_columns = extra_columns.split(',');
     } else {
-      this.extra_columns = [];
+      this.extra_columns = null;
     }
 
     // Set the null option (if any)
@@ -172,7 +172,7 @@ export class ColdFrontTomSelect extends TomSelect {
       display: data[this.labelField],
       depth: data[this.depthField] || null,
       description: data[this.descriptionField] || null,
-      extra_columns: [],
+      extra_columns: null,
     };
     if (data[this.parentField]) {
       const parent: Dict = data[this.parentField] as Dict;
@@ -185,15 +185,17 @@ export class ColdFrontTomSelect extends TomSelect {
       option['disabled'] = data[this.disabledField];
     }
 
-    const cols = [] as string[];
-    for (const col of this.extra_columns) {
-      if (data[col]) {
-        cols.push(String(data[col]));
-      } else {
-        cols.push('-');
+    if (this.extra_columns) {
+      const cols = [] as string[];
+      for (const col of this.extra_columns) {
+        if (data[col]) {
+          cols.push(String(data[col]));
+        } else {
+          cols.push('-');
+        }
       }
+      option['extra_columns'] = cols;
     }
-    option['extra_columns'] = cols;
     return option;
   }
 

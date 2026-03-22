@@ -7,7 +7,6 @@ from django.urls import reverse
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
-    AllocationType,
     AllocationUser,
     Project,
     ProjectUser,
@@ -211,40 +210,6 @@ class ResourceTest(APIViewTestCases.APIViewTestCase):
         ]
 
 
-class AllocationTypeTest(APIViewTestCases.APIViewTestCase):
-    model = AllocationType
-    brief_fields = ["description", "display", "id", "name", "url"]
-    bulk_update_data = {
-        "description": "New description",
-    }
-
-    @classmethod
-    def setUpTestData(cls):
-
-        allocation_types = (
-            AllocationType(name="Allocation Type 1"),
-            AllocationType(name="Allocation Type 2"),
-            AllocationType(name="Allocation Type 3"),
-        )
-        for rt in allocation_types:
-            rt.save()
-
-        cls.create_data = [
-            {
-                "name": "Allocation Type X",
-                "description": "A new type",
-            },
-            {
-                "name": "Allocation Type Y",
-                "description": "A new type",
-            },
-            {
-                "name": "Allocation Type Z",
-                "description": "A new type",
-            },
-        ]
-
-
 class AllocationTest(APIViewTestCases.APIViewTestCase):
     model = Allocation
     brief_fields = ["description", "display", "id", "slug", "status", "url"]
@@ -266,20 +231,13 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
         for resource in resources:
             resource.save()
 
-        allocation_type = AllocationType.objects.create(name="Storage")
-
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=user, allocation_type=allocation_type),
-            Allocation(justification="Need resources 2", project=project, owner=user, allocation_type=allocation_type),
-            Allocation(justification="Need resources 3", project=project, owner=user, allocation_type=allocation_type),
+            Allocation(justification="Need resources 1", project=project, owner=user, resource=resources[0]),
+            Allocation(justification="Need resources 2", project=project, owner=user, resource=resources[1]),
+            Allocation(justification="Need resources 3", project=project, owner=user, resource=resources[2]),
         )
         for allocation in allocations:
             allocation.save()
-
-        allocations[0].resources.add(resources[0])
-        allocations[0].resources.add(resources[1])
-        allocations[1].resources.add(resources[1])
-        allocations[2].resources.add(resources[2])
 
         cls.create_data = [
             {
@@ -287,8 +245,7 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new Allocation",
                 "owner": user.pk,
                 "project": project.pk,
-                "resources": [resources[0].pk, resources[1].pk],
-                "allocation_type": allocation_type.pk,
+                "resource": resources[0].pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
             },
             {
@@ -296,8 +253,7 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new Allocation",
                 "owner": user.pk,
                 "project": project.pk,
-                "resources": [resources[0].pk],
-                "allocation_type": allocation_type.pk,
+                "resource": resources[1].pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
             },
             {
@@ -305,8 +261,7 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new Allocation",
                 "owner": user.pk,
                 "project": project.pk,
-                "resources": [resources[1].pk],
-                "allocation_type": allocation_type.pk,
+                "resource": resources[2].pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
             },
         ]
@@ -341,20 +296,13 @@ class AllocatoinUserTest(APIViewTestCases.APIViewTestCase):
         for resource in resources:
             resource.save()
 
-        allocation_type = AllocationType.objects.create(name="Storage")
-
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=owner, allocation_type=allocation_type),
-            Allocation(justification="Need resources 2", project=project, owner=owner, allocation_type=allocation_type),
-            Allocation(justification="Need resources 3", project=project, owner=owner, allocation_type=allocation_type),
+            Allocation(justification="Need resources 1", project=project, owner=user, resource=resources[0]),
+            Allocation(justification="Need resources 2", project=project, owner=user, resource=resources[1]),
+            Allocation(justification="Need resources 3", project=project, owner=user, resource=resources[2]),
         )
         for allocation in allocations:
             allocation.save()
-
-        allocations[0].resources.add(resources[0])
-        allocations[0].resources.add(resources[1])
-        allocations[1].resources.add(resources[1])
-        allocations[2].resources.add(resources[2])
 
         allocation_users = (
             AllocationUser(user=users[0], allocation=allocations[0]),

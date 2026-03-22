@@ -19,7 +19,10 @@ from coldfront.core.choices import ColorChoices
 from coldfront.utils.forms import add_blank_choice
 from coldfront.utils.validators import ColorValidator
 
-from .utils import auto_generate_slug
+try:
+    AUTO_SLUG_FUNC = import_string(settings.AUTO_SLUG_FUNC)
+except ImportError:
+    raise ImproperlyConfigured("AUTO_SLUG_FUNC was set but cannot be imported. Please check your config settings.")
 
 
 class ColorField(models.CharField):
@@ -62,18 +65,8 @@ class AutoSlugField(SlugField):
     def _generate_unique_slug(self, instance):
         """Generate unique slug checking DB for collisions."""
 
-        auto_gen_func = auto_generate_slug
-
-        if settings.AUTO_SLUG_FUNC:
-            try:
-                auto_gen_func = import_string(settings.AUTO_SLUG_FUNC)
-            except ImportError:
-                raise ImproperlyConfigured(
-                    "AUTO_SLUG_FUNC was set but cannot be imported. Please check your config settings."
-                )
-
         for _ in range(self.max_retries):  # noqa: F402
-            value = auto_gen_func(instance)
+            value = AUTO_SLUG_FUNC(instance)
             value = slugify(value)
 
             if not instance.__class__.objects.filter(**{cast(str, self.name): value}).exists():

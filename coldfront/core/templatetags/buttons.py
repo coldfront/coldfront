@@ -13,5 +13,8 @@ register = template.Library()
 
 @register.simple_tag(takes_context=True)
 def action_buttons(context, actions, obj, multi=False, **kwargs):
+    if actions and not isinstance(actions, (list, tuple)):
+        actions = [actions]
+
     buttons = [action.render(context, obj, **kwargs) for action in actions if action.multi == multi]
     return format_html("".join(buttons))

@@ -34,7 +34,7 @@
                   <li><a class="dropdown-item" href="{% url 'account:usertoken_list' %}"><i class="fas fa-key" aria-hidden="true"></i> API Tokens</a></li>
                   {% endif %}
                   <li><hr class="dropdown-divider"></li>
-                  <li><button class="dropdown-item" hx-post="{% url 'logout' %}" hx-swap="none"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Log Out</button></li>
+                  <li><button class="dropdown-item" hx-post="{% url 'logout' %}" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}' hx-swap="none"><i class="fas fa-sign-out-alt" aria-hidden="true"></i> Log Out</button></li>
                 </ul>
               </div>
               {% endif %}

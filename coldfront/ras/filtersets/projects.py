@@ -18,6 +18,8 @@ class ProjectFilterSet(OrganizationalModelFilterSet, TenancyFilterSet):
             "status",
             "description",
             "owner",
+            "tenant_id",
+            "tenant",
         )
 
     def search(self, queryset, name, value):

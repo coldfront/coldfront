@@ -7,6 +7,7 @@ import logging
 from collections import defaultdict
 
 from django.contrib import messages
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.db import router, transaction
 from django.db.models import ProtectedError, RestrictedError
 from django.db.models.deletion import Collector
@@ -554,3 +555,202 @@ class ObjectChildrenView(ObjectView, ActionsMixin, TableMixin):
                 **self.get_extra_context(request, instance),
             },
         )
+
+
+class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
+    """
+    Edit an object that is part of a workflow. A workflow is a FSM that defines
+    a set of states and transitions between them. An ObjectFlowView is a view
+    for a specific transition in a workflow. It presents the form for the transition
+    and in the POST will execute the transition.
+
+    Attributes:
+        form: The form used to edit the object
+        flow: The workflow
+        action: The ObjectAction that is assoicated with the transition in the
+                workflow. The ObjectAction defines the required permissions and the
+                transition that gets called
+    """
+
+    template_name = "generic/object_flow.html"
+    form = None
+    form_component_name = "form"
+    flow = None
+    action = None
+
+    def post_save(self, obj, form, request):
+        pass
+
+    def get_required_permission(self):
+        return get_permission_for_model(self.queryset.model, list(self.action.permissions_required)[0])
+
+    def get_transition_func(self, flow, request):
+        try:
+            return getattr(flow, self.action.transition)
+        except AttributeError:
+            raise ImproperlyConfigured(
+                f"{self.__class__.__name__} defines an action with an invalid tansition {self.action.transition} for workflow {self.flow.__name__}"
+            )
+
+    def alter_object(self, obj, request, url_args, url_kwargs):
+        """
+        Provides a hook for views to modify an object before it is processed.
+
+        Args:
+            obj: The object being edited
+            request: The current request
+            url_args: URL path args
+            url_kwargs: URL path kwargs
+        """
+        return obj
+
+    #
+    # Request handlers
+    #
+
+    def get(self, request, *args, **kwargs):
+        """
+        GET request handler.
+
+        Args:
+            request: The current request
+        """
+        obj = self.get_object(**kwargs)
+        obj = self.alter_object(obj, request, args, kwargs)
+        model = self.queryset.model
+
+        initial_data = normalize_querydict(request.GET)
+        if issubclass(self.form, ColdFrontModelForm):
+            form = self.form(instance=obj, initial=initial_data, user=request.user)
+        else:
+            form = self.form(instance=obj, initial=initial_data)
+
+        restrict_form_fields(form, request.user)
+
+        flow = self.flow(obj)
+
+        # Ensure the workflow transition can proceed
+        transition_func = self.get_transition_func(flow, request)
+        if not transition_func.can_proceed():
+            raise PermissionDenied
+
+        context = {
+            "model": model,
+            "object": obj,
+            "form": form,
+            "flow": flow,
+            "action": self.action,
+        }
+
+        # If the form is being displayed within a "modal" widget,
+        # use the appropriate component
+        if request.GET.get("_modal"):
+            return HttpResponse(render_component(request, "modal.transition", context))
+
+        # If this is an HTMX request, return only the rendered form HTML
+        if htmx_partial(request):
+            return HttpResponse(render_component(request, self.form_component_name, context))
+
+        return render(
+            request,
+            self.template_name,
+            {
+                **context,
+                "return_url": self.get_return_url(request, obj),
+                **self.get_extra_context(request, obj),
+            },
+        )
+
+    def post(self, request, *args, **kwargs):
+        """
+        POST request handler.
+
+        Args:
+            request: The current request
+        """
+        logger = logging.getLogger("coldfront.views.ObjectFlowView")
+        obj = self.get_object(**kwargs)
+        model = self.queryset.model
+
+        # Take a snapshot for change logging (if editing an existing object)
+        if obj.pk and hasattr(obj, "snapshot"):
+            obj.snapshot()
+
+        obj = self.alter_object(obj, request, args, kwargs)
+
+        if issubclass(self.form, ColdFrontModelForm):
+            form = self.form(data=request.POST, files=request.FILES, instance=obj, user=request.user)
+        else:
+            form = self.form(data=request.POST, files=request.FILES, instance=obj)
+
+        restrict_form_fields(form, request.user)
+
+        flow = self.flow(obj)
+
+        # Ensure the workflow transition can proceed
+        transition_func = self.get_transition_func(flow, request)
+        if not transition_func.can_proceed():
+            raise PermissionDenied
+
+        if form.is_valid():
+            logger.debug("Form validation was successful")
+
+            try:
+                with transaction.atomic(using=router.db_for_write(model)):
+                    object_created = form.instance.pk is None
+                    obj = form.save(commit=False)
+
+                    # Perform the transition from the flow
+                    transition_func()
+
+                    self.post_save(obj, form, request)
+
+                    # Check that the new object conforms with any assigned object-level permissions
+                    if not self.queryset.filter(pk=obj.pk).exists():
+                        raise PermissionsViolation()
+
+                msg = "{} {}".format(
+                    "Created" if object_created else "Modified", self.queryset.model._meta.verbose_name
+                )
+                logger.info(f"{msg} {obj} (PK: {obj.pk})")
+                if hasattr(obj, "get_absolute_url"):
+                    msg = format_html('{} <a href="{}">{}</a>', msg, obj.get_absolute_url(), escape(obj))
+                else:
+                    msg = f"{msg} {obj}"
+                messages.success(request, msg)
+
+                return_url = self.get_return_url(request, obj)
+
+                #
+                # If the object has been created or edited via HTMX, return an HTMX redirect to the object view
+                if request.htmx:
+                    return HttpResponse(
+                        headers={
+                            "HX-Location": return_url,
+                        }
+                    )
+
+                return redirect(return_url)
+
+            except (AbortRequest, PermissionsViolation) as e:
+                logger.debug(e.message)
+                form.add_error(None, e.message)
+
+        else:
+            logger.debug("Form validation failed")
+
+        context = {
+            "model": model,
+            "object": obj,
+            "form": form,
+            "flow": flow,
+            "action": self.action,
+            "return_url": self.get_return_url(request, obj),
+            **self.get_extra_context(request, obj),
+        }
+
+        # Form was submitted via a "modal" widget
+        if "_modal" in request.POST:
+            return HttpResponse(render_component(request, "modal.transition", context))
+
+        return render(request, self.template_name, context)

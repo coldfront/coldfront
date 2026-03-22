@@ -3,6 +3,12 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+declare global {
+  interface Window {
+    CSRF_TOKEN: string;
+  }
+}
+
 /**
  * Generator that yields HTML elements by CSS query selector
  * @param query - CSS query selector string
