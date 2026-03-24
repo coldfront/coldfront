@@ -163,7 +163,7 @@ class ButtonColorChoices(ChoiceSet):
     TEAL = "teal"
     CYAN = "cyan"
     GRAY = "gray"
-    GREY = "gray"  # Backward compatability for <3.2
+    GREY = "gray"
     BLACK = "black"
     WHITE = "white"
 

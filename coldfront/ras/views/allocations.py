@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
@@ -12,7 +12,6 @@ from coldfront.ras import filtersets, flows, forms, tables
 from coldfront.ras import object_actions as actions
 from coldfront.ras.flows import AllocationStatusFlow
 from coldfront.ras.models import Allocation, AllocationUser, Project, Resource
-from coldfront.ras.object_actions import RequestAllocation
 from coldfront.registry import register_model_view
 from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
@@ -89,7 +88,12 @@ class AllocationUserTabView(generic.ObjectChildrenView):
     table = tables.AllocationUserTable
     filterset = filtersets.AllocationUserFilterSet
     template_name = "ras/allocation/users.html"
-    tab = ViewTab(label=_("Users"), badge=lambda obj: obj.users.count(), permission="ras.view_allocation", weight=100)
+    tab = ViewTab(
+        label=_("Users"),
+        badge=lambda obj: obj.users.count(),
+        permission="ras.view_allocation",
+        weight=100,
+    )
 
     def get_children(self, request, parent):
         return parent.users.restrict(request.user, "view")
@@ -143,13 +147,18 @@ class BaseAllocationFlowView(generic.ObjectFlowView):
 class AllocationRequestView(BaseAllocationFlowView):
     template_name = "ras/project/allocation_request.html"
     form = forms.AllocationRequestForm
-    action = RequestAllocation
+    action = actions.RequestObject
 
     def get_object(self, **kwargs):
         project = get_object_or_404(Project.objects.all(), **kwargs)
         return Allocation(project=project, tenant=project.tenant)
 
     def alter_object(self, obj, request, url_args, url_kwargs):
+        # Check to ensure allocations requests are allowed
+        flow = self.flow(obj)
+        if not flow.can_request(request.user):
+            raise PermissionDenied
+
         obj.owner = request.user
         return obj
 
@@ -161,28 +170,28 @@ class AllocationRequestView(BaseAllocationFlowView):
 
 @register_model_view(Allocation, "approve")
 class AllocationApproveView(BaseAllocationFlowView):
-    action = actions.ApproveAllocation
+    action = actions.ApproveObject
 
 
 @register_model_view(Allocation, "deny")
 class AllocationDenyView(BaseAllocationFlowView):
-    action = actions.DenyAllocation
+    action = actions.DenyObject
 
 
 @register_model_view(Allocation, "revoke")
 class AllocationRevokeView(BaseAllocationFlowView):
-    action = actions.RevokeAllocation
+    action = actions.RevokeObject
 
 
 @register_model_view(Allocation, "renew")
 class AllocationRenewView(BaseAllocationFlowView):
-    action = actions.RenewAllocation
+    action = actions.RenewObject
 
 
 @register_model_view(Allocation, "activate")
 class AllocationActivateView(BaseAllocationFlowView):
     form = forms.AllocationActivateForm
-    action = actions.ActivateAllocation
+    action = actions.ActivateObject
 
 
 #

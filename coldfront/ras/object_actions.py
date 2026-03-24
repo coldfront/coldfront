@@ -7,9 +7,9 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.views.object_actions import ObjectAction
 
 
-class RequestAllocation(ObjectAction):
+class RequestObject(ObjectAction):
     """
-    Request an allocation.
+    Perform a Request transition on an object.
     """
 
     name = "request"
@@ -21,9 +21,9 @@ class RequestAllocation(ObjectAction):
     template_name = "button.request"
 
 
-class ApproveAllocation(ObjectAction):
+class ApproveObject(ObjectAction):
     """
-    Approve an allocation.
+    Perform an Approve transition on an object.
     """
 
     name = "approve"
@@ -35,9 +35,9 @@ class ApproveAllocation(ObjectAction):
     template_name = "button.approve"
 
 
-class DenyAllocation(ObjectAction):
+class DenyObject(ObjectAction):
     """
-    Deny an allocation.
+    Perform a Deny transition on an object.
     """
 
     name = "deny"
@@ -49,9 +49,9 @@ class DenyAllocation(ObjectAction):
     template_name = "button.deny"
 
 
-class ActivateAllocation(ObjectAction):
+class ActivateObject(ObjectAction):
     """
-    Activate an allocation.
+    Perform an Activate transition on an object.
     """
 
     name = "activate"
@@ -63,9 +63,9 @@ class ActivateAllocation(ObjectAction):
     template_name = "button.activate"
 
 
-class RenewAllocation(ObjectAction):
+class RenewObject(ObjectAction):
     """
-    Renew an allocation.
+    Perform a Renew transition on an object.
     """
 
     name = "renew"
@@ -77,9 +77,9 @@ class RenewAllocation(ObjectAction):
     template_name = "button.renew"
 
 
-class RevokeAllocation(ObjectAction):
+class RevokeObject(ObjectAction):
     """
-    Revoke an allocation.
+    Perform a Revoke transition on an object.
     """
 
     name = "revoke"
@@ -89,3 +89,17 @@ class RevokeAllocation(ObjectAction):
     url_kwargs = ["pk"]
     permissions_required = {"revoke"}
     template_name = "button.revoke"
+
+
+class ReviewObject(ObjectAction):
+    """
+    Perform a Review transition on an object.
+    """
+
+    name = "review"
+    label = _("Review")
+    multi = False
+    transition = "review"
+    url_kwargs = ["pk"]
+    permissions_required = {"review"}
+    template_name = "button.review"

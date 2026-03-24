@@ -4,11 +4,12 @@
 
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-from viewflow import fsm
+from viewflow import fsm, this
 
 from coldfront.flows import ColdFrontFlow
 from coldfront.ras import object_actions as actions
 from coldfront.ras.choices import AllocationStatusChoices
+from coldfront.ras.signals import allocation_status_change
 
 
 class AllocationStatusFlow(ColdFrontFlow):
@@ -19,11 +20,11 @@ class AllocationStatusFlow(ColdFrontFlow):
     status = fsm.State(AllocationStatusChoices, default=AllocationStatusChoices.STATUS_NEW)
     label = "Allocation"
     actions = (
-        actions.ApproveAllocation,
-        actions.DenyAllocation,
-        actions.ActivateAllocation,
-        actions.RenewAllocation,
-        actions.RevokeAllocation,
+        actions.ApproveObject,
+        actions.DenyObject,
+        actions.ActivateObject,
+        actions.RenewObject,
+        actions.RevokeObject,
     )
 
     def __init__(self, allocation):
@@ -46,9 +47,12 @@ class AllocationStatusFlow(ColdFrontFlow):
         with transaction.atomic():
             self.allocation.save()
 
+        allocation_status_change.send(sender=self.__class__, source=source, target=target)
+
     @status.transition(
         source=AllocationStatusChoices.STATUS_NEW,
         label=_("Request"),
+        permission=this.can_request,
     )
     def request(self):
         pass
@@ -113,3 +117,9 @@ class AllocationStatusFlow(ColdFrontFlow):
     )
     def revoke(self):
         pass
+
+    def can_request(self, user):
+        """
+        This function checks to see if the allocation can be requested. Sub-classes can override to provide custom logic
+        """
+        return True

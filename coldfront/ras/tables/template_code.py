@@ -24,4 +24,7 @@ ALLOCATION_STATUS_ACTIONS = """
 {% if perms.ras.deny_allocation and "deny" in record.get_outgoing_transitions %}
 {% cotton button.deny url="{% url 'ras:allocation_approve' pk=record.pk %}?return_url={% url 'ras:allocation_list' %}" title="{% trans 'Deny' %}" :small="True" type="link" /%}
 {% endif %}
+{% if perms.ras.activate_allocation and "activate" in record.get_outgoing_transitions %}
+{% cotton button.activate url="{% url 'ras:allocation_activate' pk=record.pk %}?return_url={% url 'ras:allocation_list' %}" title="{% trans 'Activate' %}" :small="True" type="link" /%}
+{% endif %}
 """

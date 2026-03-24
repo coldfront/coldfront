@@ -44,15 +44,15 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
         cls.form_data = {
             "name": "Project X",
             "description": "A new project",
-            "status": ProjectStatusChoices.STATUS_NEW,
+            "status": ProjectStatusChoices.STATUS_ACTIVE,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
             "name,description,status,owner",
-            "Project 4,Fourth project,new,User1",
-            "Project 5,Fifth project,new,User2",
-            "Project 6,Sixth project,new,User3",
+            "Project 4,Fourth project,active,User1",
+            "Project 5,Fifth project,active,User2",
+            "Project 6,Sixth project,active,User3",
         )
 
         cls.csv_update_data = (
@@ -72,7 +72,7 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
         data = {
             "name": "Project X",
             "description": "A new project",
-            "status": ProjectStatusChoices.STATUS_NEW,
+            "status": ProjectStatusChoices.STATUS_ACTIVE,
             "tenant": tenant.pk,
         }
 
