@@ -11,6 +11,7 @@ import os
 
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
+from django.utils.translation import gettext_lazy as _
 
 import coldfront
 from coldfront.config.env import ENV, PROJECT_ROOT
@@ -26,8 +27,12 @@ WSGI_APPLICATION = "coldfront.config.wsgi.application"
 ROOT_URLCONF = "coldfront.config.urls"
 
 SECRET_KEY = ENV.str("SECRET_KEY", default="")
-if len(SECRET_KEY) == 0:
-    SECRET_KEY = get_random_secret_key()
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = get_random_secret_key()
+    else:
+        raise ImproperlyConfigured("Required setting SECRET_KEY is not defined.")
+
 
 # ------------------------------------------------------------------------------
 # Locale settings
@@ -36,6 +41,9 @@ LANGUAGE_CODE = ENV.str("LANGUAGE_CODE", default="en-us")
 TIME_ZONE = ENV.str("TIME_ZONE", default="America/New_York")
 USE_I18N = True
 USE_TZ = True
+
+LANGUAGES = (("en", _("English")),)
+LOCALE_PATHS = (BASE_DIR + "/coldfront/translations",)
 
 # ------------------------------------------------------------------------------
 # Django Apps
@@ -80,7 +88,6 @@ if DEBUG and importlib.util.find_spec("sslserver") is not None:
 INSTALLED_APPS += [
     "coldfront.legacy.user",
     "coldfront.legacy.field_of_science",
-    "coldfront.legacy.utils",
     "coldfront.legacy.portal",
     "coldfront.legacy.project",
     "coldfront.legacy.resource",
@@ -189,6 +196,9 @@ DJANGO_VITE = {
         "dev_server_port": ENV.int("DJANGO_VITE_SERVER_PORT", default=5173),
     }
 }
+
+if DEBUG and not DJANGO_VITE["default"]["dev_mode"]:
+    DJANGO_VITE["default"]["manifest_path"] = PROJECT_ROOT("coldfront/static/bundles/manifest.json")
 
 STATIC_ROOT = ENV.str("STATIC_ROOT", default=PROJECT_ROOT("static_root"))
 STATICFILES_DIRS = [

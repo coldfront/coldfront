@@ -1,1 +1,0 @@
-::: coldfront.legacy.project.models

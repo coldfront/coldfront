@@ -1,5 +1,8 @@
 # Upgrading
 
+!!! warning "DO NOT DO THIS"
+    These docs are under heavy development and not ready for use.
+
 This document describes upgrading ColdFront. New releases of ColdFront may
 introduce breaking changes so please refer to this document before upgrading.
 
@@ -12,8 +15,9 @@ introduce breaking changes so please refer to this document before upgrading.
 After upgrading run the following commands in order:
 
 ```
-$ uv run coldfront dbshell < scripts/upgrade-v2.2.2-user-model.sql
+$ uv run coldfront dbshell < scripts/upgrade-v2.0.0-user-model.sql
 $ uv run coldfront migrate
+$ uv run coldfront upgrade_v2
 $ uv run coldfront collectstatic
 ```
 

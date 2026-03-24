@@ -1,0 +1,3214 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-23 22:57-0400\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: coldfront/account/views.py:78
+msgid "LDAP-authenticated user credentials cannot be changed within ColdFront."
+msgstr ""
+
+#: coldfront/account/views.py:97
+msgid "Your password has been changed successfully."
+msgstr ""
+
+#: coldfront/api/serializers/fields.py:48
+#, python-brace-format
+msgid "{class_name} must implement get_view_name()"
+msgstr ""
+
+#: coldfront/api/serializers/fields.py:86
+#, python-brace-format
+msgid "Invalid content type: {content_type}"
+msgstr ""
+
+#: coldfront/api/serializers/fields.py:87
+msgid "Invalid value. Specify a content type as '<app_label>.<model_name>'."
+msgstr ""
+
+#: coldfront/api/serializers/fields.py:162
+msgid "This field may not be blank."
+msgstr ""
+
+#: coldfront/api/serializers/fields.py:167
+msgid ""
+"Value must be passed directly (e.g. \"foo\": 123); do not use a dictionary "
+"or list."
+msgstr ""
+
+#: coldfront/api/serializers/fields.py:188
+#, python-brace-format
+msgid "{value} is not a valid choice."
+msgstr ""
+
+#: coldfront/api/utils.py:52
+#, python-brace-format
+msgid "Related object not found using the provided attributes: {params}"
+msgstr ""
+
+#: coldfront/api/utils.py:55
+#, python-brace-format
+msgid "Multiple objects match the provided attributes: {params}"
+msgstr ""
+
+#: coldfront/api/utils.py:66
+#, python-brace-format
+msgid ""
+"Related objects must be referenced by numeric ID or by dictionary of "
+"attributes. Received an unrecognized value: {value}"
+msgstr ""
+
+#: coldfront/api/utils.py:75
+#, python-brace-format
+msgid "Related object not found using the provided numeric ID: {id}"
+msgstr ""
+
+#: coldfront/auth/mixins.py:104
+#, python-brace-format
+msgid "Invalid permission {permission} for model {model}"
+msgstr ""
+
+#: coldfront/auth/mixins.py:136
+#, python-brace-format
+msgid "{class_name} must implement get_required_permission()"
+msgstr ""
+
+#: coldfront/auth/mixins.py:158
+#, python-brace-format
+msgid ""
+"{class_name} has no queryset defined. ObjectPermissionRequiredMixin may only "
+"be used on views which define a base queryset"
+msgstr ""
+
+#: coldfront/choices.py:29
+#, python-brace-format
+msgid "{name} has a key defined but CHOICES is not a list"
+msgstr ""
+
+#: coldfront/config/base.py:41
+msgid "English"
+msgstr ""
+
+#: coldfront/core/api/customfields.py:87
+#, python-brace-format
+msgid "Unknown related object(s): {name}"
+msgstr ""
+
+#: coldfront/core/api/serializers/customfields.py:95
+msgid "Changing the type of custom fields is not supported."
+msgstr ""
+
+#: coldfront/core/choices.py:18
+#: coldfront/templates/generic/quick_add_created.html:5
+#: coldfront/users/tables.py:147
+msgid "Created"
+msgstr ""
+
+#: coldfront/core/choices.py:19 coldfront/core/tables/plugins.py:46
+msgid "Updated"
+msgstr ""
+
+#: coldfront/core/choices.py:20
+msgid "Deleted"
+msgstr ""
+
+#: coldfront/core/choices.py:54
+msgid "Dark Red"
+msgstr ""
+
+#: coldfront/core/choices.py:55 coldfront/core/choices.py:176
+msgid "Red"
+msgstr ""
+
+#: coldfront/core/choices.py:56 coldfront/core/choices.py:175
+msgid "Pink"
+msgstr ""
+
+#: coldfront/core/choices.py:57
+msgid "Rose"
+msgstr ""
+
+#: coldfront/core/choices.py:58
+msgid "Fuchsia"
+msgstr ""
+
+#: coldfront/core/choices.py:59 coldfront/core/choices.py:174
+msgid "Purple"
+msgstr ""
+
+#: coldfront/core/choices.py:60
+msgid "Dark Purple"
+msgstr ""
+
+#: coldfront/core/choices.py:61 coldfront/core/choices.py:173
+msgid "Indigo"
+msgstr ""
+
+#: coldfront/core/choices.py:62 coldfront/core/choices.py:172
+msgid "Blue"
+msgstr ""
+
+#: coldfront/core/choices.py:63
+msgid "Light Blue"
+msgstr ""
+
+#: coldfront/core/choices.py:64 coldfront/core/choices.py:181
+msgid "Cyan"
+msgstr ""
+
+#: coldfront/core/choices.py:65 coldfront/core/choices.py:180
+msgid "Teal"
+msgstr ""
+
+#: coldfront/core/choices.py:66
+msgid "Aqua"
+msgstr ""
+
+#: coldfront/core/choices.py:67
+msgid "Dark Green"
+msgstr ""
+
+#: coldfront/core/choices.py:68 coldfront/core/choices.py:179
+msgid "Green"
+msgstr ""
+
+#: coldfront/core/choices.py:69
+msgid "Light Green"
+msgstr ""
+
+#: coldfront/core/choices.py:70
+msgid "Lime"
+msgstr ""
+
+#: coldfront/core/choices.py:71 coldfront/core/choices.py:178
+msgid "Yellow"
+msgstr ""
+
+#: coldfront/core/choices.py:72
+msgid "Amber"
+msgstr ""
+
+#: coldfront/core/choices.py:73 coldfront/core/choices.py:177
+msgid "Orange"
+msgstr ""
+
+#: coldfront/core/choices.py:74
+msgid "Dark Orange"
+msgstr ""
+
+#: coldfront/core/choices.py:75
+msgid "Brown"
+msgstr ""
+
+#: coldfront/core/choices.py:76
+msgid "Light Grey"
+msgstr ""
+
+#: coldfront/core/choices.py:77
+msgid "Grey"
+msgstr ""
+
+#: coldfront/core/choices.py:78
+msgid "Dark Grey"
+msgstr ""
+
+#: coldfront/core/choices.py:79 coldfront/core/choices.py:183
+msgid "Black"
+msgstr ""
+
+#: coldfront/core/choices.py:80 coldfront/core/choices.py:184
+msgid "White"
+msgstr ""
+
+#: coldfront/core/choices.py:98 coldfront/core/forms/misc.py:15
+msgid "Text"
+msgstr ""
+
+#: coldfront/core/choices.py:99
+msgid "Text (long)"
+msgstr ""
+
+#: coldfront/core/choices.py:100
+msgid "Integer"
+msgstr ""
+
+#: coldfront/core/choices.py:101
+msgid "Decimal"
+msgstr ""
+
+#: coldfront/core/choices.py:102
+msgid "Boolean (true/false)"
+msgstr ""
+
+#: coldfront/core/choices.py:103
+msgid "Date"
+msgstr ""
+
+#: coldfront/core/choices.py:104
+msgid "Date & time"
+msgstr ""
+
+#: coldfront/core/choices.py:105
+msgid "Selection"
+msgstr ""
+
+#: coldfront/core/choices.py:106
+msgid "Multiple selection"
+msgstr ""
+
+#: coldfront/core/choices.py:107 coldfront/core/tables/tables.py:51
+#: coldfront/core/tables/tables.py:72 coldfront/tables/tables.py:283
+#: coldfront/templates/core/objectchange.html:48
+msgid "Object"
+msgstr ""
+
+#: coldfront/core/choices.py:108
+msgid "Multiple objects"
+msgstr ""
+
+#: coldfront/core/choices.py:118 coldfront/templates/core/customfield.html:67
+msgid "Disabled"
+msgstr ""
+
+#: coldfront/core/choices.py:119
+msgid "Loose"
+msgstr ""
+
+#: coldfront/core/choices.py:120
+msgid "Exact"
+msgstr ""
+
+#: coldfront/core/choices.py:130
+msgid "Always"
+msgstr ""
+
+#: coldfront/core/choices.py:131
+msgid "If set"
+msgstr ""
+
+#: coldfront/core/choices.py:132 coldfront/core/choices.py:144
+msgid "Hidden"
+msgstr ""
+
+#: coldfront/core/choices.py:142
+msgid "Yes"
+msgstr ""
+
+#: coldfront/core/choices.py:143
+msgid "No"
+msgstr ""
+
+#: coldfront/core/choices.py:171
+msgid "Default"
+msgstr ""
+
+#: coldfront/core/choices.py:182
+msgid "Gray"
+msgstr ""
+
+#: coldfront/core/choices.py:196 coldfront/core/choices.py:221
+msgid "Auto-detect"
+msgstr ""
+
+#: coldfront/core/choices.py:197
+msgid "Comma"
+msgstr ""
+
+#: coldfront/core/choices.py:198
+msgid "Semicolon"
+msgstr ""
+
+#: coldfront/core/choices.py:199
+msgid "Pipe"
+msgstr ""
+
+#: coldfront/core/choices.py:200
+msgid "Tab"
+msgstr ""
+
+#: coldfront/core/choices.py:209
+msgid "Direct"
+msgstr ""
+
+#: coldfront/core/choices.py:210
+msgid "Upload"
+msgstr ""
+
+#: coldfront/core/filtersets.py:22 coldfront/core/filtersets.py:74
+#: coldfront/core/filtersets.py:102 coldfront/core/filtersets.py:145
+#: coldfront/core/filtersets.py:170 coldfront/forms/filterset_forms.py:24
+#: coldfront/forms/forms.py:52 coldfront/templates/cotton/form/filters.html:15
+#: coldfront/templates/generic/object_selector.html:28
+#: coldfront/users/filtersets.py:29 coldfront/users/filtersets.py:55
+#: coldfront/users/filtersets.py:129 coldfront/users/filtersets.py:181
+#: coldfront/users/forms/filterset_forms.py:51
+#: coldfront/users/forms/filterset_forms.py:102
+#: coldfront/users/forms/filterset_forms.py:149
+#: coldfront/views/filtersets.py:72
+msgid "Search"
+msgstr ""
+
+#: coldfront/core/filtersets.py:110 coldfront/users/filtersets.py:34
+msgid "User (ID)"
+msgstr ""
+
+#: coldfront/core/filtersets.py:116
+msgid "User name"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:27
+#: coldfront/core/forms/bulk_import.py:122
+#: coldfront/core/forms/filtersets.py:107
+#: coldfront/core/forms/model_forms.py:29
+#: coldfront/core/forms/model_forms.py:89
+#: coldfront/users/forms/model_forms.py:172
+msgid "Object types"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:29
+#: coldfront/core/forms/bulk_import.py:124
+msgid "One or more assigned object types"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:32 coldfront/core/tables/tables.py:50
+#: coldfront/core/tables/tables.py:68 coldfront/tables/tables.py:280
+#: coldfront/templates/core/customfield.html:12
+msgid "Type"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:32
+msgid "Field data type (e.g. text, integer, etc.)"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:35
+msgid "Object type"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:38
+msgid "Object type (for object or multi-object fields)"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:41
+#: coldfront/core/forms/filtersets.py:140
+msgid "Choice set"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:45
+msgid "Choice set (for selection fields)"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:48
+#: coldfront/core/forms/filtersets.py:145
+#: coldfront/core/models/customfields.py:330
+msgid "UI visible"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:51
+msgid "Whether the custom field is displayed in the UI"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:54
+#: coldfront/core/forms/filtersets.py:150
+#: coldfront/core/models/customfields.py:337
+msgid "UI editable"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:57
+msgid "Whether the custom field is editable in the UI"
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:90
+msgid ""
+"Quoted string of comma-separated field choices with optional labels "
+"separated by colon: \"choice1:First Choice,choice2:Second Choice\""
+msgstr ""
+
+#: coldfront/core/forms/bulk_import.py:113
+msgid "Invalid choices string"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:32
+msgid "Tagged object type"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:37
+msgid "Allowed object type"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:53
+msgid "After"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:57
+msgid "Before"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:60 coldfront/core/tables/tables.py:66
+#: coldfront/templates/core/objectchange.html:40
+msgid "Action"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:67 coldfront/ras/forms/allocations.py:160
+#: coldfront/ras/forms/allocations.py:321
+#: coldfront/ras/forms/allocations.py:363
+#: coldfront/ras/forms/filterset_forms.py:163
+#: coldfront/ras/forms/filterset_forms.py:182
+#: coldfront/ras/forms/projects.py:46 coldfront/ras/forms/projects.py:108
+#: coldfront/ras/tables/allocations.py:81 coldfront/ras/tables/projects.py:62
+#: coldfront/templates/core/objectchange.html:32
+#: coldfront/templates/users/token.html:20
+#: coldfront/templates/users/user.html:4 coldfront/users/filtersets.py:142
+#: coldfront/users/filtersets.py:187
+#: coldfront/users/forms/filterset_forms.py:76
+#: coldfront/users/forms/filterset_forms.py:125
+#: coldfront/users/forms/model_forms.py:52
+#: coldfront/users/forms/model_forms.py:380 coldfront/users/tables.py:137
+msgid "User"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:72
+#: coldfront/templates/core/objectchange.html:44
+msgid "Object Type"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:112
+#: coldfront/core/forms/model_forms.py:98
+msgid "Related object type"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:117
+msgid "Field type"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:120
+msgid "Group name"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:124 coldfront/templates/core/tag.html:16
+msgid "Weight"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:128 coldfront/core/tables/tables.py:151
+#: coldfront/templates/core/customfield.html:31
+#: coldfront/templates/generic/bulk_import.html:112
+msgid "Required"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:133
+msgid "Must be unique"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:153
+msgid "Is cloneable"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:158
+msgid "Minimum value"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:162
+msgid "Maximum value"
+msgstr ""
+
+#: coldfront/core/forms/filtersets.py:166
+msgid "Validation regex"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:47
+msgid "Tag"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:62
+msgid ""
+"An optional label may be specified for each choice by appending it with a "
+"colon. Example:"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:78
+#: coldfront/templates/core/customfieldchoiceset.html:7
+msgid "Custom Field Choice Set"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:91
+msgid "The type(s) of object that have this custom field"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:94
+msgid "Default value"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:100
+msgid "Type of the related object (for object/multi-object fields only)"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:103
+#: coldfront/templates/core/customfield.html:53
+msgid "Related object filter"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:105
+msgid "Specify query parameters as a JSON object."
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:116
+msgid "Custom Field"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:128
+#: coldfront/templates/core/customfield.html:62
+msgid "Behavior"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:144
+msgid ""
+"The type of data stored in this field. For object/multi-object fields, "
+"select the related object type below."
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:147
+msgid ""
+"This will be displayed as help text for the form field. Markdown is "
+"supported."
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:176
+#: coldfront/core/forms/model_forms.py:186
+msgid "Validation"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:198
+msgid "Related Object"
+msgstr ""
+
+#: coldfront/core/forms/model_forms.py:213 coldfront/core/tables/tables.py:177
+#: coldfront/templates/core/customfieldchoiceset.html:16
+#: coldfront/templates/core/customfieldchoiceset.html:35
+#: coldfront/templates/generic/bulk_import.html:148
+msgid "Choices"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:31
+msgid "time"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:44
+msgid "user name"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:49
+msgid "request ID"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:54
+msgid "action"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:88
+msgid "message"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:94
+msgid "pre-change data"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:100
+msgid "post-change data"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:114
+msgid "object change"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:115
+msgid "object changes"
+msgstr ""
+
+#: coldfront/core/models/change_logging.py:128
+#, python-brace-format
+msgid "Change logging is not supported for this object type ({type})."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:64
+msgid "Choices are automatically ordered alphabetically"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:71
+msgid "custom field choice set"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:72
+msgid "custom field choice sets"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:111
+msgid "Must define a list of choices."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:120
+#, python-brace-format
+msgid "Duplicate value '{value}' found in choices."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:144
+#: coldfront/core/models/customfields.py:153
+#, python-brace-format
+msgid ""
+"Cannot remove choice {choice} as there are {model} objects which reference "
+"it."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:200
+msgid "The object(s) to which this field applies."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:203
+msgid "type"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:207
+msgid "The type of data this custom field holds"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:214
+msgid "The type of ColdFront object this field maps to (for object fields)"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:217 coldfront/models/base.py:124
+#: coldfront/models/base.py:157 coldfront/ras/models/resources.py:56
+#: coldfront/tenancy/models/tenants.py:19
+#: coldfront/tenancy/models/tenants.py:41
+#: coldfront/users/models/permissions.py:22 coldfront/users/models/users.py:143
+msgid "name"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:220
+msgid "Internal field name"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:224
+msgid "Only alphanumeric characters and underscores are allowed."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:229
+msgid "Double underscores are not permitted in custom field names."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:236
+msgid "label"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:239
+msgid ""
+"Name of the field as displayed to users (if not provided, 'the field's name "
+"will be used)"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:242
+msgid "group name"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:245
+msgid "Custom fields within the same group will be displayed together"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:247 coldfront/core/models/tags.py:28
+#: coldfront/models/base.py:109 coldfront/models/base.py:129
+#: coldfront/models/base.py:165 coldfront/ras/models/allocations.py:63
+#: coldfront/users/models/permissions.py:26 coldfront/users/models/tokens.py:40
+#: coldfront/users/models/users.py:148
+msgid "description"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:249
+msgid "required"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:251
+msgid ""
+"This field is required when creating new objects or editing an existing "
+"object."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:254
+msgid "must be unique"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:256
+msgid "The value of this field must be unique for the assigned object"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:259
+msgid "search weight"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:262
+msgid ""
+"Weighting for search. Lower values are considered more important. Fields "
+"with a search weight of zero will be ignored."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:267
+msgid "filter logic"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:271
+msgid ""
+"Loose matches any instance of a given string; exact matches the entire field."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:274
+msgid "default"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:278
+msgid ""
+"Default value for the field (must be a JSON value). Encapsulate strings with "
+"double quotes (e.g. \"Foo\")."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:285
+msgid ""
+"Filter the object selection choices using a query_params dict (must be a "
+"JSON value).Encapsulate strings with double quotes (e.g. \"Foo\")."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:290
+msgid "display weight"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:290
+msgid "Fields with higher weights appear lower in a form."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:297
+msgid "minimum value"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:298
+msgid "Minimum allowed value (for numeric fields)"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:305
+msgid "maximum value"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:306
+msgid "Maximum allowed value (for numeric fields)"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:312
+msgid "validation regex"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:314
+#, python-brace-format
+msgid ""
+"Regular expression to enforce on text field values. Use ^ and $ to force "
+"matching of entire string. For example, <code>^[A-Z]{3}$</code> will limit "
+"values to exactly three uppercase letters."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:322
+msgid "choice set"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:331
+msgid "Specifies whether the custom field is displayed in the UI"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:338
+msgid "Specifies whether the custom field value can be edited in the UI"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:342
+#: coldfront/templates/core/customfield.html:87
+msgid "Required Action"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:343
+msgid ""
+"Specifies the required action that must be granted to the user in order to "
+"edit the custom field"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:348
+msgid "is cloneable"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:348
+msgid "Replicate this value when cloning objects"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:350
+#: coldfront/ras/models/allocations.py:69
+msgid "comments"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:377
+msgid "custom field"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:378
+msgid "custom fields"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:479
+#, python-brace-format
+msgid "Invalid default value \"{value}\": {error}"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:488
+msgid "A minimum value may be set only for numeric fields"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:490
+msgid "A maximum value may be set only for numeric fields"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:499
+msgid "Regular expression validation is supported only for text and URL fields"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:504
+msgid "Uniqueness cannot be enforced for boolean fields"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:509
+msgid "Selection fields must specify a set of choices."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:511
+msgid "Choices may be set only on selection fields."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:516
+msgid "Object fields must define an object type."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:519
+#, python-brace-format
+msgid "{type} fields may not define an object type."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:526
+msgid "A related object filter can be defined only for object fields."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:530
+msgid "Filter must be defined as a dictionary mapping attributes to values."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:614
+msgid "True"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:615
+msgid "False"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:703
+#, python-brace-format
+msgid "Values must match this regex: <code>{regex}</code>"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:805
+msgid "Value must be a string."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:807
+#, python-brace-format
+msgid "Value must match regex '{regex}'"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:812
+msgid "Value must be an integer."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:814
+#: coldfront/core/models/customfields.py:825
+#, python-brace-format
+msgid "Value must be at least {minimum}"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:816
+#: coldfront/core/models/customfields.py:827
+#, python-brace-format
+msgid "Value must not exceed {maximum}"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:823
+msgid "Value must be a decimal."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:831
+msgid "Value must be true or false."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:839
+msgid "Date values must be in ISO 8601 format (YYYY-MM-DD)."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:848
+msgid "Date and time values must be in ISO 8601 format (YYYY-MM-DD HH:MM:SS)."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:855
+#, python-brace-format
+msgid "Invalid choice ({value}) for choice set {choiceset}."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:864
+#, python-brace-format
+msgid "Invalid choice(s) ({value}) for choice set {choiceset}."
+msgstr ""
+
+#: coldfront/core/models/customfields.py:872
+#, python-brace-format
+msgid "Value must be an object ID, not {type}"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:878
+#, python-brace-format
+msgid "Value must be a list of object IDs, not {type}"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:882
+#, python-brace-format
+msgid "Found invalid object ID: {id}"
+msgstr ""
+
+#: coldfront/core/models/customfields.py:885
+msgid "Required field cannot be empty."
+msgstr ""
+
+#: coldfront/core/models/object_types.py:193
+msgid "object type"
+msgstr ""
+
+#: coldfront/core/models/object_types.py:194
+msgid "object types"
+msgstr ""
+
+#: coldfront/core/models/tags.py:24 coldfront/ras/models/resources.py:38
+msgid "color"
+msgstr ""
+
+#: coldfront/core/models/tags.py:36
+msgid "The object type(s) to which this tag can be applied."
+msgstr ""
+
+#: coldfront/core/models/tags.py:39
+msgid "weight"
+msgstr ""
+
+#: coldfront/core/models/tags.py:51
+msgid "tag"
+msgstr ""
+
+#: coldfront/core/models/tags.py:52
+msgid "tags"
+msgstr ""
+
+#: coldfront/core/models/tags.py:77
+msgid "tagged item"
+msgstr ""
+
+#: coldfront/core/models/tags.py:78
+msgid "tagged items"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:15
+msgid "Version"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:16
+msgid "Last Updated"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:17
+msgid "Minimum ColdFront Version"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:18
+msgid "Maximum ColdFront Version"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:21 coldfront/core/tables/plugins.py:51
+msgid "No plugin data found"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:38 coldfront/core/tables/tables.py:16
+#: coldfront/core/tables/tables.py:109 coldfront/core/tables/tables.py:144
+#: coldfront/ras/tables/projects.py:15 coldfront/ras/tables/resources.py:17
+#: coldfront/tables/tables.py:271 coldfront/templates/core/customfield.html:8
+#: coldfront/templates/core/customfieldchoiceset.html:8
+#: coldfront/templates/core/plugin.html:40
+#: coldfront/templates/ras/allocationuser.html:36
+#: coldfront/templates/tenancy/tenantgroup.html:23
+#: coldfront/templates/users/group.html:12
+#: coldfront/templates/users/objectpermission.html:12
+#: coldfront/tenancy/tables/tenants.py:38 coldfront/users/tables.py:52
+#: coldfront/users/tables.py:63
+msgid "Name"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:39 coldfront/templates/core/plugin.html:48
+msgid "Author"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:40 coldfront/templates/core/plugin.html:64
+msgid "Local"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:42 coldfront/ras/choices.py:21
+#: coldfront/ras/choices.py:37 coldfront/ras/choices.py:55
+#: coldfront/templates/users/user.html:32
+msgid "Active"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:44
+msgid "Certified"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:45
+msgid "Published"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:47
+msgid "Installed Version"
+msgstr ""
+
+#: coldfront/core/tables/plugins.py:48
+msgid "Latest Version"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:18 coldfront/templates/core/tag.html:12
+#: coldfront/templates/ras/resourcetype.html:12
+msgid "Color"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:21 coldfront/core/tables/tables.py:148
+#: coldfront/templates/core/customfield.html:96
+#: coldfront/templates/users/objectpermission.html:55
+#: coldfront/users/tables.py:65
+msgid "Object Types"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:23 coldfront/core/tables/tables.py:192
+#: coldfront/ras/forms/allocations.py:118
+#: coldfront/ras/forms/allocations.py:265 coldfront/ras/forms/projects.py:84
+#: coldfront/ras/tables/allocations.py:31
+#: coldfront/ras/tables/allocations.py:97 coldfront/ras/tables/projects.py:20
+#: coldfront/templates/ras/allocation.html:33
+#: coldfront/templates/ras/allocationuser.html:44
+#: coldfront/templates/ras/project.html:14
+msgid "Owner"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:46 coldfront/forms/model_forms.py:150
+#: coldfront/tables/tables.py:217
+msgid "ID"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:60
+#: coldfront/templates/core/objectchange.html:28
+msgid "Time"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:61
+#: coldfront/templates/account/profile.html:10
+#: coldfront/templates/ras/allocationuser.html:8
+#: coldfront/templates/ras/projectuser.html:8
+#: coldfront/templates/users/user.html:12 coldfront/users/tables.py:22
+msgid "Username"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:63
+#: coldfront/templates/account/profile.html:14
+#: coldfront/templates/users/user.html:16
+msgid "Full Name"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:75
+#: coldfront/templates/core/objectchange.html:60
+msgid "Request ID"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:77
+#: coldfront/templates/core/objectchange.html:56
+msgid "Message"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:119
+msgid "Count"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:122
+#: coldfront/templates/core/customfieldchoiceset.html:20
+msgid "Order Alphabetically"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:155
+msgid "Validate Uniqueness"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:159
+msgid "Visible"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:162
+msgid "Editable"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:165
+#: coldfront/templates/core/customfield.html:27
+#: coldfront/templates/core/customfieldchoiceset.html:12
+#: coldfront/templates/core/plugin.html:60 coldfront/templates/core/tag.html:8
+#: coldfront/templates/generic/bulk_import.html:114
+#: coldfront/templates/ras/allocation.html:51
+#: coldfront/templates/ras/allocationtype.html:8
+#: coldfront/templates/ras/allocationuser.html:40
+#: coldfront/templates/ras/project.html:18
+#: coldfront/templates/ras/resource.html:12
+#: coldfront/templates/ras/resourcetype.html:16
+#: coldfront/templates/tenancy/tenant.html:19
+#: coldfront/templates/tenancy/tenantgroup.html:27
+#: coldfront/templates/users/group.html:16
+#: coldfront/templates/users/objectpermission.html:16
+#: coldfront/templates/users/token.html:40
+msgid "Description"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:168
+msgid "Related Object Type"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:172
+#: coldfront/templates/core/customfield.html:44
+msgid "Choice Set"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:180
+msgid "Is Cloneable"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:184
+#: coldfront/templates/core/customfield.html:105
+msgid "Minimum Value"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:187
+#: coldfront/templates/core/customfield.html:109
+msgid "Maximum Value"
+msgstr ""
+
+#: coldfront/core/tables/tables.py:190
+msgid "Validation Regex"
+msgstr ""
+
+#: coldfront/core/views.py:335
+#, python-brace-format
+msgid "Plugin {name} not found"
+msgstr ""
+
+#: coldfront/forms/bulk_import.py:22 coldfront/forms/fields/fields.py:69
+#: coldfront/forms/mixins.py:62 coldfront/forms/model_forms.py:110
+#: coldfront/tables/columns.py:234 coldfront/templates/cotton/card/tags.html:2
+msgid "Tags"
+msgstr ""
+
+#: coldfront/forms/bulk_import.py:26
+msgid ""
+"Tag slugs separated by commas, encased with double quotes (e.g. "
+"\"tag1,tag2,tag3\")"
+msgstr ""
+
+#: coldfront/forms/fields/csv.py:57
+#, python-brace-format
+msgid "Invalid value for a multiple choice field: {value}"
+msgstr ""
+
+#: coldfront/forms/fields/csv.py:77 coldfront/forms/fields/csv.py:99
+#, python-format
+msgid "Object not found: %(value)s"
+msgstr ""
+
+#: coldfront/forms/fields/csv.py:85
+#, python-brace-format
+msgid ""
+"\"{value}\" is not a unique value for this field; multiple objects were found"
+msgstr ""
+
+#: coldfront/forms/fields/csv.py:89
+#, python-brace-format
+msgid "\"{field_name}\" is an invalid accessor field name."
+msgstr ""
+
+#: coldfront/forms/fields/csv.py:124
+msgid "Object type must be specified as \"<app>.<model>\""
+msgstr ""
+
+#: coldfront/forms/fields/csv.py:128 coldfront/forms/fields/csv.py:149
+msgid "Invalid object type"
+msgstr ""
+
+#: coldfront/forms/fields/fields.py:34
+#: coldfront/templates/ras/resourcetype.html:8
+msgid "Slug"
+msgstr ""
+
+#: coldfront/forms/fields/fields.py:35
+msgid "URL-friendly unique shorthand"
+msgstr ""
+
+#: coldfront/forms/fields/fields.py:85
+msgid "Enter context data in <a href=\"https://json.org/\">JSON</a> format."
+msgstr ""
+
+#: coldfront/forms/fields/fields.py:106 coldfront/ras/forms/allocations.py:210
+#: coldfront/ras/forms/allocations.py:251
+#: coldfront/templates/cotton/card/comments.html:3
+msgid "Comments"
+msgstr ""
+
+#: coldfront/forms/fields/fields.py:108
+#, python-brace-format
+msgid ""
+"<i class=\"fa-solid fa-circle-info\"></i> <a href=\"{url}\" "
+"target=\"_blank\" tabindex=\"-1\">Markdown</a> syntax is supported"
+msgstr ""
+
+#: coldfront/forms/forms.py:64
+msgid "Available Columns"
+msgstr ""
+
+#: coldfront/forms/forms.py:70
+msgid "Selected Columns"
+msgstr ""
+
+#: coldfront/forms/forms.py:93
+msgid "Enter object data in CSV, JSON or YAML format."
+msgstr ""
+
+#: coldfront/forms/forms.py:95
+msgid "Data file"
+msgstr ""
+
+#: coldfront/forms/forms.py:100
+msgid "CSV delimiter"
+msgstr ""
+
+#: coldfront/forms/forms.py:101
+msgid "The character which delimits CSV fields. Applies only to CSV format."
+msgstr ""
+
+#: coldfront/forms/forms.py:115
+msgid "Form data must be empty when uploading/selecting a file."
+msgstr ""
+
+#: coldfront/forms/forms.py:142
+#, python-brace-format
+msgid "Unknown data format: {format}"
+msgstr ""
+
+#: coldfront/forms/forms.py:161
+msgid "Unable to detect data format. Please specify."
+msgstr ""
+
+#: coldfront/forms/forms.py:184
+msgid "Invalid CSV delimiter"
+msgstr ""
+
+#: coldfront/forms/forms.py:228
+msgid ""
+"Invalid YAML data. Data must be in the form of multiple documents, or a "
+"single document comprising a list of dictionaries."
+msgstr ""
+
+#: coldfront/forms/forms.py:258 coldfront/tenancy/forms/filterset_forms.py:51
+msgid "Tenant group"
+msgstr ""
+
+#: coldfront/forms/forms.py:265 coldfront/forms/forms.py:275
+#: coldfront/forms/model_forms.py:98 coldfront/ras/forms/filterset_forms.py:63
+#: coldfront/ras/forms/filterset_forms.py:98
+#: coldfront/ras/forms/filterset_forms.py:145
+#: coldfront/tenancy/forms/filterset_forms.py:58
+#: coldfront/tenancy/tables/columns.py:54
+msgid "Tenant"
+msgstr ""
+
+#: coldfront/forms/forms.py:279
+msgid "Assigned tenant"
+msgstr ""
+
+#: coldfront/forms/mixins.py:126
+msgid ""
+"This object has been modified since the form was rendered. Please consult "
+"the object's change log for details."
+msgstr ""
+
+#: coldfront/forms/mixins.py:156
+#, python-brace-format
+msgid "{class_name} must specify a model class."
+msgstr ""
+
+#: coldfront/forms/mixins.py:205 coldfront/templates/ras/allocationtype.html:22
+msgid "Schema"
+msgstr ""
+
+#: coldfront/forms/mixins.py:207 coldfront/ras/forms/resources.py:28
+#: coldfront/ras/forms/resources.py:33
+msgid "Enter a valid JSON schema to define supported attributes."
+msgstr ""
+
+#: coldfront/forms/model_forms.py:152
+msgid ""
+"Numeric ID of an existing object to update (if not creating a new object)"
+msgstr ""
+
+#: coldfront/forms/model_forms.py:168
+#, python-brace-format
+msgid "Unrecognized header: {name}"
+msgstr ""
+
+#: coldfront/forms/utils.py:28
+#, python-brace-format
+msgid "Duplicate or conflicting column header for \"{field}\""
+msgstr ""
+
+#: coldfront/forms/utils.py:34
+#, python-brace-format
+msgid "Duplicate or conflicting column header for \"{header}\""
+msgstr ""
+
+#: coldfront/forms/utils.py:42
+#, python-brace-format
+msgid "Row {row}: Expected {count_expected} columns but found {count_found}"
+msgstr ""
+
+#: coldfront/forms/widgets/apiselect.py:133
+#, python-brace-format
+msgid "Missing required value for dynamic query param: '{dynamic_params}'"
+msgstr ""
+
+#: coldfront/forms/widgets/apiselect.py:150
+#, python-brace-format
+msgid "Missing required value for static query param: '{static_params}'"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:182
+#: coldfront/legacy/allocation/admin.py:393
+#: coldfront/legacy/project/admin.py:161 coldfront/legacy/project/admin.py:262
+msgid "value"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:188
+#: coldfront/legacy/project/admin.py:167
+msgid "Greater than or equal to 0"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:189
+#: coldfront/legacy/project/admin.py:168
+msgid "Greater than 10"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:190
+#: coldfront/legacy/project/admin.py:169
+msgid "Greater than 100"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:191
+#: coldfront/legacy/project/admin.py:170
+msgid "Greater than 1000"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:192
+#: coldfront/legacy/project/admin.py:171
+msgid "Greater than 10000"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:399
+#: coldfront/legacy/project/admin.py:268
+msgid "Greater than > 0"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:400
+#: coldfront/legacy/project/admin.py:269
+msgid "Greater than > 10"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:401
+#: coldfront/legacy/project/admin.py:270
+msgid "Greater than > 100"
+msgstr ""
+
+#: coldfront/legacy/allocation/admin.py:402
+#: coldfront/legacy/project/admin.py:271
+msgid "Greater than > 1000"
+msgstr ""
+
+#: coldfront/models/base.py:161 coldfront/ras/models/allocations.py:22
+#: coldfront/ras/models/projects.py:18 coldfront/ras/models/resources.py:33
+#: coldfront/tenancy/models/tenants.py:24
+#: coldfront/tenancy/models/tenants.py:45
+msgid "slug"
+msgstr ""
+
+#: coldfront/models/features.py:38 coldfront/users/models/tokens.py:45
+msgid "created"
+msgstr ""
+
+#: coldfront/models/features.py:44
+msgid "last updated"
+msgstr ""
+
+#: coldfront/models/features.py:300
+#, python-brace-format
+msgid "Invalid value for custom field '{name}': {error}"
+msgstr ""
+
+#: coldfront/models/features.py:310
+#, python-brace-format
+msgid "Custom field '{name}' must have a unique value."
+msgstr ""
+
+#: coldfront/models/features.py:315
+#, python-brace-format
+msgid "Missing required custom field '{name}'."
+msgstr ""
+
+#: coldfront/models/features.py:337 coldfront/ras/models/resources.py:29
+msgid "schema"
+msgstr ""
+
+#: coldfront/models/features.py:357
+msgid "attributes"
+msgstr ""
+
+#: coldfront/models/features.py:412
+#, python-brace-format
+msgid "Invalid schema: {error}"
+msgstr ""
+
+#: coldfront/models/fields.py:41
+msgid "RGB color in hexadecimal. Example: "
+msgstr ""
+
+#: coldfront/navigation/menu.py:19
+msgid "Organization"
+msgstr ""
+
+#: coldfront/navigation/menu.py:23
+msgid "Tenancy"
+msgstr ""
+
+#: coldfront/navigation/menu.py:25 coldfront/tenancy/tables/tenants.py:15
+msgid "Tenants"
+msgstr ""
+
+#: coldfront/navigation/menu.py:26
+msgid "Tenant Groups"
+msgstr ""
+
+#: coldfront/navigation/menu.py:33 coldfront/navigation/menu.py:37
+#: coldfront/navigation/menu.py:39
+msgid "Projects"
+msgstr ""
+
+#: coldfront/navigation/menu.py:40
+msgid "Project Users"
+msgstr ""
+
+#: coldfront/navigation/menu.py:47 coldfront/navigation/menu.py:51
+#: coldfront/navigation/menu.py:53 coldfront/ras/views/projects.py:109
+msgid "Allocations"
+msgstr ""
+
+#: coldfront/navigation/menu.py:54
+msgid "Allocation Users"
+msgstr ""
+
+#: coldfront/navigation/menu.py:61 coldfront/navigation/menu.py:65
+#: coldfront/navigation/menu.py:67 coldfront/ras/filtersets/allocations.py:18
+#: coldfront/ras/forms/filterset_forms.py:115
+#: coldfront/ras/views/allocations.py:115
+#: coldfront/templates/ras/allocation.html:45
+msgid "Resources"
+msgstr ""
+
+#: coldfront/navigation/menu.py:68
+msgid "Resource Types"
+msgstr ""
+
+#: coldfront/navigation/menu.py:75 coldfront/navigation/menu.py:79
+msgid "Customization"
+msgstr ""
+
+#: coldfront/navigation/menu.py:81
+#: coldfront/templates/cotton/card/custom_fields.html:5
+#: coldfront/templates/cotton/form/index.html:9
+msgid "Custom Fields"
+msgstr ""
+
+#: coldfront/navigation/menu.py:82
+msgid "Custom Field Choices"
+msgstr ""
+
+#: coldfront/navigation/menu.py:90
+msgid "Admin"
+msgstr ""
+
+#: coldfront/navigation/menu.py:94
+msgid "Authentication"
+msgstr ""
+
+#: coldfront/navigation/menu.py:96 coldfront/ras/forms/allocations.py:53
+#: coldfront/ras/views/allocations.py:92 coldfront/ras/views/projects.py:82
+#: coldfront/templates/users/group.html:23
+#: coldfront/users/forms/model_forms.py:119
+#: coldfront/users/forms/model_forms.py:136
+#: coldfront/users/forms/model_forms.py:186 coldfront/users/tables.py:91
+msgid "Users"
+msgstr ""
+
+#: coldfront/navigation/menu.py:97 coldfront/users/forms/model_forms.py:40
+#: coldfront/users/forms/model_forms.py:61
+#: coldfront/users/forms/model_forms.py:191 coldfront/users/tables.py:23
+#: coldfront/users/tables.py:95
+msgid "Groups"
+msgstr ""
+
+#: coldfront/navigation/menu.py:98 coldfront/templates/account/base.html:15
+msgid "API Tokens"
+msgstr ""
+
+#: coldfront/navigation/menu.py:99 coldfront/users/forms/model_forms.py:46
+#: coldfront/users/forms/model_forms.py:70
+#: coldfront/users/forms/model_forms.py:125
+#: coldfront/users/forms/model_forms.py:140
+msgid "Permissions"
+msgstr ""
+
+#: coldfront/navigation/menu.py:103
+msgid "System"
+msgstr ""
+
+#: coldfront/navigation/menu.py:107 coldfront/navigation/menu.py:143
+#: coldfront/templates/core/plugin.html:10
+#: coldfront/templates/core/plugin_list.html:4
+#: coldfront/templates/core/plugin_list.html:9
+msgid "Plugins"
+msgstr ""
+
+#: coldfront/navigation/menu.py:113
+msgid "Logging"
+msgstr ""
+
+#: coldfront/navigation/menu.py:114
+#: coldfront/templates/core/objectchange.html:7
+#: coldfront/templates/core/objectchange_list.html:4
+msgid "Change Log"
+msgstr ""
+
+#: coldfront/plugins/navigation.py:55 coldfront/plugins/navigation.py:92
+msgid "Permissions must be passed as a tuple or list."
+msgstr ""
+
+#: coldfront/plugins/navigation.py:61
+msgid "Buttons must be passed as a tuple or list."
+msgstr ""
+
+#: coldfront/plugins/navigation.py:98
+msgid "Button color must be a choice within ButtonColorChoices."
+msgstr ""
+
+#: coldfront/plugins/registration.py:30
+#, python-brace-format
+msgid ""
+"PluginTemplateExtension class {template_extension} was passed as an instance!"
+msgstr ""
+
+#: coldfront/plugins/registration.py:36
+#, python-brace-format
+msgid ""
+"{template_extension} is not a subclass of "
+"coldfront.plugins.PluginTemplateExtension!"
+msgstr ""
+
+#: coldfront/plugins/registration.py:53
+#, python-brace-format
+msgid "{item} must be an instance of coldfront.plugins.PluginMenuItem"
+msgstr ""
+
+#: coldfront/plugins/registration.py:65
+#, python-brace-format
+msgid "{menu_link} must be an instance of coldfront.plugins.PluginMenuItem"
+msgstr ""
+
+#: coldfront/plugins/registration.py:70
+#, python-brace-format
+msgid "{button} must be an instance of coldfront.plugins.PluginMenuButton"
+msgstr ""
+
+#: coldfront/plugins/templates.py:44
+msgid "extra_context must be a dictionary"
+msgstr ""
+
+#: coldfront/ras/choices.py:20
+msgid "Offline"
+msgstr ""
+
+#: coldfront/ras/choices.py:22
+msgid "Planned"
+msgstr ""
+
+#: coldfront/ras/choices.py:23
+msgid "Staged"
+msgstr ""
+
+#: coldfront/ras/choices.py:24
+msgid "Decommissioning"
+msgstr ""
+
+#: coldfront/ras/choices.py:36
+msgid "Archived"
+msgstr ""
+
+#: coldfront/ras/choices.py:38 coldfront/ras/choices.py:54
+msgid "New"
+msgstr ""
+
+#: coldfront/ras/choices.py:56
+msgid "Denied"
+msgstr ""
+
+#: coldfront/ras/choices.py:57
+msgid "Expired"
+msgstr ""
+
+#: coldfront/ras/choices.py:58
+msgid "Approved"
+msgstr ""
+
+#: coldfront/ras/choices.py:59
+msgid "Revoked"
+msgstr ""
+
+#: coldfront/ras/choices.py:60 coldfront/ras/flows/allocations.py:86
+#: coldfront/ras/object_actions.py:72
+msgid "Renew"
+msgstr ""
+
+#: coldfront/ras/filtersets/resources.py:30
+msgid "Resource type (ID)"
+msgstr ""
+
+#: coldfront/ras/filtersets/resources.py:37
+msgid "Resource type (slug)"
+msgstr ""
+
+#: coldfront/ras/filtersets/resources.py:42
+msgid "Parent resource (ID)"
+msgstr ""
+
+#: coldfront/ras/filtersets/resources.py:49
+msgid "Parent resource (slug)"
+msgstr ""
+
+#: coldfront/ras/flows/allocations.py:51 coldfront/ras/object_actions.py:16
+msgid "Request"
+msgstr ""
+
+#: coldfront/ras/flows/allocations.py:62 coldfront/ras/object_actions.py:30
+msgid "Approve"
+msgstr ""
+
+#: coldfront/ras/flows/allocations.py:73 coldfront/ras/object_actions.py:44
+msgid "Deny"
+msgstr ""
+
+#: coldfront/ras/flows/allocations.py:96 coldfront/ras/object_actions.py:58
+msgid "Activate"
+msgstr ""
+
+#: coldfront/ras/flows/allocations.py:104
+msgid "Expire"
+msgstr ""
+
+#: coldfront/ras/flows/allocations.py:112 coldfront/ras/object_actions.py:86
+msgid "Revoke"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:33 coldfront/ras/forms/allocations.py:105
+#: coldfront/ras/forms/allocations.py:147
+#: coldfront/ras/forms/allocations.py:276
+#: coldfront/ras/forms/filterset_forms.py:91
+#: coldfront/ras/forms/filterset_forms.py:110
+#: coldfront/ras/forms/filterset_forms.py:157
+#: coldfront/ras/forms/projects.py:36 coldfront/ras/forms/projects.py:119
+#: coldfront/ras/tables/allocations.py:27
+#: coldfront/ras/tables/allocations.py:91 coldfront/ras/tables/projects.py:66
+#: coldfront/templates/ras/allocation.html:29
+#: coldfront/templates/ras/allocationuser.html:35
+#: coldfront/users/filtersets.py:76 coldfront/users/forms/filterset_forms.py:30
+msgid "Project"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:41 coldfront/ras/forms/allocations.py:112
+#: coldfront/ras/forms/allocations.py:154
+#: coldfront/ras/forms/allocations.py:195
+#: coldfront/ras/forms/allocations.py:237
+#: coldfront/ras/forms/allocations.py:286
+#: coldfront/ras/forms/filterset_forms.py:56
+#: coldfront/ras/forms/resources.py:98 coldfront/ras/tables/allocations.py:35
+msgid "Resource"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:44 coldfront/ras/forms/allocations.py:157
+msgid "Select a resources for this allocation request"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:49
+msgid ""
+"Please provide the justification for how you intend to use the resource to "
+"further the research goals of your project"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:59
+msgid "Please choose users"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:200
+#: coldfront/ras/forms/allocations.py:242
+#: coldfront/ras/forms/allocations.py:316
+#: coldfront/ras/forms/allocations.py:374
+#: coldfront/ras/forms/filterset_forms.py:136
+#: coldfront/ras/forms/filterset_forms.py:176
+#: coldfront/ras/tables/allocations.py:22
+#: coldfront/ras/tables/allocations.py:85
+#: coldfront/templates/ras/allocationuser.html:48
+#: coldfront/users/filtersets.py:81
+msgid "Allocation"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:259 coldfront/ras/forms/resources.py:130
+#: coldfront/tables/tables.py:290 coldfront/templates/ras/allocation.html:67
+#: coldfront/templates/ras/resource.html:26
+msgid "Attributes"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:261
+msgid ""
+"Attribute values for the assigned allocation type, passed as a dictionary"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:269
+msgid "The owner of the allocation"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:271 coldfront/ras/forms/projects.py:90
+#: coldfront/ras/forms/projects.py:114
+msgid "User not found."
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:281 coldfront/ras/forms/projects.py:124
+msgid "Project not found."
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:291
+msgid "Resource not found."
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:340
+msgid "Allocation User"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:367
+msgid "User to add to allocation"
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:369
+msgid ""
+"User not found, is not in this project, or has already been added to the "
+"allocation."
+msgstr ""
+
+#: coldfront/ras/forms/allocations.py:379
+msgid "Allocation not found."
+msgstr ""
+
+#: coldfront/ras/forms/filterset_forms.py:40
+#: coldfront/ras/forms/resources.py:52 coldfront/ras/forms/resources.py:67
+#: coldfront/ras/forms/resources.py:123 coldfront/ras/forms/resources.py:126
+#: coldfront/ras/tables/resources.py:74 coldfront/templates/ras/resource.html:8
+msgid "Resource Type"
+msgstr ""
+
+#: coldfront/ras/forms/filterset_forms.py:43
+#: coldfront/ras/forms/filterset_forms.py:73
+#: coldfront/ras/forms/filterset_forms.py:118
+#: coldfront/ras/tables/allocations.py:48 coldfront/ras/tables/projects.py:33
+#: coldfront/ras/tables/resources.py:82 coldfront/templates/ras/project.html:22
+#: coldfront/templates/ras/resource.html:16
+#: coldfront/users/forms/filterset_forms.py:57
+#: coldfront/users/forms/model_forms.py:65
+msgid "Status"
+msgstr ""
+
+#: coldfront/ras/forms/filterset_forms.py:50
+#: coldfront/ras/forms/resources.py:73 coldfront/ras/forms/resources.py:115
+#: coldfront/tables/tables.py:273
+#: coldfront/templates/tenancy/tenantgroup.html:31
+#: coldfront/tenancy/forms/bulk_import.py:18
+#: coldfront/tenancy/forms/model_forms.py:18
+msgid "Parent"
+msgstr ""
+
+#: coldfront/ras/forms/projects.py:66
+msgid "Project User"
+msgstr ""
+
+#: coldfront/ras/forms/projects.py:88
+msgid "Owner of the project"
+msgstr ""
+
+#: coldfront/ras/forms/projects.py:112
+msgid "User to add to project"
+msgstr ""
+
+#: coldfront/ras/forms/resources.py:26
+#: coldfront/templates/ras/resourcetype.html:32
+msgid "Resource Attribute Schema"
+msgstr ""
+
+#: coldfront/ras/forms/resources.py:31
+#: coldfront/templates/ras/resourcetype.html:37
+msgid "Allocation Attribute Schema"
+msgstr ""
+
+#: coldfront/ras/forms/resources.py:119
+msgid "Parent resource"
+msgstr ""
+
+#: coldfront/ras/forms/resources.py:132
+msgid "Attribute values for the assigned resource type, passed as a dictionary"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:33
+msgid "The resource for this allocation"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:42 coldfront/ras/models/projects.py:22
+#: coldfront/ras/models/resources.py:75
+msgid "status"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:48
+msgid "start date"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:53
+msgid "end date"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:58
+msgid "justification"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:94
+msgid "allocation"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:95
+msgid "allocations"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:136
+msgid "allocation user"
+msgstr ""
+
+#: coldfront/ras/models/allocations.py:137
+msgid "allocation users"
+msgstr ""
+
+#: coldfront/ras/models/projects.py:45
+msgid "project"
+msgstr ""
+
+#: coldfront/ras/models/projects.py:46
+msgid "projects"
+msgstr ""
+
+#: coldfront/ras/models/projects.py:75
+msgid "project user"
+msgstr ""
+
+#: coldfront/ras/models/projects.py:76
+msgid "project users"
+msgstr ""
+
+#: coldfront/ras/models/resources.py:44
+msgid "resource type"
+msgstr ""
+
+#: coldfront/ras/models/resources.py:45
+msgid "resource types"
+msgstr ""
+
+#: coldfront/ras/models/resources.py:92
+msgid "resource"
+msgstr ""
+
+#: coldfront/ras/models/resources.py:93
+msgid "resources"
+msgstr ""
+
+#: coldfront/ras/models/resources.py:106
+msgid "Resource name must be unique"
+msgstr ""
+
+#: coldfront/ras/models/resources.py:112
+msgid "A top-level resource with this name already exists."
+msgstr ""
+
+#: coldfront/ras/models/resources.py:119
+msgid "A top-level resource with this slug already exists."
+msgstr ""
+
+#: coldfront/ras/tables/allocations.py:40
+#: coldfront/templates/ras/allocation.html:37
+msgid "Start Date"
+msgstr ""
+
+#: coldfront/ras/tables/allocations.py:44
+#: coldfront/templates/ras/allocation.html:41
+msgid "End Date"
+msgstr ""
+
+#: coldfront/ras/tables/allocations.py:101 coldfront/ras/tables/projects.py:71
+#: coldfront/templates/ras/allocationuser.html:24
+#: coldfront/templates/ras/projectuser.html:24
+msgid "Date Added"
+msgstr ""
+
+#: coldfront/ras/tables/projects.py:25
+msgid "User Count"
+msgstr ""
+
+#: coldfront/ras/tables/projects.py:30 coldfront/ras/tables/resources.py:79
+msgid "Allocation Count"
+msgstr ""
+
+#: coldfront/ras/tables/resources.py:23
+msgid "Resource Count"
+msgstr ""
+
+#: coldfront/ras/tables/resources.py:31
+msgid "Resource Attributes"
+msgstr ""
+
+#: coldfront/ras/tables/resources.py:38
+msgid "Allocation Attributes"
+msgstr ""
+
+#: coldfront/registry.py:26
+#, python-brace-format
+msgid "Invalid store: {key}"
+msgstr ""
+
+#: coldfront/registry.py:29
+msgid "Cannot add stores to registry after initialization"
+msgstr ""
+
+#: coldfront/registry.py:32
+msgid "Cannot delete stores from registry"
+msgstr ""
+
+#: coldfront/tables/columns.py:146
+msgid "Select all"
+msgstr ""
+
+#: coldfront/tables/columns.py:157
+msgid "Toggle all"
+msgstr ""
+
+#: coldfront/tables/columns.py:325
+#: coldfront/templates/cotton/table/controls.html:26
+msgid "Toggle Dropdown"
+msgstr ""
+
+#: coldfront/tables/tables.py:67
+#, python-brace-format
+msgid "No {model_name} found"
+msgstr ""
+
+#: coldfront/tables/tables.py:285
+#: coldfront/templates/generic/bulk_import.html:111
+msgid "Field"
+msgstr ""
+
+#: coldfront/tables/tables.py:288
+#: coldfront/templates/core/customfieldchoiceset.html:37
+msgid "Value"
+msgstr ""
+
+#: coldfront/tables/utils.py:33
+#, python-brace-format
+msgid "A column named {name} is already defined for table {table_name}"
+msgstr ""
+
+#: coldfront/templates/account/base.html:7
+msgid "Profile"
+msgstr ""
+
+#: coldfront/templates/account/base.html:11
+#: coldfront/users/forms/bulk_import.py:27
+#: coldfront/users/forms/model_forms.py:29
+msgid "Password"
+msgstr ""
+
+#: coldfront/templates/account/password.html:4
+msgid "Change Password"
+msgstr ""
+
+#: coldfront/templates/account/password.html:17
+#: coldfront/templates/cotton/form/delete.html:59
+#: coldfront/templates/cotton/form/delete.html:61
+#: coldfront/templates/cotton/modal/transition.html:15
+#: coldfront/templates/generic/bulk_delete.html:80
+#: coldfront/templates/generic/bulk_import.html:63
+#: coldfront/templates/generic/bulk_import.html:94
+#: coldfront/templates/generic/object_edit.html:66
+#: coldfront/templates/generic/object_flow.html:51
+#: coldfront/templates/generic/quick_add.html:20
+msgid "Cancel"
+msgstr ""
+
+#: coldfront/templates/account/password.html:18
+#: coldfront/templates/builtins/table_config_form.html:39
+#: coldfront/templates/generic/object_edit.html:69
+msgid "Save"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:4
+msgid "User Profile"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:22
+#: coldfront/templates/users/user.html:20
+msgid "Email"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:26
+#: coldfront/templates/users/user.html:24
+msgid "Account Created"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:30
+#: coldfront/templates/users/user.html:28
+msgid "Last Login"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:35
+#: coldfront/templates/users/user.html:36
+msgid "Superuser"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:43
+#: coldfront/templates/users/objectpermission.html:79
+#: coldfront/templates/users/user.html:43
+msgid "Assigned Groups"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:50
+#: coldfront/templates/core/objectchange.html:121
+#: coldfront/templates/core/objectchange.html:141
+#: coldfront/templates/cotton/card/comments.html:8
+#: coldfront/templates/cotton/card/related_objects.html:11
+#: coldfront/templates/cotton/table/htmx.html:19
+#: coldfront/templates/cotton/table/index.html:17
+#: coldfront/templates/users/group.html:30
+#: coldfront/templates/users/group.html:42
+#: coldfront/templates/users/objectpermission.html:62
+#: coldfront/templates/users/objectpermission.html:74
+#: coldfront/templates/users/objectpermission.html:86
+#: coldfront/templates/users/user.html:50
+#: coldfront/templates/users/user.html:62
+msgid "None"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:60
+#: coldfront/templates/users/user.html:73
+msgid "Recent Activity"
+msgstr ""
+
+#: coldfront/templates/account/profile.html:63
+#: coldfront/templates/users/user.html:76
+msgid "View All"
+msgstr ""
+
+#: coldfront/templates/account/usertoken.html:6
+#: coldfront/templates/account/usertoken_list.html:4
+msgid "My API Tokens"
+msgstr ""
+
+#: coldfront/templates/account/usertoken_list.html:9
+msgid "Add a Token"
+msgstr ""
+
+#: coldfront/templates/base/base.html:32
+msgid "Home"
+msgstr ""
+
+#: coldfront/templates/builtins/customfield_value.html:29
+msgid "Not defined"
+msgstr ""
+
+#: coldfront/templates/builtins/table_config_form.html:7
+msgid "Table Configuration"
+msgstr ""
+
+#: coldfront/templates/builtins/table_config_form.html:19
+#: coldfront/templates/cotton/button/add.html:3
+#: coldfront/templates/users/objectpermission.html:30
+#: coldfront/views/object_actions.py:96
+msgid "Add"
+msgstr ""
+
+#: coldfront/templates/builtins/table_config_form.html:22
+msgid "Remove"
+msgstr ""
+
+#: coldfront/templates/builtins/table_config_form.html:30
+msgid "Move Up"
+msgstr ""
+
+#: coldfront/templates/builtins/table_config_form.html:33
+msgid "Move Down"
+msgstr ""
+
+#: coldfront/templates/builtins/table_config_form.html:38
+#: coldfront/templates/cotton/form/filters.html:12
+msgid "Reset"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:19
+#: coldfront/templates/core/customfieldchoiceset.html:36
+#: coldfront/templates/generic/bulk_import.html:156
+msgid "Label"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:23
+msgid "Group Name"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:35
+msgid "Must be Unique"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:39
+msgid "Cloneable"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:49
+msgid "Default Value"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:63
+msgid "Search Weight"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:71
+msgid "Filter Logic"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:75
+msgid "Display Weight"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:79
+msgid "UI Visible"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:83
+msgid "UI Editable"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:104
+msgid "Validation Rules"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:113
+msgid "Regular Expression"
+msgstr ""
+
+#: coldfront/templates/core/customfield.html:122
+msgid "Related Objects"
+msgstr ""
+
+#: coldfront/templates/core/customfieldchoiceset.html:24
+msgid "Used by"
+msgstr ""
+
+#: coldfront/templates/core/object_changelog.html:8
+#: coldfront/templates/core/objectchange_list.html:9
+msgid "Change log retention"
+msgstr ""
+
+#: coldfront/templates/core/object_changelog.html:8
+#: coldfront/templates/core/objectchange_list.html:9
+msgid "days"
+msgstr ""
+
+#: coldfront/templates/core/object_changelog.html:8
+#: coldfront/templates/core/objectchange_list.html:9
+msgid "Indefinite"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:27
+#: coldfront/templates/users/objectpermission.html:34
+msgid "Change"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:71
+msgid "Difference"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:74
+msgid "Previous"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:77
+msgid "Next"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:86
+msgid "Object Created"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:88
+msgid "Object Deleted"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:90
+msgid "No Changes"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:108
+msgid "Pre-Change Data"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:119
+msgid "Warning: Comparing non-atomic change to previous change record"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:130
+msgid "Post-Change Data"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:156
+msgid "Related Changes"
+msgstr ""
+
+#: coldfront/templates/core/objectchange.html:160
+#, python-format
+msgid "See All %(count)s Changes"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:17
+msgid "installed"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:19
+msgid "Not installed"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:30
+msgid "Overview"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:39
+msgid "Plugin Details"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:44
+msgid "Summary"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:52
+msgid "URL"
+msgstr ""
+
+#: coldfront/templates/core/plugin.html:72
+msgid "Version History"
+msgstr ""
+
+#: coldfront/templates/core/tag.html:20
+msgid "Tagged Items"
+msgstr ""
+
+#: coldfront/templates/core/tag.html:27
+msgid "Allowed Object Types"
+msgstr ""
+
+#: coldfront/templates/core/tag.html:34
+msgid "Any"
+msgstr ""
+
+#: coldfront/templates/core/tag.html:39
+msgid "Tagged Item Types"
+msgstr ""
+
+#: coldfront/templates/core/tag.html:51
+msgid "Tagged Objects"
+msgstr ""
+
+#: coldfront/templates/cotton/alert/missing_prereqs.html:7
+#, python-format
+msgid ""
+"Before you can add a %(model)s you must first create a "
+"<strong>%(prerequisite_model)s</strong>."
+msgstr ""
+
+#: coldfront/templates/cotton/button/clone.html:4
+#: coldfront/views/object_actions.py:107
+msgid "Clone"
+msgstr ""
+
+#: coldfront/templates/cotton/button/delete.html:3
+#: coldfront/templates/cotton/form/delete.html:63
+#: coldfront/templates/generic/bulk_delete.html:20
+#: coldfront/templates/generic/bulk_delete.html:81
+#: coldfront/templates/generic/object_delete.html:17
+#: coldfront/templates/users/objectpermission.html:38
+#: coldfront/views/object_actions.py:136
+msgid "Delete"
+msgstr ""
+
+#: coldfront/templates/cotton/button/edit.html:3
+#: coldfront/templates/generic/object_edit.html:47
+#: coldfront/views/object_actions.py:124
+msgid "Edit"
+msgstr ""
+
+#: coldfront/templates/cotton/button/export.html:3
+#: coldfront/views/object_actions.py:159
+msgid "Export"
+msgstr ""
+
+#: coldfront/templates/cotton/button/export.html:10
+msgid "Current View"
+msgstr ""
+
+#: coldfront/templates/cotton/button/export.html:11
+msgid "All Data"
+msgstr ""
+
+#: coldfront/templates/cotton/card/related_objects.html:3
+msgid "Related"
+msgstr ""
+
+#: coldfront/templates/cotton/card/tags.html:8
+msgid "No tags assigned"
+msgstr ""
+
+#: coldfront/templates/cotton/form/delete.html:11
+msgid "Confirm Deletion"
+msgstr ""
+
+#: coldfront/templates/cotton/form/delete.html:16
+#, python-format
+msgid ""
+"Are you sure you want to <strong class=\"text-danger\">delete</strong> "
+"%(object_type)s <strong>%(object)s</strong>?"
+msgstr ""
+
+#: coldfront/templates/cotton/form/delete.html:22
+msgid "The following objects will be deleted as a result of this action."
+msgstr ""
+
+#: coldfront/templates/cotton/table/controls.html:9
+msgid "Quick search"
+msgstr ""
+
+#: coldfront/templates/cotton/table/controls.html:21
+#: coldfront/templates/cotton/table/controls.html:22
+msgid "Configure Table"
+msgstr ""
+
+#: coldfront/templates/cotton/table/paginator.html:16
+msgid "Page selection"
+msgstr ""
+
+#: coldfront/templates/cotton/table/paginator.html:76
+#, python-format
+msgid "Showing %(start)s-%(end)s of %(total)s"
+msgstr ""
+
+#: coldfront/templates/cotton/table/paginator.html:83
+msgid "Pagination options"
+msgstr ""
+
+#: coldfront/templates/cotton/table/paginator.html:87
+msgid "Per Page"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_delete.html:27
+msgid "Bulk Delete"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_delete.html:32
+msgid "Selected Objects"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_delete.html:53
+msgid "Confirm Bulk Deletion"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_delete.html:54
+#, python-format
+msgid ""
+"The following operation will delete <strong>%(count)s</strong> "
+"%(type_plural)s. Please carefully review the selected objects and confirm "
+"this action."
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:18
+msgid "Bulk Import"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:24
+msgid "Direct Import"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:29
+msgid "Upload File"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:65
+#: coldfront/templates/generic/bulk_import.html:96
+msgid "Submit"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:107
+msgid "Field Options"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:113
+msgid "Accessor"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:142
+msgid "choices"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:155
+msgid "Import Value"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:175
+msgid "Format: YYYY-MM-DD"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:177
+msgid "Specify true or false"
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:189
+msgid "Required fields <strong>must</strong> be specified for all objects."
+msgstr ""
+
+#: coldfront/templates/generic/bulk_import.html:195
+#, python-format
+msgid ""
+"Related objects may be referenced by any unique attribute. For example, "
+"<code>%(example)s</code> would identify a VRF by its route distinguisher."
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:22
+msgid "Editing"
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:24
+#, python-format
+msgid "Add a new %(object_type)s"
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:35
+msgid "View model documentation"
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:36
+msgid "Help"
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:47
+#: coldfront/templates/generic/object_edit.html:74
+#: coldfront/templates/generic/quick_add.html:23
+msgid "Create"
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:72
+#: coldfront/templates/users/objectpermission.html:25
+#: coldfront/users/forms/filterset_forms.py:112
+#: coldfront/users/forms/model_forms.py:213
+msgid "Actions"
+msgstr ""
+
+#: coldfront/templates/generic/object_edit.html:77
+msgid "Create & Add Another"
+msgstr ""
+
+#: coldfront/templates/generic/object_list.html:41
+msgid "Results"
+msgstr ""
+
+#: coldfront/templates/generic/object_list.html:50
+msgid "Filters"
+msgstr ""
+
+#: coldfront/templates/generic/object_list.html:76
+#, python-format
+msgid ""
+"Select <strong>all <span class=\"total-object-count\">%(count)s</span> "
+"%(object_type_plural)s</strong> matching query"
+msgstr ""
+
+#: coldfront/templates/generic/object_selector.html:5
+msgid "Select"
+msgstr ""
+
+#: coldfront/templates/generic/quick_add.html:5
+msgid "Quick Add"
+msgstr ""
+
+#: coldfront/templates/generic/quick_add_created.html:16
+#, python-format
+msgid ""
+"\n"
+"      Created %(object_type)s %(object)s\n"
+"    "
+msgstr ""
+
+#: coldfront/templates/generic/table_htmx.html:21
+msgid "Clear ordering"
+msgstr ""
+
+#: coldfront/templates/ras/allocation.html:55
+msgid "Justification"
+msgstr ""
+
+#: coldfront/templates/ras/allocation/users.html:8
+#: coldfront/templates/ras/project/users.html:8
+msgid "Add User"
+msgstr ""
+
+#: coldfront/templates/ras/allocation/users.html:12
+#: coldfront/templates/ras/project/users.html:12
+msgid "Import Users"
+msgstr ""
+
+#: coldfront/templates/ras/allocationuser.html:12
+#: coldfront/templates/ras/projectuser.html:12
+msgid "First Name"
+msgstr ""
+
+#: coldfront/templates/ras/allocationuser.html:16
+#: coldfront/templates/ras/projectuser.html:16
+msgid "Last Name"
+msgstr ""
+
+#: coldfront/templates/ras/allocationuser.html:20
+#: coldfront/templates/ras/projectuser.html:20
+msgid "Email Name"
+msgstr ""
+
+#: coldfront/templates/ras/allocationuser.html:52
+msgid "Start"
+msgstr ""
+
+#: coldfront/templates/ras/allocationuser.html:56
+msgid "End"
+msgstr ""
+
+#: coldfront/templates/ras/project.html:6
+#: coldfront/templates/ras/project/allocations.html:6
+msgid "Request Allocation"
+msgstr ""
+
+#: coldfront/templates/ras/resource.html:27
+msgid "Resrouce Type"
+msgstr ""
+
+#: coldfront/templates/rest_framework/api.html:10
+msgid "REST API"
+msgstr ""
+
+#: coldfront/templates/tenancy/tenant.html:15
+#: coldfront/templates/users/group.html:4
+#: coldfront/tenancy/forms/bulk_import.py:39
+#: coldfront/tenancy/forms/model_forms.py:48
+#: coldfront/tenancy/tables/tenants.py:39 coldfront/users/filtersets.py:60
+#: coldfront/users/filtersets.py:153
+#: coldfront/users/forms/filterset_forms.py:35
+#: coldfront/users/forms/filterset_forms.py:71
+#: coldfront/users/forms/model_forms.py:131
+msgid "Group"
+msgstr ""
+
+#: coldfront/templates/tenancy/tenantgroup.html:14
+msgid "Add Tenant"
+msgstr ""
+
+#: coldfront/templates/tenancy/tenantgroup.html:49
+msgid "Child Groups"
+msgstr ""
+
+#: coldfront/templates/tenancy/tenantgroup.html:53
+msgid "Add Tenant Group"
+msgstr ""
+
+#: coldfront/templates/users/group.html:35
+#: coldfront/templates/users/user.html:55
+msgid "Assigned Permissions"
+msgstr ""
+
+#: coldfront/templates/users/objectpermission.html:4
+#: coldfront/users/forms/filterset_forms.py:106
+#: coldfront/users/forms/model_forms.py:207
+msgid "Permission"
+msgstr ""
+
+#: coldfront/templates/users/objectpermission.html:20
+#: coldfront/templates/users/token.html:32
+#: coldfront/users/forms/filterset_forms.py:66
+#: coldfront/users/forms/filterset_forms.py:130 coldfront/users/tables.py:68
+#: coldfront/users/tables.py:143
+msgid "Enabled"
+msgstr ""
+
+#: coldfront/templates/users/objectpermission.html:26
+msgid "View"
+msgstr ""
+
+#: coldfront/templates/users/objectpermission.html:48
+#: coldfront/users/forms/model_forms.py:197
+#: coldfront/users/forms/model_forms.py:230
+msgid "Constraints"
+msgstr ""
+
+#: coldfront/templates/users/objectpermission.html:67
+msgid "Assigned Users"
+msgstr ""
+
+#: coldfront/templates/users/token.html:4
+#: coldfront/users/forms/bulk_import.py:49
+#: coldfront/users/forms/filterset_forms.py:153
+#: coldfront/users/forms/model_forms.py:331 coldfront/users/tables.py:139
+msgid "Token"
+msgstr ""
+
+#: coldfront/templates/users/token.html:10
+msgid "Key"
+msgstr ""
+
+#: coldfront/templates/users/token.html:15
+msgid "Pepper ID"
+msgstr ""
+
+#: coldfront/templates/users/token.html:24
+#: coldfront/users/forms/filterset_forms.py:139 coldfront/users/tables.py:151
+msgid "Expires"
+msgstr ""
+
+#: coldfront/templates/users/token.html:28
+#: coldfront/users/forms/filterset_forms.py:143 coldfront/users/tables.py:154
+msgid "Last Used"
+msgstr ""
+
+#: coldfront/templates/users/token.html:36
+#: coldfront/users/forms/filterset_forms.py:135 coldfront/users/tables.py:144
+msgid "Write Enabled"
+msgstr ""
+
+#: coldfront/templates/users/token.html:47
+msgid "Token Example"
+msgstr ""
+
+#: coldfront/templates/widgets/apiselect.html:8
+msgid "Open selector"
+msgstr ""
+
+#: coldfront/templates/widgets/apiselect.html:22
+msgid "Quick add"
+msgstr ""
+
+#: coldfront/templates/widgets/markdown_input.html:6
+msgid "Write"
+msgstr ""
+
+#: coldfront/templates/widgets/markdown_input.html:11
+msgid "Preview"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:24
+msgid "Parent tenant group (ID)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:30
+msgid "Parent tenant group (slug)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:36 coldfront/tenancy/filtersets.py:61
+msgid "Tenant group (ID)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:43 coldfront/tenancy/filtersets.py:68
+msgid "Tenant group (slug)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:95
+msgid "Tenant Group (ID)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:102
+msgid "Tenant Group (slug)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:106
+msgid "Tenant (ID)"
+msgstr ""
+
+#: coldfront/tenancy/filtersets.py:112
+msgid "Tenant (slug)"
+msgstr ""
+
+#: coldfront/tenancy/forms/bulk_import.py:22
+msgid "Parent group"
+msgstr ""
+
+#: coldfront/tenancy/forms/bulk_import.py:43
+msgid "Assigned group"
+msgstr ""
+
+#: coldfront/tenancy/forms/filterset_forms.py:16
+msgid "Parent Group"
+msgstr ""
+
+#: coldfront/tenancy/forms/filterset_forms.py:33
+#: coldfront/tenancy/tables/columns.py:41
+#: coldfront/tenancy/tables/columns.py:51
+msgid "Tenant Group"
+msgstr ""
+
+#: coldfront/tenancy/models/tenants.py:31
+msgid "tenant group"
+msgstr ""
+
+#: coldfront/tenancy/models/tenants.py:32
+msgid "tenant groups"
+msgstr ""
+
+#: coldfront/tenancy/models/tenants.py:67
+msgid "Tenant name must be unique per group."
+msgstr ""
+
+#: coldfront/tenancy/models/tenants.py:75
+msgid "Tenant slug must be unique per group."
+msgstr ""
+
+#: coldfront/tenancy/models/tenants.py:81
+msgid "tenant"
+msgstr ""
+
+#: coldfront/tenancy/models/tenants.py:82
+msgid "tenants"
+msgstr ""
+
+#: coldfront/tests/dummy_plugin/navigation.py:34
+msgid "Dummy Plugin"
+msgstr ""
+
+#: coldfront/users/filtersets.py:39 coldfront/users/filtersets.py:71
+msgid "Permission (ID)"
+msgstr ""
+
+#: coldfront/users/filtersets.py:66 coldfront/users/filtersets.py:159
+msgid "Group (name)"
+msgstr ""
+
+#: coldfront/users/filtersets.py:148 coldfront/users/filtersets.py:194
+msgid "User (name)"
+msgstr ""
+
+#: coldfront/users/forms/bulk_import.py:29
+msgid "If no password is provided, the password will be set to unusable."
+msgstr ""
+
+#: coldfront/users/forms/bulk_import.py:51
+msgid "If no token is provided, one will be generated automatically."
+msgstr ""
+
+#: coldfront/users/forms/filterset_forms.py:40 coldfront/users/tables.py:25
+msgid "Is Active"
+msgstr ""
+
+#: coldfront/users/forms/filterset_forms.py:45 coldfront/users/tables.py:28
+msgid "Is Superuser"
+msgstr ""
+
+#: coldfront/users/forms/filterset_forms.py:81 coldfront/users/tables.py:71
+msgid "Can View"
+msgstr ""
+
+#: coldfront/users/forms/filterset_forms.py:86 coldfront/users/tables.py:75
+msgid "Can Add"
+msgstr ""
+
+#: coldfront/users/forms/filterset_forms.py:91 coldfront/users/tables.py:79
+msgid "Can Change"
+msgstr ""
+
+#: coldfront/users/forms/filterset_forms.py:96 coldfront/users/tables.py:83
+msgid "Can Delete"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:34
+msgid "Confirm password"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:37
+msgid "Enter the same password as before, for verification."
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:110
+msgid "Passwords do not match! Please check your input and try again."
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:174
+msgid "Select the types of objects to which the permission will apply."
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:181
+msgid "Additional actions"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:183
+msgid "JSON array of actions granted in addition to those listed above"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:199
+msgid ""
+"JSON expression of a queryset filter that will return only permitted "
+"objects. Leave null to match all objects of this type. A list of multiple "
+"objects will result in a logical OR operation."
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:221
+msgid "Objects"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:225
+msgid "Assignment"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:298
+msgid "At least one action must be selected."
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:316
+#, python-brace-format
+msgid "Invalid filter for {model}: {error}"
+msgstr ""
+
+#: coldfront/users/forms/model_forms.py:333
+msgid ""
+"Tokens must be at least 40 characters in length. <strong>Be sure to record "
+"your token</strong> prior to submitting this form, as it will no longer be "
+"accessible once the token has been created."
+msgstr ""
+
+#: coldfront/users/models/permissions.py:31 coldfront/users/models/tokens.py:59
+msgid "enabled"
+msgstr ""
+
+#: coldfront/users/models/permissions.py:41
+msgid "actions"
+msgstr ""
+
+#: coldfront/users/models/permissions.py:42
+msgid "The list of actions granted by this permission"
+msgstr ""
+
+#: coldfront/users/models/permissions.py:47
+msgid "constraints"
+msgstr ""
+
+#: coldfront/users/models/permissions.py:48
+msgid "Queryset filter matching the applicable objects of the selected type(s)"
+msgstr ""
+
+#: coldfront/users/models/permissions.py:63
+msgid "permission"
+msgstr ""
+
+#: coldfront/users/models/permissions.py:64 coldfront/users/models/users.py:157
+msgid "permissions"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:49
+msgid "expires"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:54
+msgid "last used"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:61
+msgid "Disable to temporarily revoke this token without deleting it."
+msgstr ""
+
+#: coldfront/users/models/tokens.py:64
+msgid "write enabled"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:66
+msgid "Permit create/update/delete operations using this token"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:69
+msgid "key"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:73
+msgid "v2 token identification key"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:76
+msgid "pepper ID"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:79
+msgid "ID of the cryptographic pepper used to hash the token"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:82
+msgid "digest"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:84
+msgid "SHA256 hash of the token and pepper (v2 only)"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:91
+msgid "token"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:92
+msgid "tokens"
+msgstr ""
+
+#: coldfront/users/models/tokens.py:146
+msgid "Unable to save tokens: API_TOKEN_PEPPERS is not defined."
+msgstr ""
+
+#: coldfront/users/models/tokens.py:151
+#, python-brace-format
+msgid "Invalid pepper ID: {id}. Check configured API_TOKEN_PEPPERS."
+msgstr ""
+
+#: coldfront/users/models/tokens.py:164
+#, python-brace-format
+msgid ""
+"Expiration time must be in the future. Current server time is {current_time} "
+"({timezone})."
+msgstr ""
+
+#: coldfront/users/models/users.py:44
+msgid "username"
+msgstr ""
+
+#: coldfront/users/models/users.py:47
+msgid "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only."
+msgstr ""
+
+#: coldfront/users/models/users.py:50
+msgid "A user with that username already exists."
+msgstr ""
+
+#: coldfront/users/models/users.py:54
+msgid "first name"
+msgstr ""
+
+#: coldfront/users/models/users.py:59
+msgid "last name"
+msgstr ""
+
+#: coldfront/users/models/users.py:64
+msgid "email address"
+msgstr ""
+
+#: coldfront/users/models/users.py:68
+msgid "staff status"
+msgstr ""
+
+#: coldfront/users/models/users.py:70
+msgid "Designates whether the user can log into this admin site."
+msgstr ""
+
+#: coldfront/users/models/users.py:73
+msgid "active"
+msgstr ""
+
+#: coldfront/users/models/users.py:76
+msgid ""
+"Designates whether this user should be treated as active. Unselect this "
+"instead of deleting accounts."
+msgstr ""
+
+#: coldfront/users/models/users.py:80
+msgid "date joined"
+msgstr ""
+
+#: coldfront/users/models/users.py:85 coldfront/users/models/users.py:174
+msgid "groups"
+msgstr ""
+
+#: coldfront/users/models/users.py:105
+msgid "user"
+msgstr ""
+
+#: coldfront/users/models/users.py:106
+msgid "users"
+msgstr ""
+
+#: coldfront/users/models/users.py:173
+msgid "group"
+msgstr ""
+
+#: coldfront/users/permissions.py:47
+#, python-brace-format
+msgid ""
+"Invalid permission name: {name}. Must be in the format <app_label>."
+"<action>_<model>"
+msgstr ""
+
+#: coldfront/users/permissions.py:66
+#, python-brace-format
+msgid "Unknown app_label/model_name for {name}"
+msgstr ""
+
+#: coldfront/users/tables.py:87
+msgid "Custom Actions"
+msgstr ""
+
+#: coldfront/utils/jsonschema.py:154
+msgid "Invalid JSON schema definition"
+msgstr ""
+
+#: coldfront/utils/jsonschema.py:156
+msgid "JSON schema must define properties"
+msgstr ""
+
+#: coldfront/utils/jsonschema.py:161
+#, python-brace-format
+msgid "Invalid JSON schema definition: {error}"
+msgstr ""
+
+#: coldfront/utils/testing/views.py:602
+msgid "The test must define csv_update_data."
+msgstr ""
+
+#: coldfront/utils/validators.py:29
+#, python-brace-format
+msgid "{value} is not a valid regular expression."
+msgstr ""
+
+#: coldfront/utils/validators.py:45
+#, python-brace-format
+msgid "{value} must be a multiple of {multiple}."
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:235
+msgid "Must be a list."
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:242
+msgid "Must be a dictionary."
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:296
+#, python-brace-format
+msgid "Object with ID {id} does not exist"
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:355
+#, python-brace-format
+msgid ""
+"Duplicate objects found: {model} with ID(s) {ids} appears multiple times"
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:420
+#, python-brace-format
+msgid "Imported {count} {object_type}"
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:507
+#, python-brace-format
+msgid "Deleted {count} {object_type}"
+msgstr ""
+
+#: coldfront/views/generic/bulk_views.py:539
+#, python-brace-format
+msgid "No {object_type} were selected."
+msgstr ""
+
+#: coldfront/views/generic/feature_views.py:30
+msgid "Changelog"
+msgstr ""
+
+#: coldfront/views/generic/object_views.py:494
+#, python-brace-format
+msgid "{class_name} must implement get_children()"
+msgstr ""
+
+#: coldfront/views/object_actions.py:148
+msgid "Import"
+msgstr ""
+
+#: coldfront/views/object_actions.py:183
+msgid "Edit Selected"
+msgstr ""
+
+#: coldfront/views/object_actions.py:210
+msgid "Rename Selected"
+msgstr ""
+
+#: coldfront/views/object_actions.py:222
+msgid "Delete Selected"
+msgstr ""
+
+#: coldfront/views/utils.py:121
+#, python-brace-format
+msgid ""
+"Unable to delete <strong>{objects}</strong>. {count} dependent objects were "
+"found: "
+msgstr ""
+
+#: coldfront/views/utils.py:123
+msgid "More than 50"
+msgstr ""

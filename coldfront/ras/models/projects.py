@@ -40,6 +40,8 @@ class Project(OrganizationalModel):
         null=False,
     )
 
+    clone_fields = ("status", "tenant")
+
     class Meta:
         ordering = ["name"]
         verbose_name = _("project")
@@ -54,7 +56,7 @@ class ProjectUser(ColdFrontModel):
 
     project = models.ForeignKey(
         to="ras.Project",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="users",
     )
 

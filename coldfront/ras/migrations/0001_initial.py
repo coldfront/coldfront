@@ -310,7 +310,7 @@ class Migration(migrations.Migration):
                 (
                     "allocation",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT, related_name="users", to="ras.allocation"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="users", to="ras.allocation"
                     ),
                 ),
                 (
@@ -352,7 +352,7 @@ class Migration(migrations.Migration):
                 (
                     "project",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT, related_name="users", to="ras.project"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="users", to="ras.project"
                     ),
                 ),
                 (

@@ -1,5 +1,6 @@
+{% cotton:vars label="{% trans 'Import' %}" %}
+{% cotton:vars type="link" %}
+
 {% if url %}
-<a href="{{ url }}" class="btn btn-success" role="button">
-  <i class="fa-solid fa-upload" aria-hidden="true"></i> {{ label }}
-</a>
+<c-button css_class="btn-secondary" icon="fa-solid fa-upload" />
 {% endif %}

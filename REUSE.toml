@@ -22,7 +22,8 @@ path = [
     "**.css",
     "**.scss",
     "**.js",
-    "**.ts",
+    "**.po",
+    "**.mo",
     "**.webmanifest",
 ]
 SPDX-FileCopyrightText = "(C) ColdFront Authors"

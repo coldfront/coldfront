@@ -6,22 +6,15 @@ build-backend = "hatchling.build"
 name = "coldfront"
 version = "1.1.7"
 requires-python = ">=3.10"
-authors = [
-    { name = "Andrew E. Bruno" },
-    { name = "Dori Sajdak" },
-    { name = "Mohammad Zia" },
-]
 description = "HPC Resource Allocation System"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSES/*.txt"]
 keywords = ["high-performance-computing", "resource-allocation"]
 classifiers = [
-    'Programming Language :: Python :: 3',
-    'Framework :: Django :: 4.2',
+    'Framework :: Django',
     'Topic :: Scientific/Engineering',
     'Topic :: System :: Systems Administration',
-    'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
 ]
 dependencies = [
     "crispy-bootstrap5>=2025.6",
@@ -52,6 +45,7 @@ dependencies = [
     "markdown>=3.10.2",
     "nh3>=0.3.3",
     "python-dateutil>=2.9.0.post0",
+    "pyyaml>=6.0.3",
     "redis>=5.2.1",
     "shortuuid>=1.0.13",
     "tablib>=3.9.0",

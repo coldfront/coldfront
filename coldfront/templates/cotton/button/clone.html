@@ -1,6 +1,8 @@
 {% load i18n %}
+
+{% cotton:vars label="{% trans 'Clone' %}" %}
+{% cotton:vars type="link" %}
+
 {% if url %}
-  <a href="{{ url }}" class="btn btn-info" role="button">
-    <i class="fa-solid fa-copy" aria-hidden="true"></i> {% trans "Clone" %}
-  </a>
+<c-button css_class="btn-info" icon="fa-solid fa-copy" />
 {% endif %}

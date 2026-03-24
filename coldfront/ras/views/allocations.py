@@ -105,7 +105,7 @@ class AllocationUserTabView(generic.ObjectChildrenView):
 
 @register_model_view(Allocation, "resources")
 class AllocationResourceTabView(generic.ObjectChildrenView):
-    actions = (BulkExport, BulkDelete)
+    actions = (BulkExport,)
     queryset = Allocation.objects.all()
     child_model = Resource
     table = tables.ResourceTable

@@ -391,7 +391,7 @@ class CustomAttributesMixin(models.Model):
             return {}
 
         schema = self._get_schema(profile)
-        if not profile.schema:
+        if not schema:
             return {}
 
         attrs = {}
