@@ -41,8 +41,8 @@ class Migration(migrations.Migration):
                 (
                     "status",
                     models.CharField(
-                        choices=[("archived", "Archived"), ("active", "Active"), ("new", "New")],
-                        default="new",
+                        choices=[("archived", "Archived"), ("active", "Active")],
+                        default="active",
                         max_length=50,
                         verbose_name="status",
                     ),

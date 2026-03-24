@@ -29,7 +29,7 @@ class ChoiceSetMeta(type):
             assert type(attrs["CHOICES"]) is list, _("{name} has a key defined but CHOICES is not a list").format(
                 name=name
             )
-            app = attrs["__module__"].split(".", 1)[0]
+            app = attrs["__module__"].split(".")[1]
             replace_key = f"{app}.{key}"
             replace_choices = get_config_value_ci(settings.FIELD_CHOICES, replace_key)
             if replace_choices is not None:
@@ -88,6 +88,18 @@ class ChoiceSet(metaclass=ChoiceSetMeta):
         prefix = f"{prefix}_" if prefix else ""
         data = {f"{prefix}{enum_key(v)}".upper(): v for v in cls.values()}
         return enum.Enum(name, data)
+
+
+def parse_choices_from_env(env_str):
+    """
+    Parse choices from an environment variable set using django_environ
+    """
+    choices = []
+
+    for lst in env_str.split("|"):
+        choices.append(lst.split(","))
+
+    return choices
 
 
 def unpack_grouped_choices(choices):

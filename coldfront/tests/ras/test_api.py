@@ -57,19 +57,19 @@ class ProjectTest(APIViewTestCases.APIViewTestCase):
                 "name": "Project X",
                 "description": "A new project",
                 "owner": users[0].pk,
-                "status": ProjectStatusChoices.STATUS_NEW,
+                "status": ProjectStatusChoices.STATUS_ACTIVE,
             },
             {
                 "name": "Project Y",
                 "description": "A new project",
                 "owner": users[1].pk,
-                "status": ProjectStatusChoices.STATUS_NEW,
+                "status": ProjectStatusChoices.STATUS_ACTIVE,
             },
             {
                 "name": "Project Z",
                 "description": "A new project",
                 "owner": users[2].pk,
-                "status": ProjectStatusChoices.STATUS_NEW,
+                "status": ProjectStatusChoices.STATUS_ACTIVE,
             },
         ]
 

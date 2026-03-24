@@ -22,7 +22,7 @@ class Project(OrganizationalModel):
         verbose_name=_("status"),
         max_length=50,
         choices=ProjectStatusChoices,
-        default=ProjectStatusChoices.STATUS_NEW,
+        default=ProjectStatusChoices.STATUS_ACTIVE,
     )
 
     tenant = models.ForeignKey(

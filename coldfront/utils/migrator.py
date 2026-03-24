@@ -39,7 +39,7 @@ def migrate_resources():
 
 def migrate_projects():
     for p in _Project.objects.all():
-        status = ProjectStatusChoices.STATUS_NEW
+        status = ProjectStatusChoices.STATUS_ACTIVE
         if p.status.name == "Archived":
             status = ProjectStatusChoices.STATUS_ARCHIVED
         elif p.status.name == "Active":

@@ -30,12 +30,10 @@ class ProjectStatusChoices(ChoiceSet):
 
     STATUS_ARCHIVED = "archived"
     STATUS_ACTIVE = "active"
-    STATUS_NEW = "new"
 
     CHOICES = [
         (STATUS_ARCHIVED, _("Archived"), "secondary"),
         (STATUS_ACTIVE, _("Active"), "success"),
-        (STATUS_NEW, _("New"), "info"),
     ]
 
 
