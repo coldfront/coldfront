@@ -116,7 +116,7 @@ class AllocationUser(ColdFrontModel):
 
     allocation = models.ForeignKey(
         to="ras.Allocation",
-        on_delete=models.PROTECT,
+        on_delete=models.CASCADE,
         related_name="users",
     )
     user = models.ForeignKey(

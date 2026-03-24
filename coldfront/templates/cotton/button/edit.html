@@ -1,7 +1,6 @@
 {% load i18n %}
 
-<c-vars label="{% trans 'Edit' %}" />
+{% cotton:vars label="{% trans 'Edit' %}" %}
+{% cotton:vars type="link" %}
 
-<a href="{{ url }}" class="btn btn-warning" role="button">
-  <i class="fa fa-pencil" aria-hidden="true"></i> {{ label }}
-</a>
+<c-button css_class="btn-warning" icon="fa-solid fa-pencil" />

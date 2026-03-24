@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+// SPDX-FileCopyrightText: (C) ColdFront Authors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 import { Collapse, Tooltip, Popover } from 'bootstrap';
 import { getElementsByQueryGenerator } from './util';
 

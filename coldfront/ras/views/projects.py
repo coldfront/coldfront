@@ -98,7 +98,7 @@ class ProjectUserTabView(generic.ObjectChildrenView):
 
 @register_model_view(Project, "allocations")
 class ProjectAllocationTabView(generic.ObjectChildrenView):
-    actions = (BulkExport,)
+    actions = (BulkExport, BulkDelete)
     queryset = Project.objects.all()
     child_model = Allocation
     table = tables.AllocationTable

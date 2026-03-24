@@ -24,7 +24,7 @@ class ResourceTypeTable(OrganizationalModelTable):
     )
     color = columns.ColorColumn()
 
-    attributes = columns.TemplateColumn(
+    resource_attributes = columns.TemplateColumn(
         template_code=CUSTOM_ATTRIBUTES,
         accessor=tables.A("schema__properties"),
         orderable=False,

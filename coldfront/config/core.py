@@ -166,6 +166,33 @@ DEFAULT_PERMISSIONS = ENV.dict(
         "users.add_token": ({"user": "$user"},),
         "users.change_token": ({"user": "$user"},),
         "users.delete_token": ({"user": "$user"},),
+        # Permit users to view all resources and resource types
+        "ras.view_resource": None,
+        "ras.view_resourcetype": None,
+        # Permit users to view projects they own or are a member of
+        "ras.view_project": (
+            {"owner": "$user"},
+            {"users__user": "$user"},
+        ),
+        # Permit users to view project users if they are the user, own the project or belong to same project
+        "ras.view_projectuser": (
+            {"user": "$user"},
+            {"project__owner": "$user"},
+            {"project__users__user": "$user"},
+        ),
+        # Permit users to view allocations they own, own the project, or are a member of
+        "ras.view_allocation": (
+            {"owner": "$user"},
+            {"project__owner": "$user"},
+            {"users__user": "$user"},
+        ),
+        # Permit users to view allocation users if they are the user, own the allocation/project or belong to same allocation
+        "ras.view_allocationuser": (
+            {"user": "$user"},
+            {"allocation__owner": "$user"},
+            {"allocation__project__owner": "$user"},
+            {"allocation__users__user": "$user"},
+        ),
     },
 )
 

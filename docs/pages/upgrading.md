@@ -1,21 +1,26 @@
 # Upgrading
 
+!!! warning "DO NOT DO THIS"
+    These docs are under heavy development and not ready for use.
+
 This document describes upgrading ColdFront. New releases of ColdFront may
 introduce breaking changes so please refer to this document before upgrading.
 
-## [v1.1.8](https://github.com/coldfront/coldfront/releases/tag/v1.1.8)
+## [v2.0.0](https://github.com/coldfront/coldfront/releases/tag/v2.0.0)
 
-This release includes an upgrade to Bootstrap 5 which may require updating any
-customized/overridden templates. Before upgrading, be sure to backup your
-database and test.
-
-After upgrading run database migrations and collectstatic to update the
-frontend assets:
+!!! warning "Backup your database"
+    This release contains a migration to a new custom user model. Please backup
+    your database and test before going into production.
+    
+After upgrading run the following commands in order:
 
 ```
+$ uv run coldfront dbshell < scripts/upgrade-v2.0.0-user-model.sql
 $ uv run coldfront migrate
+$ uv run coldfront upgrade_v2
 $ uv run coldfront collectstatic
 ```
+
 
 ## [v1.1.7](https://github.com/coldfront/coldfront/releases/tag/v1.1.7)
 
@@ -112,10 +117,10 @@ to `v1.0.3`:
 
 ```python
 EXTRA_APPS += [
-    "coldfront.plugins.slurm",
+    'coldfront.legacy.plugins.slurm',
 ]
-SLURM_IGNORE_USERS = ["root"]
-SLURM_SACCTMGR_PATH = "/usr/bin/sacctmgr"
+SLURM_IGNORE_USERS = ['root']
+SLURM_SACCTMGR_PATH = '/usr/bin/sacctmgr'
 ```
 
 After upgrading to `v1.0.3` you'll need to modify your `local_settings.py` file
@@ -125,11 +130,11 @@ as follows:
 from coldfront.config.base import INSTALLED_APPS
 
 INSTALLED_APPS += [
-    "coldfront.plugins.slurm",
+    'coldfront.legacy.plugins.slurm',
 ]
 
-SLURM_IGNORE_USERS = ["root"]
-SLURM_SACCTMGR_PATH = "/usr/bin/sacctmgr"
+SLURM_IGNORE_USERS = ['root']
+SLURM_SACCTMGR_PATH = '/usr/bin/sacctmgr'
 ```
 
 Or change to using environment variables:
@@ -139,67 +144,3 @@ PLUGIN_SLURM=True
 SLURM_IGNORE_USERS=root,admin,testuser
 SLURM_SACCTMGR_PATH=/usr/bin/sacctmgr
 ```
-
-## Upgrading with Git
-
-This is one way to use Git to upgrade your codebase with the latest upstream changes in ColdFront. 
-
-!!! note
-    The main branch should no longer be used for git deployments. Please use
-    one of the stable branches for the version you'd like to run. For example: `stable/1.1.x`.
-
-Git Remote setup:
-
-- `origin` -> Your organization's Git repo for ColdFront
-- `upstream` -> https://github.com/coldfront/coldfront.git 
-
-Git Branch setup:
-
-- `custom` -> This is your default branch, containing your organization's ColdFront codebase
-- `stable/1.1.x` -> This branch tracks the stable release branch of the ColdFront project you'd like to run
-- `staged_upgrade` -> This is based on your `custom` branch, used for resolving merge conflicts
-
-Commands:
-
-```sh
-# let's assume you only have a `main` branch and a `custom` branch
-git checkout main
-# pull in the latest changes
-git pull upstream stable/1.1.x
-
-# return to your custom branch
-git checkout custom
-# make a new branch off of your `custom` branch
-git checkout -b staged_upgrade
-git merge main
-
-# alternative: checkout a tagged release instead of using a stable branch
-# git fetch --all --tags
-# git tag -l
-# git merge v1.x.x
-
-# Install any updated dependencies
-uv sync
-
-# resolve any conflicts in your text editor
-git commit -m "bring in latest changes"
-```
-
-Migrate your database to accomodate changes to models:
-
-```sh
-uv run coldfront makemigrations --merge
-uv run coldfront migrate
-```
-
-Restart your server in your testing environment to confirm everything is working as expected. If everything looks good, merge your `staged_upgrade` branch into your default branch:
-
-```sh
-git checkout custom
-git merge staged_upgrade
-# update your remote
-git push origin custom
-git branch -d staged_upgrade
-```
-
-Your organization's ColdFront codebase should now have the latest updates from the upstream ColdFront project.

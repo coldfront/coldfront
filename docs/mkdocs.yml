@@ -1,11 +1,11 @@
 site_name: ColdFront
-docs_dir: 'pages'
-site_description: 'HPC Resource Allocation Management System'
-site_url: 'https://docs.coldfront.dev'
-copyright: 'Copyright &copy; University at Buffalo Center for Computational Research'
-repo_name: 'coldfront/coldfront'
-repo_url: 'https://github.com/coldfront/coldfront'
-edit_uri: ''
+docs_dir: "pages"
+site_description: "HPC Resource Allocation Management System"
+site_url: "https://docs.coldfront.dev"
+copyright: "Copyright &copy; University at Buffalo Center for Computational Research"
+repo_name: "coldfront/coldfront"
+repo_url: "https://github.com/coldfront/coldfront"
+edit_uri: ""
 
 extra_css:
   - assets/styles.css
@@ -13,18 +13,25 @@ extra_css:
 theme:
   logo: assets/cf-icon.png
   name: readthedocs
-  prev_next_buttons_location: 'none'
+  prev_next_buttons_location: "none"
   highlightjs: true
 
-plugins: 
+plugins:
   - search
   - awesome-pages
   - mkdocstrings:
       handlers:
         python:
+          paths: ["coldfront"]
           options:
+            docstring_options:
+              warn_missing_types: false
+            heading_level: 3
+            members_order: source
+            show_root_heading: true
+            show_root_full_path: false
+            show_root_toc_entry: false
             show_source: false
-            show_signature: false
 
 markdown_extensions:
   - attr_list

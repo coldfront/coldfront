@@ -1,1 +1,1 @@
-::: coldfront.legacy.user.models
+::: coldfront.users.models

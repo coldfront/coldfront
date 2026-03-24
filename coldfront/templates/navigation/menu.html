@@ -1,11 +1,11 @@
 {% load i18n %}
 {% load navigation %}
 
-<nav class="nav flex-column">
+<nav id="sidebar" class="nav flex-column sidebar collapse show">
 {% for menu, groups in nav_items %}
   <button class="btn btn-toggle d-flex align-items-center w-100" data-bs-toggle="collapse" data-bs-target="#{{ menu.label }}-collapse" aria-expanded="false" aria-controls="{{ menu.label }}-collapse">
     <i class="{{ menu.icon_class }} fa-fw me-2"></i> {{ menu.label }}
-    <i class="fa-solid fa-chevron-down ms-auto toggle-icon"></i>
+    <i class="fa-solid fa-chevron-down fa-xs ms-auto toggle-icon"></i>
   </button>
   <div class="collapse" id="{{ menu.label }}-collapse">
     {% for group, items in groups %}
@@ -19,8 +19,8 @@
           {% if buttons %}
           <div class="btn-group btn-group-sm">
             {% for button in buttons %}
-              <a href="{{ button.url }}" class="btn btn-outline-{{ button.color|default:"secondary" }} lh-2 px-2 py-3 my-0" title="{{ button.title }}">
-                <i class="{{ button.icon_class }}"></i>
+              <a href="{{ button.url }}" class="btn btn-sm btn-outline-{{ button.color|default:"secondary" }} lh-2 px-2 py-3 my-0" title="{{ button.title }}">
+                <i class="{{ button.icon_class }} fa-xs"></i>
               </a>
             {% endfor %}
           </div>
@@ -30,6 +30,5 @@
     </ul>
     {% endfor %}
   </div>
-  <hr>
   {% endfor %}
 </nav>

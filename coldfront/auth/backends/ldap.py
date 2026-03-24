@@ -8,8 +8,8 @@ from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Q
 from django.utils.module_loading import import_string
 
+from coldfront.auth.mirror_groups import _mirror_groups
 from coldfront.auth.mixins import ObjectPermissionMixin
-from coldfront.auth.utils import _mirror_groups
 
 # Create a new instance of django-auth-ldap's LDAPBackend with our own ObjectPermissions
 try:

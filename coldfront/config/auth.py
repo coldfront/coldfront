@@ -2,8 +2,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from coldfront.config.base import AUTHENTICATION_BACKENDS, MIDDLEWARE
+
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
+
+from coldfront.config.base import AUTHENTICATION_BACKENDS, DEBUG, MIDDLEWARE
 from coldfront.config.env import ENV
+from coldfront.utils.security import validate_peppers
 
 # ------------------------------------------------------------------------------
 # ColdFront default authentication settings
@@ -33,6 +38,14 @@ SESSION_COOKIE_SAMESITE = "Strict"
 SESSION_COOKIE_SECURE = True
 
 API_TOKEN_PEPPERS = ENV.dict("API_TOKEN_PEPPERS", default={})
+
+# Validate API token peppers
+if API_TOKEN_PEPPERS:
+    validate_peppers(API_TOKEN_PEPPERS)
+elif DEBUG:
+    API_TOKEN_PEPPERS = {"1": get_random_secret_key()}
+else:
+    raise ImproperlyConfigured("Required setting API_TOKEN_PEPPERS is not defined.")
 
 # ------------------------------------------------------------------------------
 # The remote authentication backend to use

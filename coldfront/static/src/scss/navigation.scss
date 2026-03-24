@@ -1,0 +1,60 @@
+/*
+ * SPDX-FileCopyrightText: (C) ColdFront Authors
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+@use 'variables' as vars;
+
+/* Sidebar link and toggle button styles */
+.sidebar .btn-toggle,
+.sidebar .nav-link {
+  position: relative;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  color: var(--bs-light-subtle);
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+}
+
+/* Hover effects for buttons */
+.sidebar .btn-toggle:hover {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-emphasis-color-rgb);
+}
+
+/* Hover effects for nav links */
+.sidebar .nav-link:hover {
+  background-color: var(--bs-body-bg);
+  color: var(--bs-emphasis-color-rgb);
+}
+
+aside.sidebar {
+  ul.nav {
+    flex-direction: column;
+    li.nav-item {
+      .btn-group {
+        visibility: hidden;
+      }
+
+      &:hover,
+      &.active {
+        background-color: var(--tblr-navbar-active-bg);
+        a {
+          text-decoration: none;
+        }
+        .btn-group {
+          visibility: visible;
+        }
+      }
+    }
+  }
+}
+
+.nav li.text-secondary {
+  color: vars.$cf-orange !important;
+}

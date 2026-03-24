@@ -1,7 +1,6 @@
 {% load i18n %}
 
-<c-vars label="{% trans 'Add' %}"  />
+{% cotton:vars label="{% trans 'Add' %}" %}
+{% cotton:vars type="link" %}
 
-<a href="{{ url }}{% if return_url %}?return_url={{ return_url }}{% endif %}" class="btn btn-primary" role="button">
-  <i class="fa-solid fa-plus" aria-hidden="true"></i> {{  label }}
-</a>
+<c-button url="{{ url }}{% if return_url %}?return_url={{ return_url }}{% endif %}" css_class="btn-primary" icon="fa-solid fa-plus" />

@@ -8,7 +8,7 @@
   class="btn {{ css_class }}"
   {% if type == "submit" %}
   type="submit"
-  {% else %}
+  {% elif type == "modal" %}
   type="button"
   data-bs-toggle="modal"
   data-bs-target="#htmx-modal"

@@ -4,35 +4,24 @@
 <aside class="sidebar d-flex flex-column bg-body-tertiary col-12 col-md-3 col-lg-2 p-3">
 
   <!-- Sidebar Header -->
-  <div class="d-flex justify-content-center align-items-center p-1">
-    <a href="{% url 'home' %}" class="d-flex align-items-center text-decoration-none text-reset" style="color: inherit; text-decoration: none;">
-      <i class="fa-solid fa-snowflake fa-xl fa-fw me-2" style="color: #f39c12;"></i>
-      <span style="font-size: 1.25rem; font-weight: bold;">ColdFront</span>
-    </a>
+  <div class="d-flex justify-content-center align-items-center p-1 mb-5">
+    {% include 'base/brand.html' %}
   </div>
 
-  <hr>
+  {# Collapase sidebar toggle button #}
+  <div class="d-md-none">
+    <button class="btn btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
+      <span data-feather="menu"></span> Menu
+    </button>
+  </div>
 
   <!-- Sidebar Content -->
   <div class="flex-grow-1 overflow-auto" style="max-height: 80vh;">
-    <nav class="nav flex-column mb-4" id="bookmarkList">
-      <a href="{% url 'home' %}" class="nav-link d-flex align-items-center">
-        <i class="fa-solid fa-home fa-fw me-2"></i>Home
-      </a>
-      <a href="#" class="nav-link d-flex justify-content-between align-items-center">
-        <div>
-          <i class="fa-solid fa-tachometer-alt fa-fw me-2"></i>Center Summary
-        </div>
-      </a>
-    </nav>
-
-    <hr>
-
     {% nav %}
   </div>
 
   <!-- Sidebar Footer -->
-  <div class="text-center p-4 border-top">
+  <div class="text-center p-4">
     <p class="mb-2 text-muted">ColdFront v{{ settings.VERSION }}</p>
     <a href="https://github.com/coldfront/coldfront" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center">
       <i class="fab fa-solid fa-github me-2"></i>GitHub
