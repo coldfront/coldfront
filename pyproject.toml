@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "coldfront"
 version = "1.1.7"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 description = "HPC Resource Allocation System"
 readme = "README.md"
 license = "Apache-2.0"
@@ -84,6 +84,9 @@ mysql = [
 pg = [
     "psycopg2>=2.9.10",
 ]
+initializer = [
+    "coldfront-initializer",
+]
 
 [dependency-groups]
 dev = [
@@ -142,3 +145,6 @@ omit = [
     "coldfront/legacy/*",
     "coldfront/config/plugins/*",
 ]
+
+[tool.uv.sources]
+coldfront-initializer = { url = "https://test-files.pythonhosted.org/packages/67/af/e45260c5e6184644389adbd001aed7bc5704cce99fafcc4916c65c05f403/coldfront_initializer-0.0.1.tar.gz" }
