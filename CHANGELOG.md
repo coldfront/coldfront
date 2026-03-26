@@ -1,5 +1,32 @@
 # ColdFront Changelog
 
+## [1.1.8] - 2026-03-26
+
+- Add podman support [#733](https://github.com/coldfront/coldfront/pull/733)
+- Remediated mark_safe calls to prevent XSS attacks [#734](https://github.com/coldfront/coldfront/pull/734)
+- Allow admins to edit Allocation Attributes [#672](https://github.com/coldfront/coldfront/issues/672)
+- Fix center summary bug [#793](https://github.com/coldfront/coldfront/issues/793)
+- Add more allocation info on the add project user page [#803](https://github.com/coldfront/coldfront/pull/803)
+- Fix when the allocation activate user signal is sent [#837](https://github.com/coldfront/coldfront/pull/837)
+- Fix error when editing a project attribute that is unique [#839](https://github.com/coldfront/coldfront/pull/839)
+- project_openldap plugin updates [#827](https://github.com/coldfront/coldfront/issues/827)
+- Show resource description in allocation creation form [#833](https://github.com/coldfront/coldfront/pull/833)
+- Fix AttributeError bug [#791](https://github.com/coldfront/coldfront/issues/791)
+- Add allocation attributes, allocation users, and project attributes to the REST API [#822](https://github.com/coldfront/coldfront/pull/822)
+- Add more info to project review emails [#841](https://github.com/coldfront/coldfront/pull/841)
+- Fix crash when approving an allocation change request with attribute changes [#847](https://github.com/coldfront/coldfront/pull/847)
+- Cleanup pending migrations from django_history [#834](https://github.com/coldfront/coldfront/pull/834)
+- Database Query Reductions [#875](https://github.com/coldfront/coldfront/pull/875)
+- Upgrade to Django 5.2 [#903](https://github.com/coldfront/coldfront/pull/903)
+- Batch commands in bulk when syncing FreeIPA [#907](https://github.com/coldfront/coldfront/pull/907)
+- Add slurm help text on the home page and allocation page [#878](https://github.com/coldfront/coldfront/pull/878)
+- Allow project managers to view allocations [#913](https://github.com/coldfront/coldfront/pull/913)
+- Refactor frontend css/javascript assets to use vite [#911](https://github.com/coldfront/coldfront/pull/911)
+- Switch center summary charts to use chart.js [#916](https://github.com/coldfront/coldfront/pull/916)
+- Upgrade to Bootstrap 5 [#919](https://github.com/coldfront/coldfront/pull/919)
+- Fix filter for allocations in ProjectDetailView [#923](https://github.com/coldfront/coldfront/pull/923)
+- Add support for slurm parent accounts [#782](https://github.com/coldfront/coldfront/pull/782)
+
 ## [1.1.7] - 2025-07-22
 
 - Automatically change default Slurm account if removal causes conflicts [#597](https://github.com/coldfront/coldfront/pull/597)
@@ -163,4 +190,5 @@
 [1.1.5]: https://github.com/coldfront/coldfront/releases/tag/v1.1.5
 [1.1.6]: https://github.com/coldfront/coldfront/releases/tag/v1.1.6
 [1.1.7]: https://github.com/coldfront/coldfront/releases/tag/v1.1.7
-[Unreleased]: https://github.com/coldfront/coldfront/compare/v1.1.7...HEAD
+[1.1.8]: https://github.com/coldfront/coldfront/releases/tag/v1.1.8
+[Unreleased]: https://github.com/coldfront/coldfront/compare/v1.1.8...HEAD
