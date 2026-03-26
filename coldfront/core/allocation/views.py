@@ -214,7 +214,7 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context["allocation"] = allocation_obj
         return self.render_to_response(context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # noqa: C901 # FIXME: method is too complex
         pk = self.kwargs.get("pk")
         allocation_obj = get_object_or_404(Allocation.objects.select_related("status", "project", "project__pi"), pk=pk)
         allocation_users = allocation_obj.allocationuser_set.exclude(status__name__in=["Removed"]).order_by(
@@ -440,7 +440,7 @@ class AllocationListView(LoginRequiredMixin, ListView):
     context_object_name = "allocation_list"
     paginate_by = 25
 
-    def get_queryset(self):
+    def get_queryset(self):  # noqa: C901 # FIXME: method is too complex
         order_by = self.request.GET.get("order_by")
         if order_by:
             direction = self.request.GET.get("direction")
@@ -665,7 +665,7 @@ class AllocationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         kwargs["project_pk"] = self.project.pk
         return kwargs
 
-    def form_valid(self, form):
+    def form_valid(self, form):  # noqa: C901 # FIXME: method is too complex
         redirect = super().form_valid(form)
         form_data = form.cleaned_data
         resource_obj = form_data.get("resource")
@@ -1647,7 +1647,7 @@ class AllocationChangeDetailView(LoginRequiredMixin, UserPassesTestMixin, FormVi
         context["note_form"] = note_form
         return render(request, self.template_name, context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # noqa: C901 # FIXME: method is too complex
         pk = self.kwargs.get("pk")
         if not self.request.user.is_superuser:
             messages.error(request, "You do not have permission to update an allocation change request")
@@ -1922,7 +1922,7 @@ class AllocationChangeView(LoginRequiredMixin, UserPassesTestMixin, FormView):
         context["attributes"] = allocation_attributes_to_change
         return render(request, self.template_name, context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):  # noqa: C901 # FIXME: method is too complex
         change_requested = False
         attribute_changes_to_make = set({})
 

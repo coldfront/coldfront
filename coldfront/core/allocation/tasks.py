@@ -77,8 +77,7 @@ def send_eula_reminders():
         logger.debug(f"Allocation(s) EULA reminder sent to users {email_receivers}.")
 
 
-def send_expiry_emails():
-    # TODO: cleanup
+def send_expiry_emails():  # noqa: C901 # FIXME: function is too complex
     # Allocations expiring soon
     for user in User.objects.all():
         projectdict = {}

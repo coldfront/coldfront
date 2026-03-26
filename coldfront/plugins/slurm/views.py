@@ -73,7 +73,7 @@ def get_slurm_help(request):
     return render(request, "slurm/slurm_help.html", {"slurm_info": slurm_info})
 
 
-def get_slurm_info_from_allocation(allocation_obj):
+def get_slurm_info_from_allocation(allocation_obj):  # noqa: C901 # FIXME: method is too complex
     submit_options = {}
     resource_obj = allocation_obj.get_parent_resource
     resource_type = resource_obj.resource_type.name

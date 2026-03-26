@@ -72,7 +72,7 @@ class SlurmCluster(SlurmBase):
         self.accounts: dict[str, SlurmAccount] = {}
 
     @staticmethod
-    def new_from_stream(stream):
+    def new_from_stream(stream):  # noqa: C901 # FIXME: method is too complex
         """Create a new SlurmCluster by parsing the output from sacctmgr dump."""
         cluster = None
         parent = None
