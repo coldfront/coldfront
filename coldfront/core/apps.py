@@ -14,7 +14,6 @@ class CoreConfig(AppConfig):
 
         from . import (
             signals,  # noqa: F401
-            views,  # noqa: F401
         )
 
         # Register models
