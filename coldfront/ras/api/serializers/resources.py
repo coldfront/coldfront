@@ -57,6 +57,7 @@ class ResourceSerializer(CustomAttributeModelSerializer, NestedGroupModelSeriali
             "_depth",
             "description",
             "status",
+            "is_allocatable",
             "resource_type",
             "tags",
             "custom_fields",
