@@ -147,4 +147,4 @@ omit = [
 ]
 
 [tool.uv.sources]
-coldfront-initializer = { url = "https://test-files.pythonhosted.org/packages/80/0e/49e931c1de8077fbf664b66792029bffbcba09d1ea5273b2ab0dc05306ac/coldfront_initializer-0.0.2.tar.gz" }
+coldfront-initializer = { url = "https://test-files.pythonhosted.org/packages/d9/03/d63dd19d68c238e97241f942cf5c27d6a4f262d71d6bfceff7bf64820e2a/coldfront_initializer-0.0.3.tar.gz" }
