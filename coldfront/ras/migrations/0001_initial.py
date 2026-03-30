@@ -111,6 +111,14 @@ class Migration(migrations.Migration):
                         verbose_name="status",
                     ),
                 ),
+                (
+                    "is_allocatable",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Users can submit allocations for this resource.",
+                        verbose_name="allocatable",
+                    ),
+                ),
                 ("lft", models.PositiveIntegerField(editable=False)),
                 ("rght", models.PositiveIntegerField(editable=False)),
                 ("tree_id", models.PositiveIntegerField(db_index=True, editable=False)),

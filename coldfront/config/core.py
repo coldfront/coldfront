@@ -168,7 +168,7 @@ DEFAULT_PERMISSIONS = ENV.dict(
         "users.change_token": ({"user": "$user"},),
         "users.delete_token": ({"user": "$user"},),
         # Permit users to view all resources and resource types
-        "ras.view_resource": None,
+        "ras.view_resource": ({"is_allocatable": True},),
         "ras.view_resourcetype": None,
         # Permit users to view projects they own or are a member of
         "ras.view_project": (

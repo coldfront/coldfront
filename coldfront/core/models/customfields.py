@@ -403,7 +403,7 @@ class CustomField(CloningMixin, ChangeLoggedModel):
 
     def get_choice_label(self, value):
         if not hasattr(self, "_choice_map"):
-            self._choice_map = dict(self.choices)
+            self._choice_map = dict(self.choice_set.items)
         return self._choice_map.get(value, value)
 
     def populate_initial_data(self, content_types):

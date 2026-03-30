@@ -86,6 +86,7 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
             "resource_type",
             "status",
             "description",
+            "is_allocatable",
             "tags",
             "tenant_group",
             "tenant",
@@ -101,6 +102,7 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
                 "parent",
                 "status",
                 "description",
+                "is_allocatable",
             ),
             Fieldset(
                 "Resource Type",

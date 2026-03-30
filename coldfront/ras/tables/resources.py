@@ -97,6 +97,7 @@ class ResourceTable(TenancyColumnsMixin, NestedGroupModelTable):
             "status",
             "allocation_count",
             "description",
+            "is_allocatable",
             "tags",
             "tenant",
             "tenant_group",

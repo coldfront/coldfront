@@ -77,12 +77,18 @@ class Resource(CustomAttributesMixin, NestedGroupModel):
         choices=ResourceStatusChoices,
         default=ResourceStatusChoices.STATUS_ACTIVE,
     )
+    is_allocatable = models.BooleanField(
+        verbose_name=_("allocatable"),
+        default=True,
+        help_text=_("Users can submit allocations for this resource."),
+    )
 
     clone_fields = (
         "resource_type",
         "description",
         "status",
         "parent",
+        "is_allocatable",
     )
 
     profile_field_name = "resource_type"
