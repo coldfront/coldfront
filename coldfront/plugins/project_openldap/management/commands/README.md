@@ -70,7 +70,7 @@ If for some reason an archived project in OpenLDAP doesn't have the correct memb
 
 ## Updating the OpenLDAP description field.
 
-This is done using the ``-d`` or ``--update_description`` option. No checks are performed for this. It will attempt to update the description filed regardless.
+This is done using the ``-d`` or ``--update_description`` option.
 
 This can either be used with loop all or against a specific project.
 
