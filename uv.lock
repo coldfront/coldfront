@@ -270,7 +270,7 @@ docs = [
 
 [package.metadata]
 requires-dist = [
-    { name = "coldfront-initializer", marker = "extra == 'initializer'", url = "https://test-files.pythonhosted.org/packages/d9/03/d63dd19d68c238e97241f942cf5c27d6a4f262d71d6bfceff7bf64820e2a/coldfront_initializer-0.0.3.tar.gz" },
+    { name = "coldfront-initializer", marker = "extra == 'initializer'", url = "https://test-files.pythonhosted.org/packages/07/8f/0112b12e261d74bcb29facfc30e4fe205d7f5aa640bd6bc191e1cb8d97df/coldfront_initializer-0.0.4.tar.gz" },
     { name = "crispy-bootstrap5", specifier = ">=2025.6" },
     { name = "cryptography", marker = "extra == 'freeipa'", specifier = "==43.0.3" },
     { name = "dbus-python", marker = "extra == 'freeipa'", specifier = ">=1.4.0" },
@@ -338,14 +338,14 @@ docs = [
 
 [[package]]
 name = "coldfront-initializer"
-version = "0.0.3"
-source = { url = "https://test-files.pythonhosted.org/packages/d9/03/d63dd19d68c238e97241f942cf5c27d6a4f262d71d6bfceff7bf64820e2a/coldfront_initializer-0.0.3.tar.gz" }
+version = "0.0.4"
+source = { url = "https://test-files.pythonhosted.org/packages/07/8f/0112b12e261d74bcb29facfc30e4fe205d7f5aa640bd6bc191e1cb8d97df/coldfront_initializer-0.0.4.tar.gz" }
 dependencies = [
     { name = "coldfront" },
     { name = "jinja2" },
     { name = "ruamel-yaml" },
 ]
-sdist = { hash = "sha256:b786f8a7f0830ba1493f9cf85ee85a161a6dd53c3de085901fa6b9d7e4009435" }
+sdist = { hash = "sha256:d21c9a92aa3e2861721862b371127f9ebbf809af11dfd22e0b59d5410ff6ab9e" }
 
 [package.metadata]
 requires-dist = [

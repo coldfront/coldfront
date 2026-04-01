@@ -24,7 +24,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt install -y \
         libglib2.0-dev \
         libsasl2-dev
 
-COPY --from=ghcr.io/astral-sh/uv:0.9.13 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.11.2 /uv /bin/uv
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_PYTHON_INSTALL_DIR=/python
@@ -55,12 +55,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
   uv sync \
         --locked \
         --no-dev \
-        --extra ldap \ 
+        --extra ldap \
         --extra freeipa \
         --extra iquota \
         --extra oidc \
         --extra mysql \
-        --extra pg 
+        --extra pg
 
 
 FROM cfimage

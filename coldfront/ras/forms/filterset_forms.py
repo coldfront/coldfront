@@ -8,7 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import OrganizationalModelFilterSetForm, PrimaryModelFilterSetForm
 from coldfront.forms.fields import DynamicModelMultipleChoiceField, TagFilterField
-from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
+from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
     AllocationUser,
@@ -18,6 +18,7 @@ from coldfront.ras.models import (
     ResourceType,
 )
 from coldfront.tenancy.forms import TenancyFilterSetForm
+from coldfront.users.models import User
 
 
 class ResourceTypeFilterSetForm(OrganizationalModelFilterSetForm):
@@ -71,17 +72,12 @@ class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetFor
     model = Project
     status = forms.MultipleChoiceField(
         label=_("Status"),
-        choices=ResourceStatusChoices,
+        choices=ProjectStatusChoices,
         required=False,
     )
-    last_name = forms.CharField(
-        label="Last Name",
-        max_length=100,
-        required=False,
-    )
-    username = forms.CharField(
-        label="PI Username",
-        max_length=100,
+    owner = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        label=_("Owner"),
         required=False,
     )
     tag = TagFilterField(model)
@@ -90,8 +86,7 @@ class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetFor
         Fieldset(
             _("Project"),
             "status",
-            "last_name",
-            "username",
+            "owner",
             "tag",
         ),
         Fieldset(
@@ -104,6 +99,7 @@ class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetFor
 
 class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
     model = Allocation
+
     project_id = forms.ModelChoiceField(
         queryset=Project.objects.all(),
         required=False,
@@ -119,14 +115,9 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
         choices=AllocationStatusChoices,
         required=False,
     )
-    last_name = forms.CharField(
-        label="Last Name",
-        max_length=100,
-        required=False,
-    )
-    username = forms.CharField(
-        label="PI Username",
-        max_length=100,
+    owner = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        label=_("Owner"),
         required=False,
     )
     tag = TagFilterField(model)
@@ -137,8 +128,7 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
             "project_id",
             "resource_id",
             "status",
-            "last_name",
-            "username",
+            "owner",
             "tag",
         ),
         Fieldset(
