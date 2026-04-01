@@ -102,6 +102,7 @@ class AllocationUserTabView(generic.ObjectChildrenView):
         table = super().get_table(*args, **kwargs)
         # TODO: hide this column by default? add created?
         table.columns.hide("allocation")
+        table.columns.hide("owner")
         table.columns.hide("project")
         table.columns.show("created")
         return table

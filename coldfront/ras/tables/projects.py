@@ -53,7 +53,7 @@ class ProjectTable(TenancyColumnsMixin, OrganizationalModelTable):
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "name", "owner", "status", "description", "user_count", "allocation_count")
+        default_columns = ("pk", "name", "owner", "status", "user_count", "allocation_count")
 
 
 class ProjectUserTable(PrimaryModelTable):

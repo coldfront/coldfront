@@ -37,7 +37,7 @@ class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
         widget=forms.HiddenInput(),
     )
     resource = forms.ModelChoiceField(
-        queryset=Resource.objects.all(),
+        queryset=Resource.objects.filter(is_allocatable=True),
         label=_("Resource"),
         required=False,
         widget=HTMXSelectWidget(),
