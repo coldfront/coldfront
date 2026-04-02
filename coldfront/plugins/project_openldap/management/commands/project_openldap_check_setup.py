@@ -173,8 +173,8 @@ class Command(BaseCommand):
                             f"FAILURE ldapsearch CANT find {PROJECT_OPENLDAP_OU}: {ldapsearch_check_project_ou_result} using bind user {PROJECT_OPENLDAP_BIND_USER}"
                         )
                     )
-            except LDAPException:
-                self.stdout.write(self.style.WARNING(f"ERROR WITH LDAPSEARCH: {LDAPException}"))
+            except LDAPException as e:
+                self.stdout.write(self.style.WARNING(f"ERROR WITH LDAPSEARCH: {e}"))
 
         self.stdout.write(self.style.SUCCESS("---------------------------------------------------"))
 
@@ -199,8 +199,8 @@ class Command(BaseCommand):
                             f"FAILURE ldapsearch CANT find {PROJECT_OPENLDAP_ARCHIVE_OU}: {ldapsearch_check_project_ou_result} using bind user {PROJECT_OPENLDAP_BIND_USER}"
                         )
                     )
-            except LDAPException:
-                self.stdout.write(self.style.WARNING(f"ERROR WITH LDAPSEARCH: {LDAPException}"))
+            except LDAPException as e:
+                self.stdout.write(self.style.WARNING(f"ERROR WITH LDAPSEARCH: {e}"))
 
         self.stdout.write(self.style.SUCCESS("---------------------------------------------------"))
 
