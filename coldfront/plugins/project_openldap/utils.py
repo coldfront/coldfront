@@ -283,22 +283,22 @@ def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> bool:
     """
     logger_extra_data = dict(funcname=func.__name__, args=args, kwargs=kwargs)
     if write:
-        logger.info("dry run, skipping...", stack_info=True, extra=logger_extra_data)
+        logger.info(f"dry run, skipping... - {logger_extra_data}")
         return True
     try:
         conn = Connection(server, PROJECT_OPENLDAP_BIND_USER, PROJECT_OPENLDAP_BIND_PASSWORD, auto_bind=True)
     except LDAPException:
-        logger.exception("Failed to open LDAP connection", exc_info=True, extra=logger_extra_data)
+        logger.exception(f"Failed to open LDAP connection - {logger_extra_data}", exc_info=True)
         return False
     try:
         func(conn, *args, **kwargs)
     except Exception:
-        logger.exception("An unexpected exception occurred!", exc_info=True, extra=logger_extra_data)
+        logger.exception(f"An unexpected exception occurred! - {logger_extra_data}", exc_info=True)
         return False
     finally:
         conn.unbind()
     if conn.result["result"] != 0:
-        logger.error("LDAP operation failed!", stack_info=True, extra=logger_extra_data)
+        logger.error(f"LDAP operation failed! - {logger_extra_data}")
         return False
     return True
 
