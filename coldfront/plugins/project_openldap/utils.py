@@ -282,7 +282,7 @@ def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> bool:
     * returns `True` if skipped or successful, `False` if failed
     """
     logger_extra_data = dict(funcname=func.__name__, args=args, kwargs=kwargs)
-    if write:
+    if not write:
         logger.info("dry run, skipping...", stack_info=True, extra=logger_extra_data)
         return True
     try:
