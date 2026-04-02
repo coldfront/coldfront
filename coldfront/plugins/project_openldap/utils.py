@@ -10,6 +10,7 @@ from typing import Any, Tuple
 
 from ldap3 import ALL_ATTRIBUTES, BASE, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, Connection, Server, Tls
 from ldap3.core.exceptions import LDAPException
+from ldap3.core.results import RESULT_NO_SUCH_ATTRIBUTE, RESULT_NO_SUCH_OBJECT, RESULT_SUCCESS
 from ldap3.utils.log import ERROR, set_library_log_detail_level
 
 from coldfront.core.utils.common import import_from_settings
@@ -297,7 +298,7 @@ def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> bool:
         return False
     finally:
         conn.unbind()
-    if conn.result["result"] != 0:
+    if conn.result["result"] != RESULT_SUCCESS:
         logger.error("LDAP operation failed!", stack_info=True, extra=logger_extra_data)
         return False
     return True
@@ -307,7 +308,7 @@ def _ldap_read_wrapper(func, *args, **kwargs) -> Tuple[Connection, Any]:
     """
     * inserts an `ldap3.Connection` as the 1st argument to `func`
         * `func` should probably be a method of `ldap3.Connection` whose 1st argument is `self`
-    * raises `LDAPException` if the ldap3.Connection cannot be established or if the ldap3.Result code is nonzero
+    * raises `LDAPException` if the ldap3.Connection cannot be established or if the ldap3.Result code is unexpected
     * returns (ldap3.Connection, whatever `func` returns)
         * you should probably inspect the `entries` attributes of the `ldap3.Connection`
     """
@@ -322,6 +323,6 @@ def _ldap_read_wrapper(func, *args, **kwargs) -> Tuple[Connection, Any]:
         output = func(conn, *args, **kwargs)
     finally:
         conn.unbind()
-    if conn.result["result"] != 0:
+    if conn.result["result"] not in [RESULT_SUCCESS, RESULT_NO_SUCH_OBJECT, RESULT_NO_SUCH_ATTRIBUTE]:
         raise LDAPException(conn.result)
     return conn, output
