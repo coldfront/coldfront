@@ -21,10 +21,16 @@ from coldfront.config.env import ENV, PROJECT_ROOT
 # ------------------------------------------------------------------------------
 VERSION = coldfront.VERSION
 BASE_DIR = PROJECT_ROOT()
-ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS", default=["*"])
 DEBUG = ENV.bool("DEBUG", default=False)
 WSGI_APPLICATION = "coldfront.config.wsgi.application"
 ROOT_URLCONF = "coldfront.config.urls"
+
+ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS", default=[])
+if not ALLOWED_HOSTS:
+    if DEBUG:
+        ALLOWED_HOSTS = ["*"]
+    else:
+        raise ImproperlyConfigured("Required setting ALLOWED_HOSTS is not defined.")
 
 SECRET_KEY = ENV.str("SECRET_KEY", default="")
 if not SECRET_KEY:
@@ -77,6 +83,8 @@ INSTALLED_APPS += [
     "rest_framework",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "allauth",
+    "allauth.account",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -96,7 +104,7 @@ INSTALLED_APPS += [
     "coldfront.legacy.publication",
     "coldfront.legacy.research_output",
     "coldfront.users",
-    "coldfront.account",
+    "coldfront.account.apps.AccountConfig",
     "coldfront.core",
     "coldfront.tenancy",
     "coldfront.ras",
@@ -118,6 +126,7 @@ MIDDLEWARE = [
     "coldfront.auth.middleware.RemoteUserMiddleware",
     "coldfront.middleware.ColdFrontMiddleware",
     "coldfront.auth.middleware.HtmxAuthRedirectMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # ------------------------------------------------------------------------------

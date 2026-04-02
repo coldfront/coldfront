@@ -10,7 +10,6 @@ import environ
 import split_settings
 from django.conf import settings
 from django.contrib import admin
-from django.contrib.auth.views import LoginView
 from django.core import serializers
 from django.http import HttpResponse
 from django.urls import include, path
@@ -18,7 +17,7 @@ from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from coldfront.account.views import HtmxLogoutView
+from coldfront.account.views import password_set
 from coldfront.api.views import APIRootView, AuthenticationCheckView, StatusView
 from coldfront.config.env import ENV, PROJECT_ROOT
 from coldfront.plugins.urls import plugin_api_patterns, plugin_patterns
@@ -33,15 +32,17 @@ urlpatterns = [
     # Base views
     path("", HomeView.as_view(), name="home"),
     # Login/logout
-    path(
-        "login",
-        LoginView.as_view(template_name="auth/login.html", redirect_authenticated_user=True),
-        name="login",
-    ),
-    path("logout/", HtmxLogoutView.as_view(), name="logout"),
+    # path(
+    # "login",
+    # LoginView.as_view(template_name="auth/login.html", redirect_authenticated_user=True),
+    # name="login",
+    #    ),
+    #    path("logout/", HtmxLogoutView.as_view(), name="logout"),
     # User profile views
     # HTMX views
     path("htmx/object-selector/", ObjectSelectorView.as_view(), name="htmx_object_selector"),
+    path("accounts/password/set/", password_set, name="account_password_set"),
+    path("accounts/", include("allauth.urls")),
     path("user/", include("coldfront.account.urls")),
     # ColdFront core apps
     path("users/", include("coldfront.users.urls")),

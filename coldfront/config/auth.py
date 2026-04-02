@@ -16,7 +16,11 @@ from coldfront.utils.security import validate_peppers
 
 AUTH_USER_MODEL = "users.User"
 
-LOGIN_URL = "/login"
+CSRF_TRUSTED_ORIGINS = ENV.list("CSRF_TRUSTED_ORIGINS", default=[])
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+LOGIN_URL = "/accounts/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = ENV.str("LOGOUT_REDIRECT_URL", LOGIN_URL)
 
@@ -50,7 +54,7 @@ else:
 # ------------------------------------------------------------------------------
 # The remote authentication backend to use
 # ------------------------------------------------------------------------------
-REMOTE_AUTH_BACKEND = ENV.str("REMOTE_AUTH_BACKEND", default="coldfront.auth.RemoteUserBackend")
+REMOTE_AUTH_BACKEND = ENV.str("REMOTE_AUTH_BACKEND", default="allauth.account.auth_backends.AuthenticationBackend")
 
 # ------------------------------------------------------------------------------
 # ColdFront RemoteUserBackend settings
@@ -136,3 +140,6 @@ if OIDC_ENABLE_SESSION_REFRESH:
     MIDDLEWARE += [
         "mozilla_django_oidc.middleware.SessionRefresh",
     ]
+
+ACCOUNT_ADAPTER = "coldfront.auth.adapters.ColdFrontAccountAdapter"
+ACCOUNT_CHANGE_EMAIL = True

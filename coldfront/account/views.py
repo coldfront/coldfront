@@ -3,13 +3,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from allauth.account.views import PasswordSetView as PasswordSetView_
 from django.contrib import messages
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LogoutView
-from django.http import HttpResponse
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
 
@@ -76,7 +79,7 @@ class ChangePasswordView(LoginRequiredMixin, View):
         # LDAP users cannot change their password here
         if getattr(request.user, "ldap_username", None):
             messages.warning(request, _("LDAP-authenticated user credentials cannot be changed within ColdFront."))
-            return redirect("account:profile")
+            return redirect("coldfront_account:profile")
 
         form = PasswordChangeForm(user=request.user)
 
@@ -95,7 +98,7 @@ class ChangePasswordView(LoginRequiredMixin, View):
             form.save()
             update_session_auth_hash(request, form.user)
             messages.success(request, _("Your password has been changed successfully."))
-            return redirect("account:profile")
+            return redirect("coldfront_account:profile")
 
         return render(
             request,
@@ -128,6 +131,8 @@ class UserTokenListView(generic.ObjectListView):
 
 @register_model_view(UserToken)
 class UserTokenView(generic.ObjectView):
+    template_name = "account/usertoken.html"
+
     def get_queryset(self, request):
         return UserToken.objects.filter(user=request.user)
 
@@ -136,7 +141,7 @@ class UserTokenView(generic.ObjectView):
 @register_model_view(UserToken, "edit")
 class UserTokenEditView(generic.ObjectEditView):
     form = forms.UserTokenForm
-    default_return_url = "account:usertoken_list"
+    default_return_url = "coldfront_account:usertoken_list"
 
     def get_queryset(self, request):
         return UserToken.objects.filter(user=request.user)
@@ -149,7 +154,18 @@ class UserTokenEditView(generic.ObjectEditView):
 
 @register_model_view(UserToken, "delete")
 class UserTokenDeleteView(generic.ObjectDeleteView):
-    default_return_url = "account:usertoken_list"
+    default_return_url = "coldfront_account:usertoken_list"
 
     def get_queryset(self, request):
         return UserToken.objects.filter(user=request.user)
+
+
+class PasswordSetView(PasswordSetView_):
+    def dispatch(self, request, *args, **kwargs):
+        if self.request.user.has_usable_password():
+            return HttpResponseRedirect(reverse("account_change_password"))
+
+        raise PermissionDenied()
+
+
+password_set = PasswordSetView.as_view()

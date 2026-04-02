@@ -9,10 +9,10 @@ from coldfront.registry import get_model_urls
 
 from . import views
 
-app_name = "account"
+app_name = "coldfront_account"
 urlpatterns = [
     path("profile/", views.ProfileView.as_view(), name="profile"),
     path("password/", views.ChangePasswordView.as_view(), name="change_password"),
-    path("api-tokens/", include(get_model_urls("account", "usertoken", detail=False))),
-    path("api-tokens/<int:pk>/", include(get_model_urls("account", "usertoken"))),
+    path("api-tokens/", include(get_model_urls("coldfront_account", "usertoken", detail=False))),
+    path("api-tokens/<int:pk>/", include(get_model_urls("coldfront_account", "usertoken"))),
 ]

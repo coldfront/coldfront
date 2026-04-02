@@ -20,4 +20,4 @@ class UserToken(Token):
         verbose_name = "token"
 
     def get_absolute_url(self):
-        return reverse("account:usertoken", args=[self.pk])
+        return reverse("coldfront_account:usertoken", args=[self.pk])

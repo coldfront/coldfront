@@ -2,6 +2,10 @@
 {% load allauth %}
 {% load i18n %}
 
+{% block title %}
+    {% block head_title %}{% endblock %}
+{% endblock title %}
+
 {% block tabs %}
   <ul class="nav nav-tabs" role="presentation">
     <li class="nav-item">
@@ -54,3 +58,33 @@
     </li>
   </ul>
 {% endblock %}
+
+
+{% block page %}
+  <div class="page-body my-1">
+    <div class="container-fluid tab-content py-3">
+
+      {# Page alerts #}
+      {% block alerts %}{% endblock %}
+      {# /Page alerts #}
+
+      <div class="row justify-content-md-center">
+        <div class="col col-lg-9">
+            {% if messages %}
+                <div class="pt-4">
+                    {% for message in messages %}
+                        {% element alert level=message.tags %}
+                            {% slot message %}
+                                {{ message }}
+                            {% endslot %}
+                        {% endelement %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}{% endblock %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+{% endblock page %}
