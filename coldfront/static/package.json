@@ -24,7 +24,7 @@
     "sass": "^1.95.1",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.49.0",
-    "vite": "^7.2.7",
+    "vite": "^7.3.2",
     "vite-plugin-eslint": "^1.8.1"
   },
   "dependencies": {
