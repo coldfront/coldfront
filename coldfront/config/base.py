@@ -149,7 +149,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 SETTINGS_EXPORT = []
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 
 DJANGO_VITE = {
     "default": {

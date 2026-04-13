@@ -13,7 +13,7 @@ AUTHENTICATION_BACKENDS += [
 ]
 
 LOGIN_URL = "/user/login"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = ENV.str("LOGOUT_REDIRECT_URL", LOGIN_URL)
 
 SU_LOGIN_CALLBACK = "coldfront.core.utils.common.su_login_callback"

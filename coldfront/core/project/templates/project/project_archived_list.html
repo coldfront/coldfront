@@ -77,9 +77,9 @@ Project List
         {% for project in project_list %}
           <tr>
             {% if project.project_code %}
-                <td><a href="/project/{{project.id}}/">{{ project.project_code }}</a></td>
+                <td><a href="{% url 'project-detail' project.id %}">{{ project.project_code }}</a></td>
             {% else %}
-                <td><a href="/project/{{project.id}}/">{{ project.id }}</a></td>
+                <td><a href="{% url 'project-detail' project.id %}">{{ project.id }}</a></td>
             {% endif %}
             <td>{{ project.pi.username }}</td>
             <td><strong>Title: </strong> {{ project.title }}

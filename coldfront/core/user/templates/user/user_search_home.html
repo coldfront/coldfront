@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     $.ajax({
-        url : "/user/user-search-results/", // the endpoint
+        url : "{% url 'user-search-results' %}", // the endpoint
         type : "POST", // http method
         data : {
           q : q,
