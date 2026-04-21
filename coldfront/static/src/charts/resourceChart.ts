@@ -9,7 +9,7 @@ import type { ChartData, ChartDataItem } from './data';
 export function initResourceChart(): void {
   renderChart(
     'resource-summary-chart',
-    '/portal/data/resource-by-type',
+    'portal/data/resource-by-type',
     createResourceChart
   );
 }

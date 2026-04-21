@@ -7,7 +7,7 @@ import { renderChart, ColorPalette } from './data';
 import type { ChartData, ChartDataItem } from './data';
 
 export function initGrantChart(): void {
-  renderChart('grant-summary-chart', '/grant/data/summary', createGrantChart);
+  renderChart('grant-summary-chart', 'grant/data/summary', createGrantChart);
 }
 
 function createGrantChart(
