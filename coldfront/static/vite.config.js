@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     plugins: [eslint()],
-    base: "static/", // This should match django settings.STATIC_URL
+    base: "", // This should match django settings.STATIC_URL
     build: {
       // Where Vite will save its output files.
       // This should be added to django settings.STATICFILES_DIRS
