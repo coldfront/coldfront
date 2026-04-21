@@ -41,7 +41,7 @@ def test_logged_out_redirect_to_login(test_case, page):
     # log out, in case already logged in
     test_case.client.logout()
     response = test_case.client.get(page)
-    test_case.assertRedirects(response, f"/user/login?next={page}")
+    test_case.assertRedirects(response, f"user/login?next={page}")
 
 
 def test_redirect(test_case, page):
