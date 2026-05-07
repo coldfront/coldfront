@@ -9,8 +9,7 @@ import textwrap
 from typing import Any, Tuple
 
 from ldap3 import BASE, MODIFY_ADD, MODIFY_DELETE, MODIFY_REPLACE, Connection, Server, Tls
-from ldap3.core.exceptions import LDAPException
-from ldap3.core.results import RESULT_NO_SUCH_ATTRIBUTE, RESULT_NO_SUCH_OBJECT, RESULT_SUCCESS
+from ldap3.core.exceptions import LDAPNoSuchAttributeResult, LDAPNoSuchObjectResult
 from ldap3.utils.log import ERROR, set_library_log_detail_level
 
 from coldfront.core.utils.common import import_from_settings
@@ -60,8 +59,7 @@ def add_members_to_openldap_posixgroup(dn, list_memberuids, write=True):
     """
     * Add members to a posixgroup in OpenLDAP
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(Connection.modify, dn, {"memberUid": [(MODIFY_ADD, list_memberuids)]}, write=write)
 
@@ -70,8 +68,7 @@ def remove_members_from_openldap_posixgroup(dn, list_memberuids, write=True):
     """
     * Remove members from a posixgroup in OpenLDAP
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(Connection.modify, dn, {"memberUid": [(MODIFY_DELETE, list_memberuids)]}, write=write)
 
@@ -80,8 +77,7 @@ def add_per_project_ou_to_openldap(project_obj, dn, openldap_ou_description, wri
     """
     * Add a per project OU to OpenLDAP - write an OU for a project
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(
         Connection.add,
@@ -96,8 +92,7 @@ def add_posixgroup_to_openldap(dn, openldap_description, gid_int, write=True):
     """
     * Add a posixGroup to OpenLDAP
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(
         Connection.add,
@@ -113,8 +108,7 @@ def remove_dn_from_openldap(dn, write=True):
     """
     * Remove a DN from OpenLDAP
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(Connection.delete, dn, write=write)
 
@@ -124,8 +118,7 @@ def update_posixgroup_description_in_openldap(dn, openldap_description, write=Tr
     """
     * Update the description of a posixGroup in OpenLDAP
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(Connection.modify, dn, {"description": [(MODIFY_REPLACE, [openldap_description])]}, write=write)
 
@@ -135,8 +128,7 @@ def move_dn_in_openldap(current_dn, relative_dn, destination_ou, write=True):
     """
     * Move a DN to another OU in OpenLDAP
     * if not `write`, adds log message and does nothing
-    * Should not raise any exceptions
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     """
     _ldap_write_wrapper(Connection.modify_dn, current_dn, relative_dn, new_superior=destination_ou, write=write)
 
@@ -144,7 +136,7 @@ def move_dn_in_openldap(current_dn, relative_dn, destination_ou, write=True):
 def ldapsearch_check_project_dn(dn):
     """
     * Check a distinguished name exists and represents a project (posixGroup)
-    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is unexpected
     """
     _, success = _ldap_read_wrapper(Connection.search, dn, "(objectclass=posixGroup)", BASE)
     return success
@@ -154,7 +146,7 @@ def ldapsearch_check_project_dn(dn):
 def ldapsearch_check_ou(OU):
     """
     * Test that ldapsearch can see an OU
-    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is unexpected
     """
     _, success = _ldap_read_wrapper(Connection.search, OU, "(objectclass=organizationalUnit)", BASE)
     return success
@@ -163,7 +155,7 @@ def ldapsearch_check_ou(OU):
 def ldapsearch_get_posixgroup_memberuids(dn):
     """
     * Get memberUids from a project's posixGroup
-    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is unexpected
     * raises `KeyError` if the `entries` attribute of the `ldap3.Connection` is empty
     """
     entries, _ = _ldap_read_wrapper(Connection.search, dn, "(objectclass=posixGroup)", BASE, attributes=["memberUid"])
@@ -175,7 +167,7 @@ def ldapsearch_get_posixgroup_memberuids(dn):
 def ldapsearch_get_description(dn):
     """
     * Get description from an openldap entry
-    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is unexpected
     * raises `KeyError` if the `entries` attribute of the `ldap3.Connection` is empty
     """
     entries, _ = _ldap_read_wrapper(Connection.search, dn, "(objectclass=posixGroup)", BASE, attributes=["description"])
@@ -274,41 +266,31 @@ def construct_project_posixgroup_description(project_obj):
     return description
 
 
-def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> bool:
+def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> None:
     """
     * if not `write`, adds log message and does nothing
     * inserts an `ldap3.Connection` as the 1st argument to `func`
         * `func` should probably be a method of `ldap3.Connection` whose 1st argument is `self`
-    * exceptions are caught and logged
-    * returns `True` if skipped or successful, `False` if failed
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is unexpected
     """
     logger_extra_data = dict(funcname=func.__name__, args=args, kwargs=kwargs)
     if not write:
         logger.info(f"dry run, skipping... - {logger_extra_data}")
-        return True
-    try:
-        conn = Connection(server, PROJECT_OPENLDAP_BIND_USER, PROJECT_OPENLDAP_BIND_PASSWORD, auto_bind=True)
-    except LDAPException:
-        logger.exception(f"Failed to open LDAP connection - {logger_extra_data}", exc_info=True)
-        return False
+        return
+    conn = Connection(
+        server, PROJECT_OPENLDAP_BIND_USER, PROJECT_OPENLDAP_BIND_PASSWORD, auto_bind=True, raise_exceptions=True
+    )
     try:
         func(conn, *args, **kwargs)
-    except Exception:
-        logger.exception(f"An unexpected exception occurred! - {logger_extra_data}", exc_info=True)
-        return False
     finally:
         conn.unbind()
-    if conn.result["result"] != RESULT_SUCCESS:
-        logger.error(f"LDAP operation failed! - {logger_extra_data}")
-        return False
-    return True
 
 
 def _ldap_read_wrapper(func, *args, **kwargs) -> Tuple[list, Any]:
     """
     * inserts an `ldap3.Connection` as the 1st argument to `func`
         * `func` should probably be a method of `ldap3.Connection` whose 1st argument is `self`
-    * raises `LDAPException` if the ldap3.Connection cannot be established or if the ldap3.Result code is unexpected
+    * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is nonzero
     * returns (ldap3.Connection.entries, whatever `func` returns)
     """
     conn = Connection(
@@ -317,12 +299,13 @@ def _ldap_read_wrapper(func, *args, **kwargs) -> Tuple[list, Any]:
         PROJECT_OPENLDAP_BIND_PASSWORD,
         auto_bind=True,
         read_only=True,
+        raise_exceptions=True,
     )
     try:
         output = func(conn, *args, **kwargs)
         entries = conn.entries.copy()
+        return entries, output
+    except (LDAPNoSuchAttributeResult, LDAPNoSuchObjectResult):
+        return [], None
     finally:
         conn.unbind()
-    if conn.result["result"] not in [RESULT_SUCCESS, RESULT_NO_SUCH_OBJECT, RESULT_NO_SUCH_ATTRIBUTE]:
-        raise LDAPException(conn.result)
-    return entries, output
