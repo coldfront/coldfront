@@ -266,18 +266,17 @@ def construct_project_posixgroup_description(project_obj):
     return description
 
 
-def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> bool:
+def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> None:
     """
     * if not `write`, adds log message and does nothing
     * inserts an `ldap3.Connection` as the 1st argument to `func`
         * `func` should probably be a method of `ldap3.Connection` whose 1st argument is `self`
-    * if operation was skipped due to the `write` kwarg, returns `False`, else `True`
     * raises `LDAPException` if the `ldap3.Connection` cannot be established or if the `ldap3.Result` code is unexpected
     """
     logger_extra_data = dict(funcname=func.__name__, args=args, kwargs=kwargs)
     if not write:
         logger.info(f"dry run, skipping... - {logger_extra_data}")
-        return False
+        return
     conn = Connection(
         server, PROJECT_OPENLDAP_BIND_USER, PROJECT_OPENLDAP_BIND_PASSWORD, auto_bind=True, raise_exceptions=True
     )
@@ -285,7 +284,6 @@ def _ldap_write_wrapper(func, *args, write=True, **kwargs) -> bool:
         func(conn, *args, **kwargs)
     finally:
         conn.unbind()
-    return True
 
 
 def _ldap_read_wrapper(func, *args, **kwargs) -> Tuple[list, Any]:
