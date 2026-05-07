@@ -6,12 +6,11 @@ import datetime
 from collections import Counter
 
 from django.conf import settings
-from django.contrib.humanize.templatetags.humanize import intcomma
-from django.db.models import FloatField, Q, Sum
-from django.db.models.functions import Cast
+from django.db.models import Q, Sum
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.cache import cache_page
+from djmoney.utils import get_currency_field_name
 
 from coldfront.core.allocation.models import Allocation, AllocationUser
 from coldfront.core.grant.models import Grant
@@ -109,22 +108,38 @@ def home(request):
 
 
 def center_summary(request):
+    field_name = "total_amount_awarded"
+    currency_field_name = get_currency_field_name(field_name)
+    currencies = set(Grant.objects.values_list(currency_field_name, flat=True).distinct())
+    currencies.add(settings.DEFAULT_CURRENCY)
+    currencies = sorted(list(currencies))
+    # put the default currency at the front
+    currencies.insert(0, currencies.pop(currencies.index(settings.DEFAULT_CURRENCY)))
+
+    grant_totals = {
+        "currencies": currencies,  # used for the table header
+        "rows": [],
+    }
+
+    filters = [
+        (Q(), "All"),
+        (Q(role="PI"), "PI Only"),
+        (Q(role="CoPI"), "CoPI Only"),
+        (Q(role="SP"), "Senior Personnel Only"),
+    ]
+
+    for qfilter, title in filters:
+        data = {"title": title, "totals": []}
+        for currency in currencies:
+            filter = {currency_field_name: currency}
+            total = Grant.objects.filter(qfilter, **filter).aggregate(total=Sum(field_name, default=0))["total"]
+            data["totals"].append((total, currency))
+        grant_totals["rows"].append(data)
+
     context = {}
     context["research_outputs_count"] = ResearchOutput.objects.all().distinct().count()
+    context["grant_totals"] = grant_totals
 
-    sum_agg = Sum(Cast("total_amount_awarded", FloatField()), default=0)
-    context["grant_total"] = intcomma(
-        int(Grant.objects.aggregate(total_amount_awarded__sum=sum_agg)["total_amount_awarded__sum"])
-    )
-    context["grant_total_pi_only"] = intcomma(
-        int(Grant.objects.filter(role="PI").aggregate(total_amount_awarded__sum=sum_agg)["total_amount_awarded__sum"])
-    )
-    context["grant_total_copi_only"] = intcomma(
-        int(Grant.objects.filter(role="CoPI").aggregate(total_amount_awarded__sum=sum_agg)["total_amount_awarded__sum"])
-    )
-    context["grant_total_sp_only"] = intcomma(
-        int(Grant.objects.filter(role="SP").aggregate(total_amount_awarded__sum=sum_agg)["total_amount_awarded__sum"])
-    )
     return render(request, "portal/center_summary.html", context)
 
 

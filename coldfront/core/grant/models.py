@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.core.exceptions import ValidationError
-from django.core.validators import MaxLengthValidator, MaxValueValidator, MinLengthValidator, RegexValidator
+import djmoney.models.fields
+from django.core.validators import MaxLengthValidator, MaxValueValidator, MinLengthValidator, MinValueValidator
 from django.db import models
 from model_utils.models import TimeStampedModel
 from simple_history.models import HistoricalRecords
@@ -57,39 +57,21 @@ class GrantStatusChoice(TimeStampedModel):
 
 
 class MoneyField(models.CharField):
-    validators = [
-        RegexValidator(
-            r"\$*[\d,.]{1,}$", "Enter only digits, decimals, commas, dollar signs, or spaces.", "Invalid input."
-        )
-    ]
-
-    def to_python(self, value):
-        value = super().to_python(value)
-        if value:
-            value = value.replace(" ", "")
-            value = value.replace(",", "")
-            value = value.replace("$", "")
-        return value
+    system_check_removed_details = {
+        "msg": ("coldfront.core.grant.models.MoneyField has been removed except for support in historical migrations."),
+        "hint": "Use djmoney.models.fields.MoneyField from django-money instead.",
+        "id": "coldfront.core.grant.models.MoneyField",
+    }
 
 
 class PercentField(models.CharField):
-    validators = [
-        RegexValidator(
-            r"^[\d,.]{1,6}\%*$", "Enter only digits, decimals, percent symbols, or spaces.", "Invalid input."
-        )
-    ]
-
-    def to_python(self, value):
-        value = super().to_python(value)
-        if value:
-            value = value.replace(" ", "")
-            value = value.replace("%", "")
-            try:
-                if float(value) > 100:
-                    raise ValidationError("Percent credit should be less than 100")
-            except ValueError:
-                pass
-        return value
+    system_check_removed_details = {
+        "msg": (
+            "coldfront.core.grant.models.PercentField has been removed except for support in historical migrations."
+        ),
+        "hint": "Use a FloatField instead.",
+        "id": "coldfront.core.grant.models.PercentField",
+    }
 
 
 class Grant(TimeStampedModel):
@@ -107,8 +89,8 @@ class Grant(TimeStampedModel):
         grant_start (Date): represents grant start date
         grant_end (Date): represents the grant end date
         percent_credit (float): indicates how much of the grant is awarded as credit
-        direct_funding (float): indicates how much of the grant is directly funded
-        total_amount_awarded (float): indicates the total amount awarded
+        direct_funding (Decimal): indicates how much of the grant is directly funded
+        total_amount_awarded (Decimal): indicates the total amount awarded
         status (GrantStatusChoice): represents the status of the grant
     """
 
@@ -138,9 +120,9 @@ class Grant(TimeStampedModel):
     other_award_number = models.CharField(max_length=255, blank=True)
     grant_start = models.DateField("Grant Start Date")
     grant_end = models.DateField("Grant End Date")
-    percent_credit = PercentField(max_length=100, validators=[MaxValueValidator(100)])
-    direct_funding = MoneyField(max_length=100)
-    total_amount_awarded = MoneyField(max_length=100)
+    percent_credit = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(100)])
+    direct_funding = djmoney.models.fields.MoneyField(max_digits=19, decimal_places=4, null=False)
+    total_amount_awarded = djmoney.models.fields.MoneyField(max_digits=19, decimal_places=4, null=False)
     status = models.ForeignKey(GrantStatusChoice, on_delete=models.CASCADE)
     history = HistoricalRecords()
 

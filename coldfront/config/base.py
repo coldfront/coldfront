@@ -62,6 +62,7 @@ INSTALLED_APPS += [
     "simple_history",
     "django_vite",
     "django_htmx",
+    "djmoney",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:

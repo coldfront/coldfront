@@ -4,9 +4,9 @@
 
 import csv
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db.models import Count, FloatField, Sum
 from django.db.models.functions import Cast
 from django.forms import formset_factory
@@ -16,6 +16,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import FormView, ListView, TemplateView
 from django.views.generic.edit import UpdateView
+from djmoney.money import Money
 
 from coldfront.core.grant.forms import GrantDeleteForm, GrantDownloadForm, GrantForm
 from coldfront.core.grant.models import Grant
@@ -33,6 +34,12 @@ class GrantCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             return True
 
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("project_pk"))
+        if project_obj.status.name not in [
+            "Active",
+            "New",
+        ]:
+            messages.error(self.request, "You cannot add grants to an archived project.")
+            return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
 
         if project_obj.pi == self.request.user:
             return True
@@ -43,17 +50,6 @@ class GrantCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
             return True
 
         messages.error(self.request, "You do not have permission to add a new grant to this project.")
-
-    def dispatch(self, request, *args, **kwargs):
-        project_obj = get_object_or_404(Project, pk=self.kwargs.get("project_pk"))
-        if project_obj.status.name not in [
-            "Active",
-            "New",
-        ]:
-            messages.error(request, "You cannot add grants to an archived project.")
-            return HttpResponseRedirect(reverse("project-detail", kwargs={"pk": project_obj.pk}))
-        else:
-            return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form_data = form.cleaned_data
@@ -88,6 +84,10 @@ class GrantCreateView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
 
 class GrantUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Grant
+    form_class = GrantForm
+    template_name_suffix = "_update_form"
+
     def test_func(self):
         """UserPassesTestMixin Tests"""
         if self.request.user.is_superuser:
@@ -104,24 +104,6 @@ class GrantUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
             return True
 
         messages.error(self.request, "You do not have permission to update grant from this project.")
-
-    model = Grant
-    template_name_suffix = "_update_form"
-    fields = [
-        "title",
-        "grant_number",
-        "role",
-        "grant_pi_full_name",
-        "funding_agency",
-        "other_funding_agency",
-        "other_award_number",
-        "grant_start",
-        "grant_end",
-        "percent_credit",
-        "direct_funding",
-        "total_amount_awarded",
-        "status",
-    ]
 
     def get_success_url(self):
         return reverse("project-detail", kwargs={"pk": self.object.project.id})
@@ -384,19 +366,20 @@ class GrantSummaryDataView(View):
     def get(self, request, *args, **kwargs):
         data = {"data": []}
         grants = {}
-        for row in Grant.objects.values("funding_agency__name").annotate(
-            total_amount=Sum(Cast("total_amount_awarded", FloatField()))
-        ):
+        queryset = Grant.objects.filter(total_amount_awarded_currency=settings.DEFAULT_CURRENCY).values(
+            "funding_agency__name"
+        )
+        for row in queryset.annotate(total_amount=Sum(Cast("total_amount_awarded", FloatField()))):
             grants[row["funding_agency__name"]] = {"total": row["total_amount"]}
 
-        for row in Grant.objects.values("funding_agency__name").annotate(count=Count("total_amount_awarded")):
+        for row in queryset.annotate(count=Count("total_amount_awarded")):
             grants[row["funding_agency__name"]]["count"] = row["count"]
 
         for name, rec in grants.items():
             data["data"].append(
                 {
                     "total": rec["total"],
-                    "name": f"{name}: ${intcomma(int(rec['total']))} ({rec['count']})",
+                    "name": f"{name}: {Money(amount=rec['total'], currency=settings.DEFAULT_CURRENCY)} ({rec['count']})",
                 }
             )
 
