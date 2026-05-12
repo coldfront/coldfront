@@ -52,7 +52,6 @@ class ProfileView(LoginRequiredMixin, View):
     template_name = "account/profile.html"
 
     def get(self, request):
-
         # Compile changelog table
         changelog = ObjectChange.objects.valid_models().restrict(request.user, "view").filter(user=request.user)[:20]
         changelog_table = ObjectChangeTable(changelog)
@@ -150,6 +149,15 @@ class UserTokenEditView(generic.ObjectEditView):
 @register_model_view(UserToken, "delete")
 class UserTokenDeleteView(generic.ObjectDeleteView):
     default_return_url = "account:usertoken_list"
+
+    def get_queryset(self, request):
+        return UserToken.objects.filter(user=request.user)
+
+
+@register_model_view(UserToken, "bulk_delete", path="delete", detail=False)
+class UserTokenBulkDeleteView(generic.BulkDeleteView):
+    default_return_url = "account:usertoken_list"
+    table = UserTokenTable
 
     def get_queryset(self, request):
         return UserToken.objects.filter(user=request.user)

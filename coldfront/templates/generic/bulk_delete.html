@@ -69,11 +69,11 @@ Context:
         {% endfor %}
 
         {# Meta fields #}
-        <div class="bg-primary-subtle border border-primary rounded-1 pt-3 px-3 mb-3">
-          {% if form.changelog_message %}
+        {% if form.changelog_message %}
+          <div class="bg-primary-subtle border border-primary rounded-1 pt-3 px-3 mb-3">
             {{ form.changelog_message|as_crispy_field }}
-          {% endif %}
-        </div>
+          </div>
+        {% endif %}
 
         {# Form buttons #}
         <div class="text-end">
