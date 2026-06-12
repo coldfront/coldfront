@@ -19,6 +19,9 @@ AUTH_USER_MODEL = "users.User"
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = ENV.str("LOGOUT_REDIRECT_URL", LOGIN_URL)
+CSRF_TRUSTED_ORIGINS = ENV.list("CSRF_TRUSTED_ORIGINS", default=[])
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -136,3 +139,26 @@ if OIDC_ENABLE_SESSION_REFRESH:
     MIDDLEWARE += [
         "mozilla_django_oidc.middleware.SessionRefresh",
     ]
+
+# ------------------------------------------------------------------------------
+# Django social auth (social-auth-app-django) settings
+# ------------------------------------------------------------------------------
+SOCIAL_AUTH_PIPELINE = (
+    "social_core.pipeline.social_auth.social_details",
+    "social_core.pipeline.social_auth.social_uid",
+    "social_core.pipeline.social_auth.social_user",
+    "social_core.pipeline.user.get_username",
+    "coldfront.auth.backends.social_auth.match_user_by_username",
+    "social_core.pipeline.user.create_user",
+    "social_core.pipeline.social_auth.associate_user",
+    "coldfront.auth.backends.social_auth.user_default_groups_handler",
+    "social_core.pipeline.social_auth.load_extra_data",
+    "social_core.pipeline.user.user_details",
+    "coldfront.auth.backends.social_auth.sync_user_groups",
+)
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_CLEAN_USERNAME_FUNCTION = "coldfront.users.utils.clean_username"
+SOCIAL_AUTH_USER_MODEL = AUTH_USER_MODEL
+SOCIAL_AUTH_BACKEND_ATTRS = ENV.dict("SOCIAL_AUTH_BACKEND_ATTRS", default={})
+SOCIAL_AUTH_MIRROR_GROUPS = ENV.bool("SOCIAL_AUTH_MIRROR_GROUPS", default=True)

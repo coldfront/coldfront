@@ -3,15 +3,19 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LogoutView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
+from social_core.backends.utils import load_backends
 
 from coldfront.account.models import UserToken
 from coldfront.core.models import ObjectChange
@@ -25,7 +29,50 @@ from .tables import UserTokenTable
 
 #
 # Login/logout
-#
+
+
+class ColdFrontLoginView(LoginView):
+    """
+    ColdFront custom LoginView
+    """
+
+    template_name = "auth/login.html"
+    redirect_authenticated_user = True
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["auth_backends"] = self.get_auth_backends()
+        return context
+
+    def gen_auth_data(self, name, url, params):
+        return {
+            "display_name": settings.SOCIAL_AUTH_BACKEND_ATTRS.get(name, name),
+            "url": f"{url}?{urlencode(params)}",
+        }
+
+    def get_auth_backends(self):
+        """
+        Return a list of configured auth backends from SOCIAL_AUTH settings.
+        """
+
+        auth_backends = []
+        saml_idps = getattr(settings, "SOCIAL_AUTH_SAML_ENABLED_IDPS", {}).keys()
+
+        for name in load_backends(settings.AUTHENTICATION_BACKENDS).keys():
+            url = reverse("social:begin", args=[name])
+            params = {}
+            if next := self.request.GET.get("next"):
+                params["next"] = next
+            if name.lower() == "saml" and saml_idps:
+                for idp in saml_idps:
+                    params["idp"] = idp
+                    data = self.gen_auth_data(name, url, params)
+                    data["display_name"] = f"{data['display_name']} ({idp})"
+                    auth_backends.append(data)
+            else:
+                auth_backends.append(self.gen_auth_data(name, url, params))
+
+        return auth_backends
 
 
 class HtmxLogoutView(LogoutView):
