@@ -26,10 +26,16 @@ if len(BASE_PATH) > 0:
     BASE_PATH = f"{BASE_PATH.strip('/')}/"
 
 BASE_DIR = PROJECT_ROOT()
-ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS", default=["*"])
 DEBUG = ENV.bool("DEBUG", default=False)
 WSGI_APPLICATION = "coldfront.config.wsgi.application"
 ROOT_URLCONF = "coldfront.config.urls"
+
+ALLOWED_HOSTS = ENV.list("ALLOWED_HOSTS", default=[])
+if not ALLOWED_HOSTS:
+    if DEBUG:
+        ALLOWED_HOSTS = ["*"]
+    else:
+        raise ImproperlyConfigured("Required setting ALLOWED_HOSTS is not defined.")
 
 SECRET_KEY = ENV.str("SECRET_KEY", default="")
 if not SECRET_KEY:
@@ -72,7 +78,6 @@ INSTALLED_APPS = [
 INSTALLED_APPS += [
     "crispy_forms",
     "crispy_bootstrap5",
-    "django_q",
     "simple_history",
     "django_vite",
     "django_htmx",
@@ -82,6 +87,7 @@ INSTALLED_APPS += [
     "rest_framework",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "social_django",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -91,15 +97,6 @@ if DEBUG and importlib.util.find_spec("sslserver") is not None:
 
 # ColdFront Apps
 INSTALLED_APPS += [
-    "coldfront.legacy.user",
-    "coldfront.legacy.field_of_science",
-    "coldfront.legacy.portal",
-    "coldfront.legacy.project",
-    "coldfront.legacy.resource",
-    "coldfront.legacy.allocation",
-    "coldfront.legacy.grant",
-    "coldfront.legacy.publication",
-    "coldfront.legacy.research_output",
     "coldfront.users",
     "coldfront.account",
     "coldfront.core",

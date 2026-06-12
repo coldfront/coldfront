@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load i18n %}
 {% block title %}
 Login
 {% endblock title %}
@@ -53,17 +54,27 @@ Login
         </div>
         <div class="card-body">
           {% include "auth/login_form.html" %}
-          {% if 'mozilla_django_oidc' in settings.EXTRA_APPS %}
-            <hr/>
-            <p class="text-center"><strong>OR</strong></p>
-
-            <div>
-              <a class="btn btn-primary" role="button" href="{% url 'oidc_authentication_init' %}?next={{request.GET.next}}">
-                <i class="fab fa-openid" aria-hidden="true"></i> Log in via OpenID Connect
-              </a>
-            </div>
-          {% endif %}
         </div>
+
+        {# SSO login #}
+        {% if auth_backends %}
+          {% if not login_form_hidden %}
+            <div class="text-center">{% trans "Or" context "Denotes an alternative option" %}</div>
+          {% endif %}
+          <div class="card-body">
+            {% if login_form_hidden %}
+              <h2 class="text-center mb-4">{% trans "Log In" %}</h2>
+            {% endif %}
+            <div class="row">
+              {% for backend in auth_backends %}
+                <div class="d-grid gap-2">
+                  <a href="{{ backend.url }}" class="btn btn-primary" role="button">{{ backend.display_name }}</a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
       </div>
     </div>
 </main>

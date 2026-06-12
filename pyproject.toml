@@ -44,6 +44,8 @@ dependencies = [
     "pyyaml>=6.0.3",
     "redis>=5.2.1",
     "shortuuid>=1.0.13",
+    "social-auth-app-django>=5.9.0",
+    "social-auth-core[saml]>=4.8.7",
     "tablib>=3.9.0",
 ]
 
