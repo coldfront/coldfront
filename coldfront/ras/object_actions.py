@@ -101,5 +101,5 @@ class ReviewObject(ObjectAction):
     multi = False
     transition = "review"
     url_kwargs = ["pk"]
-    permissions_required = {"review"}
+    permissions_required = {"change"}
     template_name = "button.review"
