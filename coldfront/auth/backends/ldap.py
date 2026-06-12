@@ -51,7 +51,7 @@ class LDAPBackend:
             raise e
 
         for s in cls._required_settings:
-            if not getattr(settings, s):
+            if not hasattr(settings, s):
                 raise ImproperlyConfigured(f"Required parameter {s} is missing from settings")
 
         obj = ColdFrontLDAPBackend()
