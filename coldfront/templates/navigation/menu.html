@@ -10,7 +10,7 @@
   <div class="collapse" id="{{ menu.label }}-collapse">
     {% for group, items in groups %}
     <ul class="nav flex-column">
-      <li class="nav-item d-flex nav-link text-secondary text-uppercase fw-bold pt-3 justify-content-between py-0">
+      <li class="nav-item d-flex nav-link text-secondary text-uppercase fw-bold pt-1 justify-content-between py-0">
           {{ group.label }}
       </li>
       {% for item, buttons in items %}
@@ -19,8 +19,8 @@
           {% if buttons %}
           <div class="btn-group btn-group-sm">
             {% for button in buttons %}
-              <a href="{{ button.url }}" class="btn btn-sm btn-outline-{{ button.color|default:"secondary" }} lh-2 px-2 py-3 my-0" title="{{ button.title }}">
-                <i class="{{ button.icon_class }} fa-xs"></i>
+              <a href="{{ button.url }}" class="btn btn-sm btn-outline-{{ button.color|default:"secondary" }} px-1 py-2" title="{{ button.title }}">
+                <i class="{{ button.icon_class }}"></i>
               </a>
             {% endfor %}
           </div>
