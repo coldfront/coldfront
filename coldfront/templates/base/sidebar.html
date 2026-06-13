@@ -1,30 +1,23 @@
 {% load navigation %}
 
 <!-- Sidebar -->
-<aside class="sidebar d-flex flex-column bg-body-tertiary col-12 col-md-3 col-lg-2 p-3">
+<aside class="sidebar d-flex flex-column bg-body-tertiary">
 
   <!-- Sidebar Header -->
-  <div class="d-flex justify-content-center align-items-center p-1 mb-5">
+  <div class="d-flex justify-content-center align-items-center p-1 mb-2">
     {% include 'base/brand.html' %}
   </div>
 
-  {# Collapase sidebar toggle button #}
-  <div class="d-md-none">
-    <button class="btn btn-outline-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-expanded="false" aria-controls="sidebar">
-      <span data-feather="menu"></span> Menu
-    </button>
-  </div>
-
   <!-- Sidebar Content -->
-  <div class="flex-grow-1 overflow-auto" style="max-height: 80vh;">
+  <div class="flex-grow-1 overflow-auto">
     {% nav %}
   </div>
 
   <!-- Sidebar Footer -->
-  <div class="text-center p-4">
-    <p class="mb-2 text-muted">ColdFront v{{ settings.VERSION }}</p>
-    <a href="https://github.com/coldfront/coldfront" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center">
-      <i class="fab fa-solid fa-github me-2"></i>GitHub
+  <div class="text-center py-2 px-1">
+    <p class="mb-1 small text-muted">ColdFront v{{ settings.VERSION }}</p>
+    <a href="https://github.com/coldfront/coldfront" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center px-2 py-1">
+      <i class="fab fa-solid fa-github me-1"></i>GitHub
     </a>
   </div>
 </aside>
