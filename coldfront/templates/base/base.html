@@ -10,6 +10,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    (function() {
+      var theme = localStorage.getItem('theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-bs-theme', theme || (prefersDark ? 'dark' : 'light'));
+    })();
+  </script>
   <link rel="apple-touch-icon" sizes="180x180" href="{% static 'common/images/apple-touch-icon.png' %}">
   <link rel="shortcut icon" type="image/png" href="{% static 'common/images/favicon.ico' %}"/>
   <link rel="icon" type="image/png" sizes="32x32" href="{% static 'common/images/favicon-32x32.png' %}">
