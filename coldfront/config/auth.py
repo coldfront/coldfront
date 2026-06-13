@@ -6,7 +6,7 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.core.management.utils import get_random_secret_key
 
-from coldfront.config.base import AUTHENTICATION_BACKENDS, DEBUG, MIDDLEWARE
+from coldfront.config.base import AUTHENTICATION_BACKENDS, DEBUG
 from coldfront.config.env import ENV
 from coldfront.utils.security import validate_peppers
 
@@ -106,27 +106,6 @@ AUTH_LDAP_USER_ATTR_MAP = ENV.dict(
     },
 )
 
-# ------------------------------------------------------------------------------
-# ColdFront MokeyAuthenticationBackend settings
-# ------------------------------------------------------------------------------
-MOKEY_OIDC_PI_GROUP = ENV.str("MOKEY_OIDC_PI_GROUP", default="pi")
-MOKEY_OIDC_ALLOWED_GROUPS = ENV.list("MOKEY_OIDC_ALLOWED_GROUPS", default=[])
-MOKEY_OIDC_DENY_GROUPS = ENV.list("MOKEY_OIDC_DENY_GROUPS", default=[])
-
-# ------------------------------------------------------------------------------
-# mozilla_django_oidc settings
-# ------------------------------------------------------------------------------
-OIDC_OP_JWKS_ENDPOINT = ENV.str("OIDC_OP_JWKS_ENDPOINT", default=None)
-OIDC_RP_SIGN_ALGO = ENV.str("OIDC_RP_SIGN_ALGO", default=None)
-OIDC_RP_CLIENT_ID = ENV.str("OIDC_RP_CLIENT_ID", default=None)
-OIDC_RP_CLIENT_SECRET = ENV.str("OIDC_RP_CLIENT_SECRET", default=None)
-OIDC_OP_AUTHORIZATION_ENDPOINT = ENV.str("OIDC_OP_AUTHORIZATION_ENDPOINT", default=None)
-OIDC_OP_TOKEN_ENDPOINT = ENV.str("OIDC_OP_TOKEN_ENDPOINT", default=None)
-OIDC_OP_USER_ENDPOINT = ENV.str("OIDC_OP_USER_ENDPOINT", default=None)
-OIDC_VERIFY_SSL = ENV.bool("OIDC_VERIFY_SSL", default=True)
-OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = ENV.int("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS", default=3600)
-OIDC_ENABLE_SESSION_REFRESH = ENV.bool("OIDC_ENABLE_SESSION_REFRESH", default=False)
-
 if type(REMOTE_AUTH_BACKEND) not in (list, tuple):
     REMOTE_AUTH_BACKEND = [REMOTE_AUTH_BACKEND]
 
@@ -134,11 +113,6 @@ AUTHENTICATION_BACKENDS += [
     *REMOTE_AUTH_BACKEND,
     "coldfront.auth.backends.ObjectPermissionBackend",
 ]
-
-if OIDC_ENABLE_SESSION_REFRESH:
-    MIDDLEWARE += [
-        "mozilla_django_oidc.middleware.SessionRefresh",
-    ]
 
 # ------------------------------------------------------------------------------
 # Django social auth (social-auth-app-django) settings
