@@ -221,3 +221,11 @@ def widget_type(field):
     if hasattr(field, "field"):
         return field.field.widget.__class__.__name__.lower()
     return None
+
+
+@register.filter()
+def dict_get(dictionary, key):
+    """
+    Get a value from a dictionary by key.
+    """
+    return dictionary.get(key)

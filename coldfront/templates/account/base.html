@@ -14,5 +14,8 @@
     <li class="nav-item">
       <a class="nav-link{% if active_tab == 'api-tokens' %} active{% endif %}" href="{% url 'account:usertoken_list' %}">{% trans "API Tokens" %}</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link{% if active_tab == 'notifications' %} active{% endif %}" href="{% url 'account:notification_preferences' %}">{% trans "Notifications" %}</a>
+    </li>
   </ul>
 {% endblock %}

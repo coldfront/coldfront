@@ -13,6 +13,7 @@ class CoreConfig(AppConfig):
         from coldfront.models.features import register_models
 
         from . import (
+            notifications,  # noqa: F401
             signals,  # noqa: F401
         )
 

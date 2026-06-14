@@ -15,4 +15,8 @@ urlpatterns = [
     path("password/", views.ChangePasswordView.as_view(), name="change_password"),
     path("api-tokens/", include(get_model_urls("account", "usertoken", detail=False))),
     path("api-tokens/<int:pk>/", include(get_model_urls("account", "usertoken"))),
+    # Notification views
+    path("notifications/", views.NotificationListView.as_view(), name="notification_list"),
+    path("notifications/<int:pk>/", views.NotificationDetailView.as_view(), name="notification"),
+    path("notifications/preferences/", views.NotificationPreferencesView.as_view(), name="notification_preferences"),
 ]

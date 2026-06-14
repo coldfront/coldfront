@@ -107,6 +107,11 @@ ADMIN_MENU = Menu(
                     link_text=_("Plugins"),
                     staff_only=True,
                 ),
+                MenuItem(
+                    link="core:notification_send",
+                    link_text=_("Notifications"),
+                    staff_only=True,
+                ),
             ),
         ),
         MenuGroup(

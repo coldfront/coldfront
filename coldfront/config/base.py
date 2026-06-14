@@ -88,6 +88,7 @@ INSTALLED_APPS += [
     "drf_spectacular",
     "drf_spectacular_sidecar",
     "social_django",
+    "generic_notifications",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -169,6 +170,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "coldfront.context_processors.settings",
                 "coldfront.context_processors.registry",
+                "coldfront.context_processors.unread_notifications_count",
             ],
         },
     },
