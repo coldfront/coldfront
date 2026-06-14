@@ -15,6 +15,10 @@ from django.urls import reverse
 from django.utils.http import urlencode
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import View
+from generic_notifications.models import Notification as GenericNotification
+from generic_notifications.preferences import get_notification_preferences, save_notification_preferences
+from generic_notifications.registry import registry as notification_registry
+from generic_notifications.utils import get_notifications, mark_notifications_as_read
 from social_core.backends.utils import load_backends
 
 from coldfront.account.models import UserToken
@@ -24,8 +28,9 @@ from coldfront.registry import register_model_view
 from coldfront.users import forms
 from coldfront.views import generic
 
+from .filtersets import NotificationFilterSet
 from .forms import PasswordChangeForm
-from .tables import UserTokenTable
+from .tables import NotificationTable, UserTokenTable
 
 #
 # Login/logout
@@ -200,3 +205,107 @@ class UserTokenDeleteView(generic.ObjectDeleteView):
 
     def get_queryset(self, request):
         return UserToken.objects.filter(user=request.user)
+
+
+#
+# Notification views
+#
+
+
+class NotificationListView(generic.ObjectListView):
+    """
+    List view for user notifications
+    """
+
+    table = NotificationTable
+    filterset = NotificationFilterSet
+    template_name = "account/notification_list.html"
+    actions = ()
+
+    def get_queryset(self, request):
+        if request.user.is_authenticated:
+            return get_notifications(user=request.user)
+        return GenericNotification.objects.none()
+
+    def has_permission(self):
+        """
+        Bypass ColdFront permission checking for notifications. Users always see only
+        their own notifications via the get_queryset() filter.
+        """
+        return True
+
+    def post(self, request):
+        action = request.POST.get("action", "")
+        notification_id = request.POST.get("notification_id", "")
+
+        if action == "mark_read" and notification_id:
+            try:
+                notification = GenericNotification.objects.get(id=notification_id, recipient=request.user)
+                notification.mark_as_read()
+            except GenericNotification.DoesNotExist:
+                pass
+        elif action == "mark_all_read":
+            mark_notifications_as_read(user=request.user)
+        elif action == "delete" and notification_id:
+            GenericNotification.objects.filter(id=notification_id, recipient=request.user).delete()
+        elif action == "delete_all":
+            GenericNotification.objects.filter(recipient=request.user).delete()
+
+        archive = request.GET.get("archive", "false") == "true"
+        redirect_url = reverse("account:notification_list")
+        if archive:
+            redirect_url += "?archive=true"
+        return redirect(redirect_url)
+
+
+class NotificationDetailView(LoginRequiredMixin, View):
+    """
+    Detail view for a single notification. Marks it as read on view.
+    """
+
+    template_name = "account/notification.html"
+
+    def get(self, request, pk):
+        try:
+            notification = GenericNotification.objects.get(id=pk, recipient=request.user)
+            notification.mark_as_read()
+        except GenericNotification.DoesNotExist:
+            messages.error(request, _("Notification not found."))
+            return redirect("account:notification_list")
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "notification": notification,
+            },
+        )
+
+
+class NotificationPreferencesView(LoginRequiredMixin, View):
+    """
+    View for managing notification preferences.
+    """
+
+    template_name = "account/notification_preferences.html"
+
+    def get(self, request):
+        settings_data = get_notification_preferences(request.user)
+        channels = {ch.key: ch for ch in notification_registry.get_all_channels()}
+        frequencies = {freq.key: freq for freq in notification_registry.get_all_frequencies()}
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "settings_data": settings_data,
+                "channels": channels,
+                "frequencies": frequencies,
+                "active_tab": "notifications",
+            },
+        )
+
+    def post(self, request):
+        save_notification_preferences(request.user, request.POST)
+        messages.success(request, _("Notification preferences saved successfully."))
+        return redirect("account:notification_preferences")

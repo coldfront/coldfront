@@ -4,11 +4,13 @@
 
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
+from generic_notifications import send_notification
 from viewflow import fsm, this
 
 from coldfront.flows import ColdFrontFlow
 from coldfront.ras import object_actions as actions
 from coldfront.ras.choices import AllocationStatusChoices
+from coldfront.ras.notifications import AllocationsNotificationType
 from coldfront.ras.signals import allocation_status_change
 
 
@@ -43,11 +45,40 @@ class AllocationStatusFlow(ColdFrontFlow):
         if self.allocation is None:
             return
 
-        # TODO notify users etc.
         with transaction.atomic():
             self.allocation.save()
 
         allocation_status_change.send(sender=self.__class__, source=source, target=target)
+
+        # Send notification for approved allocations
+        if target == AllocationStatusChoices.STATUS_APPROVED:
+            from coldfront.ras.models import AllocationUser
+
+            allocation = self.allocation
+            subject = f"Allocation {allocation.slug} has been approved"
+            text = f"The allocation '{allocation.slug}' for project {allocation.project} has been approved."
+            url = allocation.get_absolute_url()
+
+            # Notify the allocation owner
+            send_notification(
+                recipient=allocation.owner,
+                notification_type=AllocationsNotificationType,
+                target=allocation,
+                subject=subject,
+                text=text,
+                url=url,
+            )
+
+            # Notify allocation users
+            for alloc_user in AllocationUser.objects.filter(allocation=allocation):
+                send_notification(
+                    recipient=alloc_user.user,
+                    notification_type=AllocationsNotificationType,
+                    target=allocation,
+                    subject=subject,
+                    text=text,
+                    url=url,
+                )
 
     @status.transition(
         source=AllocationStatusChoices.STATUS_NEW,

@@ -8,6 +8,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 
 from django.conf import settings as django_settings
+from generic_notifications.utils import get_unread_count
 
 from coldfront.context import current_request, query_cache, signals_received
 from coldfront.registry import register_request_processor
@@ -16,6 +17,7 @@ from coldfront.registry import registry as registry_
 __all__ = (
     "registry",
     "settings",
+    "unread_notifications_count",
 )
 
 
@@ -55,4 +57,16 @@ def settings(request):
     """
     return {
         "settings": django_settings,
+    }
+
+
+def unread_notifications_count(request):
+    """
+    Adds the unread notifications count for the current user to the template context.
+    """
+    count = 0
+    if request.user.is_authenticated:
+        count = get_unread_count(request.user)
+    return {
+        "unread_notifications_count": count,
     }

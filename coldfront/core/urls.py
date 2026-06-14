@@ -20,6 +20,8 @@ urlpatterns = [
     path("custom-fields/<int:pk>/", include(get_model_urls("core", "customfield"))),
     path("plugins/", views.PluginListView.as_view(), name="plugin_list"),
     path("plugins/<str:name>/", views.PluginView.as_view(), name="plugin"),
+    # Admin notification sending
+    path("notifications/send/", views.AdminNotificationSendView.as_view(), name="notification_send"),
     # Markdown
     path("render/markdown/", views.RenderMarkdownView.as_view(), name="render_markdown"),
 ]

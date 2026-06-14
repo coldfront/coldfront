@@ -3,18 +3,20 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import EmptyPage
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 from django.views.generic import View
 from django_cotton import render_component
 
 from coldfront.registry import register_model_view
 from coldfront.tables.paginator import EnhancedPaginator, get_paginate_count
+from coldfront.users.models import User
 from coldfront.utils.data import shallow_compare_dict
 from coldfront.utils.query import count_related
 from coldfront.views import generic
@@ -361,3 +363,85 @@ class RenderMarkdownView(LoginRequiredMixin, View):
         rendered = render_markdown(form.cleaned_data["text"])
 
         return HttpResponse(rendered)
+
+
+#
+# Admin notification sending
+#
+
+
+class AdminNotificationSendView(UserPassesTestMixin, View):
+    """
+    View for superusers to send notifications to users.
+    """
+
+    template_name = "core/notification_send.html"
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get(self, request):
+        form = forms.misc.AdminNotificationForm()
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": form,
+            },
+        )
+
+    def post(self, request):
+        form = forms.misc.AdminNotificationForm(data=request.POST)
+
+        if form.is_valid():
+            from generic_notifications import send_notification
+
+            notification_type_key = form.cleaned_data["notification_type"]
+            subject = form.cleaned_data["subject"]
+            text = form.cleaned_data["text"]
+
+            # Resolve the notification type class from the registry
+            from generic_notifications.registry import registry as gn_registry
+
+            nt_cls = gn_registry.get_type(notification_type_key)
+
+            # Determine recipients
+            recipients = set()
+
+            if form.cleaned_data["notify_all"]:
+                for user in User.objects.all():
+                    recipients.add(user)
+            else:
+                for user in form.cleaned_data["users"]:
+                    recipients.add(user)
+                for group in form.cleaned_data["groups"]:
+                    for user in group.user_set.all():
+                        recipients.add(user)
+
+            # Send notification to each recipient
+            sent_count = 0
+            for recipient in recipients:
+                notification = send_notification(
+                    recipient=recipient,
+                    notification_type=nt_cls,
+                    subject=subject,
+                    text=text,
+                )
+                if notification:
+                    sent_count += 1
+
+            messages.success(
+                request,
+                _("Sent {count} notification(s) to {user_count} user(s).").format(
+                    count=sent_count, user_count=len(recipients)
+                ),
+            )
+            return redirect("core:notification_send")
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "form": form,
+            },
+        )
