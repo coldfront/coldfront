@@ -414,11 +414,22 @@ class CustomAttributesMixin(models.Model):
             self.attribute_data = None
 
 
+class AllocatableResourceMixin(models.Model):
+    """
+    Enables support for allocatable resources. Models inheriting from this mixin represent
+    resources that can be allocated to users.
+    """
+
+    class Meta:
+        abstract = True
+
+
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))
 register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
 register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
 register_model_feature("custom_fields", lambda model: issubclass(model, CustomFieldsMixin))
 register_model_feature("custom_attributes", lambda model: issubclass(model, CustomAttributesMixin))
+register_model_feature("allocatable_resource", lambda model: issubclass(model, AllocatableResourceMixin))
 
 
 def register_models(*models):

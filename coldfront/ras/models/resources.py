@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.choices import ColorChoices
 from coldfront.models import NestedGroupModel, OrganizationalModel
-from coldfront.models.features import AttributeProfileMixin, CustomAttributesMixin
+from coldfront.models.features import AllocatableResourceMixin, AttributeProfileMixin, CustomAttributesMixin
 from coldfront.models.fields import ColorField
 from coldfront.ras.choices import ResourceStatusChoices
 from coldfront.utils.jsonschema import validate_schema
@@ -45,7 +45,7 @@ class ResourceType(AttributeProfileMixin, OrganizationalModel):
         verbose_name_plural = _("resource types")
 
 
-class Resource(CustomAttributesMixin, NestedGroupModel):
+class Resource(AllocatableResourceMixin, CustomAttributesMixin, NestedGroupModel):
     """
     Resource's are assets that can be allocated to users. Each Resource can be
     assigned a ResourceType and an optional parent resource to create
