@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from django.db.models import Count
+
 from coldfront.ras import filtersets, forms, tables
-from coldfront.ras.models import Allocation, Resource, ResourceType
+from coldfront.ras.models import Resource, ResourceType
 from coldfront.registry import register_model_view
 from coldfront.utils.query import count_related
 from coldfront.views import generic
@@ -68,7 +70,7 @@ class ResourceTypeBulkDeleteView(generic.BulkDeleteView):
 @register_model_view(Resource, "list", path="", detail=False)
 class ResourceListView(generic.ObjectListView):
     queryset = Resource.objects.annotate(
-        allocation_count=count_related(Allocation, "resource"),
+        allocation_count=Count("allocations"),
     )
     filterset = filtersets.ResourceFilterSet
     filterset_form = forms.ResourceFilterSetForm

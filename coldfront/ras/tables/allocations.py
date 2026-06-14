@@ -31,9 +31,10 @@ class AllocationTable(TenancyColumnsMixin, PrimaryModelTable):
         verbose_name=_("Owner"),
     )
 
-    resource = tables.Column(
+    resource_object = tables.Column(
         verbose_name=_("Resource"),
         linkify=True,
+        accessor=tables.A("resource_object"),
     )
 
     start_date = columns.DateColumn(
@@ -60,7 +61,7 @@ class AllocationTable(TenancyColumnsMixin, PrimaryModelTable):
             "slug",
             "project",
             "owner",
-            "resource",
+            "resource_object",
             "status",
             "description",
             "justification",
@@ -72,7 +73,7 @@ class AllocationTable(TenancyColumnsMixin, PrimaryModelTable):
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "slug", "resource", "owner", "project", "status", "start_date", "end_date")
+        default_columns = ("pk", "slug", "resource_object", "owner", "project", "status", "start_date", "end_date")
 
 
 class AllocationUserTable(PrimaryModelTable):

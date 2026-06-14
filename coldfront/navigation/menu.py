@@ -62,7 +62,7 @@ RESOURCES_MENU = Menu(
     icon_class="fa-solid fa-server",
     groups=(
         MenuGroup(
-            label=_("Resources"),
+            label=_("Generic Resources"),
             items=(
                 get_model_item("ras", "resource", _("Resources")),
                 get_model_item("ras", "resourcetype", _("Resource Types")),

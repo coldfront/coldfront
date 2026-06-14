@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.contrib.contenttypes.models import ContentType
+
 from coldfront.core.choices import CSVDelimiterChoices, ImportFormatChoices
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
@@ -135,6 +137,7 @@ class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
 
 class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     model = Allocation
+    validation_excluded_fields = ("resource_object",)
 
     @classmethod
     def setUpTestData(cls):
@@ -150,31 +153,51 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         for resource in resources:
             resource.save()
 
+        resource_ct = ContentType.objects.get_for_model(Resource)
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=user, resource=resources[0]),
-            Allocation(justification="Need resources 2", project=project, owner=user, resource=resources[1]),
-            Allocation(justification="Need resources 3", project=project, owner=user, resource=resources[2]),
+            Allocation(
+                justification="Need resources 1",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[0].pk,
+            ),
+            Allocation(
+                justification="Need resources 2",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[1].pk,
+            ),
+            Allocation(
+                justification="Need resources 3",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[2].pk,
+            ),
         )
         for allocation in allocations:
             allocation.save()
 
         tags = create_tags("Alpha", "Bravo", "Charlie")
 
+        resource_ct = ContentType.objects.get_for_model(Resource)
         cls.form_data = {
             "justification": "Need resources X",
             "description": "A new Allocation",
             "owner": user.pk,
             "project": project.pk,
-            "resource": resources[0].pk,
+            "resource_object": f"{resource_ct.pk}:{resources[0].pk}",
             "status": AllocationStatusChoices.STATUS_ACTIVE,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "justification,description,status,owner,project,resource",
-            "need resources4,Fourth allocation,active,User1,Project 1,Resource 1",
-            "need resources5,Fifth allocation,active,User1,Project 1,Resource 2",
-            "need resources6,Sixth allocation,active,User1,Project 1,Resource 3",
+            "justification,description,status,owner,project,resource_object",
+            "need resources4,Fourth allocation,active,User1,Project 1,ras.resource:Resource 1",
+            "need resources5,Fifth allocation,active,User1,Project 1,ras.resource:Resource 2",
+            "need resources6,Sixth allocation,active,User1,Project 1,ras.resource:Resource 3",
         )
 
         cls.csv_update_data = (
@@ -269,11 +292,36 @@ class AllocationUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         for resource in resources:
             resource.save()
 
+        resource_ct = ContentType.objects.get_for_model(Resource)
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=owner, resource=resources[0]),
-            Allocation(justification="Need resources 2", project=project, owner=owner, resource=resources[1]),
-            Allocation(justification="Need resources 3", project=project, owner=owner, resource=resources[1]),
-            Allocation(justification="Need resources 4", project=project, owner=owner, resource=resources[2]),
+            Allocation(
+                justification="Need resources 1",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[0].pk,
+            ),
+            Allocation(
+                justification="Need resources 2",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[1].pk,
+            ),
+            Allocation(
+                justification="Need resources 3",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[1].pk,
+            ),
+            Allocation(
+                justification="Need resources 4",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[2].pk,
+            ),
         )
         for allocation in allocations:
             allocation.save()

@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
 from coldfront.ras.choices import AllocationStatusChoices
@@ -22,11 +23,13 @@ class AllocationStatusFlowTest(TestCase):
         project = Project.objects.create(name="Project 1", owner=user)
         resource_type = ResourceType.objects.create(name="Cluster")
         resource = Resource.objects.create(name="Resource 1", slug="r-1", resource_type=resource_type)
+        resource_ct = ContentType.objects.get_for_model(Resource)
         Allocation.objects.create(
             justification="Need resources 1",
             project=project,
             owner=user,
-            resource=resource,
+            resource_object_type=resource_ct,
+            resource_object_id=resource.pk,
         )
 
     def test_allocation_status_flow(self):

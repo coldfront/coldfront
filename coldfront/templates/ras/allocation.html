@@ -44,7 +44,7 @@
 
       <c-card.fields.item label="{% trans 'Resources' %}">
           <div>
-            <c-ui.badge :value="object.resource" link="{{ object.resource.get_absolute_url }}" :color="object.resource.resource_type.color" />
+            <c-ui.badge :value="object.resource_object" link="{{ object.resource_object.get_absolute_url }}" />
           </div>
       </c-card.fields.item>
 

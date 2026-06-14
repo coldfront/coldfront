@@ -16,6 +16,7 @@ site/
 local_settings.py
 local_strings.py
 coldfront.db
+coldfront.db-journal
 *.code-workspace
 .vscode
 db.json

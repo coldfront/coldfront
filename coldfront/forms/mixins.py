@@ -224,14 +224,8 @@ class CustomAttributesMixin(forms.Form):
         # Track type-specific attribute fields
         self.attr_fields = []
 
-        # Retrieve assigned profile, if any
-        if not (id := get_field_value(self, self._get_profile_field_name())):
-            return
-        if not (profile := self.fields[self._get_profile_field_name()].queryset.filter(pk=id).first()):
-            return
-
         # Extend form with fields for allocation attributes
-        for attr, form_field in self._get_attr_form_fields(profile).items():
+        for attr, form_field in self._get_attr_form_fields().items():
             field_name = f"attr_{attr}"
             self.attr_fields.append(field_name)
             self.fields[field_name] = form_field
@@ -247,26 +241,27 @@ class CustomAttributesMixin(forms.Form):
                 f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
                 f"override its _get_profile_field_name() method."
             )
-        if not hasattr(self.fields[self.profile_field_name], "queryset"):
-            raise ImproperlyConfigured(
-                f"{self.__class__.__name__} does not define a profile field with a queryset. Please ensure the profile field is a ModelChoiceField with a queryset."
-            )
 
         return self.profile_field_name
 
-    def _get_schema(self, profile):
+    def _get_schema(self):
+        if not (id := get_field_value(self, self._get_profile_field_name())):
+            return None
+        if not (profile := self.fields[self._get_profile_field_name()].queryset.filter(pk=id).first()):
+            return None
+
         if hasattr(profile, "schema"):
             return profile.schema
 
         return None
 
-    def _get_attr_form_fields(self, profile):
+    def _get_attr_form_fields(self):
         """
         Return a dictionary mapping of attribute names to form fields, suitable for extending
         the form per the selected profile.
         """
 
-        schema = self._get_schema(profile)
+        schema = self._get_schema()
         if not schema:
             return {}
 

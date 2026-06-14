@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.conf import settings
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -26,11 +27,15 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         on_delete=models.PROTECT,
         related_name="allocations",
     )
-    resource = models.ForeignKey(
-        to="ras.Resource",
+    resource_object_type = models.ForeignKey(
+        to="contenttypes.ContentType",
         on_delete=models.PROTECT,
         related_name="allocations",
-        help_text=_("The resource for this allocation"),
+    )
+    resource_object_id = models.PositiveBigIntegerField()
+    resource_object = GenericForeignKey(
+        ct_field="resource_object_type",
+        fk_field="resource_object_id",
     )
     owner = models.ForeignKey(
         to=settings.AUTH_USER_MODEL,
@@ -82,21 +87,25 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         "status",
     )
 
-    prerequisite_models = (
-        "ras.Project",
-        "ras.Resource",
-    )
+    prerequisite_models = ("ras.Project",)
 
-    profile_field_name = "resource"
+    profile_field_name = "resource_object"
 
     class Meta:
         ordering = ["start_date"]
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")
+        indexes = (models.Index(fields=("resource_object_type", "resource_object_id")),)
 
     def _get_schema(self, profile):
-        if profile and profile.resource_type:
+        # For Resource objects, the schema comes from the ResourceType's allocation_schema
+        if profile and hasattr(profile, "resource_type") and profile.resource_type:
             return profile.resource_type.allocation_schema
+        # For other allocatable objects, check for a schema attribute directly
+        if profile and hasattr(profile, "allocation_schema"):
+            return profile.allocation_schema
+        # Fall back to the default behavior from CustomAttributesMixin
+        return super()._get_schema(profile)
 
     def get_status_color(self):
         return AllocationStatusChoices.colors.get(self.status)

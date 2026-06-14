@@ -105,11 +105,6 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
         required=False,
         label=_("Project"),
     )
-    resource_id = forms.ModelMultipleChoiceField(
-        queryset=Resource.objects.all(),
-        required=False,
-        label=_("Resources"),
-    )
     status = forms.MultipleChoiceField(
         label=_("Status"),
         choices=AllocationStatusChoices,
@@ -126,7 +121,6 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
         Fieldset(
             _("Allocation"),
             "project_id",
-            "resource_id",
             "status",
             "owner",
             "tag",

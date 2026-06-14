@@ -149,3 +149,67 @@ class CSVMultipleContentTypeField(forms.ModelMultipleChoiceField):
                     raise forms.ValidationError(_("Invalid object type"))
             return list(ContentType.objects.filter(ct_filter).values_list("pk", flat=True))
         return ObjectType.identifier_string(value)
+
+
+class CSVContentTypeObjectField(forms.Field):
+    """
+    CSV field for referencing a generic object by content type and identifier.
+
+    Accepts values in the format `<app_label>.<model>:<identifier_value>`, where the
+    identifier value is used to look up the object by its `to_field_name` (defaults to `name`).
+    For example: `ras.resource:My Cluster` would look up a Resource with name "My Cluster".
+    """
+
+    default_error_messages = {
+        "invalid_choice": _("Object not found: %(value)s"),
+    }
+
+    def __init__(self, *, to_field_name="name", **kwargs):
+        self.to_field_name = to_field_name
+        kwargs.setdefault("required", True)
+        super().__init__(**kwargs)
+
+    def to_python(self, value):
+        if not value:
+            return None
+        try:
+            # Parse the format <app_label>.<model>:<identifier_value>
+            # Support both <app_label>.<model>:<value> and <app_label>.<model>:<field>=<value>
+            ct_part, _, identifier_part = value.partition(":")
+            if not identifier_part:
+                raise forms.ValidationError(_('Value must be in the format "<app_label>.<model>:<identifier>"'))
+            app_label, model = ct_part.split(".")
+        except ValueError:
+            raise forms.ValidationError(_('Value must be in the format "<app_label>.<model>:<identifier>"'))
+
+        # Resolve the ContentType and model class
+        try:
+            ct = ContentType.objects.get_by_natural_key(app_label=app_label, model=model)
+        except ObjectDoesNotExist:
+            raise forms.ValidationError(
+                _('Invalid content type: "{app_label}.{model}"').format(app_label=app_label, model=model)
+            )
+
+        model_class = ct.model_class()
+        if model_class is None:
+            raise forms.ValidationError(_("Model class not found for content type"))
+
+        # Check if the identifier uses a specific field: <field>=<value>
+        if "=" in identifier_part:
+            field_name, _, field_value = identifier_part.partition("=")
+            field_name = field_name.strip()
+            field_value = field_value.strip()
+        else:
+            field_name = self.to_field_name
+            field_value = identifier_part.strip()
+
+        # Look up the object
+        try:
+            filter_kwargs = {field_name: field_value}
+            obj = model_class.objects.get(**filter_kwargs)
+        except ObjectDoesNotExist:
+            raise forms.ValidationError(_("Object not found: {value}").format(value=value))
+        except MultipleObjectsReturned:
+            raise forms.ValidationError(_('"{value}" matched multiple objects').format(value=value))
+
+        return obj

@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
@@ -231,10 +232,29 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
         for resource in resources:
             resource.save()
 
+        resource_ct = ContentType.objects.get_for_model(Resource)
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=user, resource=resources[0]),
-            Allocation(justification="Need resources 2", project=project, owner=user, resource=resources[1]),
-            Allocation(justification="Need resources 3", project=project, owner=user, resource=resources[2]),
+            Allocation(
+                justification="Need resources 1",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[0].pk,
+            ),
+            Allocation(
+                justification="Need resources 2",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[1].pk,
+            ),
+            Allocation(
+                justification="Need resources 3",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[2].pk,
+            ),
         )
         for allocation in allocations:
             allocation.save()
@@ -245,7 +265,8 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new Allocation",
                 "owner": user.pk,
                 "project": project.pk,
-                "resource": resources[0].pk,
+                "resource_object_type": "ras.resource",
+                "resource_object_id": resources[0].pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
             },
             {
@@ -253,7 +274,8 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new Allocation",
                 "owner": user.pk,
                 "project": project.pk,
-                "resource": resources[1].pk,
+                "resource_object_type": "ras.resource",
+                "resource_object_id": resources[1].pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
             },
             {
@@ -261,7 +283,8 @@ class AllocationTest(APIViewTestCases.APIViewTestCase):
                 "description": "A new Allocation",
                 "owner": user.pk,
                 "project": project.pk,
-                "resource": resources[2].pk,
+                "resource_object_type": "ras.resource",
+                "resource_object_id": resources[2].pk,
                 "status": AllocationStatusChoices.STATUS_ACTIVE,
             },
         ]
@@ -296,10 +319,29 @@ class AllocatoinUserTest(APIViewTestCases.APIViewTestCase):
         for resource in resources:
             resource.save()
 
+        resource_ct = ContentType.objects.get_for_model(Resource)
         allocations = (
-            Allocation(justification="Need resources 1", project=project, owner=user, resource=resources[0]),
-            Allocation(justification="Need resources 2", project=project, owner=user, resource=resources[1]),
-            Allocation(justification="Need resources 3", project=project, owner=user, resource=resources[2]),
+            Allocation(
+                justification="Need resources 1",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[0].pk,
+            ),
+            Allocation(
+                justification="Need resources 2",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[1].pk,
+            ),
+            Allocation(
+                justification="Need resources 3",
+                project=project,
+                owner=owner,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[2].pk,
+            ),
         )
         for allocation in allocations:
             allocation.save()

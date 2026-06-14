@@ -15,6 +15,8 @@ ALLOWED_APPS = [
     "ras",
     "tenancy",
     "sessions",
+    "social_django",
+    "generic_notifications",
 ]
 
 

@@ -420,8 +420,23 @@ class AllocatableResourceMixin(models.Model):
     resources that can be allocated to users.
     """
 
+    name = models.CharField(
+        verbose_name=_("name"),
+        max_length=100,
+        unique=True,
+    )
+
+    is_allocatable = models.BooleanField(
+        verbose_name=_("allocatable"),
+        default=True,
+        help_text=_("Users can submit allocations for this resource."),
+    )
+
     class Meta:
         abstract = True
+
+    def get_allocation_attribute_schema(self):
+        return None
 
 
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))

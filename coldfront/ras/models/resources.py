@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.db.models import Q
 from django.db.models.functions import Lower
@@ -13,6 +14,8 @@ from coldfront.models.features import AllocatableResourceMixin, AttributeProfile
 from coldfront.models.fields import ColorField
 from coldfront.ras.choices import ResourceStatusChoices
 from coldfront.utils.jsonschema import validate_schema
+
+from . import Allocation
 
 
 class ResourceType(AttributeProfileMixin, OrganizationalModel):
@@ -77,10 +80,10 @@ class Resource(AllocatableResourceMixin, CustomAttributesMixin, NestedGroupModel
         choices=ResourceStatusChoices,
         default=ResourceStatusChoices.STATUS_ACTIVE,
     )
-    is_allocatable = models.BooleanField(
-        verbose_name=_("allocatable"),
-        default=True,
-        help_text=_("Users can submit allocations for this resource."),
+    allocations = GenericRelation(
+        Allocation,
+        content_type_field="resource_object_type",
+        object_id_field="resource_object_id",
     )
 
     clone_fields = (
@@ -131,3 +134,9 @@ class Resource(AllocatableResourceMixin, CustomAttributesMixin, NestedGroupModel
 
     def get_status_color(self):
         return ResourceStatusChoices.colors.get(self.status)
+
+    def get_allocation_attribute_schema(self):
+        if self.resource_type and hasattr(self.resource_type, "schema"):
+            return self.resource_type.allocation_schema
+
+        return None

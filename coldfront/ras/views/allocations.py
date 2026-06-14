@@ -11,7 +11,7 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.ras import filtersets, flows, forms, tables
 from coldfront.ras import object_actions as actions
 from coldfront.ras.flows import AllocationStatusFlow
-from coldfront.ras.models import Allocation, AllocationUser, Project, Resource
+from coldfront.ras.models import Allocation, AllocationUser, Project
 from coldfront.registry import register_model_view
 from coldfront.views import ViewTab, generic
 from coldfront.views.mixins import GetRelatedModelsMixin
@@ -105,30 +105,6 @@ class AllocationUserTabView(generic.ObjectChildrenView):
         table.columns.hide("owner")
         table.columns.hide("project")
         table.columns.show("created")
-        return table
-
-
-@register_model_view(Allocation, "resources")
-class AllocationResourceTabView(generic.ObjectChildrenView):
-    actions = (BulkExport,)
-    queryset = Allocation.objects.all()
-    child_model = Resource
-    table = tables.ResourceTable
-    filterset = filtersets.ResourceFilterSet
-    template_name = "ras/allocation/resources.html"
-    tab = ViewTab(
-        label=_("Resources"),
-        badge=lambda obj: obj.resource.get_descendants(include_self=True).count(),
-        permission="ras.view_allocation",
-        weight=110,
-    )
-
-    def get_children(self, request, parent):
-        return parent.resource.get_descendants(include_self=True)
-
-    def get_table(self, *args, **kwargs):
-        table = super().get_table(*args, **kwargs)
-        table.columns.hide("allocation_count")
         return table
 
 

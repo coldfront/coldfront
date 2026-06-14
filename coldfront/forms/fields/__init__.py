@@ -9,6 +9,7 @@ from .content_types import (
 from .csv import (
     CSVChoiceField,
     CSVContentTypeField,
+    CSVContentTypeObjectField,
     CSVModelChoiceField,
     CSVModelMultipleChoiceField,
     CSVMultipleChoiceField,
@@ -33,6 +34,7 @@ __all__ = (
     "CSVChoiceField",
     "CommentField",
     "CSVContentTypeField",
+    "CSVContentTypeObjectField",
     "CSVModelChoiceField",
     "CSVModelMultipleChoiceField",
     "CSVMultipleChoiceField",

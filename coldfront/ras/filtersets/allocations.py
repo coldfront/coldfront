@@ -6,17 +6,12 @@ import django_filters
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
-from coldfront.ras.models import Allocation, AllocationUser, Project, Resource
+from coldfront.ras.models import Allocation, AllocationUser, Project
 from coldfront.tenancy.filtersets import TenancyFilterSet
 from coldfront.views.filtersets import AttributeFilterSetMixin, PrimaryModelFilterSet
 
 
 class AllocationFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryModelFilterSet):
-    resource_id = django_filters.ModelMultipleChoiceFilter(
-        queryset=Resource.objects.all(),
-        distinct=False,
-        label=_("Resources"),
-    )
     project_id = django_filters.ModelMultipleChoiceFilter(
         queryset=Project.objects.all(),
         distinct=False,
@@ -28,7 +23,6 @@ class AllocationFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryMode
         fields = (
             "id",
             "status",
-            "resource_id",
             "project_id",
             "owner",
         )
@@ -36,11 +30,7 @@ class AllocationFilterSet(AttributeFilterSetMixin, TenancyFilterSet, PrimaryMode
     def search(self, queryset, name, value):
         if not value.strip():
             return queryset
-        return queryset.filter(
-            Q(owner__username__icontains=value)
-            | Q(resources__name__icontains=value)
-            | Q(project__name__icontains=value)
-        )
+        return queryset.filter(Q(owner__username__icontains=value) | Q(project__name__icontains=value))
 
 
 class AllocationUserFilterSet(PrimaryModelFilterSet):
