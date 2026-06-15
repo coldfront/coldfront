@@ -55,18 +55,10 @@ DEFAULT_PERMISSIONS = ENV.dict(
             {"project__owner": "$user"},
             {"project__users__user": "$user"},
         ),
-        # Permit users to view allocations they own, own the project, or are a member of
+        # Permit users to view allocations they own or own the project
         "ras.view_allocation": (
             {"owner": "$user"},
             {"project__owner": "$user"},
-            {"users__user": "$user"},
-        ),
-        # Permit users to view allocation users if they are the user, own the allocation/project or belong to same allocation
-        "ras.view_allocationuser": (
-            {"user": "$user"},
-            {"allocation__owner": "$user"},
-            {"allocation__project__owner": "$user"},
-            {"allocation__users__user": "$user"},
         ),
     },
 )

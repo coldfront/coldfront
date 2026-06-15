@@ -4,9 +4,8 @@
 
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
-from django_tables2.utils import Accessor
 
-from coldfront.ras.models import Allocation, AllocationUser
+from coldfront.ras.models import Allocation
 from coldfront.tables import PrimaryModelTable, columns
 from coldfront.tenancy.tables import TenancyColumnsMixin
 
@@ -74,45 +73,3 @@ class AllocationTable(TenancyColumnsMixin, PrimaryModelTable):
             "last_updated",
         )
         default_columns = ("pk", "slug", "resource_object", "owner", "project", "status", "start_date", "end_date")
-
-
-class AllocationUserTable(PrimaryModelTable):
-    user = tables.Column(
-        linkify=("ras:allocationuser", {"pk": tables.A("id")}),
-        verbose_name=_("User"),
-    )
-
-    allocation = tables.Column(
-        verbose_name=_("Allocation"),
-        linkify=True,
-    )
-
-    project = tables.Column(
-        accessor=Accessor("allocation__project"),
-        verbose_name=_("Project"),
-        linkify=True,
-    )
-
-    owner = tables.Column(
-        accessor=Accessor("allocation__owner"),
-        verbose_name=_("Owner"),
-    )
-
-    created = tables.Column(
-        verbose_name=_("Date Added"),
-    )
-
-    class Meta(PrimaryModelTable.Meta):
-        model = AllocationUser
-        fields = (
-            "pk",
-            "id",
-            "user",
-            "allocation",
-            "project",
-            "owner",
-            "tags",
-            "created",
-            "last_updated",
-        )
-        default_columns = ("pk", "user", "allocation", "project", "owner")

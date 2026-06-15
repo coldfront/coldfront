@@ -20,6 +20,4 @@ urlpatterns = [
     path("project-users/<int:pk>/", include(get_model_urls("ras", "projectuser"))),
     path("allocations/", include(get_model_urls("ras", "allocation", detail=False))),
     path("allocations/<int:pk>/", include(get_model_urls("ras", "allocation"))),
-    path("allocation-users/", include(get_model_urls("ras", "allocationuser", detail=False))),
-    path("allocation-users/<int:pk>/", include(get_model_urls("ras", "allocationuser"))),
 ]

@@ -52,8 +52,6 @@ class AllocationStatusFlow(ColdFrontFlow):
 
         # Send notification for approved allocations
         if target == AllocationStatusChoices.STATUS_APPROVED:
-            from coldfront.ras.models import AllocationUser
-
             allocation = self.allocation
             subject = f"Allocation {allocation.slug} has been approved"
             text = f"The allocation '{allocation.slug}' for project {allocation.project} has been approved."
@@ -68,17 +66,6 @@ class AllocationStatusFlow(ColdFrontFlow):
                 text=text,
                 url=url,
             )
-
-            # Notify allocation users
-            for alloc_user in AllocationUser.objects.filter(allocation=allocation):
-                send_notification(
-                    recipient=alloc_user.user,
-                    notification_type=AllocationsNotificationType,
-                    target=allocation,
-                    subject=subject,
-                    text=text,
-                    url=url,
-                )
 
     @status.transition(
         source=AllocationStatusChoices.STATUS_NEW,

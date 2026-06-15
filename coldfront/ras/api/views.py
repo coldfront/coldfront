@@ -8,7 +8,6 @@ from coldfront.api.viewsets import ColdFrontModelViewSet
 from coldfront.ras import filtersets
 from coldfront.ras.models import (
     Allocation,
-    AllocationUser,
     Project,
     ProjectUser,
     Resource,
@@ -70,9 +69,3 @@ class AllocationViewSet(ColdFrontModelViewSet):
     queryset = Allocation.objects.all()
     serializer_class = serializers.AllocationSerializer
     filterset_class = filtersets.AllocationFilterSet
-
-
-class AllocationUserViewSet(ColdFrontModelViewSet):
-    queryset = AllocationUser.objects.all()
-    serializer_class = serializers.AllocationUserSerializer
-    filterset_class = filtersets.AllocationUserFilterSet

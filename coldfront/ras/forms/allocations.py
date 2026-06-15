@@ -6,7 +6,6 @@ from crispy_forms.layout import Fieldset, Layout
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.models import ObjectType
@@ -21,12 +20,11 @@ from coldfront.forms.fields import (
     CSVContentTypeObjectField,
     CSVModelChoiceField,
     DynamicModelChoiceField,
-    DynamicModelMultipleChoiceField,
 )
 from coldfront.forms.layouts import DateTime
 from coldfront.forms.mixins import CustomAttributesImportMixin, CustomAttributesMixin, HorizontalFormMixin
 from coldfront.forms.widgets import HTMXSelectWidget
-from coldfront.ras.models import Allocation, AllocationUser, Project
+from coldfront.ras.models import Allocation, Project
 from coldfront.users.models import User
 from coldfront.utils.forms import add_blank_choice, get_field_value
 
@@ -121,15 +119,6 @@ class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin
             " to further the research goals of your project"
         ),
     )
-    users = DynamicModelMultipleChoiceField(
-        label=_("Users"),
-        queryset=User.objects.all(),
-        required=False,
-        context={
-            "checkbox": "true",
-        },
-        help_text=_("Please choose users"),
-    )
 
     class Meta:
         model = Allocation
@@ -137,7 +126,6 @@ class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin
         fields = [
             "project",
             "justification",
-            "users",
         ]
 
     @property
@@ -149,21 +137,8 @@ class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin
                 "resource_object",
                 *self.attr_fields,
                 "justification",
-                "users",
             ),
         ]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Limit users queryset to those which belong to the project
-        if project_id := get_field_value(self, "project"):
-            project = Project.objects.filter(pk=project_id).first()
-            self.fields["users"].queryset = User.objects.filter(projects__project_id=project.pk)
-            self.fields["users"].widget.add_query_params({"project_id": project.pk})
-        else:
-            self.fields["users"].choices = ()
-            self.fields["users"].widget.attrs["disabled"] = True
 
     def save(self, commit=True):
         instance = super().save(commit=False)
@@ -216,7 +191,7 @@ class AllocationBaseForm(AllocationResourceObjectMixin, TenancyForm, CustomAttri
     )
 
     owner = DynamicModelChoiceField(
-        label=_("User"),
+        label=_("Owner"),
         queryset=User.objects.all(),
         required=True,
     )
@@ -392,103 +367,3 @@ class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, Prima
             instance.save()
             self.save_m2m()
         return instance
-
-
-class AllocationUserForm(PrimaryModelForm):
-    allocation = forms.ModelChoiceField(
-        queryset=Allocation.objects.all(),
-        label=_("Allocation"),
-        required=True,
-        widget=HTMXSelectWidget(),
-    )
-    user = DynamicModelChoiceField(
-        label=_("User"),
-        queryset=User.objects.all(),
-        required=True,
-        context={
-            "label": "username",
-            "title": "Username,First Name,Last Name,Email",
-            "extra-columns": "first_name,last_name,email",
-        },
-    )
-
-    class Meta:
-        model = AllocationUser
-        fields = [
-            "allocation",
-            "user",
-        ]
-
-    fieldsets = (
-        Fieldset(
-            _("Allocation User"),
-            "allocation",
-            "user",
-        ),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if allocation_id := get_field_value(self, "allocation"):
-            try:
-                allocation = Allocation.objects.get(pk=allocation_id)
-                self.fields["user"].queryset = User.objects.filter(
-                    Q(projects__project_id=allocation.project_id) & ~Q(allocations__allocation_id=allocation.pk)
-                )
-                self.fields["user"].widget.add_query_params(
-                    {"available_for_allocation": f"{allocation.project_id}_{allocation.pk}"}
-                )
-            except ObjectDoesNotExist:
-                pass
-
-
-class AllocationUserImportForm(PrimaryModelImportForm):
-    user = CSVModelChoiceField(
-        label=_("User"),
-        queryset=User.objects.all(),
-        required=True,
-        to_field_name="username",
-        help_text=_("User to add to allocation"),
-        error_messages={
-            "invalid_choice": _("User not found, is not in this project, or has already been added to the allocation."),
-        },
-    )
-
-    allocation = CSVModelChoiceField(
-        label=_("Allocation"),
-        queryset=Allocation.objects.all(),
-        required=True,
-        to_field_name="slug",
-        error_messages={
-            "invalid_choice": _("Allocation not found."),
-        },
-    )
-
-    class Meta:
-        model = AllocationUser
-        fields = [
-            "user",
-            "allocation",
-        ]
-
-    def __init__(self, data=None, *args, **kwargs):
-        super().__init__(data, *args, **kwargs)
-
-        # Limit users to those belonging to the same project
-        if self.is_bound and "allocation" in self.data:
-            try:
-                allocation = self.fields["allocation"].to_python(self.data["allocation"])
-            except forms.ValidationError:
-                allocation = None
-        else:
-            try:
-                allocation = self.instance.allocation
-            except Allocation.DoesNotExist:
-                allocation = None
-
-        if allocation:
-            self.fields["user"].queryset = User.objects.filter(
-                Q(projects__project_id=allocation.project_id) & ~Q(allocations__allocation_id=allocation.pk)
-            )
-        else:
-            self.fields["user"].queryset = User.objects.none()

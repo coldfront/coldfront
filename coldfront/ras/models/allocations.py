@@ -7,7 +7,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.models import ColdFrontModel, PrimaryModel
+from coldfront.models import PrimaryModel
 from coldfront.models.features import CustomAttributesMixin
 from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import AllocationStatusChoices
@@ -118,32 +118,3 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
 
     def __str__(self):
         return f"Allocation {self.slug}"
-
-
-class AllocationUser(ColdFrontModel):
-    """A user that is a member of an allocation"""
-
-    allocation = models.ForeignKey(
-        to="ras.Allocation",
-        on_delete=models.CASCADE,
-        related_name="users",
-    )
-    user = models.ForeignKey(
-        to=settings.AUTH_USER_MODEL,
-        related_name="allocations",
-        on_delete=models.PROTECT,
-        null=False,
-    )
-
-    clone_fields = ("allocation",)
-
-    prerequisite_models = ("ras.Allocation",)
-
-    class Meta:
-        ordering = ["id"]
-        unique_together = ("user", "allocation")
-        verbose_name = _("allocation user")
-        verbose_name_plural = _("allocation users")
-
-    def __str__(self):
-        return self.user.username

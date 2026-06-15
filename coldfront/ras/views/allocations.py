@@ -6,16 +6,14 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.utils.module_loading import import_string
-from django.utils.translation import gettext_lazy as _
 
 from coldfront.ras import filtersets, flows, forms, tables
 from coldfront.ras import object_actions as actions
 from coldfront.ras.flows import AllocationStatusFlow
-from coldfront.ras.models import Allocation, AllocationUser, Project
+from coldfront.ras.models import Allocation, Project
 from coldfront.registry import register_model_view
-from coldfront.views import ViewTab, generic
+from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
-from coldfront.views.object_actions import BulkDelete, BulkExport
 
 try:
     ALLOCATION_WORKFLOW = import_string(settings.ALLOCATION_WORKFLOW)
@@ -80,34 +78,6 @@ class AllocationBulkDeleteView(generic.BulkDeleteView):
     table = tables.AllocationTable
 
 
-@register_model_view(Allocation, "users")
-class AllocationUserTabView(generic.ObjectChildrenView):
-    actions = (BulkExport, BulkDelete)
-    queryset = Allocation.objects.all()
-    child_model = AllocationUser
-    table = tables.AllocationUserTable
-    filterset = filtersets.AllocationUserFilterSet
-    template_name = "ras/allocation/users.html"
-    tab = ViewTab(
-        label=_("Users"),
-        badge=lambda obj: obj.users.count(),
-        permission="ras.view_allocation",
-        weight=100,
-    )
-
-    def get_children(self, request, parent):
-        return parent.users.restrict(request.user, "view")
-
-    def get_table(self, *args, **kwargs):
-        table = super().get_table(*args, **kwargs)
-        # TODO: hide this column by default? add created?
-        table.columns.hide("allocation")
-        table.columns.hide("owner")
-        table.columns.hide("project")
-        table.columns.show("created")
-        return table
-
-
 #
 # Allocation status workflow
 #
@@ -139,11 +109,6 @@ class AllocationRequestView(BaseAllocationFlowView):
         obj.owner = request.user
         return obj
 
-    def post_save(self, obj, form, request):
-        # Create the allocation users
-        for user in form.cleaned_data["users"]:
-            AllocationUser.objects.create(user=user, allocation=obj)
-
 
 @register_model_view(Allocation, "approve")
 class AllocationApproveView(BaseAllocationFlowView):
@@ -169,46 +134,3 @@ class AllocationRenewView(BaseAllocationFlowView):
 class AllocationActivateView(BaseAllocationFlowView):
     form = forms.AllocationActivateForm
     action = actions.ActivateObject
-
-
-#
-# Allocation Users
-#
-
-
-@register_model_view(AllocationUser, "list", path="", detail=False)
-class AllocationUserListView(generic.ObjectListView):
-    queryset = AllocationUser.objects.all()
-    filterset = filtersets.AllocationUserFilterSet
-    filterset_form = forms.AllocationUserFilterSetForm
-    table = tables.AllocationUserTable
-
-
-@register_model_view(AllocationUser)
-class AllocationUserView(generic.ObjectView):
-    queryset = AllocationUser.objects.all()
-
-
-@register_model_view(AllocationUser, "add", detail=False)
-@register_model_view(AllocationUser, "edit")
-class AllocationUserEditView(generic.ObjectEditView):
-    queryset = AllocationUser.objects.all()
-    form = forms.AllocationUserForm
-
-
-@register_model_view(AllocationUser, "delete")
-class AllocationUserDeleteView(generic.ObjectDeleteView):
-    queryset = AllocationUser.objects.all()
-
-
-@register_model_view(AllocationUser, "bulk_import", path="import", detail=False)
-class AllocationUserBulkImportView(generic.BulkImportView):
-    queryset = AllocationUser.objects.all()
-    model_form = forms.AllocationUserImportForm
-
-
-@register_model_view(AllocationUser, "bulk_delete", path="delete", detail=False)
-class AllocationUserBulkDeleteView(generic.BulkDeleteView):
-    queryset = AllocationUser.objects.all()
-    filterset = filtersets.AllocationUserFilterSet
-    table = tables.AllocationUserTable

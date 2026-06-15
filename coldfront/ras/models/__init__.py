@@ -2,13 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .allocations import Allocation, AllocationUser
+from .allocations import Allocation
 from .projects import Project, ProjectUser
 from .resources import Resource, ResourceType
 
 __all__ = (
     "Allocation",
-    "AllocationUser",
     "Project",
     "ProjectUser",
     "Resource",

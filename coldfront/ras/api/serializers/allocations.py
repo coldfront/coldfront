@@ -10,7 +10,7 @@ from coldfront.api.serializers import (
     PrimaryModelSerializer,
 )
 from coldfront.api.serializers.fields import ContentTypeField
-from coldfront.ras.models import Allocation, AllocationUser
+from coldfront.ras.models import Allocation
 from coldfront.users.api.serializers import UserSerializer
 
 from .projects import ProjectSerializer
@@ -61,23 +61,3 @@ class AllocationSerializer(CustomAttributeModelSerializer, PrimaryModelSerialize
             "type": f"{ct.app_label}.{ct.model}" if ct else None,
             "display": str(resource),
         }
-
-
-class AllocationUserSerializer(PrimaryModelSerializer):
-    user = UserSerializer(nested=True)
-    allocation = AllocationSerializer(nested=True)
-
-    class Meta:
-        model = AllocationUser
-        fields = [
-            "id",
-            "url",
-            "display_url",
-            "display",
-            "user",
-            "allocation",
-            "custom_fields",
-            "created",
-            "last_updated",
-        ]
-        brief_fields = ("id", "url", "display", "user", "allocation")

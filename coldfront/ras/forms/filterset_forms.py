@@ -11,7 +11,6 @@ from coldfront.forms.fields import DynamicModelMultipleChoiceField, TagFilterFie
 from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
-    AllocationUser,
     Project,
     ProjectUser,
     Resource,
@@ -147,25 +146,6 @@ class ProjectUserFilterSetForm(PrimaryModelFilterSetForm):
             _("User"),
             "q",
             "project_id",
-            "tag",
-        ),
-    )
-
-
-class AllocationUserFilterSetForm(PrimaryModelFilterSetForm):
-    model = AllocationUser
-    allocation_id = forms.ModelChoiceField(
-        queryset=Allocation.objects.all(),
-        required=False,
-        label=_("Allocation"),
-    )
-    tag = TagFilterField(model)
-
-    fieldsets = (
-        Fieldset(
-            _("User"),
-            "q",
-            "allocation_id",
             "tag",
         ),
     )
