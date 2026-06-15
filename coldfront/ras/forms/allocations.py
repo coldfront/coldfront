@@ -54,14 +54,22 @@ def _get_resource_object_choices():
     return add_blank_choice(choices)
 
 
-class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
-    project = forms.ModelChoiceField(
-        label=_("Project"),
-        queryset=Project.objects.all(),
-        required=False,
-        disabled=True,
-        widget=forms.HiddenInput(),
-    )
+def _get_schema_from_resource_object_value(value):
+    """Given a ``resource_object`` form value (``ct_id:obj_id``), return the allocation schema."""
+    try:
+        ct_id, object_id = value.split(":")
+        ct = ContentType.objects.get(pk=ct_id)
+        obj = ct.get_object_for_this_type(pk=object_id)
+        return obj.get_allocation_attribute_schema()
+    except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
+        return None
+
+
+class AllocationResourceObjectMixin(forms.Form):
+    """
+    Mixin that provides the ``resource_object`` ChoiceField, validation, and saving
+    logic shared by AllocationRequestForm and AllocationBaseForm.
+    """
 
     resource_object = forms.ChoiceField(
         choices=[],
@@ -70,10 +78,47 @@ class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
         help_text=_("Select a resources for this allocation request"),
     )
 
+    profile_field_name = "resource_object"
+
+    def _get_schema(self):
+        if ro := get_field_value(self, "resource_object"):
+            return _get_schema_from_resource_object_value(ro)
+        return None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["resource_object"].choices = _get_resource_object_choices()
+
+    def clean_resource_object(self):
+        data = self.cleaned_data["resource_object"]
+        try:
+            ct_id, object_id = data.split(":")
+            ct = ContentType.objects.get(pk=ct_id)
+            ct.get_object_for_this_type(pk=object_id)
+        except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
+            raise forms.ValidationError(_("Selected resource object does not exist."))
+        return {"content_type": ct, "object_id": object_id}
+
+    def save_resource_object(self, instance):
+        resource_data = self.cleaned_data["resource_object"]
+        instance.resource_object_type = resource_data["content_type"]
+        instance.resource_object_id = resource_data["object_id"]
+
+
+class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin, PrimaryModelForm):
+    project = forms.ModelChoiceField(
+        label=_("Project"),
+        queryset=Project.objects.all(),
+        required=False,
+        disabled=True,
+        widget=forms.HiddenInput(),
+    )
+
     justification = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 5}),
         help_text=_(
-            "Please provide the justification for how you intend to use the resource to further the research goals of your project"
+            "Please provide the justification for how you intend to use the resource"
+            " to further the research goals of your project"
         ),
     )
     users = DynamicModelMultipleChoiceField(
@@ -86,12 +131,9 @@ class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
         help_text=_("Please choose users"),
     )
 
-    profile_field_name = "resource_object"
-
     class Meta:
         model = Allocation
-        # resource_object is a GenericForeignKey and cannot be auto-generated as a form field;
-        # it is declared explicitly above and handled in clean/save.
+        # resource_object is a GenericForeignKey; handled by AllocationResourceObjectMixin
         fields = [
             "project",
             "justification",
@@ -111,23 +153,8 @@ class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
             ),
         ]
 
-    def _get_schema(self):
-        if ro := get_field_value(self, "resource_object"):
-            try:
-                ct_id, object_id = ro.split(":")
-                ct = ContentType.objects.get(pk=ct_id)
-                obj = ct.get_object_for_this_type(pk=object_id)
-                return obj.get_allocation_attribute_schema()
-            except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
-                pass
-
-        return None
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Populate resource_object choices with all allocatable objects
-        self.fields["resource_object"].choices = _get_resource_object_choices()
 
         # Limit users queryset to those which belong to the project
         if project_id := get_field_value(self, "project"):
@@ -138,24 +165,9 @@ class AllocationRequestForm(CustomAttributesMixin, PrimaryModelForm):
             self.fields["users"].choices = ()
             self.fields["users"].widget.attrs["disabled"] = True
 
-    def clean_resource_object(self):
-        data = self.cleaned_data["resource_object"]
-        try:
-            ct_id, object_id = data.split(":")
-            ct = ContentType.objects.get(pk=ct_id)
-            ct.get_object_for_this_type(pk=object_id)
-        except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
-            raise forms.ValidationError(_("Selected resource object does not exist."))
-        return {"content_type": ct, "object_id": object_id}
-
     def save(self, commit=True):
         instance = super().save(commit=False)
-
-        # Pull the validated resource_object data and map it to the real fields
-        resource_data = self.cleaned_data["resource_object"]
-        instance.resource_object_type = resource_data["content_type"]
-        instance.resource_object_id = resource_data["object_id"]
-
+        self.save_resource_object(instance)
         if commit:
             instance.save()
             self.save_m2m()
@@ -196,18 +208,11 @@ class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
         ]
 
 
-class AllocationBaseForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
+class AllocationBaseForm(AllocationResourceObjectMixin, TenancyForm, CustomAttributesMixin, PrimaryModelForm):
     project = DynamicModelChoiceField(
         label=_("Project"),
         queryset=Project.objects.all(),
         required=True,
-    )
-
-    resource_object = forms.ChoiceField(
-        choices=[],
-        label=_("Resource"),
-        widget=HTMXSelectWidget(),
-        help_text=_("Select a resources for this allocation request"),
     )
 
     owner = DynamicModelChoiceField(
@@ -217,25 +222,8 @@ class AllocationBaseForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
     )
     comments = CommentField()
 
-    profile_field_name = "resource_object"
-
-    def _get_schema(self):
-        if ro := get_field_value(self, "resource_object"):
-            try:
-                ct_id, object_id = ro.split(":")
-                ct = ContentType.objects.get(pk=ct_id)
-                obj = ct.get_object_for_this_type(pk=object_id)
-                return obj.get_allocation_attribute_schema()
-            except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
-                pass
-
-        return None
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        # Populate resource_object choices with all allocatable objects
-        self.fields["resource_object"].choices = _get_resource_object_choices()
 
         # Set initial value for resource_object when editing an existing instance
         if self.instance and self.instance.pk and self.instance.resource_object:
@@ -243,24 +231,9 @@ class AllocationBaseForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
             value = f"{ct.id}:{self.instance.resource_object_id}"
             self.fields["resource_object"].initial = value
 
-    def clean_resource_object(self):
-        data = self.cleaned_data["resource_object"]
-        try:
-            ct_id, object_id = data.split(":")
-            ct = ContentType.objects.get(pk=ct_id)
-            ct.get_object_for_this_type(pk=object_id)
-        except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
-            raise forms.ValidationError(_("Selected resource object does not exist."))
-        return {"content_type": ct, "object_id": object_id}
-
     def save(self, commit=True):
         instance = super().save(commit=False)
-
-        # Pull the validated resource_object data and map it to the real fields
-        resource_data = self.cleaned_data["resource_object"]
-        instance.resource_object_type = resource_data["content_type"]
-        instance.resource_object_id = resource_data["object_id"]
-
+        self.save_resource_object(instance)
         if commit:
             instance.save()
             self.save_m2m()
@@ -270,7 +243,7 @@ class AllocationBaseForm(TenancyForm, CustomAttributesMixin, PrimaryModelForm):
 class AllocationForm(AllocationBaseForm):
     class Meta:
         model = Allocation
-        # resource_object is a GenericForeignKey; handled explicitly in AllocationBaseForm
+        # resource_object is a GenericForeignKey; handled by AllocationResourceObjectMixin
         fields = [
             "project",
             "owner",
@@ -313,7 +286,7 @@ class AllocationForm(AllocationBaseForm):
 class AllocationActivateForm(AllocationBaseForm):
     class Meta:
         model = Allocation
-        # resource_object is a GenericForeignKey; handled explicitly in AllocationBaseForm
+        # resource_object is a GenericForeignKey; handled by AllocationResourceObjectMixin
         fields = [
             "project",
             "owner",
