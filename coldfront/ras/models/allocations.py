@@ -2,19 +2,22 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import jsonschema
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.validators import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from jsonschema.exceptions import ValidationError as JSONValidationError
 
 from coldfront.models import PrimaryModel
-from coldfront.models.features import CustomAttributesMixin
 from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import AllocationStatusChoices
 from coldfront.ras.flows import AllocationStatusFlow
+from coldfront.utils.strings import title
 
 
-class Allocation(CustomAttributesMixin, PrimaryModel):
+class Allocation(PrimaryModel):
     """
     An Allocation provides users access to resources.
     """
@@ -81,6 +84,11 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
         blank=True,
         null=True,
     )
+    attribute_data = models.JSONField(
+        blank=True,
+        null=True,
+        verbose_name=_("attributes"),
+    )
 
     clone_fields = (
         "description",
@@ -89,23 +97,11 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
 
     prerequisite_models = ("ras.Project",)
 
-    profile_field_name = "resource_object"
-
     class Meta:
         ordering = ["start_date"]
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")
         indexes = (models.Index(fields=("resource_object_type", "resource_object_id")),)
-
-    def _get_schema(self, profile):
-        # For Resource objects, the schema comes from the ResourceType's allocation_schema
-        if profile and hasattr(profile, "resource_type") and profile.resource_type:
-            return profile.resource_type.allocation_schema
-        # For other allocatable objects, check for a schema attribute directly
-        if profile and hasattr(profile, "allocation_schema"):
-            return profile.allocation_schema
-        # Fall back to the default behavior from CustomAttributesMixin
-        return super()._get_schema(profile)
 
     def get_status_color(self):
         return AllocationStatusChoices.colors.get(self.status)
@@ -118,3 +114,29 @@ class Allocation(CustomAttributesMixin, PrimaryModel):
 
     def __str__(self):
         return f"Allocation {self.slug}"
+
+    @property
+    def attributes(self):
+        """
+        Returns a human-friendly representation of the allocation attributes defined according to its resource.
+        """
+        if not self.attribute_data or not self.resource_object or not self.resource_object.schema:
+            return {}
+
+        attrs = {}
+        for name, options in self.resource_object.schema.get("properties", {}).items():
+            key = options.get("title", title(name))
+            attrs[key] = self.attribute_data.get(name)
+        return dict(sorted(attrs.items()))
+
+    def clean(self):
+        super().clean()
+
+        # Validate any attributes against the assigned resource objects's schema
+        if self.resource_object and self.resource_object.schema:
+            try:
+                jsonschema.validate(self.attribute_data, schema=self.resource_object.schema)
+            except JSONValidationError as e:
+                raise ValidationError(_("Invalid schema: {error}").format(error=e))
+        else:
+            self.attribute_data = None

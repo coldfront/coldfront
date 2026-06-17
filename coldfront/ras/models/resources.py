@@ -10,27 +10,17 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.choices import ColorChoices
 from coldfront.models import NestedGroupModel, OrganizationalModel
-from coldfront.models.features import AllocatableResourceMixin, AttributeProfileMixin, CustomAttributesMixin
+from coldfront.models.features import AllocatableResourceMixin
 from coldfront.models.fields import ColorField
 from coldfront.ras.choices import ResourceStatusChoices
-from coldfront.utils.jsonschema import validate_schema
 
 from . import Allocation
 
 
-class ResourceType(AttributeProfileMixin, OrganizationalModel):
+class ResourceType(OrganizationalModel):
     """
-    ResourceType's help organize resources; for example, "Cluster", "Cluster
-    Partition", or "Storage". They also can include a schema's for storing
-    custom attributes on resources and their allocations.
+    ResourceType's help organize generic resources; for example: Software, Cluster, Storage, etc.
     """
-
-    allocation_schema = models.JSONField(
-        blank=True,
-        null=True,
-        validators=[validate_schema],
-        verbose_name=_("schema"),
-    )
 
     slug = models.SlugField(
         verbose_name=_("slug"),
@@ -48,9 +38,9 @@ class ResourceType(AttributeProfileMixin, OrganizationalModel):
         verbose_name_plural = _("resource types")
 
 
-class Resource(AllocatableResourceMixin, CustomAttributesMixin, NestedGroupModel):
+class Resource(AllocatableResourceMixin, NestedGroupModel):
     """
-    Resource's are assets that can be allocated to users. Each Resource can be
+    Resource's are generic assets that can be allocated to users. Each Resource can be
     assigned a ResourceType and an optional parent resource to create
     hierachical relationships.
     """
@@ -91,10 +81,9 @@ class Resource(AllocatableResourceMixin, CustomAttributesMixin, NestedGroupModel
         "description",
         "status",
         "parent",
+        "schema",
         "is_allocatable",
     )
-
-    profile_field_name = "resource_type"
 
     class Meta:
         ordering = ["name"]
@@ -134,9 +123,5 @@ class Resource(AllocatableResourceMixin, CustomAttributesMixin, NestedGroupModel
 
     def get_status_color(self):
         return ResourceStatusChoices.colors.get(self.status)
-
-    def get_allocation_attribute_schema(self):
-        if self.resource_type and hasattr(self.resource_type, "schema"):
-            return self.resource_type.allocation_schema
 
         return None

@@ -85,7 +85,7 @@ class BulkOperationSerializer(ChangeLogMessageSerializer):
     id = serializers.IntegerField()
 
 
-class AttributeProfileModelSerializer(serializers.Serializer):
+class AllocatableResourceModelSerializer(serializers.Serializer):
     schema = serializers.JSONField(
         required=False,
         allow_null=True,

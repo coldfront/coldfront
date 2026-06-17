@@ -6,6 +6,7 @@ from crispy_forms.layout import Fieldset, Layout
 from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.validators import EMPTY_VALUES
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.models import ObjectType
@@ -22,53 +23,17 @@ from coldfront.forms.fields import (
     DynamicModelChoiceField,
 )
 from coldfront.forms.layouts import DateTime
-from coldfront.forms.mixins import CustomAttributesImportMixin, CustomAttributesMixin, HorizontalFormMixin
+from coldfront.forms.mixins import HorizontalFormMixin
 from coldfront.forms.widgets import HTMXSelectWidget
+from coldfront.ras.choices import get_resource_object_choices
 from coldfront.ras.models import Allocation, Project
 from coldfront.users.models import User
-from coldfront.utils.forms import add_blank_choice, get_field_value
+from coldfront.users.permissions import get_permission_for_model
+from coldfront.utils.forms import get_field_value
+from coldfront.utils.jsonschema import JSONSchemaProperty
 
 
-def _get_resource_object_choices():
-    """
-    Build a list of optgroup choices for all objects with the "allocatable_resource" feature.
-    Returns a list of (optgroup_label, [(value, label), ...]) tuples.
-    """
-    choices = []
-    for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):
-        model_class = ot.model_class()
-        if model_class is None:
-            continue
-        ct = ContentType.objects.get_for_model(model_class)
-        model_choices = []
-        for obj in model_class.objects.all():
-            if not obj.is_allocatable:
-                continue
-            value = f"{ct.id}:{obj.id}"
-            label = str(obj)
-            model_choices.append((value, label))
-        optgroup_label = model_class._meta.verbose_name_plural.title()
-        choices.append((optgroup_label, model_choices))
-    return add_blank_choice(choices)
-
-
-def _get_schema_from_resource_object_value(value):
-    """Given a ``resource_object`` form value (``ct_id:obj_id``), return the allocation schema."""
-    try:
-        ct_id, object_id = value.split(":")
-        ct = ContentType.objects.get(pk=ct_id)
-        obj = ct.get_object_for_this_type(pk=object_id)
-        return obj.get_allocation_attribute_schema()
-    except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
-        return None
-
-
-class AllocationResourceObjectMixin(forms.Form):
-    """
-    Mixin that provides the ``resource_object`` ChoiceField, validation, and saving
-    logic shared by AllocationRequestForm and AllocationBaseForm.
-    """
-
+class AllocationBaseForm(PrimaryModelForm):
     resource_object = forms.ChoiceField(
         choices=[],
         label=_("Resource"),
@@ -76,16 +41,42 @@ class AllocationResourceObjectMixin(forms.Form):
         help_text=_("Select a resources for this allocation request"),
     )
 
-    profile_field_name = "resource_object"
-
-    def _get_schema(self):
-        if ro := get_field_value(self, "resource_object"):
-            return _get_schema_from_resource_object_value(ro)
-        return None
+    class Meta:
+        abstract = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["resource_object"].choices = _get_resource_object_choices()
+        self.fields["resource_object"].choices = get_resource_object_choices()
+
+        # Set initial value for resource_object when editing an existing instance
+        if self.instance and self.instance.pk and self.instance.resource_object:
+            ct = ContentType.objects.get_for_model(self.instance.resource_object)
+            value = f"{ct.id}:{self.instance.resource_object_id}"
+            self.fields["resource_object"].initial = value
+
+        # Track resource-specific allocation attribute fields
+        self.attr_fields = []
+
+        # Extend form with fields for allocation attributes
+        for attr, form_field in self._get_attr_form_fields().items():
+            field_name = f"attr_{attr}"
+            self.attr_fields.append(field_name)
+            self.fields[field_name] = form_field
+            if self.instance.attribute_data:
+                self.fields[field_name].initial = self.instance.attribute_data.get(attr)
+
+    def _get_schema(self):
+        if ro := get_field_value(self, "resource_object"):
+            try:
+                ct_id, object_id = ro.split(":")
+                ct = ContentType.objects.get(pk=ct_id)
+                obj = ct.get_object_for_this_type(pk=object_id)
+                if hasattr(obj, "schema"):
+                    return obj.schema
+            except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist):
+                pass
+
+        return None
 
     def clean_resource_object(self):
         data = self.cleaned_data["resource_object"]
@@ -97,13 +88,55 @@ class AllocationResourceObjectMixin(forms.Form):
             raise forms.ValidationError(_("Selected resource object does not exist."))
         return {"content_type": ct, "object_id": object_id}
 
-    def save_resource_object(self, instance):
+    def _post_clean(self):
         resource_data = self.cleaned_data["resource_object"]
-        instance.resource_object_type = resource_data["content_type"]
-        instance.resource_object_id = resource_data["object_id"]
+        self.instance.resource_object_type = resource_data["content_type"]
+        self.instance.resource_object_id = resource_data["object_id"]
+
+        # Compile attribute data from the individual form fields
+        if resource_data:
+            self.instance.attribute_data = {
+                name[5:]: self.cleaned_data[name]  # Remove the attr_ prefix
+                for name in self.attr_fields
+                if self.cleaned_data.get(name) not in EMPTY_VALUES
+            }
+
+        return super()._post_clean()
+
+    def _get_attr_form_fields(self):
+        """
+        Return a dictionary mapping of attribute names to form fields, suitable for extending
+        the form per the selected resource object allocation attributes.
+        """
+
+        schema = self._get_schema()
+        if not schema:
+            return {}
+
+        properties = schema.get("properties", {})
+        required_fields = schema.get("required", [])
+
+        attr_fields = {}
+        for name, options in properties.items():
+            prop = JSONSchemaProperty(**options)
+            if prop.requiredAction:
+                if not getattr(self, "user", None):
+                    continue
+
+                if not getattr(self._meta, "model", None):
+                    continue
+
+                content_type = ObjectType.objects.get_for_model(self._meta.model)
+                perm = get_permission_for_model(content_type.model_class(), prop.requiredAction)
+                if not self.user.has_perms([perm]):
+                    continue
+
+            attr_fields[name] = prop.to_form_field(name, required=name in required_fields)
+
+        return dict(sorted(attr_fields.items()))
 
 
-class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin, PrimaryModelForm):
+class AllocationRequestForm(AllocationBaseForm):
     project = forms.ModelChoiceField(
         label=_("Project"),
         queryset=Project.objects.all(),
@@ -111,7 +144,6 @@ class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin
         disabled=True,
         widget=forms.HiddenInput(),
     )
-
     justification = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 5}),
         help_text=_(
@@ -122,7 +154,6 @@ class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin
 
     class Meta:
         model = Allocation
-        # resource_object is a GenericForeignKey; handled by AllocationResourceObjectMixin
         fields = [
             "project",
             "justification",
@@ -139,14 +170,6 @@ class AllocationRequestForm(AllocationResourceObjectMixin, CustomAttributesMixin
                 "justification",
             ),
         ]
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        self.save_resource_object(instance)
-        if commit:
-            instance.save()
-            self.save_m2m()
-        return instance
 
 
 class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
@@ -183,13 +206,12 @@ class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
         ]
 
 
-class AllocationBaseForm(AllocationResourceObjectMixin, TenancyForm, CustomAttributesMixin, PrimaryModelForm):
+class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
     project = DynamicModelChoiceField(
         label=_("Project"),
         queryset=Project.objects.all(),
         required=True,
     )
-
     owner = DynamicModelChoiceField(
         label=_("Owner"),
         queryset=User.objects.all(),
@@ -197,28 +219,8 @@ class AllocationBaseForm(AllocationResourceObjectMixin, TenancyForm, CustomAttri
     )
     comments = CommentField()
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Set initial value for resource_object when editing an existing instance
-        if self.instance and self.instance.pk and self.instance.resource_object:
-            ct = ContentType.objects.get_for_model(self.instance.resource_object)
-            value = f"{ct.id}:{self.instance.resource_object_id}"
-            self.fields["resource_object"].initial = value
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        self.save_resource_object(instance)
-        if commit:
-            instance.save()
-            self.save_m2m()
-        return instance
-
-
-class AllocationForm(AllocationBaseForm):
     class Meta:
         model = Allocation
-        # resource_object is a GenericForeignKey; handled by AllocationResourceObjectMixin
         fields = [
             "project",
             "owner",
@@ -258,10 +260,21 @@ class AllocationForm(AllocationBaseForm):
         ]
 
 
-class AllocationActivateForm(AllocationBaseForm):
+class AllocationActivateForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
+    project = DynamicModelChoiceField(
+        label=_("Project"),
+        queryset=Project.objects.all(),
+        required=True,
+    )
+    owner = DynamicModelChoiceField(
+        label=_("Owner"),
+        queryset=User.objects.all(),
+        required=True,
+    )
+    comments = CommentField()
+
     class Meta:
         model = Allocation
-        # resource_object is a GenericForeignKey; handled by AllocationResourceObjectMixin
         fields = [
             "project",
             "owner",
@@ -299,7 +312,7 @@ class AllocationActivateForm(AllocationBaseForm):
         ]
 
 
-class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, PrimaryModelImportForm):
+class AllocationImportForm(TenancyImportForm, PrimaryModelImportForm):
     attribute_data = forms.JSONField(
         label=_("Attributes"),
         required=False,
@@ -337,8 +350,6 @@ class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, Prima
         },
     )
 
-    profile_field_name = "resource_object"
-
     class Meta:
         model = Allocation
         # resource_object is handled explicitly by CSVContentTypeObjectField
@@ -353,6 +364,19 @@ class AllocationImportForm(CustomAttributesImportMixin, TenancyImportForm, Prima
             "tags",
             "tenant",
         ]
+
+    def clean(self):
+        super().clean()
+
+        # Attribute data may be included only if a resource object is specified
+        if self.cleaned_data.get("attribute_data") and not self.cleaned_data.get("resource_object"):
+            raise forms.ValidationError(
+                _(f"{self._get_profile_field_name()} must be specified if attribute data is provided.")
+            )
+
+        # Default attribute_data to an empty dictionary if a resource object is specified (to enforce schema validation)
+        if self.cleaned_data.get("resource_object") and not self.cleaned_data.get("attribute_data"):
+            self.cleaned_data["attribute_data"] = {}
 
     def save(self, commit=True):
         instance = super().save(commit=False)

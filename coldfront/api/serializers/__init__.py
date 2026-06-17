@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .base import BaseModelSerializer, ValidatedModelSerializer
-from .features import AttributeProfileModelSerializer, ChangeLogMessageSerializer, CustomAttributeModelSerializer
+from .features import AllocatableResourceModelSerializer, ChangeLogMessageSerializer, CustomAttributeModelSerializer
 from .models import NestedGroupModelSerializer, OrganizationalModelSerializer, PrimaryModelSerializer
 from .nested import WritableNestedSerializer
 
@@ -15,6 +15,6 @@ __all__ = (
     "OrganizationalModelSerializer",
     "ChangeLogMessageSerializer",
     "CustomAttributeModelSerializer",
-    "AttributeProfileModelSerializer",
+    "AllocatableResourceModelSerializer",
     "BaseModelSerializer",
 )

@@ -2,9 +2,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+
 from coldfront.api.serializers import (
-    AttributeProfileModelSerializer,
-    CustomAttributeModelSerializer,
+    AllocatableResourceModelSerializer,
     NestedGroupModelSerializer,
     OrganizationalModelSerializer,
 )
@@ -14,7 +14,7 @@ from coldfront.ras.models import Resource, ResourceType
 from .nested import NestedResourceSerializer
 
 
-class ResourceTypeSerializer(AttributeProfileModelSerializer, OrganizationalModelSerializer):
+class ResourceTypeSerializer(OrganizationalModelSerializer):
     resource_count = RelatedObjectCountField("resources")
 
     class Meta:
@@ -28,8 +28,6 @@ class ResourceTypeSerializer(AttributeProfileModelSerializer, OrganizationalMode
             "slug",
             "description",
             "color",
-            "schema",
-            "allocation_schema",
             "tags",
             "custom_fields",
             "created",
@@ -39,7 +37,7 @@ class ResourceTypeSerializer(AttributeProfileModelSerializer, OrganizationalMode
         brief_fields = ("id", "url", "display", "name", "description", "slug")
 
 
-class ResourceSerializer(CustomAttributeModelSerializer, NestedGroupModelSerializer):
+class ResourceSerializer(AllocatableResourceModelSerializer, NestedGroupModelSerializer):
     parent = NestedResourceSerializer(required=False, allow_null=True, default=None)
     allocation_count = RelatedObjectCountField("allocations")
     resource_type = ResourceTypeSerializer(nested=True)
@@ -60,10 +58,10 @@ class ResourceSerializer(CustomAttributeModelSerializer, NestedGroupModelSeriali
             "is_allocatable",
             "resource_type",
             "tags",
+            "schema",
             "custom_fields",
             "created",
             "last_updated",
             "allocation_count",
-            "attributes",
         ]
         brief_fields = ("id", "url", "display", "name", "slug", "description", "status", "_depth")

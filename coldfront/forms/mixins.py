@@ -8,19 +8,12 @@ import time
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout
 from django import forms
-from django.core.exceptions import ImproperlyConfigured
-from django.core.validators import EMPTY_VALUES
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CustomFieldUIEditableChoices
 from coldfront.core.models import CustomField, ObjectType, Tag
-from coldfront.forms.fields import JSONField
 from coldfront.users.permissions import get_permission_for_model
-from coldfront.utils.forms import get_field_value
-from coldfront.utils.jsonschema import JSONSchemaProperty
-
-__all__ = ("TagsMixin",)
 
 
 class HorizontalFormMixin:
@@ -194,142 +187,3 @@ class CustomFieldsMixin:
             if customfield.group_name not in self.custom_field_groups:
                 self.custom_field_groups[customfield.group_name] = []
             self.custom_field_groups[customfield.group_name].append(field_name)
-
-
-class AttributeProfileForm(forms.Form):
-    """
-    AttributeProfileForms have a schema field for defining custom attributes.
-    """
-
-    schema = JSONField(
-        label=_("Schema"),
-        required=False,
-        help_text=_("Enter a valid JSON schema to define supported attributes."),
-    )
-
-
-class CustomAttributesMixin(forms.Form):
-    """
-    Extend a Form to include custom attribute support.
-
-    Attributes:
-        profile_field_name: The name of the ModelChoiceField for the attribute profile
-    """
-
-    profile_field_name = None
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Track type-specific attribute fields
-        self.attr_fields = []
-
-        # Extend form with fields for allocation attributes
-        for attr, form_field in self._get_attr_form_fields().items():
-            field_name = f"attr_{attr}"
-            self.attr_fields.append(field_name)
-            self.fields[field_name] = form_field
-            if self.instance.attribute_data:
-                self.fields[field_name].initial = self.instance.attribute_data.get(attr)
-
-    def _get_profile_field_name(self):
-        """
-        Return the profile form field name.
-        """
-        if self.profile_field_name is None:
-            raise ImproperlyConfigured(
-                f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
-                f"override its _get_profile_field_name() method."
-            )
-
-        return self.profile_field_name
-
-    def _get_schema(self):
-        if not (id := get_field_value(self, self._get_profile_field_name())):
-            return None
-        if not (profile := self.fields[self._get_profile_field_name()].queryset.filter(pk=id).first()):
-            return None
-
-        if hasattr(profile, "schema"):
-            return profile.schema
-
-        return None
-
-    def _get_attr_form_fields(self):
-        """
-        Return a dictionary mapping of attribute names to form fields, suitable for extending
-        the form per the selected profile.
-        """
-
-        schema = self._get_schema()
-        if not schema:
-            return {}
-
-        properties = schema.get("properties", {})
-        required_fields = schema.get("required", [])
-
-        attr_fields = {}
-        for name, options in properties.items():
-            prop = JSONSchemaProperty(**options)
-            if prop.requiredAction:
-                if not getattr(self, "user", None):
-                    continue
-
-                if not getattr(self._meta, "model", None):
-                    continue
-
-                content_type = ObjectType.objects.get_for_model(self._meta.model)
-                perm = get_permission_for_model(content_type.model_class(), prop.requiredAction)
-                if not self.user.has_perms([perm]):
-                    continue
-
-            attr_fields[name] = prop.to_form_field(name, required=name in required_fields)
-
-        return dict(sorted(attr_fields.items()))
-
-    def _post_clean(self):
-        # Compile attribute data from the individual form fields
-        if self.cleaned_data.get(self._get_profile_field_name()):
-            self.instance.attribute_data = {
-                name[5:]: self.cleaned_data[name]  # Remove the attr_ prefix
-                for name in self.attr_fields
-                if self.cleaned_data.get(name) not in EMPTY_VALUES
-            }
-
-        return super()._post_clean()
-
-
-class CustomAttributesImportMixin(forms.Form):
-    """
-    Extend a Form to include custom attribute support for CSV uploads.
-
-    Attributes:
-        profile_field_name: The name of the ModelChoiceField for the attribute profile
-    """
-
-    profile_field_name = None
-
-    def _get_profile_field_name(self):
-        """
-        Return the profile form field name.
-        """
-        if self.profile_field_name is None:
-            raise ImproperlyConfigured(
-                f"{self.__class__.__name__} does not define a profile_field_name. Set profile_field_name on the class or "
-                f"override its _get_profile_field_name() method."
-            )
-
-        return self.profile_field_name
-
-    def clean(self):
-        super().clean()
-
-        # Attribute data may be included only if a profile is specified
-        if self.cleaned_data.get("attribute_data") and not self.cleaned_data.get(self._get_profile_field_name()):
-            raise forms.ValidationError(
-                _(f"{self._get_profile_field_name()} must be specified if attribute data is provided.")
-            )
-
-        # Default attribute_data to an empty dictionary if a resource type is specified (to enforce schema validation)
-        if self.cleaned_data.get(self._get_profile_field_name()) and not self.cleaned_data.get("attribute_data"):
-            self.cleaned_data["attribute_data"] = {}

@@ -4,17 +4,23 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 
-from coldfront.ras.filtersets import ResourceFilterSet
-from coldfront.ras.models import Resource, ResourceType
+from coldfront.ras.filtersets import AllocationFilterSet
+from coldfront.ras.models import (
+    Allocation,
+    Project,
+    Resource,
+)
+from coldfront.users.models import User
 
 
 class ResourceTypeTestCase(TestCase):
-    queryset = Resource.objects.all()
-    filterset = ResourceFilterSet
+    queryset = Allocation.objects.all()
+    filterset = AllocationFilterSet
 
-    PROFILE_SCHEMA = {
+    ALLOCATION_ATTRIBUTE_SCHEMA = {
         "properties": {
             "string": {"type": "string"},
             "integer": {"type": "integer"},
@@ -25,19 +31,25 @@ class ResourceTypeTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-
-        resource_types = (
-            ResourceType(name="Resource Type 1", slug="rt-1", schema=cls.PROFILE_SCHEMA),
-            ResourceType(name="Resource Type 2", slug="rt-2", schema=cls.PROFILE_SCHEMA),
-            ResourceType(name="Resource Type 3", slug="rt-3", schema=cls.PROFILE_SCHEMA),
-        )
-        ResourceType.objects.bulk_create(resource_types)
+        user = User.objects.create(username="User1")
+        project = Project.objects.create(name="Project 1", owner=user)
+        resource_ct = ContentType.objects.get_for_model(Resource)
 
         resources = (
-            Resource(
-                name="Resource 1",
-                slug="r-1",
-                resource_type=resource_types[0],
+            Resource(name="Resource 1", slug="r-1", schema=cls.ALLOCATION_ATTRIBUTE_SCHEMA),
+            Resource(name="Resource 2", slug="r-2", schema=cls.ALLOCATION_ATTRIBUTE_SCHEMA),
+            Resource(name="Resource 3", slug="r-3", schema=cls.ALLOCATION_ATTRIBUTE_SCHEMA),
+        )
+        for resource in resources:
+            resource.save()
+
+        allocations = (
+            Allocation(
+                justification="Need resources 1",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[0].pk,
                 attribute_data={
                     "string": "string1",
                     "integer": 1,
@@ -45,10 +57,12 @@ class ResourceTypeTestCase(TestCase):
                     "boolean": True,
                 },
             ),
-            Resource(
-                name="Resource 2",
-                slug="r-2",
-                resource_type=resource_types[1],
+            Allocation(
+                justification="Need resources 2",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[1].pk,
                 attribute_data={
                     "string": "string2",
                     "integer": 2,
@@ -56,10 +70,12 @@ class ResourceTypeTestCase(TestCase):
                     "boolean": False,
                 },
             ),
-            Resource(
-                name="Resource 3",
-                slug="r-3",
-                resource_type=resource_types[2],
+            Allocation(
+                justification="Need resources 3",
+                project=project,
+                owner=user,
+                resource_object_type=resource_ct,
+                resource_object_id=resources[2].pk,
                 attribute_data={
                     "string": "string3",
                     "integer": 3,
@@ -68,15 +84,20 @@ class ResourceTypeTestCase(TestCase):
                 },
             ),
         )
-        for resource in resources:
-            resource.save()
 
-    def test_resource_attributes(self):
+        for a in allocations:
+            a.save()
+
+    def test_allocation_attributes(self):
         params = {"attr_string": "string1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
         params = {"attr_integer": "1"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
-        params = {"attr_number": "2.0"}
+        params = {"attr_number": "1.0"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
         params = {"attr_boolean": "true"}
         self.assertEqual(self.filterset(params, self.queryset).qs.count(), 1)
+        params = {"attr_number": "10.0"}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 0)
+        params = {"attr_string": "does not exist"}
+        self.assertEqual(self.filterset(params, self.queryset).qs.count(), 0)

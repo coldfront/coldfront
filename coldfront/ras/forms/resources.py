@@ -16,22 +16,10 @@ from coldfront.forms import (
 )
 from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField, JSONField, SlugField
 from coldfront.forms.layouts import Slug
-from coldfront.forms.mixins import CustomAttributesImportMixin, CustomAttributesMixin
-from coldfront.forms.widgets import HTMXSelectWidget
 from coldfront.ras.models import Resource, ResourceType
 
 
 class ResourceTypeForm(OrganizationalModelForm):
-    schema = JSONField(
-        label=_("Resource Attribute Schema"),
-        required=False,
-        help_text=_("Enter a valid JSON schema to define supported attributes."),
-    )
-    allocation_schema = JSONField(
-        label=_("Allocation Attribute Schema"),
-        required=False,
-        help_text=_("Enter a valid JSON schema to define supported attributes."),
-    )
     slug = SlugField()
 
     class Meta:
@@ -41,9 +29,6 @@ class ResourceTypeForm(OrganizationalModelForm):
             "slug",
             "color",
             "description",
-            "schema",
-            "allocation_schema",
-            "is_default",
             "tags",
         ]
 
@@ -54,19 +39,21 @@ class ResourceTypeForm(OrganizationalModelForm):
             Slug(),
             "color",
             "description",
-            "schema",
-            "allocation_schema",
-            "is_default",
         ),
     )
 
 
-class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
+class ResourceForm(TenancyForm, NestedGroupModelForm):
     resource_type = forms.ModelChoiceField(
         queryset=ResourceType.objects.all(),
         label=_("Resource Type"),
         required=False,
-        widget=HTMXSelectWidget(),
+    )
+
+    schema = JSONField(
+        label=_("Schema"),
+        required=False,
+        help_text=_("Enter a valid JSON schema to define supported allocation attributes."),
     )
 
     parent = DynamicModelChoiceField(
@@ -74,8 +61,6 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
         queryset=Resource.objects.all(),
         required=False,
     )
-
-    profile_field_name = "resource_type"
 
     class Meta:
         model = Resource
@@ -85,6 +70,7 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
             "parent",
             "resource_type",
             "status",
+            "schema",
             "description",
             "is_allocatable",
             "tags",
@@ -92,27 +78,25 @@ class ResourceForm(TenancyForm, CustomAttributesMixin, NestedGroupModelForm):
             "tenant",
         ]
 
-    @property
-    def fieldsets(self):
-        return [
-            Fieldset(
-                _("Resource"),
-                "name",
-                Slug(),
-                "parent",
-                "status",
-                "description",
-                "is_allocatable",
-            ),
-            Fieldset(
-                "Resource Type",
-                "resource_type",
-                *self.attr_fields,
-            ),
-        ]
+    fieldsets = (
+        Fieldset(
+            "Resource Type",
+            "resource_type",
+        ),
+        Fieldset(
+            _("Resource"),
+            "name",
+            Slug(),
+            "parent",
+            "status",
+            "description",
+            "is_allocatable",
+            "schema",
+        ),
+    )
 
 
-class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, NestedGroupModelImportForm):
+class ResourceImportForm(TenancyImportForm, NestedGroupModelImportForm):
     parent = CSVModelChoiceField(
         label=_("Parent"),
         queryset=Resource.objects.all(),
@@ -128,14 +112,6 @@ class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, NestedG
         help_text=_("Resource Type"),
     )
 
-    attribute_data = forms.JSONField(
-        label=_("Attributes"),
-        required=False,
-        help_text=_("Attribute values for the assigned resource type, passed as a dictionary"),
-    )
-
-    profile_field_name = "resource_type"
-
     class Meta:
         model = Resource
         fields = [
@@ -144,8 +120,8 @@ class ResourceImportForm(CustomAttributesImportMixin, TenancyImportForm, NestedG
             "resource_type",
             "parent",
             "status",
+            "schema",
             "description",
-            "attribute_data",
             "tags",
             "tenant",
         ]
@@ -159,7 +135,5 @@ class ResourceTypeImportForm(PrimaryModelImportForm):
             "slug",
             "color",
             "description",
-            "schema",
-            "is_default",
             "tags",
         ]

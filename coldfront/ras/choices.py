@@ -2,9 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.choices import ChoiceSet
+from coldfront.core.models import ObjectType
+from coldfront.utils.forms import add_blank_choice
 
 
 class ResourceStatusChoices(ChoiceSet):
@@ -57,3 +60,26 @@ class AllocationStatusChoices(ChoiceSet):
         (STATUS_REVOKED, _("Revoked"), "danger"),
         (STATUS_RENEW, _("Renew"), "info"),
     ]
+
+
+def get_resource_object_choices():
+    """
+    Build a list of optgroup choices for all objects with the "allocatable_resource" feature.
+    Returns a list of (optgroup_label, [(value, label), ...]) tuples.
+    """
+    choices = []
+    for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):
+        model_class = ot.model_class()
+        if model_class is None:
+            continue
+        ct = ContentType.objects.get_for_model(model_class)
+        model_choices = []
+        for obj in model_class.objects.all():
+            if not obj.is_allocatable:
+                continue
+            value = f"{ct.id}:{obj.id}"
+            label = str(obj)
+            model_choices.append((value, label))
+        optgroup_label = model_class._meta.verbose_name_plural.title()
+        choices.append((optgroup_label, model_choices))
+    return add_blank_choice(choices)

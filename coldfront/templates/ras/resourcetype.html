@@ -25,20 +25,5 @@
     <c-card.related_objects :object="object" :models="related_models" only />
     <c-card.custom_fields :object="object" only />
   </c-slot>
-
-  <c-slot name="bottom">
-    <c-layout.row>
-      <c-layout.col>
-        <c-card.code header="{% trans 'Resource Attribute Schema' %}">
-        {{ object.schema|json }}
-        </c-card.code>
-      </c-layout.col>
-      <c-layout.col>
-        <c-card.code header="{% trans 'Allocation Attribute Schema' %}">
-        {{ object.allocation_schema|json }}
-        </c-card.code>
-      </c-layout.col>
-    </c-layout.row>
-  </c-slot>
 </c-layout.panels>
 {% endblock %}

@@ -24,20 +24,6 @@ class ResourceTypeTable(OrganizationalModelTable):
     )
     color = columns.ColorColumn()
 
-    resource_attributes = columns.TemplateColumn(
-        template_code=CUSTOM_ATTRIBUTES,
-        accessor=tables.A("schema__properties"),
-        orderable=False,
-        verbose_name=_("Resource Attributes"),
-    )
-
-    allocation_attributes = columns.TemplateColumn(
-        template_code=CUSTOM_ATTRIBUTES,
-        accessor=tables.A("allocation_schema__properties"),
-        orderable=False,
-        verbose_name=_("Allocation Attributes"),
-    )
-
     tags = columns.TagColumn(
         url_name="ras:resourcetype_list",
     )
@@ -63,8 +49,6 @@ class ResourceTypeTable(OrganizationalModelTable):
             "name",
             "resource_count",
             "color",
-            "resource_attributes",
-            "allocation_attributes",
             "description",
         )
 
@@ -84,6 +68,12 @@ class ResourceTable(TenancyColumnsMixin, NestedGroupModelTable):
     tags = columns.TagColumn(
         url_name="ras:resource_list",
     )
+    allocation_attributes = columns.TemplateColumn(
+        template_code=CUSTOM_ATTRIBUTES,
+        accessor=tables.A("schema__properties"),
+        orderable=False,
+        verbose_name=_("Allocation Attributes"),
+    )
 
     class Meta(NestedGroupModelTable.Meta):
         model = Resource
@@ -100,6 +90,7 @@ class ResourceTable(TenancyColumnsMixin, NestedGroupModelTable):
             "is_allocatable",
             "tags",
             "tenant",
+            "allocation_attributes",
             "tenant_group",
             "created",
             "last_updated",
