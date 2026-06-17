@@ -1,4 +1,6 @@
 {% extends "base/layout.html" %}
+{% load i18n %}
+{% load humanize %}
 
 
 {% block title %}
@@ -7,9 +9,49 @@ ColdFront - Home
 
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6 col-xs-12">
-        Welcome to ColdFront
-    </div>
-</div>
+<c-layout.panels>
+  <c-slot name="left">
+      <c-card.list header='{% trans "My Projects" %}' only>
+        {% for project in projects %}
+          <c-card.list.item link="{{ project.get_absolute_url }}" :count="project.allocations.count">
+              {{ project.name }}
+          </c-card.list.item>
+        {% empty %}
+          <c-card.list.item>
+              {% trans "None" %}
+          </c-card.list.item>
+        {% endfor %}
+      </c-card>
+  </c-slot>
+
+  <c-slot name="right">
+      <c-card.list header='{% trans "My Allocations" %}' only>
+        {% for project in projects %}
+            {% for allocation in project.allocations.all %}
+          <c-card.list.item link="{{ allocation.get_absolute_url }}" count="{% if not allocation.end_date %}Never{% else %}{{ allocation.end_date|naturaltime }}{% endif %}">
+              {{ allocation.resource_object }}
+          </c-card.list.item>
+        {% empty %}
+          <c-card.list.item>
+              {% trans "None" %}
+          </c-card.list.item>
+            {% endfor %}
+        {% endfor %}
+      </c-card>
+  </c-slot>
+</c-layout.panels>
+<c-layout.row>
+    {% for resource_type,resource_list in resources.items %}
+    <c-layout.col>
+      <c-card.list :header="resource_type" only>
+        {% for resource in resource_list %}
+        <c-card.list.item link="{{ resource.link }}">
+            {{ resource.name }}
+        </c-card.list.item>
+        {% endfor %}
+      </c-card>
+    </c-layout.col>
+    {% endfor %}
+</c-layout.row>
+
 {% endblock %}

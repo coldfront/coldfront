@@ -87,8 +87,8 @@ class Resource(AllocatableResourceMixin, NestedGroupModel):
 
     class Meta:
         ordering = ["name"]
-        verbose_name = _("resource")
-        verbose_name_plural = _("resources")
+        verbose_name = _("generic resource")
+        verbose_name_plural = _("generic resources")
         constraints = (
             models.UniqueConstraint(
                 Lower("name"),
@@ -119,6 +119,8 @@ class Resource(AllocatableResourceMixin, NestedGroupModel):
         )
 
     def __str__(self):
+        if self.resource_type:
+            return f"{self.resource_type}: {self.name}"
         return self.name
 
     def get_status_color(self):

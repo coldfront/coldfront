@@ -15,10 +15,36 @@ class HomeView(LoginRequiredMixin, View):
     template_name = "home.html"
 
     def get(self, request):
+        from coldfront.core.models import ObjectType
+
+        projects = []
+        resources = {}
+
+        if request.user.is_authenticated:
+            for p in request.user.owned_projects.all():
+                projects.append(p)
+            for p in request.user.projects.all():
+                projects.append(p)
+
+        for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):
+            model_class = ot.model_class()
+            group = model_class._meta.verbose_name_plural.title()
+            if group.startswith("Slurm"):
+                group = "Slurm"
+            resources[group] = resources.get(group, [])
+            if model_class is None:
+                continue
+            for obj in model_class.objects.all():
+                if obj.is_allocatable:
+                    resources[group].append({"name": str(obj), "link": obj.get_absolute_url()})
+
         return render(
             request,
             self.template_name,
-            {},
+            {
+                "projects": projects,
+                "resources": resources,
+            },
         )
 
 
