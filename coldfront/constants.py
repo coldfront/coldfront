@@ -8,6 +8,7 @@ CORE_APPS = (
     "tenancy",
     "ras",
     "account",
+    "slurm",
 )
 
 # ColdFront 1.x legacy apps

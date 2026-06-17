@@ -103,6 +103,7 @@ INSTALLED_APPS += [
     "coldfront.core",
     "coldfront.tenancy",
     "coldfront.ras",
+    "coldfront.slurm",
 ]
 
 # ------------------------------------------------------------------------------
