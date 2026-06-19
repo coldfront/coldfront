@@ -17,7 +17,7 @@ class AppTest(APITestCase):
 
 class SlurmClusterTest(APIViewTestCases.APIViewTestCase):
     model = SlurmCluster
-    brief_fields = ["description", "display", "id", "is_allocatable", "name", "url"]
+    brief_fields = ["description", "display", "id", "locked", "name", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -36,24 +36,24 @@ class SlurmClusterTest(APIViewTestCases.APIViewTestCase):
             {
                 "name": "Cluster X",
                 "description": "A new Slurm cluster",
-                "is_allocatable": True,
+                "locked": True,
             },
             {
                 "name": "Cluster Y",
                 "description": "Another Slurm cluster",
-                "is_allocatable": True,
+                "locked": True,
             },
             {
                 "name": "Cluster Z",
                 "description": "Third Slurm cluster",
-                "is_allocatable": True,
+                "locked": True,
             },
         ]
 
 
 class SlurmPartitionTest(APIViewTestCases.APIViewTestCase):
     model = SlurmPartition
-    brief_fields = ["description", "display", "id", "is_allocatable", "name", "url"]
+    brief_fields = ["description", "display", "id", "locked", "name", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -75,18 +75,18 @@ class SlurmPartitionTest(APIViewTestCases.APIViewTestCase):
                 "cluster": cluster.pk,
                 "name": "Partition X",
                 "description": "A new partition",
-                "is_allocatable": True,
+                "locked": True,
             },
             {
                 "cluster": cluster.pk,
                 "name": "Partition Y",
                 "description": "Another partition",
-                "is_allocatable": True,
+                "locked": True,
             },
             {
                 "cluster": cluster.pk,
                 "name": "Partition Z",
                 "description": "Third partition",
-                "is_allocatable": True,
+                "locked": True,
             },
         ]

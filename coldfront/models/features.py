@@ -341,14 +341,18 @@ class AllocatableResourceMixin(models.Model):
         verbose_name=_("schema"),
     )
 
-    is_allocatable = models.BooleanField(
-        verbose_name=_("allocatable"),
-        default=True,
-        help_text=_("Users can submit allocations for this resource."),
+    locked = models.BooleanField(
+        verbose_name=_("locked"),
+        default=False,
+        help_text=_("Prevent users from submitting allocations for this resource."),
     )
 
     class Meta:
         abstract = True
+
+    def allocatable(self, user):
+        """Checks if this resource is allocatable. Override to provide custom checks"""
+        return not self.locked
 
 
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))

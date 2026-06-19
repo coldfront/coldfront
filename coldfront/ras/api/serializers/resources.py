@@ -55,7 +55,7 @@ class ResourceSerializer(AllocatableResourceModelSerializer, NestedGroupModelSer
             "_depth",
             "description",
             "status",
-            "is_allocatable",
+            "locked",
             "resource_type",
             "tags",
             "schema",

@@ -72,7 +72,7 @@ class ResourceForm(TenancyForm, NestedGroupModelForm):
             "status",
             "schema",
             "description",
-            "is_allocatable",
+            "locked",
             "tags",
             "tenant_group",
             "tenant",
@@ -90,7 +90,7 @@ class ResourceForm(TenancyForm, NestedGroupModelForm):
             "parent",
             "status",
             "description",
-            "is_allocatable",
+            "locked",
             "schema",
         ),
     )

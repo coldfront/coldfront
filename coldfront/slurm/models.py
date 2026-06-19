@@ -25,7 +25,7 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
     )
 
     clone_fields = (
-        "is_allocatable",
+        "locked",
         "tenant",
     )
 
@@ -58,7 +58,7 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
 
     clone_fields = (
         "cluster",
-        "is_allocatable",
+        "locked",
     )
 
     class Meta:

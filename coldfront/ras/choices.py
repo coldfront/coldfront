@@ -7,6 +7,7 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.choices import ChoiceSet
 from coldfront.core.models import ObjectType
+from coldfront.users.querysets import RestrictedQuerySet
 from coldfront.utils.forms import add_blank_choice
 
 
@@ -62,20 +63,26 @@ class AllocationStatusChoices(ChoiceSet):
     ]
 
 
-def get_resource_object_choices():
+def get_resource_object_choices(user):
     """
     Build a list of optgroup choices for all objects with the "allocatable_resource" feature.
     Returns a list of (optgroup_label, [(value, label), ...]) tuples.
     """
     choices = []
+    if not user or not user.is_authenticated:
+        return choices
+
     for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):
         model_class = ot.model_class()
         if model_class is None:
             continue
         ct = ContentType.objects.get_for_model(model_class)
         model_choices = []
-        for obj in model_class.objects.all():
-            if not obj.is_allocatable:
+        qs = model_class.objects.all()
+        if issubclass(qs.__class__, RestrictedQuerySet):
+            qs = qs.restrict(user, "view")
+        for obj in qs:
+            if not obj.allocatable(user):
                 continue
             value = f"{ct.id}:{obj.id}"
             label = str(obj)

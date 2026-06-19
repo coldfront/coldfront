@@ -25,7 +25,7 @@ class SlurmClusterForm(TenancyForm, PrimaryModelForm):
             "tenant_group",
             "tenant",
             "description",
-            "is_allocatable",
+            "locked",
             "schema",
             "tags",
         ]
@@ -37,7 +37,7 @@ class SlurmClusterForm(TenancyForm, PrimaryModelForm):
                 _("Slurm Cluster"),
                 "name",
                 "description",
-                "is_allocatable",
+                "locked",
                 "schema",
             ),
         ]
@@ -50,7 +50,7 @@ class SlurmClusterImportForm(TenancyImportForm, PrimaryModelImportForm):
             "name",
             "tenant",
             "description",
-            "is_allocatable",
+            "locked",
             "schema",
             "tags",
         ]
@@ -74,7 +74,7 @@ class SlurmPartitionForm(PrimaryModelForm):
             "cluster",
             "name",
             "description",
-            "is_allocatable",
+            "locked",
             "schema",
             "tags",
         ]
@@ -87,7 +87,7 @@ class SlurmPartitionForm(PrimaryModelForm):
                 "cluster",
                 "name",
                 "description",
-                "is_allocatable",
+                "locked",
                 "schema",
             ),
         ]
@@ -106,7 +106,7 @@ class SlurmPartitionImportForm(PrimaryModelImportForm):
             "cluster",
             "name",
             "description",
-            "is_allocatable",
+            "locked",
             "schema",
             "tags",
         ]

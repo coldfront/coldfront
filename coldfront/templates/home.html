@@ -26,16 +26,14 @@ ColdFront - Home
 
   <c-slot name="right">
       <c-card.list header='{% trans "My Allocations" %}' only>
-        {% for project in projects %}
-            {% for allocation in project.allocations.all %}
-          <c-card.list.item link="{{ allocation.get_absolute_url }}" count="{% if not allocation.end_date %}Never{% else %}{{ allocation.end_date|naturaltime }}{% endif %}">
-              {{ allocation.resource_object }}
-          </c-card.list.item>
-        {% empty %}
-          <c-card.list.item>
-              {% trans "None" %}
-          </c-card.list.item>
-            {% endfor %}
+        {% for allocation in allocations %}
+        <c-card.list.item link="{{ allocation.get_absolute_url }}" count="{% if not allocation.end_date %}Never{% else %}{{ allocation.end_date|naturaltime }}{% endif %}">
+            {{ allocation.resource_object }}
+        </c-card.list.item>
+          {% empty %}
+        <c-card.list.item>
+            {% trans "None" %}
+        </c-card.list.item>
         {% endfor %}
       </c-card>
   </c-slot>

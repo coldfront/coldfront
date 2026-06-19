@@ -32,13 +32,13 @@ class SlurmClusterTable(TenancyColumnsMixin, PrimaryModelTable):
             "name",
             "description",
             "tenant",
-            "is_allocatable",
+            "locked",
             "partition_count",
             "tags",
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "name", "description", "partition_count", "is_allocatable")
+        default_columns = ("pk", "name", "description", "partition_count", "locked")
 
 
 class SlurmPartitionTable(PrimaryModelTable):
@@ -61,9 +61,9 @@ class SlurmPartitionTable(PrimaryModelTable):
             "cluster",
             "name",
             "description",
-            "is_allocatable",
+            "locked",
             "tags",
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "cluster", "name", "description", "is_allocatable")
+        default_columns = ("pk", "cluster", "name", "description", "locked")

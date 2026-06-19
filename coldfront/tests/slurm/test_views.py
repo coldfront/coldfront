@@ -27,7 +27,7 @@ class SlurmClusterTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "tenant_group": None,
             "tenant": None,
             "description": "A new Slurm cluster",
-            "is_allocatable": True,
+            "locked": True,
             "tags": [t.pk for t in tags],
         }
 
@@ -68,7 +68,7 @@ class SlurmPartitionTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "cluster": cluster.pk,
             "name": "Partition X",
             "description": "A new Slurm partition",
-            "is_allocatable": True,
+            "locked": True,
             "tags": [t.pk for t in tags],
         }
 

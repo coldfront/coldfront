@@ -64,7 +64,7 @@ class ResourceFilterSet(AttributeFilterSetMixin, TenancyFilterSet, NestedGroupMo
             "resource_type",
             "parent",
             "description",
-            "is_allocatable",
+            "locked",
         )
 
     def search(self, queryset, name, value):

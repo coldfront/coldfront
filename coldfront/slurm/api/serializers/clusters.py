@@ -24,7 +24,7 @@ class SlurmClusterSerializer(AllocatableResourceModelSerializer, PrimaryModelSer
             "name",
             "tenant",
             "description",
-            "is_allocatable",
+            "locked",
             "tags",
             "custom_fields",
             "created",
@@ -32,7 +32,7 @@ class SlurmClusterSerializer(AllocatableResourceModelSerializer, PrimaryModelSer
             "partition_count",
             "schema",
         ]
-        brief_fields = ("id", "url", "display", "name", "description", "is_allocatable")
+        brief_fields = ("id", "url", "display", "name", "description", "locked")
 
 
 class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelSerializer):
@@ -48,11 +48,11 @@ class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelS
             "cluster",
             "name",
             "description",
-            "is_allocatable",
+            "locked",
             "tags",
             "custom_fields",
             "created",
             "last_updated",
             "schema",
         ]
-        brief_fields = ("id", "url", "display", "name", "description", "is_allocatable")
+        brief_fields = ("id", "url", "display", "name", "description", "locked")

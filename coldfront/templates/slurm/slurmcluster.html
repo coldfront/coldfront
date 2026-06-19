@@ -9,8 +9,8 @@
           {{ object.description|placeholder }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Allocatable' %}">
-          <c-ui.checkmark :value="object.is_allocatable" />
+      <c-card.fields.item label="{% trans 'Locked' %}">
+          <c-ui.checkmark :value="object.locked" />
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Tenant' %}">

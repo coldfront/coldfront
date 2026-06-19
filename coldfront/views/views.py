@@ -16,26 +16,39 @@ class HomeView(LoginRequiredMixin, View):
 
     def get(self, request):
         from coldfront.core.models import ObjectType
+        from coldfront.users.querysets import RestrictedQuerySet
 
         projects = []
+        allocations = []
         resources = {}
 
         if request.user.is_authenticated:
             for p in request.user.owned_projects.all():
                 projects.append(p)
+                for a in p.allocations.all():
+                    allocations.append(a)
             for p in request.user.projects.all():
                 projects.append(p)
+                for a in p.allocations.all():
+                    allocations.append(a)
 
         for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):
             model_class = ot.model_class()
-            group = model_class._meta.verbose_name_plural.title()
-            if group.startswith("Slurm"):
-                group = "Slurm"
-            resources[group] = resources.get(group, [])
             if model_class is None:
                 continue
-            for obj in model_class.objects.all():
-                if obj.is_allocatable:
+
+            qs = model_class.objects.all()
+            if issubclass(qs.__class__, RestrictedQuerySet):
+                qs = qs.restrict(request.user, "view")
+
+            if qs.exists():
+                group = model_class._meta.verbose_name_plural.title()
+                if group.startswith("Slurm"):
+                    group = "Slurm"
+                resources[group] = resources.get(group, [])
+
+            for obj in qs:
+                if obj.allocatable(request.user):
                     resources[group].append({"name": str(obj), "link": obj.get_absolute_url()})
 
         return render(
@@ -44,6 +57,7 @@ class HomeView(LoginRequiredMixin, View):
             {
                 "projects": projects,
                 "resources": resources,
+                "allocations": allocations,
             },
         )
 

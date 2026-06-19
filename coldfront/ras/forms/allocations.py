@@ -46,7 +46,7 @@ class AllocationBaseForm(PrimaryModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["resource_object"].choices = get_resource_object_choices()
+        self.fields["resource_object"].choices = get_resource_object_choices(self.user)
 
         # Set initial value for resource_object when editing an existing instance
         if self.instance and self.instance.pk and self.instance.resource_object:

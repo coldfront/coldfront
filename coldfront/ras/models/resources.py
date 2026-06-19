@@ -82,7 +82,7 @@ class Resource(AllocatableResourceMixin, NestedGroupModel):
         "status",
         "parent",
         "schema",
-        "is_allocatable",
+        "locked",
     )
 
     class Meta:
