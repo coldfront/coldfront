@@ -67,6 +67,9 @@ class AllocationStatusFlow(ColdFrontFlow):
                 url=url,
             )
 
+        # Dispatch registered plugin callbacks for this target state
+        self._dispatch_target_callbacks(self.allocation, source=source, target=target)
+
     @status.transition(
         source=AllocationStatusChoices.STATUS_NEW,
         label=_("Request"),
