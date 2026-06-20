@@ -5,10 +5,65 @@
 
 from coldfront.registry import register_model_view
 from coldfront.slurm import filtersets, forms, tables
-from coldfront.slurm.models import SlurmCluster, SlurmPartition
+from coldfront.slurm.models import (
+    SlurmAccount,
+    SlurmAssociation,
+    SlurmCluster,
+    SlurmPartition,
+    SlurmQOS,
+    SlurmUser,
+)
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
+
+#
+# Slurm QOS
+#
+
+
+@register_model_view(SlurmQOS, "list", path="", detail=False)
+class SlurmQOSListView(generic.ObjectListView):
+    queryset = SlurmQOS.objects.all()
+    filterset = filtersets.SlurmQOSFilterSet
+    filterset_form = forms.SlurmQOSFilterSetForm
+    table = tables.SlurmQOSTable
+
+
+@register_model_view(SlurmQOS)
+class SlurmQOSView(GetRelatedModelsMixin, generic.ObjectView):
+    queryset = SlurmQOS.objects.all()
+
+    def get_extra_context(self, request, instance):
+        return {
+            "related_models": self.get_related_models(request, instance),
+        }
+
+
+@register_model_view(SlurmQOS, "add", detail=False)
+@register_model_view(SlurmQOS, "edit")
+class SlurmQOSEditView(generic.ObjectEditView):
+    queryset = SlurmQOS.objects.all()
+    form = forms.SlurmQOSForm
+
+
+@register_model_view(SlurmQOS, "delete")
+class SlurmQOSDeleteView(generic.ObjectDeleteView):
+    queryset = SlurmQOS.objects.all()
+
+
+@register_model_view(SlurmQOS, "bulk_import", path="import", detail=False)
+class SlurmQOSBulkImportView(generic.BulkImportView):
+    queryset = SlurmQOS.objects.all()
+    model_form = forms.SlurmQOSImportForm
+
+
+@register_model_view(SlurmQOS, "bulk_delete", path="delete", detail=False)
+class SlurmQOSBulkDeleteView(generic.BulkDeleteView):
+    queryset = SlurmQOS.objects.all()
+    filterset = filtersets.SlurmQOSFilterSet
+    table = tables.SlurmQOSTable
+
 
 #
 # Slurm clusters
@@ -106,3 +161,147 @@ class SlurmPartitionBulkDeleteView(generic.BulkDeleteView):
     queryset = SlurmPartition.objects.all()
     filterset = filtersets.SlurmPartitionFilterSet
     table = tables.SlurmPartitionTable
+
+
+#
+# Slurm accounts
+#
+
+
+@register_model_view(SlurmAccount, "list", path="", detail=False)
+class SlurmAccountListView(generic.ObjectListView):
+    queryset = SlurmAccount.objects.all()
+    filterset = filtersets.SlurmAccountFilterSet
+    filterset_form = forms.SlurmAccountFilterSetForm
+    table = tables.SlurmAccountTable
+
+
+@register_model_view(SlurmAccount)
+class SlurmAccountView(GetRelatedModelsMixin, generic.ObjectView):
+    queryset = SlurmAccount.objects.all()
+
+    def get_extra_context(self, request, instance):
+        return {
+            "related_models": self.get_related_models(request, instance),
+        }
+
+
+@register_model_view(SlurmAccount, "add", detail=False)
+@register_model_view(SlurmAccount, "edit")
+class SlurmAccountEditView(generic.ObjectEditView):
+    queryset = SlurmAccount.objects.all()
+    form = forms.SlurmAccountForm
+
+
+@register_model_view(SlurmAccount, "delete")
+class SlurmAccountDeleteView(generic.ObjectDeleteView):
+    queryset = SlurmAccount.objects.all()
+
+
+@register_model_view(SlurmAccount, "bulk_import", path="import", detail=False)
+class SlurmAccountBulkImportView(generic.BulkImportView):
+    queryset = SlurmAccount.objects.all()
+    model_form = forms.SlurmAccountImportForm
+
+
+@register_model_view(SlurmAccount, "bulk_delete", path="delete", detail=False)
+class SlurmAccountBulkDeleteView(generic.BulkDeleteView):
+    queryset = SlurmAccount.objects.all()
+    filterset = filtersets.SlurmAccountFilterSet
+    table = tables.SlurmAccountTable
+
+
+#
+# Slurm associations
+#
+
+
+@register_model_view(SlurmAssociation, "list", path="", detail=False)
+class SlurmAssociationListView(generic.ObjectListView):
+    queryset = SlurmAssociation.objects.all()
+    filterset = filtersets.SlurmAssociationFilterSet
+    filterset_form = forms.SlurmAssociationFilterSetForm
+    table = tables.SlurmAssociationTable
+
+
+@register_model_view(SlurmAssociation)
+class SlurmAssociationView(GetRelatedModelsMixin, generic.ObjectView):
+    queryset = SlurmAssociation.objects.all()
+
+    def get_extra_context(self, request, instance):
+        return {
+            "related_models": self.get_related_models(request, instance),
+        }
+
+
+@register_model_view(SlurmAssociation, "add", detail=False)
+@register_model_view(SlurmAssociation, "edit")
+class SlurmAssociationEditView(generic.ObjectEditView):
+    queryset = SlurmAssociation.objects.all()
+    form = forms.SlurmAssociationForm
+
+
+@register_model_view(SlurmAssociation, "delete")
+class SlurmAssociationDeleteView(generic.ObjectDeleteView):
+    queryset = SlurmAssociation.objects.all()
+
+
+@register_model_view(SlurmAssociation, "bulk_import", path="import", detail=False)
+class SlurmAssociationBulkImportView(generic.BulkImportView):
+    queryset = SlurmAssociation.objects.all()
+    model_form = forms.SlurmAssociationImportForm
+
+
+@register_model_view(SlurmAssociation, "bulk_delete", path="delete", detail=False)
+class SlurmAssociationBulkDeleteView(generic.BulkDeleteView):
+    queryset = SlurmAssociation.objects.all()
+    filterset = filtersets.SlurmAssociationFilterSet
+    table = tables.SlurmAssociationTable
+
+
+#
+# Slurm users
+#
+
+
+@register_model_view(SlurmUser, "list", path="", detail=False)
+class SlurmUserListView(generic.ObjectListView):
+    queryset = SlurmUser.objects.all()
+    filterset = filtersets.SlurmUserFilterSet
+    filterset_form = forms.SlurmUserFilterSetForm
+    table = tables.SlurmUserTable
+
+
+@register_model_view(SlurmUser)
+class SlurmUserView(GetRelatedModelsMixin, generic.ObjectView):
+    queryset = SlurmUser.objects.all()
+
+    def get_extra_context(self, request, instance):
+        return {
+            "related_models": self.get_related_models(request, instance),
+        }
+
+
+@register_model_view(SlurmUser, "add", detail=False)
+@register_model_view(SlurmUser, "edit")
+class SlurmUserEditView(generic.ObjectEditView):
+    queryset = SlurmUser.objects.all()
+    form = forms.SlurmUserForm
+
+
+@register_model_view(SlurmUser, "delete")
+class SlurmUserDeleteView(generic.ObjectDeleteView):
+    queryset = SlurmUser.objects.all()
+
+
+@register_model_view(SlurmUser, "bulk_import", path="import", detail=False)
+class SlurmUserBulkImportView(generic.BulkImportView):
+    queryset = SlurmUser.objects.all()
+    model_form = forms.SlurmUserImportForm
+
+
+@register_model_view(SlurmUser, "bulk_delete", path="delete", detail=False)
+class SlurmUserBulkDeleteView(generic.BulkDeleteView):
+    queryset = SlurmUser.objects.all()
+    filterset = filtersets.SlurmUserFilterSet
+    table = tables.SlurmUserTable

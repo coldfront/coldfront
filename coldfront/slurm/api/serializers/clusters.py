@@ -4,14 +4,46 @@
 
 from coldfront.api.serializers import AllocatableResourceModelSerializer, PrimaryModelSerializer
 from coldfront.api.serializers.fields import RelatedObjectCountField
-from coldfront.slurm.models import SlurmCluster, SlurmPartition
+from coldfront.slurm.models import (
+    SlurmAccount,
+    SlurmAssociation,
+    SlurmCluster,
+    SlurmPartition,
+    SlurmQOS,
+    SlurmUser,
+)
 from coldfront.tenancy.api.serializers.tenants import TenantSerializer
+from coldfront.users.api.serializers.nested import NestedGroupSerializer
 
-from .nested import NestedSlurmClusterSerializer
+from .nested import (
+    NestedSlurmAccountSerializer,
+    NestedSlurmClusterSerializer,
+    NestedSlurmQOSSerializer,
+)
+
+
+class SlurmQOSSerializer(PrimaryModelSerializer):
+    class Meta:
+        model = SlurmQOS
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "name",
+            "description",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
+        ]
+        brief_fields = ("id", "url", "display", "name", "description")
 
 
 class SlurmClusterSerializer(AllocatableResourceModelSerializer, PrimaryModelSerializer):
     tenant = TenantSerializer(nested=True, required=False, allow_null=True, default=None)
+    default_qos = NestedSlurmQOSSerializer(nested=True, required=False, allow_null=True, default=None)
+    qos_list = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
     partition_count = RelatedObjectCountField("partitions")
 
     class Meta:
@@ -31,12 +63,20 @@ class SlurmClusterSerializer(AllocatableResourceModelSerializer, PrimaryModelSer
             "last_updated",
             "partition_count",
             "schema",
+            "default_qos",
+            "qos_list",
+            "fairshare",
+            "features",
+            "classification",
         ]
         brief_fields = ("id", "url", "display", "name", "description", "locked")
 
 
 class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelSerializer):
     cluster = NestedSlurmClusterSerializer(nested=True)
+    qos_list = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
+    allow_groups = NestedGroupSerializer(nested=True, many=True, required=False)
+    allow_accounts = NestedSlurmAccountSerializer(nested=True, many=True, required=False)
 
     class Meta:
         model = SlurmPartition
@@ -54,5 +94,95 @@ class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelS
             "created",
             "last_updated",
             "schema",
+            "max_jobs",
+            "max_submit_jobs",
+            "max_tres_per_job",
+            "max_tres_per_node",
+            "max_tres_mins_per_job",
+            "max_wall_duration_per_job",
+            "fairshare",
+            "qos_list",
+            "allow_groups",
+            "allow_accounts",
         ]
         brief_fields = ("id", "url", "display", "name", "description", "locked")
+
+
+class SlurmAccountSerializer(PrimaryModelSerializer):
+    cluster = NestedSlurmClusterSerializer(nested=True)
+    qos_list = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
+
+    class Meta:
+        model = SlurmAccount
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "cluster",
+            "name",
+            "description",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
+            "fairshare",
+            "qos_list",
+        ]
+        brief_fields = ("id", "url", "display", "name", "description")
+
+
+class SlurmAssociationSerializer(PrimaryModelSerializer):
+    slurm_account = NestedSlurmAccountSerializer(nested=True, required=False, allow_null=True, default=None)
+    parent = NestedSlurmAccountSerializer(nested=True, required=False, allow_null=True, default=None)
+    default_qos = NestedSlurmQOSSerializer(nested=True, required=False, allow_null=True, default=None)
+
+    class Meta:
+        model = SlurmAssociation
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "allocation",
+            "slurm_account",
+            "parent",
+            "default_qos",
+            "fairshare",
+            "max_jobs",
+            "max_submit_jobs",
+            "max_tres_per_job",
+            "max_tres_mins_per_job",
+            "max_wall_duration_per_job",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
+        ]
+        brief_fields = ("id", "url", "display", "slurm_account", "fairshare")
+
+
+class SlurmUserSerializer(PrimaryModelSerializer):
+    cluster = NestedSlurmClusterSerializer(nested=True)
+    default_account = NestedSlurmAccountSerializer(nested=True, required=False, allow_null=True, default=None)
+    default_qos = NestedSlurmQOSSerializer(nested=True, required=False, allow_null=True, default=None)
+
+    class Meta:
+        model = SlurmUser
+        fields = [
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "cluster",
+            "user",
+            "default_account",
+            "default_wckey",
+            "default_qos",
+            "admin_level",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
+        ]
+        brief_fields = ("id", "url", "display", "user", "cluster", "default_account", "admin_level")

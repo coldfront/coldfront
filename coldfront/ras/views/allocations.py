@@ -44,6 +44,7 @@ class AllocationView(GetRelatedModelsMixin, generic.ObjectView):
         transitions = self.get_permitted_actions(request.user, model=Allocation, actions=actions) if actions else None
         return {
             "transitions": transitions,
+            "related_models": self.get_related_models(request, instance),
         }
 
 

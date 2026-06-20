@@ -331,7 +331,6 @@ class AllocatableResourceMixin(models.Model):
     name = models.CharField(
         verbose_name=_("name"),
         max_length=100,
-        unique=True,
     )
 
     schema = models.JSONField(

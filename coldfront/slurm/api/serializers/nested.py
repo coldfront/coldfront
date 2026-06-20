@@ -1,4 +1,3 @@
-# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
 # SPDX-FileCopyrightText: (C) ColdFront Authors
 #
 # SPDX-License-Identifier: Apache-2.0
@@ -10,7 +9,16 @@ from coldfront.slurm import models
 __all__ = (
     "NestedSlurmClusterSerializer",
     "NestedSlurmPartitionSerializer",
+    "NestedSlurmQOSSerializer",
+    "NestedSlurmAccountSerializer",
 )
+
+
+class NestedSlurmQOSSerializer(WritableNestedSerializer):
+    class Meta:
+        model = models.SlurmQOS
+        fields = ["id", "url", "display_url", "display", "name"]
+        brief_fields = ("id", "url", "display", "name")
 
 
 class NestedSlurmClusterSerializer(WritableNestedSerializer):
@@ -23,5 +31,12 @@ class NestedSlurmClusterSerializer(WritableNestedSerializer):
 class NestedSlurmPartitionSerializer(WritableNestedSerializer):
     class Meta:
         model = models.SlurmPartition
+        fields = ["id", "url", "display_url", "display", "name"]
+        brief_fields = ("id", "url", "display", "name")
+
+
+class NestedSlurmAccountSerializer(WritableNestedSerializer):
+    class Meta:
+        model = models.SlurmAccount
         fields = ["id", "url", "display_url", "display", "name"]
         brief_fields = ("id", "url", "display", "name")

@@ -5,9 +5,39 @@
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.slurm.models import SlurmCluster, SlurmPartition
+from coldfront.slurm.models import (
+    SlurmAccount,
+    SlurmAssociation,
+    SlurmCluster,
+    SlurmPartition,
+    SlurmQOS,
+    SlurmUser,
+)
 from coldfront.tables import PrimaryModelTable, columns
 from coldfront.tenancy.tables.columns import TenancyColumnsMixin
+
+
+class SlurmQOSTable(PrimaryModelTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    tags = columns.TagColumn(
+        url_name="slurm:slurmqos_list",
+    )
+
+    class Meta(PrimaryModelTable.Meta):
+        model = SlurmQOS
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "description",
+            "tags",
+            "created",
+            "last_updated",
+        )
+        default_columns = ("pk", "name", "description")
 
 
 class SlurmClusterTable(TenancyColumnsMixin, PrimaryModelTable):
@@ -48,6 +78,7 @@ class SlurmPartitionTable(PrimaryModelTable):
     )
     cluster = columns.ColoredLabelColumn(
         verbose_name=_("Cluster"),
+        linkify=True,
     )
     tags = columns.TagColumn(
         url_name="slurm:slurmpartition_list",
@@ -66,4 +97,90 @@ class SlurmPartitionTable(PrimaryModelTable):
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "cluster", "name", "description", "locked")
+        default_columns = ("pk", "name", "cluster", "description", "locked")
+
+
+class SlurmAccountTable(PrimaryModelTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    cluster = columns.ColoredLabelColumn(
+        verbose_name=_("Cluster"),
+    )
+    tags = columns.TagColumn(
+        url_name="slurm:slurmaccount_list",
+    )
+
+    class Meta(PrimaryModelTable.Meta):
+        model = SlurmAccount
+        fields = (
+            "pk",
+            "id",
+            "cluster",
+            "name",
+            "description",
+            "tags",
+            "created",
+            "last_updated",
+        )
+        default_columns = ("pk", "name", "cluster", "description")
+
+
+class SlurmAssociationTable(PrimaryModelTable):
+    allocation = tables.Column(
+        linkify=("slurm:slurmassociation", {"pk": tables.A("id")}),
+        verbose_name=_("Allocation"),
+    )
+    slurm_account = columns.ColoredLabelColumn(
+        verbose_name=_("Slurm Account"),
+    )
+    tags = columns.TagColumn(
+        url_name="slurm:slurmassociation_list",
+    )
+
+    class Meta(PrimaryModelTable.Meta):
+        model = SlurmAssociation
+        fields = (
+            "pk",
+            "id",
+            "allocation",
+            "slurm_account",
+            "fairshare",
+            "tags",
+            "created",
+            "last_updated",
+        )
+        default_columns = ("pk", "allocation", "slurm_account", "fairshare")
+
+
+class SlurmUserTable(PrimaryModelTable):
+    user = tables.Column(
+        linkify=("slurm:slurmuser", {"pk": tables.A("id")}),
+        verbose_name=_("User"),
+    )
+
+    cluster = columns.ColoredLabelColumn(
+        verbose_name=_("Cluster"),
+    )
+    default_account = columns.ColoredLabelColumn(
+        verbose_name=_("Default Account"),
+    )
+    tags = columns.TagColumn(
+        url_name="slurm:slurmuser_list",
+    )
+
+    class Meta(PrimaryModelTable.Meta):
+        model = SlurmUser
+        fields = (
+            "pk",
+            "id",
+            "user",
+            "cluster",
+            "default_account",
+            "admin_level",
+            "tags",
+            "created",
+            "last_updated",
+        )
+        default_columns = ("pk", "user", "cluster", "default_account", "admin_level")

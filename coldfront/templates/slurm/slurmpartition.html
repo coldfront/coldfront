@@ -6,26 +6,46 @@
   <c-slot name="left">
     <c-card.fields :object="object" only>
       <c-card.fields.item label="{% trans 'Cluster' %}">
-          <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
+        <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Description' %}">
-          {{ object.description|placeholder }}
+        {{ object.description|placeholder }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Locked' %}">
-          <c-ui.checkmark :value="object.locked" />
+        <c-ui.checkmark :value="object.locked" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Jobs' %}">
+        {{ object.max_jobs|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Submit Jobs' %}">
+        {{ object.max_submit_jobs|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Fairshare' %}">
+        {{ object.fairshare }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Allowed Groups' %}">
+        {% for group in object.allow_groups.all %}
+            <c-ui.badge link="{{ group.get_absolute_url }}" :value="group" />
+        {% endfor %}
       </c-card.fields.item>
     </c-card.fields>
 
     <c-card.tags :object="object" only />
-    <c-card.related_objects :object="object" :models="related_models" only />
   </c-slot>
 
   <c-slot name="right">
     <c-card.custom_fields :object="object" only />
-    <c-card.schema :object="object" only />
+    <c-card.related_objects :object="object" :models="related_models" only />
   </c-slot>
 
+  <c-slot name="bottom">
+    <c-card.schema :object="object" only />
+  </c-slot>
 </c-layout.panels>
 {% endblock %}

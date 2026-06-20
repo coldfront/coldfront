@@ -222,3 +222,15 @@ if len(SITE_STATIC) > 0:
 # Add system site static files
 if os.path.isdir("/usr/share/coldfront/site/static"):
     STATICFILES_DIRS.insert(0, "/usr/share/coldfront/site/static")
+
+# This silences the following Django warning:
+#
+#   (fields.W342) Setting unique=True on a ForeignKey has the same effect as using a OneToOneField.
+#   HINT: ForeignKey(unique=True) is usually   better served by a OneToOneField.
+#
+# ColdFront uses ForeignKey(unique=True) on certain AllocatableResource app
+# models that require a link to ras.Allocation for storing custom allocation
+# data. Using ForeignKey instead of OneToOneField is necessary for the
+# "related_models" feature so these models show up in the UI for Allocations
+# under "Related".
+SILENCED_SYSTEM_CHECKS = ["fields.W342"]

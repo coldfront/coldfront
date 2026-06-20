@@ -5,16 +5,16 @@
 <c-layout.panels>
   <c-slot name="left">
     <c-card.fields :object="object" only>
-      <c-card.fields.item label="{% trans 'Description' %}">
-        {{ object.description|placeholder }}
+      <c-card.fields.item label="{% trans 'Allocation' %}">
+        {{ object.allocation|linkify }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Locked' %}">
-        <c-ui.checkmark :value="object.locked" />
+      <c-card.fields.item label="{% trans 'Slurm Account' %}">
+        {{ object.slurm_account|linkify }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Tenant' %}">
-        {{ object.tenant|placeholder }}
+      <c-card.fields.item label="{% trans 'Parent' %}">
+        {{ object.parent|placeholder }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Default QOS' %}">
@@ -25,12 +25,12 @@
         {{ object.fairshare }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Features' %}">
-        {{ object.features|placeholder }}
+      <c-card.fields.item label="{% trans 'Max Jobs' %}">
+        {{ object.max_jobs|placeholder }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Classification' %}">
-        {{ object.classification|placeholder }}
+      <c-card.fields.item label="{% trans 'Max Submit Jobs' %}">
+        {{ object.max_submit_jobs|placeholder }}
       </c-card.fields.item>
     </c-card.fields>
 
@@ -39,11 +39,7 @@
 
   <c-slot name="right">
     <c-card.custom_fields :object="object" only />
-    <c-card.related_objects :object="object" :models="related_models" only />
   </c-slot>
 
-  <c-slot name="bottom">
-    <c-card.schema :object="object" only />
-  </c-slot>
 </c-layout.panels>
 {% endblock %}

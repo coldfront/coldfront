@@ -59,17 +59,21 @@ RESOURCES_MENU = Menu(
     icon_class="fa-solid fa-server",
     groups=(
         MenuGroup(
-            label=_("Slurm Clusters"),
-            items=(
-                get_model_item("slurm", "slurmcluster", _("Slurm Clusters")),
-                get_model_item("slurm", "slurmpartition", _("Slurm Partitions")),
-            ),
-        ),
-        MenuGroup(
             label=_("Generic Resources"),
             items=(
                 get_model_item("ras", "resource", _("Resources")),
                 get_model_item("ras", "resourcetype", _("Resource Types")),
+            ),
+        ),
+        MenuGroup(
+            label=_("Slurm"),
+            items=(
+                get_model_item("slurm", "slurmcluster", _("Clusters")),
+                get_model_item("slurm", "slurmpartition", _("Partitions")),
+                get_model_item("slurm", "slurmaccount", _("Accounts")),
+                get_model_item("slurm", "slurmassociation", _("Associations")),
+                get_model_item("slurm", "slurmuser", _("Users")),
+                get_model_item("slurm", "slurmqos", _("QOS")),
             ),
         ),
     ),
