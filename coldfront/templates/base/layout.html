@@ -2,6 +2,10 @@
 {% load i18n %}
 {% load plugins %}
 
+{% block head %}
+{% plugin_head %}
+{% endblock %}
+
 {% block layout %}
 <div class="layout-wrapper">
    {% include 'base/sidebar.html' %}
