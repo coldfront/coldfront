@@ -330,3 +330,411 @@ class SlurmAssociationLifecycleTest(TestCase):
         # (can_activate returns True since _check_permission_callbacks finds nothing)
         self.assertTrue(flow.activate.can_proceed())
         self.assertTrue(flow.activate.has_perm(self.user1))
+
+
+class ProjectUserSignalTest(TestCase):
+    """Test the ProjectUser signal handlers in coldfront.slurm.listeners."""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Users
+        cls.user1 = User.objects.create(username="Alice")
+        cls.user2 = User.objects.create(username="Bob")
+        cls.user3 = User.objects.create(username="Charlie")
+        cls.user4 = User.objects.create(username="Diana")
+
+        # Projects
+        cls.project_a = Project.objects.create(name="Project Alpha", owner=cls.user1)
+        cls.project_b = Project.objects.create(name="Project Beta", owner=cls.user2)
+
+        # Slurm clusters and accounts
+        cls.cluster1 = SlurmCluster.objects.create(name="hpc01")
+        cls.cluster2 = SlurmCluster.objects.create(name="hpc02")
+        cls.account_a = SlurmAccount.objects.create(name="alpha-acct", cluster=cls.cluster1)
+        cls.account_b = SlurmAccount.objects.create(name="beta-acct", cluster=cls.cluster2)
+        cls.account_c = SlurmAccount.objects.create(name="alt-acct", cluster=cls.cluster1)
+
+        # Resource type and content types
+        cls.resource_type = ResourceType.objects.create(name="Generic Resource")
+        cls.cluster_ct = ContentType.objects.get_for_model(SlurmCluster)
+        cls.partition_ct = ContentType.objects.get_for_model(SlurmPartition)
+        cls.resource_ct = ContentType.objects.get_for_model(Resource)
+
+    def _create_active_allocation(self, resource, resource_ct, project, account):
+        """Create an allocation and move it through the flow to ACTIVE status,
+        setting slurm_account on the association before activation."""
+        allocation = Allocation.objects.create(
+            justification="Need compute resources",
+            project=project,
+            owner=self.user1,
+            resource_object_type=resource_ct,
+            resource_object_id=resource.pk,
+        )
+        flow = AllocationStatusFlow(allocation)
+        flow.request()
+        association = SlurmAssociation.objects.get(allocation=allocation)
+        association.slurm_account = account
+        association.save()
+        flow.approve()
+        # Bypass permission callbacks for activation
+        AllocationStatusFlow._transition_permission_callbacks = {}
+        flow.activate()
+        return allocation
+
+    def _create_active_partition_allocation(self, partition, project, account):
+        """Create an allocation on a SlurmPartition and activate it."""
+        return self._create_active_allocation(partition, self.partition_ct, project, account)
+
+    def _create_active_cluster_allocation(self, cluster, project, account):
+        """Create an allocation on a SlurmCluster and activate it."""
+        return self._create_active_allocation(cluster, self.cluster_ct, project, account)
+
+    # ---------- ProjectUser created ----------
+
+    def test_project_user_created_creates_slurm_user_for_cluster(self):
+        """Creating a ProjectUser on a project with an active slurm allocation
+        should create a SlurmUser for that user on the cluster."""
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        su = SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).first()
+        self.assertIsNotNone(su)
+        self.assertEqual(su.default_account, self.account_a)
+
+    def test_project_user_created_creates_slurm_user_for_partition(self):
+        """Creating a ProjectUser on a project with an active partition allocation
+        should create a SlurmUser on the partition's cluster."""
+        partition = SlurmPartition.objects.create(name="gpu", cluster=self.cluster1)
+        self._create_active_partition_allocation(partition, self.project_a, self.account_a)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        su = SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).first()
+        self.assertIsNotNone(su)
+        self.assertEqual(su.default_account, self.account_a)
+
+    def test_project_user_created_ignores_non_slurm_allocation(self):
+        """Creating a ProjectUser on a project with only non-slurm allocations
+        should not create any SlurmUser."""
+        resource = Resource.objects.create(
+            name="Generic Storage",
+            slug="s-1",
+            resource_type=self.resource_type,
+        )
+        Allocation.objects.create(
+            justification="Need storage",
+            project=self.project_a,
+            owner=self.user1,
+            resource_object_type=self.resource_ct,
+            resource_object_id=resource.pk,
+            status=AllocationStatusChoices.STATUS_ACTIVE,
+        )
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        self.assertFalse(SlurmUser.objects.filter(user=self.user3).exists())
+
+    def test_project_user_created_skips_when_no_active_allocation(self):
+        """Creating a ProjectUser on a project with only non-active slurm
+        allocations should not create any SlurmUser."""
+        allocation = Allocation.objects.create(
+            justification="Pending",
+            project=self.project_a,
+            owner=self.user1,
+            resource_object_type=self.cluster_ct,
+            resource_object_id=self.cluster1.pk,
+            status=AllocationStatusChoices.STATUS_NEW,
+        )
+        # The on_allocation_created signal creates a SlurmAssociation automatically.
+        # Set the account on it.
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        assoc.slurm_account = self.account_a
+        assoc.save()
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        self.assertFalse(SlurmUser.objects.filter(user=self.user3).exists())
+
+    def test_project_user_created_uses_first_account_when_multiple(self):
+        """When a project has multiple active allocations on the same cluster
+        with different accounts, the first one's account should be used."""
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_c)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        su = SlurmUser.objects.get(user=self.user3, cluster=self.cluster1)
+        self.assertEqual(su.default_account, self.account_a)
+
+    def test_project_user_created_handles_multiple_clusters(self):
+        """When a project has active allocations on multiple clusters, a
+        SlurmUser should be created for each cluster."""
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+        self._create_active_cluster_allocation(self.cluster2, self.project_a, self.account_b)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        su1 = SlurmUser.objects.get(user=self.user3, cluster=self.cluster1)
+        su2 = SlurmUser.objects.get(user=self.user3, cluster=self.cluster2)
+        self.assertEqual(su1.default_account, self.account_a)
+        self.assertEqual(su2.default_account, self.account_b)
+
+    def test_project_user_created_updates_existing_slurm_user(self):
+        """If a SlurmUser already exists for the user/cluster but with a
+        different account, it should be updated to the project's account."""
+        other_account = SlurmAccount.objects.create(name="old-acct", cluster=self.cluster1)
+        SlurmUser.objects.create(
+            user=self.user3,
+            cluster=self.cluster1,
+            default_account=other_account,
+        )
+
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+
+        su = SlurmUser.objects.get(user=self.user3, cluster=self.cluster1)
+        self.assertEqual(su.default_account, self.account_a)
+
+    # ---------- ProjectUser deleted ----------
+
+    def test_project_user_deleted_removes_slurm_user_when_no_other_access(self):
+        """When a ProjectUser is deleted and the user has no other projects
+        with access to that cluster, the SlurmUser should be removed."""
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+
+        pu = ProjectUser.objects.create(project=self.project_a, user=self.user3)
+        self.assertTrue(SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).exists())
+
+        pu.delete()
+
+        self.assertFalse(SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).exists())
+
+    def test_project_user_deleted_keeps_slurm_user_when_other_project_has_access(self):
+        """When a ProjectUser is deleted but the user has another project
+        with access to the same cluster, the SlurmUser should remain."""
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+        self._create_active_cluster_allocation(self.cluster1, self.project_b, self.account_c)
+
+        pu_a = ProjectUser.objects.create(project=self.project_a, user=self.user3)
+        ProjectUser.objects.create(project=self.project_b, user=self.user3)
+        self.assertTrue(SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).exists())
+
+        pu_a.delete()
+
+        su = SlurmUser.objects.get(user=self.user3, cluster=self.cluster1)
+        self.assertEqual(su.default_account, self.account_c)
+
+    def test_project_user_deleted_removes_only_affected_users_slurm_user(self):
+        """When a ProjectUser is deleted, other users' SlurmUser records
+        should remain untouched."""
+        # Add user1 as a member of project_a
+        ProjectUser.objects.create(project=self.project_a, user=self.user1)
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+        self.assertTrue(SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).exists())
+        self.assertTrue(SlurmUser.objects.filter(user=self.user1, cluster=self.cluster1).exists())
+
+        pu = ProjectUser.objects.get(project=self.project_a, user=self.user3)
+        pu.delete()
+
+        self.assertFalse(SlurmUser.objects.filter(user=self.user3, cluster=self.cluster1).exists())
+        self.assertTrue(SlurmUser.objects.filter(user=self.user1, cluster=self.cluster1).exists())
+
+    def test_project_user_deleted_removes_all_slurm_users_when_no_projects(self):
+        """When a user's last ProjectUser is deleted (they have no other
+        projects), all their SlurmUser records should be removed."""
+        self._create_active_cluster_allocation(self.cluster1, self.project_a, self.account_a)
+        self._create_active_cluster_allocation(self.cluster2, self.project_a, self.account_b)
+
+        ProjectUser.objects.create(project=self.project_a, user=self.user3)
+        self.assertEqual(
+            SlurmUser.objects.filter(user=self.user3).count(), 2
+        )
+
+        pu = ProjectUser.objects.get(project=self.project_a, user=self.user3)
+        pu.delete()
+
+        self.assertFalse(SlurmUser.objects.filter(user=self.user3).exists())
+
+
+class SlurmAssociationSignalTest(TestCase):
+    """Test the SlurmAssociation post_save signal handler."""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Users
+        cls.user1 = User.objects.create(username="Alice")
+        cls.user2 = User.objects.create(username="Bob")
+        cls.user3 = User.objects.create(username="Charlie")
+
+        # Project with members
+        cls.project = Project.objects.create(name="Research Lab", owner=cls.user1)
+        ProjectUser.objects.create(project=cls.project, user=cls.user1)
+        ProjectUser.objects.create(project=cls.project, user=cls.user2)
+        ProjectUser.objects.create(project=cls.project, user=cls.user3)
+
+        # Slurm cluster and account
+        cls.cluster = SlurmCluster.objects.create(name="hpc01")
+        cls.account_a = SlurmAccount.objects.create(name="acct-a", cluster=cls.cluster)
+        cls.account_b = SlurmAccount.objects.create(name="acct-b", cluster=cls.cluster)
+        cls.account_c = SlurmAccount.objects.create(name="acct-c", cluster=cls.cluster)
+
+        # Content types
+        cls.cluster_ct = ContentType.objects.get_for_model(SlurmCluster)
+        cls.resource_type = ResourceType.objects.create(name="Generic Resource")
+
+    def _create_active_allocation(self):
+        """Create an active allocation on the cluster with account_a."""
+        allocation = Allocation.objects.create(
+            justification="Need compute",
+            project=self.project,
+            owner=self.user1,
+            resource_object_type=self.cluster_ct,
+            resource_object_id=self.cluster.pk,
+        )
+        flow = AllocationStatusFlow(allocation)
+        flow.request()
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        assoc.slurm_account = self.account_a
+        assoc.save()
+        flow.approve()
+        AllocationStatusFlow._transition_permission_callbacks = {}
+        flow.activate()
+        return allocation
+
+    # ---------- SlurmAssociation account change on active allocation ----------
+
+    def test_slurm_association_account_change_updates_slurm_users(self):
+        """Changing slurm_account on an association for an active allocation
+        should update the default_account on existing SlurmUser records."""
+        allocation = self._create_active_allocation()
+
+        # After activation, SlurmUser records exist with account_a
+        su1 = SlurmUser.objects.get(user=self.user1, cluster=self.cluster)
+        self.assertEqual(su1.default_account, self.account_a)
+
+        # Admin changes the slurm_account on the association
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        assoc.slurm_account = self.account_b
+        assoc.save()
+
+        # SlurmUser records should now have account_b
+        su1 = SlurmUser.objects.get(user=self.user1, cluster=self.cluster)
+        self.assertEqual(su1.default_account, self.account_b)
+
+        su2 = SlurmUser.objects.get(user=self.user2, cluster=self.cluster)
+        self.assertEqual(su2.default_account, self.account_b)
+
+        su3 = SlurmUser.objects.get(user=self.user3, cluster=self.cluster)
+        self.assertEqual(su3.default_account, self.account_b)
+
+    def test_slurm_association_account_change_ignores_non_active_allocation(self):
+        """Changing slurm_account on an association for a non-active allocation
+        should not update SlurmUser records."""
+        # Create a non-active allocation (STATUS_NEW)
+        allocation = Allocation.objects.create(
+            justification="Pending",
+            project=self.project,
+            owner=self.user1,
+            resource_object_type=self.cluster_ct,
+            resource_object_id=self.cluster.pk,
+            status=AllocationStatusChoices.STATUS_NEW,
+        )
+        # The on_allocation_created signal creates a SlurmAssociation
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        assoc.slurm_account = self.account_a
+        assoc.save()
+
+        # No SlurmUser records should exist yet (allocation is not active)
+        self.assertFalse(SlurmUser.objects.filter(cluster=self.cluster).exists())
+
+        # Now change the account — still no SlurmUser records
+        assoc.slurm_account = self.account_b
+        assoc.save()
+
+        self.assertFalse(SlurmUser.objects.filter(cluster=self.cluster).exists())
+
+    def test_slurm_association_account_change_noop_when_same_account(self):
+        """Saving a SlurmAssociation with the same slurm_account should not
+        trigger any updates."""
+        allocation = self._create_active_allocation()
+
+        su1 = SlurmUser.objects.get(user=self.user1, cluster=self.cluster)
+        self.assertEqual(su1.default_account, self.account_a)
+
+        # Save the association with the same account — no change
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        assoc.save()  # no account change, just save
+
+        # SlurmUser should still have account_a
+        su1 = SlurmUser.objects.get(user=self.user1, cluster=self.cluster)
+        self.assertEqual(su1.default_account, self.account_a)
+
+    def test_slurm_association_account_change_ignores_non_slurm_resource(self):
+        """Changing slurm_account on an association linked to a non-slurm
+        allocation should be ignored (no SlurmUser records to update)."""
+        resource = Resource.objects.create(
+            name="Generic Storage",
+            slug="s-1",
+            resource_type=self.resource_type,
+        )
+        resource_ct = ContentType.objects.get_for_model(Resource)
+        allocation = Allocation.objects.create(
+            justification="Storage",
+            project=self.project,
+            owner=self.user1,
+            resource_object_type=resource_ct,
+            resource_object_id=resource.pk,
+            status=AllocationStatusChoices.STATUS_ACTIVE,
+        )
+        # The on_allocation_created signal creates a SlurmAssociation even for
+        # non-slurm resources? No — it checks isinstance(resource, (SlurmCluster, SlurmPartition))
+        # So no association is created automatically. Create one manually.
+        assoc = SlurmAssociation.objects.create(allocation=allocation, slurm_account=self.account_a)
+
+        # Change the account
+        assoc.slurm_account = self.account_b
+        assoc.save()
+
+        # No SlurmUser records should exist for this cluster
+        self.assertFalse(SlurmUser.objects.filter(cluster=self.cluster).exists())
+
+    def test_slurm_association_account_change_creates_missing_slurm_users(self):
+        """If SlurmUser records don't exist yet (e.g., member added after
+        activation but before account was set), changing the account should
+        create them."""
+        # Create active allocation but with no slurm_account set
+        allocation = Allocation.objects.create(
+            justification="Need compute",
+            project=self.project,
+            owner=self.user1,
+            resource_object_type=self.cluster_ct,
+            resource_object_id=self.cluster.pk,
+        )
+        flow = AllocationStatusFlow(allocation)
+        flow.request()
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        # Don't set slurm_account yet
+        flow.approve()
+        AllocationStatusFlow._transition_permission_callbacks = {}
+        flow.activate()
+
+        # No SlurmUser records because account is None
+        self.assertFalse(SlurmUser.objects.filter(cluster=self.cluster).exists())
+
+        # Admin sets the slurm_account
+        assoc.slurm_account = self.account_a
+        assoc.save()
+
+        # SlurmUser records should now exist for all project members
+        su1 = SlurmUser.objects.get(user=self.user1, cluster=self.cluster)
+        self.assertEqual(su1.default_account, self.account_a)
+
+        su2 = SlurmUser.objects.get(user=self.user2, cluster=self.cluster)
+        self.assertEqual(su2.default_account, self.account_a)
+
+        su3 = SlurmUser.objects.get(user=self.user3, cluster=self.cluster)
+        self.assertEqual(su3.default_account, self.account_a)
