@@ -105,6 +105,9 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
     form = None
     form_component_name = "form"
 
+    def post_save(self, obj, form, request, object_created):
+        pass
+
     def dispatch(self, request, *args, **kwargs):
         # Determine required permission based on whether we are editing an existing object
         self._permission_action = "change" if kwargs else "add"
@@ -235,6 +238,8 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
                     # Check that the new object conforms with any assigned object-level permissions
                     if not self.queryset.filter(pk=obj.pk).exists():
                         raise PermissionsViolation()
+
+                self.post_save(obj, form, request, object_created)
 
                 msg = "{} {}".format(
                     "Created" if object_created else "Modified", self.queryset.model._meta.verbose_name
