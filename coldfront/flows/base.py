@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+# SPDX-FileCopyrightText: (C) ColdFront Authors
 #
 # SPDX-License-Identifier: Apache-2.0
 
@@ -22,6 +22,14 @@ class ColdFrontFlow(object):
     # Callback signature: callback(obj, *, source=source, target=target)
     _target_callbacks: dict = {}
 
+    # Registry mapping transition_slug -> list of permission callbacks
+    # Callbacks are invoked before a transition to check if it should be allowed.
+    # Callback signature: callback(obj, user) -> bool
+    #   obj: the object being transitioned (e.g., Allocation instance)
+    #   user: the User requesting the transition
+    #   Returns True to allow the transition, False to deny.
+    _transition_permission_callbacks: dict = {}
+
     @classmethod
     def register_target_callback(cls, target_state, callback):
         """
@@ -32,6 +40,21 @@ class ColdFrontFlow(object):
             callback: A callable with signature callback(obj, *, source, target)
         """
         cls._target_callbacks.setdefault(target_state, []).append(callback)
+
+    @classmethod
+    def register_transition_permission_callback(cls, transition_slug, callback):
+        """
+        Register a permission callback for a specific transition.
+
+        The callback receives (obj, user) and returns True to allow the
+        transition or False to deny it.  If any registered callback returns
+        False the transition is blocked.
+
+        Args:
+            transition_slug: The slug of the transition (e.g., "activate", "request")
+            callback: A callable with signature callback(obj, user) -> bool
+        """
+        cls._transition_permission_callbacks.setdefault(transition_slug, []).append(callback)
 
     def _dispatch_target_callbacks(self, obj, source, target):
         """
@@ -50,6 +73,18 @@ class ColdFrontFlow(object):
                     callback.__name__ if hasattr(callback, "__name__") else callback,
                     target,
                 )
+
+    def _check_permission_callbacks(self, transition_slug, obj, user):
+        """
+        Run all registered permission callbacks for a given transition slug.
+
+        Returns True if all callbacks return True, False if any callback
+        returns False.
+        """
+        for callback in self._transition_permission_callbacks.get(transition_slug, []):
+            if not callback(obj, user):
+                return False
+        return True
 
     @classmethod
     def get_actions(cls, transitions):
@@ -72,3 +107,57 @@ class ColdFrontFlow(object):
             return func.label
 
         return ""
+
+
+def register_target_callback(flow_cls, target_state):
+    """
+    Decorator factory: register a callback function with a flow class for a
+    given target state.
+
+    The decorated function receives (obj, *, source, target) and is called
+    after a transition successfully reaches target_state.
+
+    Usage:
+        @register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_NEW)
+        def on_allocation_requested(allocation, *, source, target):
+            ...
+
+    This is equivalent to:
+        AllocationStatusFlow.register_target_callback(
+            AllocationStatusChoices.STATUS_NEW,
+            on_allocation_requested,
+        )
+    """
+
+    def decorator(func):
+        flow_cls.register_target_callback(target_state, func)
+        return func
+
+    return decorator
+
+
+def register_transition_permission_callback(flow_cls, transition_slug):
+    """
+    Decorator factory: register a permission callback with a flow class for a
+    given transition slug.
+
+    The decorated function receives (obj, user) and returns True to allow the
+    transition or False to deny it.
+
+    Usage:
+        @register_transition_permission_callback(AllocationStatusFlow, "activate")
+        def can_activate_check(allocation, user):
+            ...
+
+    This is equivalent to:
+        AllocationStatusFlow.register_transition_permission_callback(
+            "activate",
+            can_activate_check,
+        )
+    """
+
+    def decorator(func):
+        flow_cls.register_transition_permission_callback(transition_slug, func)
+        return func
+
+    return decorator

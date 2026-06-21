@@ -226,6 +226,7 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             "owner",
             "start_date",
             "end_date",
+            "status",
             "comments",
             "description",
             "justification",
@@ -233,6 +234,12 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             "tenant",
             "tenant_group",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Disable allocation status as this managed by the AlocationStatusFlow
+        self.fields["status"].widget.attrs["disabled"] = True
+        self.fields["status"].required = False
 
     @property
     def fieldsets(self):
@@ -244,6 +251,7 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             ),
             Fieldset(
                 _("Allocation"),
+                "status",
                 "project",
                 "owner",
                 DateTime("start_date"),
@@ -258,7 +266,7 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
         ]
 
 
-class AllocationActivateForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
+class AllocationActivateForm(AllocationBaseForm, PrimaryModelForm):
     project = DynamicModelChoiceField(
         label=_("Project"),
         queryset=Project.objects.all(),
@@ -281,9 +289,6 @@ class AllocationActivateForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             "comments",
             "description",
             "justification",
-            "tags",
-            "tenant",
-            "tenant_group",
         ]
 
     @property

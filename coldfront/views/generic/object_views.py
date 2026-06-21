@@ -105,9 +105,6 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
     form = None
     form_component_name = "form"
 
-    def post_save(self, obj, form, request, object_created):
-        pass
-
     def dispatch(self, request, *args, **kwargs):
         # Determine required permission based on whether we are editing an existing object
         self._permission_action = "change" if kwargs else "add"
@@ -238,8 +235,6 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
                     # Check that the new object conforms with any assigned object-level permissions
                     if not self.queryset.filter(pk=obj.pk).exists():
                         raise PermissionsViolation()
-
-                self.post_save(obj, form, request, object_created)
 
                 msg = "{} {}".format(
                     "Created" if object_created else "Modified", self.queryset.model._meta.verbose_name
@@ -583,9 +578,6 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
     flow = None
     action = None
 
-    def post_save(self, obj, form, request):
-        pass
-
     def get_required_permission(self):
         return get_permission_for_model(self.queryset.model, list(self.action.permissions_required)[0])
 
@@ -596,6 +588,15 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
             raise ImproperlyConfigured(
                 f"{self.__class__.__name__} defines an action with an invalid tansition {self.action.transition} for workflow {self.flow.__name__}"
             )
+
+    def get_object(self, **kwargs):
+        """
+        Return an object for editing. If no keyword arguments have been specified, this will be a new instance.
+        """
+        if not kwargs:
+            # We're creating a new object
+            return self.queryset.model()
+        return super().get_object(**kwargs)
 
     def alter_object(self, obj, request, url_args, url_kwargs):
         """
@@ -637,6 +638,8 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
         # Ensure the workflow transition can proceed
         transition_func = self.get_transition_func(flow, request)
         if not transition_func.can_proceed():
+            raise PermissionDenied
+        if not transition_func.has_perm(request.user):
             raise PermissionDenied
 
         context = {
@@ -696,6 +699,8 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
         transition_func = self.get_transition_func(flow, request)
         if not transition_func.can_proceed():
             raise PermissionDenied
+        if not transition_func.has_perm(request.user):
+            raise PermissionDenied
 
         if form.is_valid():
             logger.debug("Form validation was successful")
@@ -705,14 +710,13 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
                     object_created = form.instance.pk is None
                     obj = form.save(commit=False)
 
-                    # Perform the transition from the flow
-                    transition_func()
-
-                    self.post_save(obj, form, request)
-
                     # Check that the new object conforms with any assigned object-level permissions
                     if not self.queryset.filter(pk=obj.pk).exists():
                         raise PermissionsViolation()
+
+                # Perform the transition from the flow
+                flow = self.flow(obj)
+                transition_func()
 
                 msg = "{} {}".format(
                     "Created" if object_created else "Modified", self.queryset.model._meta.verbose_name

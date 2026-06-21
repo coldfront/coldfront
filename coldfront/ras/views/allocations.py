@@ -54,17 +54,9 @@ class AllocationEditView(generic.ObjectEditView):
     queryset = Allocation.objects.all()
     form = forms.AllocationForm
 
-    def post_save(self, obj, form, request, object_created):
-        if object_created:
-            flow = ALLOCATION_WORKFLOW(obj)
-            flow.request()
-
     def alter_object(self, obj, request, url_args, url_kwargs):
         if not obj.pk:
             obj.owner = request.user
-            flow = ALLOCATION_WORKFLOW(obj)
-            if not flow.can_request(request.user):
-                raise PermissionDenied
 
         return super().alter_object(obj, request, url_args, url_kwargs)
 

@@ -2,8 +2,13 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+from coldfront.flows import register_target_callback, register_transition_permission_callback
 from coldfront.ras.choices import AllocationStatusChoices
 from coldfront.ras.flows import AllocationStatusFlow
+from coldfront.ras.models import Allocation
 from coldfront.slurm.models import (
     SlurmAssociation,
     SlurmCluster,
@@ -12,25 +17,27 @@ from coldfront.slurm.models import (
 )
 
 
-def on_allocation_requested(allocation, *, source, target):
+@receiver(post_save, sender=Allocation)
+def on_allocation_created(instance, created, **kwargs):
     """
-    On allocation requested: create a SlurmAssociation record linking to the
+    When an allocation is created: create a SlurmAssociation record linking to the
     allocation if one doesn't already exist.
-
-    Callback signature: callback(obj, *, source, target)
-    where obj is the allocation instance.
     """
-    resource = allocation.resource_object
+    if not created:
+        return
+
+    resource = instance.resource_object
     if resource is None:
         return
     if not isinstance(resource, (SlurmCluster, SlurmPartition)):
         return
 
     # Create a SlurmAssociation if one doesn't already exist
-    if not SlurmAssociation.objects.filter(allocation=allocation).exists():
-        SlurmAssociation.objects.create(allocation=allocation)
+    if not SlurmAssociation.objects.filter(allocation=instance).exists():
+        SlurmAssociation.objects.create(allocation=instance)
 
 
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_ACTIVE)
 def on_allocation_activated(allocation, *, source, target):
     """
     On allocation activate: for each ProjectUser (allocation.project.users),
@@ -73,14 +80,20 @@ def on_allocation_activated(allocation, *, source, target):
         )
 
 
-# Register callbacks with AllocationStatusFlow.
-# These are called during _dispatch_target_callbacks in
-# AllocationStatusFlow._on_success_transition after a transition succeeds.
-AllocationStatusFlow.register_target_callback(
-    AllocationStatusChoices.STATUS_NEW,
-    on_allocation_requested,
-)
-AllocationStatusFlow.register_target_callback(
-    AllocationStatusChoices.STATUS_ACTIVE,
-    on_allocation_activated,
-)
+@register_transition_permission_callback(AllocationStatusFlow, "activate")
+def can_activate_check(allocation, user):
+    """
+    Permission callback for the "activate" transition.
+
+    Blocks activation if the allocation has a SlurmAssociation that still
+    has no slurm_account set.  Non-slurm allocations are always allowed.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, (SlurmCluster, SlurmPartition)):
+        return True
+
+    association = SlurmAssociation.objects.filter(allocation=allocation).first()
+    if association is None:
+        return False
+
+    return association.slurm_account is not None

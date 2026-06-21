@@ -59,20 +59,22 @@ class SlurmAssociationLifecycleTest(TestCase):
     def setUp(self):
         # Clear any previously registered callbacks before each test
         AllocationStatusFlow._target_callbacks = {}
+        AllocationStatusFlow._transition_permission_callbacks = {}
 
         # Re-register the slurm lifecycle callbacks
         from coldfront.slurm.listeners import (
+            can_activate_check,
             on_allocation_activated,
-            on_allocation_requested,
         )
 
         AllocationStatusFlow.register_target_callback(
-            AllocationStatusChoices.STATUS_NEW,
-            on_allocation_requested,
-        )
-        AllocationStatusFlow.register_target_callback(
             AllocationStatusChoices.STATUS_ACTIVE,
             on_allocation_activated,
+        )
+
+        AllocationStatusFlow.register_transition_permission_callback(
+            "activate",
+            can_activate_check,
         )
 
     def _create_allocation(self, resource, resource_ct):
@@ -194,7 +196,12 @@ class SlurmAssociationLifecycleTest(TestCase):
         self.assertEqual(bob_su.default_account, self.slurm_account)
 
     def test_activate_skips_when_no_slurm_account_set(self):
-        """Activating should not create SlurmUser records if slurm_account is null."""
+        """Activating should not create SlurmUser records if slurm_account is null.
+
+        Note: bypasses permission callbacks because the condition check would
+        otherwise block the activate transition."""
+        AllocationStatusFlow._transition_permission_callbacks = {}
+
         allocation = self._create_allocation(self.cluster, self.cluster_ct)
 
         flow = AllocationStatusFlow(allocation)
@@ -207,7 +214,12 @@ class SlurmAssociationLifecycleTest(TestCase):
         self.assertFalse(SlurmUser.objects.filter(cluster=self.cluster).exists())
 
     def test_activate_skips_when_no_slurm_association(self):
-        """Activating should skip if no SlurmAssociation exists for the allocation."""
+        """Activating should skip if no SlurmAssociation exists for the allocation.
+
+        Note: bypasses permission callbacks because the condition check would
+        otherwise block the activate transition."""
+        AllocationStatusFlow._transition_permission_callbacks = {}
+
         allocation = self._create_allocation(self.cluster, self.cluster_ct)
 
         # Bypass the request callback — go straight to approve/activate
@@ -242,3 +254,79 @@ class SlurmAssociationLifecycleTest(TestCase):
         flow.activate()
 
         self.assertFalse(SlurmUser.objects.filter(cluster__isnull=False).exists())
+
+    # ---------- Permission callback tests ----------
+
+    def test_activate_blocked_when_no_slurm_account(self):
+        """
+        The permission callback should block activation when the SlurmAssociation
+        has no slurm_account set.
+        """
+        allocation = self._create_allocation(self.cluster, self.cluster_ct)
+
+        flow = AllocationStatusFlow(allocation)
+        flow.request()  # creates SlurmAssociation without slurm_account
+        flow.approve()  # moves to STATUS_APPROVED
+
+        # can_proceed passes (source matches), but has_perm fails (permission
+        # callback denies it)
+        self.assertTrue(flow.activate.can_proceed())
+        self.assertFalse(flow.activate.has_perm(self.user1))
+
+    def test_activate_allowed_when_slurm_account_set(self):
+        """
+        The permission callback should allow activation when the SlurmAssociation
+        has a slurm_account set.
+        """
+        allocation = self._create_allocation(self.cluster, self.cluster_ct)
+
+        flow = AllocationStatusFlow(allocation)
+        flow.request()
+
+        # Set the slurm_account on the association
+        association = SlurmAssociation.objects.get(allocation=allocation)
+        association.slurm_account = self.slurm_account
+        association.save()
+
+        flow.approve()
+
+        self.assertTrue(flow.activate.can_proceed())
+        self.assertTrue(flow.activate.has_perm(self.user1))
+
+    def test_activate_allowed_for_non_slurm_allocation(self):
+        """
+        The permission callback should allow activation for non-slurm allocations
+        (no SlurmAssociation exists — no restriction).
+        """
+        resource = Resource.objects.create(
+            name="Generic Storage",
+            slug="s-1",
+            resource_type=self.resource_type,
+        )
+        allocation = self._create_allocation(resource, self.resource_ct)
+
+        flow = AllocationStatusFlow(allocation)
+        flow.request()  # no SlurmAssociation created for non-slurm
+        flow.approve()
+
+        self.assertTrue(flow.activate.can_proceed())
+        self.assertTrue(flow.activate.has_perm(self.user1))
+
+    def test_activate_blocked_when_no_registered_permission_callback(self):
+        """
+        If no permission callback is registered, can_activate should return True
+        and the transition should be allowed.
+        """
+        # Clear permission callbacks for this test
+        AllocationStatusFlow._transition_permission_callbacks = {}
+
+        allocation = self._create_allocation(self.cluster, self.cluster_ct)
+
+        flow = AllocationStatusFlow(allocation)
+        flow.request()  # creates SlurmAssociation without slurm_account
+        flow.approve()
+
+        # With no permission callbacks registered, has_perm should pass
+        # (can_activate returns True since _check_permission_callbacks finds nothing)
+        self.assertTrue(flow.activate.can_proceed())
+        self.assertTrue(flow.activate.has_perm(self.user1))

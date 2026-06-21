@@ -85,6 +85,7 @@ class AllocationStatusFlow(ColdFrontFlow):
             AllocationStatusChoices.STATUS_RENEW,
         },
         target=AllocationStatusChoices.STATUS_APPROVED,
+        permission=this.can_approve,
         label=_("Approve"),
     )
     def approve(self):
@@ -96,6 +97,7 @@ class AllocationStatusFlow(ColdFrontFlow):
             AllocationStatusChoices.STATUS_RENEW,
         },
         target=AllocationStatusChoices.STATUS_DENIED,
+        permission=this.can_deny,
         label=_("Deny"),
     )
     def deny(self):
@@ -109,6 +111,7 @@ class AllocationStatusFlow(ColdFrontFlow):
             AllocationStatusChoices.STATUS_DENIED,
         },
         target=AllocationStatusChoices.STATUS_RENEW,
+        permission=this.can_renew,
         label=_("Renew"),
     )
     def renew(self):
@@ -120,6 +123,7 @@ class AllocationStatusFlow(ColdFrontFlow):
         },
         target=AllocationStatusChoices.STATUS_ACTIVE,
         label=_("Activate"),
+        permission=this.can_activate,
     )
     def activate(self):
         pass
@@ -127,6 +131,7 @@ class AllocationStatusFlow(ColdFrontFlow):
     @status.transition(
         source=AllocationStatusChoices.STATUS_ACTIVE,
         target=AllocationStatusChoices.STATUS_EXPIRED,
+        permission=this.can_expire,
         label=_("Expire"),
     )
     def expire(self):
@@ -135,6 +140,7 @@ class AllocationStatusFlow(ColdFrontFlow):
     @status.transition(
         source=AllocationStatusChoices.STATUS_ACTIVE,
         target=AllocationStatusChoices.STATUS_REVOKED,
+        permission=this.can_revoke,
         label=_("Revoke"),
     )
     def revoke(self):
@@ -142,6 +148,49 @@ class AllocationStatusFlow(ColdFrontFlow):
 
     def can_request(self, user):
         """
-        This function checks to see if the allocation can be requested. Sub-classes can override to provide custom logic
+        This function checks to see if the allocation can be requested.
         """
+        if not self._check_permission_callbacks("request", self.allocation, user):
+            return False
+        return True
+
+    def can_approve(self, user):
+        """
+        This function checks to see if the allocation can be approved.
+        """
+        if not self._check_permission_callbacks("approve", self.allocation, user):
+            return False
+        return True
+
+    def can_deny(self, user):
+        """
+        This function checks to see if the allocation can be denied.
+        """
+        if not self._check_permission_callbacks("deny", self.allocation, user):
+            return False
+        return True
+
+    def can_activate(self, user):
+        """
+        This function checks to see if the allocation can be activated.
+        """
+        # Check registered plugin permission callbacks
+        if not self._check_permission_callbacks("activate", self.allocation, user):
+            return False
+        return True
+
+    def can_expire(self, user):
+        """
+        This function checks to see if the allocation can be expired.
+        """
+        if not self._check_permission_callbacks("expire", self.allocation, user):
+            return False
+        return True
+
+    def can_renew(self, user):
+        """
+        This function checks to see if the allocation can be renewed.
+        """
+        if not self._check_permission_callbacks("renew", self.allocation, user):
+            return False
         return True

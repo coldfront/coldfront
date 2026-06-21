@@ -174,12 +174,9 @@ class ViewTestCases:
                     changed_object_type=ContentType.objects.get_for_model(instance), changed_object_id=instance.pk
                 )
 
-                # If an the object is modified in the post_save objectchanges could be > 1
-                # This happens in allocations
-                self.assertTrue(len(objectchanges) >= 1)
-                if len(objectchanges) == 1:
-                    self.assertEqual(objectchanges[0].action, ObjectChangeActionChoices.ACTION_CREATE)
-                    self.assertEqual(objectchanges[0].message, self.form_data["changelog_message"])
+                self.assertEqual(len(objectchanges), 1)
+                self.assertEqual(objectchanges[0].action, ObjectChangeActionChoices.ACTION_CREATE)
+                self.assertEqual(objectchanges[0].message, self.form_data["changelog_message"])
 
         @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], EXEMPT_EXCLUDE_MODELS=[])
         def test_create_object_with_constrained_permission(self):
