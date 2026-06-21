@@ -15,3 +15,8 @@ class SlurmConfig(AppConfig):
         from coldfront.models.features import register_models
 
         register_models(*self.get_models())
+
+        # Import listeners to register ViewFlow callbacks
+        from . import (
+            listeners,  # noqa: F401
+        )
