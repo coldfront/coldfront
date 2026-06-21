@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -356,6 +358,77 @@ class SlurmAssociation(PrimaryModel):
         null=True,
         verbose_name=_("max wall duration per job"),
     )
+
+    def clean(self):
+        """
+        Validate that the slurm_account does not create duplicate
+        (user, acct, partition) tuples in the Slurm dump.
+
+        Raises ValidationError if another SlurmAssociation with the same
+        slurm_account targets the same resource scope:
+          - Same SlurmCluster directly (partition='')
+          - Same SlurmPartition (partition='<name>')
+        """
+        super().clean()
+        if self.slurm_account is None:
+            return
+
+        allocation = self.allocation
+        if allocation is None:
+            return
+        resource = allocation.resource_object
+        if resource is None:
+            return
+
+        # Query other associations with the same slurm_account, excluding self
+        qs = SlurmAssociation.objects.filter(slurm_account=self.slurm_account)
+        if self.pk:
+            qs = qs.exclude(pk=self.pk)
+
+        if isinstance(resource, SlurmCluster):
+            # Direct-to-cluster: check no other association targets the same
+            # cluster directly with the same account
+            cluster_ct = ContentType.objects.get_for_model(SlurmCluster)
+            for other in qs.select_related("allocation"):
+                other_alloc = other.allocation
+                if (
+                    other_alloc.resource_object_type_id == cluster_ct.pk
+                    and other_alloc.resource_object_id == resource.pk
+                ):
+                    raise ValidationError(
+                        _(
+                            "Another association already uses account "
+                            "'%(account)s' for a direct allocation on "
+                            "cluster '%(cluster)s'."
+                        )
+                        % {
+                            "account": self.slurm_account.name,
+                            "cluster": resource.name,
+                        }
+                    )
+
+        elif isinstance(resource, SlurmPartition):
+            # Partition-specific: check no other association targets the same
+            # partition with the same account
+            partition_ct = ContentType.objects.get_for_model(SlurmPartition)
+            for other in qs.select_related("allocation"):
+                other_alloc = other.allocation
+                if (
+                    other_alloc.resource_object_type_id == partition_ct.pk
+                    and other_alloc.resource_object_id == resource.pk
+                ):
+                    raise ValidationError(
+                        _(
+                            "Another association already uses account "
+                            "'%(account)s' for partition '%(partition)s' "
+                            "on cluster '%(cluster)s'."
+                        )
+                        % {
+                            "account": self.slurm_account.name,
+                            "partition": resource.name,
+                            "cluster": resource.cluster.name,
+                        }
+                    )
 
     clone_fields = (
         "slurm_account",

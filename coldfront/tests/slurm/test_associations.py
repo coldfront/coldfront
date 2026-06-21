@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from coldfront.ras.choices import AllocationStatusChoices
@@ -738,3 +739,137 @@ class SlurmAssociationSignalTest(TestCase):
 
         su3 = SlurmUser.objects.get(user=self.user3, cluster=self.cluster)
         self.assertEqual(su3.default_account, self.account_a)
+
+
+class SlurmAccountValidationTest(TestCase):
+    """Test SlurmAssociation.clean() account conflict validation."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.user1 = User.objects.create(username="Alice")
+        cls.project = Project.objects.create(name="Research Lab", owner=cls.user1)
+
+        cls.cluster_a = SlurmCluster.objects.create(name="hpc01")
+        cls.cluster_b = SlurmCluster.objects.create(name="hpc02")
+        cls.partition_gpu = SlurmPartition.objects.create(name="gpu", cluster=cls.cluster_a)
+        cls.partition_cpu = SlurmPartition.objects.create(name="cpu", cluster=cls.cluster_a)
+        cls.partition_gpu_b = SlurmPartition.objects.create(name="gpu", cluster=cls.cluster_b)
+
+        cls.account_x = SlurmAccount.objects.create(name="acct-x", cluster=cls.cluster_a)
+        cls.account_y = SlurmAccount.objects.create(name="acct-y", cluster=cls.cluster_a)
+
+        cls.cluster_ct = ContentType.objects.get_for_model(SlurmCluster)
+        cls.partition_ct = ContentType.objects.get_for_model(SlurmPartition)
+
+    def _make_association(self, resource, resource_ct, account=None):
+        """Create an allocation and its SlurmAssociation for a given resource.
+
+        If account is provided, sets it on the association and saves.
+        Otherwise the association is saved with slurm_account=None (default).
+        """
+        allocation = Allocation.objects.create(
+            justification="test",
+            project=self.project,
+            owner=self.user1,
+            resource_object_type=resource_ct,
+            resource_object_id=resource.pk,
+        )
+        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        if account is not None:
+            assoc.slurm_account = account
+            assoc.save()
+        return assoc
+
+    # ---------- Same cluster, direct target ----------
+
+    def test_same_cluster_same_account_direct_raises(self):
+        """Two direct-to-cluster allocations on the same cluster with the
+        same account should raise ValidationError."""
+        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        # assoc1 is saved — now try creating a second one
+        assoc2 = self._make_association(self.cluster_a, self.cluster_ct)
+        assoc2.slurm_account = self.account_x
+        with self.assertRaises(ValidationError):
+            assoc2.full_clean()
+
+    def test_same_cluster_different_accounts_direct_ok(self):
+        """Two direct-to-cluster allocations on the same cluster with
+        different accounts should be allowed."""
+        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        assoc2 = self._make_association(self.cluster_a, self.cluster_ct)
+        assoc2.slurm_account = self.account_y
+        # Should not raise
+        assoc2.full_clean()
+
+    def test_different_clusters_same_account_direct_ok(self):
+        """Two direct-to-cluster allocations on different clusters with the
+        same account should be allowed."""
+        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        assoc2 = self._make_association(self.cluster_b, self.cluster_ct)
+        assoc2.slurm_account = self.account_x
+        # Should not raise (different clusters)
+        assoc2.full_clean()
+
+    # ---------- Same partition ----------
+
+    def test_same_partition_same_account_raises(self):
+        """Two allocations targeting the same partition with the same
+        account should raise ValidationError."""
+        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        assoc2 = self._make_association(self.partition_gpu, self.partition_ct)
+        assoc2.slurm_account = self.account_x
+        with self.assertRaises(ValidationError):
+            assoc2.full_clean()
+
+    def test_same_partition_different_accounts_ok(self):
+        """Two allocations targeting the same partition with different
+        accounts should be allowed."""
+        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        assoc2 = self._make_association(self.partition_gpu, self.partition_ct)
+        assoc2.slurm_account = self.account_y
+        assoc2.full_clean()
+
+    def test_different_partitions_same_account_ok(self):
+        """Two allocations on different partitions with the same account
+        should be allowed (different partition values)."""
+        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        assoc2 = self._make_association(self.partition_cpu, self.partition_ct)
+        assoc2.slurm_account = self.account_x
+        assoc2.full_clean()
+
+    def test_same_partition_different_clusters_same_account_ok(self):
+        """Two allocations targeting 'gpu' on different clusters with the
+        same account should be allowed."""
+        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        # partition_gpu_b is 'gpu' on cluster_b
+        assoc2 = self._make_association(self.partition_gpu_b, self.partition_ct)
+        assoc2.slurm_account = self.account_x
+        assoc2.full_clean()
+
+    # ---------- Mixed: direct vs partition ----------
+
+    def test_one_direct_one_partition_same_account_ok(self):
+        """One direct-to-cluster and one partition-specific allocation with
+        the same account should be allowed (partition='' vs partition='<name>')."""
+        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        assoc2 = self._make_association(self.partition_gpu, self.partition_ct)
+        assoc2.slurm_account = self.account_x
+        assoc2.full_clean()
+
+    # ---------- Edge cases ----------
+
+    def test_null_account_skips_validation(self):
+        """Setting slurm_account to None should skip validation."""
+        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        assoc2 = self._make_association(self.cluster_a, self.cluster_ct)
+        # Leave slurm_account as None
+        assoc2.full_clean()  # should not raise
+
+    def test_update_self_no_conflict(self):
+        """Updating an association should not flag itself as a conflict."""
+        assoc = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        # Re-save with the same account — should not raise
+        assoc.full_clean()
+        # Change to a different account — should not raise
+        assoc.slurm_account = self.account_y
+        assoc.full_clean()
