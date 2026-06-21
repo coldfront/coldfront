@@ -72,6 +72,7 @@ class AllocationStatusFlow(ColdFrontFlow):
 
     @status.transition(
         source=AllocationStatusChoices.STATUS_NEW,
+        target=AllocationStatusChoices.STATUS_NEW,
         label=_("Request"),
         permission=this.can_request,
     )
