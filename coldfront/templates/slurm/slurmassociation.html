@@ -9,6 +9,10 @@
         {{ object.allocation|linkify }}
       </c-card.fields.item>
 
+      <c-card.fields.item label="{% trans 'Resource' %}">
+        {{ object.allocation.resource_object|linkify }}
+      </c-card.fields.item>
+
       <c-card.fields.item label="{% trans 'Slurm Account' %}">
         {{ object.slurm_account|linkify }}
       </c-card.fields.item>

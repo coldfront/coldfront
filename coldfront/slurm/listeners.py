@@ -77,10 +77,7 @@ def _sync_slurm_users_for_user(user):
                 cluster_account[pk] = (cluster, account)
 
     # Get all SlurmUser records for this user
-    existing_users = {
-        su.cluster.pk: su
-        for su in SlurmUser.objects.filter(user=user).select_related("cluster")
-    }
+    existing_users = {su.cluster.pk: su for su in SlurmUser.objects.filter(user=user).select_related("cluster")}
 
     # For each cluster the user has access to
     for pk, (cluster, slurm_account) in cluster_account.items():

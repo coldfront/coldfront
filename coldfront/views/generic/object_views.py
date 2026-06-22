@@ -708,7 +708,7 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
             try:
                 with transaction.atomic(using=router.db_for_write(model)):
                     object_created = form.instance.pk is None
-                    obj = form.save(commit=False)
+                    obj = form.save()
 
                     # Check that the new object conforms with any assigned object-level permissions
                     if not self.queryset.filter(pk=obj.pk).exists():

@@ -135,6 +135,11 @@ class SlurmAssociationTable(PrimaryModelTable):
     slurm_account = columns.ColoredLabelColumn(
         verbose_name=_("Slurm Account"),
     )
+    resource_object = tables.Column(
+        verbose_name=_("Resource"),
+        linkify=True,
+        accessor=tables.A("allocation__resource_object"),
+    )
     tags = columns.TagColumn(
         url_name="slurm:slurmassociation_list",
     )
@@ -146,12 +151,13 @@ class SlurmAssociationTable(PrimaryModelTable):
             "id",
             "allocation",
             "slurm_account",
+            "resource_object",
             "fairshare",
             "tags",
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "allocation", "slurm_account", "fairshare")
+        default_columns = ("pk", "allocation", "slurm_account", "resource_object", "fairshare")
 
 
 class SlurmUserTable(PrimaryModelTable):

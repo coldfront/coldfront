@@ -3,8 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from django.http import HttpResponse
+from django.utils.translation import gettext_lazy as _
+
 from coldfront.registry import register_model_view
 from coldfront.slurm import filtersets, forms, tables
+from coldfront.slurm.dump import generate_cluster_dump
 from coldfront.slurm.models import (
     SlurmAccount,
     SlurmAssociation,
@@ -16,6 +20,7 @@ from coldfront.slurm.models import (
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
+from coldfront.views.utils import ViewTab
 
 #
 # Slurm QOS
@@ -113,6 +118,43 @@ class SlurmClusterBulkDeleteView(generic.BulkDeleteView):
     queryset = SlurmCluster.objects.all()
     filterset = filtersets.SlurmClusterFilterSet
     table = tables.SlurmClusterTable
+
+
+@register_model_view(SlurmCluster, "dump", path="dump")
+class SlurmClusterDumpView(generic.ObjectView):
+    queryset = SlurmCluster.objects.all()
+    template_name = "slurm/slurmcluster/dump.html"
+    actions = ()
+    tab = ViewTab(
+        label=_("Export Dump"),
+        #        badge=lambda obj: _count_active_assocs(obj),
+        permission="slurm.view_slurmcluster",
+        weight=500,
+    )
+
+    def get_extra_context(self, request, instance):
+        dump_content = generate_cluster_dump(instance)
+        return {
+            "dump_content": dump_content,
+        }
+
+    def get(self, request, *args, **kwargs):
+        # If the Export button was clicked (download=True), return a file
+        if request.GET.get("download"):
+            instance = self.get_object(**kwargs)
+            dump_content = generate_cluster_dump(instance)
+            response = HttpResponse(dump_content, content_type="text/plain")
+            filename = f"slurm_dump_{instance.name}.txt"
+            response["Content-Disposition"] = f"attachment; filename={filename}"
+            return response
+        return super().get(request, *args, **kwargs)
+
+
+def _count_active_assocs(cluster):
+    """Count active associations for a cluster (for the tab badge)."""
+    from coldfront.slurm.dump import _get_active_associations
+
+    return len(_get_active_associations(cluster))
 
 
 #

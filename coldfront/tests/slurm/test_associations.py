@@ -551,9 +551,7 @@ class ProjectUserSignalTest(TestCase):
         self._create_active_cluster_allocation(self.cluster2, self.project_a, self.account_b)
 
         ProjectUser.objects.create(project=self.project_a, user=self.user3)
-        self.assertEqual(
-            SlurmUser.objects.filter(user=self.user3).count(), 2
-        )
+        self.assertEqual(SlurmUser.objects.filter(user=self.user3).count(), 2)
 
         pu = ProjectUser.objects.get(project=self.project_a, user=self.user3)
         pu.delete()
