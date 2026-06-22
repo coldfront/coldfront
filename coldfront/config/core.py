@@ -29,7 +29,6 @@ MAX_PAGE_SIZE = ENV.int("MAX_PAGE_SIZE", default=1000)
 FILTERS_NULL_CHOICE_LABEL = "None"
 FILTERS_NULL_CHOICE_VALUE = "null"
 FIELD_CHOICES = ENV.dict("FIELD_CHOICES", cast={"value": parse_choices_from_env}, default={})
-AUTO_SLUG_PREFIX = ENV.str("AUTO_SLUG_PREFIX", default="CF-")
 AUTO_SLUG_FUNC = ENV.str("AUTO_SLUG_FUNC", default="coldfront.models.utils.auto_generate_slug")
 ALLOCATION_WORKFLOW = ENV.str("ALLOCATION_WORKFLOW", default="coldfront.ras.flows.AllocationStatusFlow")
 

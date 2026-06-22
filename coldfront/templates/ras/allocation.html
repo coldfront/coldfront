@@ -23,8 +23,12 @@
   <c-slot name="left">
     <c-card.fields only>
       <c-slot name="header">
-          {{ object }}  <c-ui.badge value="{{object.status|title}}" :bg_color="object.get_status_color" />
+          Allocation  <c-ui.badge value="{{object.status|title}}" :bg_color="object.get_status_color" />
       </c-slot>
+
+      <c-card.fields.item label="{% trans 'Slug' %}">
+          {{ object.slug }}
+      </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Project' %}">
           {{ object.project|linkify }}

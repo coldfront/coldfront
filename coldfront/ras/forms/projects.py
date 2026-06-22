@@ -24,6 +24,7 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
         model = Project
         fields = [
             "name",
+            "slug",
             "status",
             "description",
             "tags",
@@ -35,10 +36,21 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
         Fieldset(
             _("Project"),
             "name",
+            "slug",
             "status",
             "description",
         ),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only admins can modify slug
+        if hasattr(self, "user") and self.user and self.user.is_authenticated and self.user.is_superuser:
+            return
+
+        self.fields["slug"].widget.attrs["disabled"] = "disabled"
+        self.fields["slug"].required = False
+        self.fields["slug"].disabled = True
 
 
 class ProjectUserForm(PrimaryModelForm):

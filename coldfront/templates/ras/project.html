@@ -11,6 +11,10 @@
 <c-layout.panels>
   <c-slot name="left">
     <c-card.fields :object="object" only>
+        <c-card.fields.item label="{% trans 'Slug' %}">
+            {{ object.slug }}
+        </c-card.fields.item>
+
       <c-card.fields.item label="{% trans 'Owner' %}">
           {{ object.owner.first_name }} {{ object.owner.last_name }} ({{ object.owner.username }})
       </c-card.fields.item>

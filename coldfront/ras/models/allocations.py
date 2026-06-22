@@ -113,7 +113,7 @@ class Allocation(PrimaryModel):
         return [t.slug for t in AllocationStatusFlow.status.get_outgoing_transitions(self.status)]
 
     def __str__(self):
-        return f"Allocation {self.slug}"
+        return self.slug
 
     @property
     def attributes(self):

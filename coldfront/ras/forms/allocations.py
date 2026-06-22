@@ -224,6 +224,7 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
         fields = [
             "project",
             "owner",
+            "slug",
             "start_date",
             "end_date",
             "status",
@@ -240,6 +241,15 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
         # Disable allocation status as this managed by the AlocationStatusFlow
         self.fields["status"].widget.attrs["disabled"] = True
         self.fields["status"].required = False
+        self.fields["status"].disabled = True
+
+        # Only admins can modify slug
+        if hasattr(self, "user") and self.user and self.user.is_authenticated and self.user.is_superuser:
+            return
+
+        self.fields["slug"].widget.attrs["disabled"] = "disabled"
+        self.fields["slug"].required = False
+        self.fields["slug"].disabled = True
 
     @property
     def fieldsets(self):
@@ -251,6 +261,7 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             ),
             Fieldset(
                 _("Allocation"),
+                "slug",
                 "status",
                 "project",
                 "owner",
