@@ -32,7 +32,7 @@
               </button>
 
               {% if request.user.is_authenticated %}
-              <a href="{% url 'account:notification_list' %}" class="btn btn-outline-secondary me-2 position-relative" title="{% trans "Notifications" %}">
+              <a href="{% url 'account:notification_list' %}" class="btn btn-outline-secondary me-4 position-relative" title="{% trans "Notifications" %}">
                 <i class="fa-solid fa-bell"></i>
                 {% if unread_notifications_count %}
                   <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">

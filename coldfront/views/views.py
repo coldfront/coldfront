@@ -28,9 +28,8 @@ class HomeView(LoginRequiredMixin, View):
                 for a in p.allocations.all():
                     allocations.append(a)
             for p in request.user.projects.all():
-                projects.append(p)
-                if hasattr(p, "allocations"):
-                    for a in p.allocations.all():
+                for a in p.project.allocations.all():
+                    if a not in allocations:
                         allocations.append(a)
 
         for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):

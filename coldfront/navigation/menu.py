@@ -48,6 +48,13 @@ ALLOCATIONS_MENU = Menu(
     icon_class="fa-solid fa-list-check",
     groups=(
         MenuGroup(
+            label=_("Projects"),
+            items=(
+                get_model_item("ras", "project", _("Projects")),
+                get_model_item("ras", "projectuser", _("Project Users")),
+            ),
+        ),
+        MenuGroup(
             label=_("Allocations"),
             items=(get_model_item("ras", "allocation", _("Allocations")),),
         ),
@@ -138,7 +145,6 @@ def get_menus():
     The result is cached since menus don't change without a Django restart.
     """
     menus = [
-        PROJECTS_MENU,
         ALLOCATIONS_MENU,
         RESOURCES_MENU,
         ORGANIZATION_MENU,
