@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import decimal
+import json
 
 from django import template
 from django.core.serializers.json import DjangoJSONEncoder
@@ -12,6 +13,12 @@ from django.utils.html import conditional_escape
 from taggit.managers import _TaggableManager
 
 from coldfront.views import get_action_url
+
+
+class JobLogDecoder(json.JSONDecoder):
+    """Custom JSON decoder for Job log entries."""
+
+    pass
 
 
 class CustomFieldJSONEncoder(DjangoJSONEncoder):

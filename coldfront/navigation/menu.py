@@ -127,6 +127,7 @@ ADMIN_MENU = Menu(
                     link_text=_("Notifications"),
                     staff_only=True,
                 ),
+                get_model_item("core", "job", _("Jobs"), actions=[]),
             ),
         ),
         MenuGroup(

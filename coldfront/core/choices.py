@@ -223,3 +223,47 @@ class ImportFormatChoices(ChoiceSet):
         (JSON, "JSON"),
         (YAML, "YAML"),
     ]
+
+
+class JobStatusChoices(ChoiceSet):
+    STATUS_PENDING = "pending"
+    STATUS_SCHEDULED = "scheduled"
+    STATUS_RUNNING = "running"
+    STATUS_COMPLETED = "completed"
+    STATUS_FAILED = "failed"
+    STATUS_ERRORED = "errored"
+
+    CHOICES = (
+        (STATUS_PENDING, _("Pending"), "default"),
+        (STATUS_SCHEDULED, _("Scheduled"), "info"),
+        (STATUS_RUNNING, _("Running"), "warning"),
+        (STATUS_COMPLETED, _("Completed"), "success"),
+        (STATUS_FAILED, _("Failed"), "danger"),
+        (STATUS_ERRORED, _("Errored"), "secondary"),
+    )
+
+    # States that are considered "enqueued" — waiting for or currently executing
+    ENQUEUED_STATE_CHOICES = (
+        STATUS_PENDING,
+        STATUS_SCHEDULED,
+        STATUS_RUNNING,
+    )
+
+    # States that are terminal — job has finished
+    TERMINAL_STATE_CHOICES = (
+        STATUS_COMPLETED,
+        STATUS_FAILED,
+        STATUS_ERRORED,
+    )
+
+
+class JobNotificationChoices(ChoiceSet):
+    NOTIFICATION_ALWAYS = "always"
+    NOTIFICATION_ON_FAILURE = "on_failure"
+    NOTIFICATION_NEVER = "never"
+
+    CHOICES = (
+        (NOTIFICATION_ALWAYS, _("Always")),
+        (NOTIFICATION_ON_FAILURE, _("On failure")),
+        (NOTIFICATION_NEVER, _("Never")),
+    )

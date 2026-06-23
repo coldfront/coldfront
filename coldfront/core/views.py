@@ -21,17 +21,64 @@ from coldfront.utils.data import shallow_compare_dict
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.htmx import htmx_partial
-from coldfront.views.object_actions import BulkExport
+from coldfront.views.object_actions import BulkDelete, BulkExport, DeleteObject
+from coldfront.views.utils import ViewTab
 
 from . import (
     filtersets,
     forms,
     tables,
 )
-from .models import CustomField, CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
+from .models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, Tag, TaggedItem
 from .plugins import get_local_plugins
 from .tables import CatalogPluginTable, PluginVersionTable
 from .templatetags.builtins.filters import render_markdown
+
+# Job model views
+
+
+@register_model_view(Job, "list", path="", detail=False)
+class JobListView(generic.ObjectListView):
+    queryset = Job.objects.all()
+    filterset = filtersets.JobFilterSet
+    filterset_form = forms.JobFilterForm
+    table = tables.JobTable
+    actions = (BulkExport, BulkDelete)
+
+
+@register_model_view(Job)
+class JobView(generic.ObjectView):
+    queryset = Job.objects.all()
+    actions = (DeleteObject,)
+
+
+@register_model_view(Job, "log", path="log")
+class JobLogView(generic.ObjectView):
+    queryset = Job.objects.all()
+    template_name = "core/job_log.html"
+    actions = ()
+    tab = ViewTab(
+        label=_("Log"),
+        permission="core.view_job",
+        weight=500,
+    )
+
+    def get_extra_context(self, request, instance):
+        return {
+            "log_entries": instance.log_entries,
+        }
+
+
+@register_model_view(Job, "delete")
+class JobDeleteView(generic.ObjectDeleteView):
+    queryset = Job.objects.all()
+
+
+@register_model_view(Job, "bulk_delete", path="delete", detail=False)
+class JobBulkDeleteView(generic.BulkDeleteView):
+    queryset = Job.objects.all()
+    table = tables.JobTable
+    filterset = filtersets.JobFilterSet
 
 
 @register_model_view(Tag, "list", path="", detail=False)

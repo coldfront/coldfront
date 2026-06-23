@@ -9,9 +9,9 @@ import re
 
 from django import template
 from django.conf import settings
-from django.contrib.humanize.templatetags.humanize import naturalday
+from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.urls import NoReverseMatch, reverse
-from django.utils.html import escape, format_html
+from django.utils.html import escape
 from django.utils.safestring import mark_safe
 from django.utils.timezone import localtime
 from markdown import markdown
@@ -75,7 +75,7 @@ def linkify(instance, attr=None):
     text = getattr(instance, attr) if attr is not None else str(instance)
     try:
         url = instance.get_absolute_url()
-        return format_html('<a href="{}">{}</a>', url, escape(text))
+        return mark_safe(f'<a href="{url}">{escape(text)}</a>')
     except (AttributeError, TypeError):
         return escape(text)
 
@@ -101,11 +101,11 @@ def fgcolor(value, dark="000000", light="ffffff"):
 def isodate(value):
     if type(value) is datetime.date:
         text = value.isoformat()
-        return format_html('<span title="{}">{}</span>', naturalday(value), text)
+        return mark_safe(f'<span title="{naturaltime(value)}">{text}</span>')
     elif type(value) is datetime.datetime:
         local_value = localtime(value) if value.tzinfo else value
         text = local_value.date().isoformat()
-        return format_html('<span title="{}">{}</span>', naturalday(value), text)
+        return mark_safe(f'<span title="{naturaltime(value)}">{text}</span>')
     else:
         return ""
 
@@ -126,7 +126,7 @@ def isodatetime(value, spec="seconds"):
         text = f"{isodate(value)} {isotime(value, spec=spec)}"
     else:
         return ""
-    return format_html('<span title="{}">{}</span>', naturalday(value), text)
+    return mark_safe(f'<span title="{naturaltime(value)}">{text}</span>')
 
 
 @register.filter("json")

@@ -21,6 +21,18 @@ CENTER_BASE_URL = ENV.str("CENTER_BASE_URL", default="")
 # This is in days
 ALLOCATION_DEFAULT_ALLOCATION_LENGTH = ENV.int("ALLOCATION_DEFAULT_ALLOCATION_LENGTH", default=365)
 
+# Number of days to retain ObjectChange records before PruneChangeLogJob deletes
+# them.  Set to 0 (or a negative value) to never delete changelog entries.
+CHANGELOG_RETENTION = ENV.int("CHANGELOG_RETENTION", default=90)
+
+# Number of days to retain completed Job records before prune_tasks deletes
+# them.  Set to 0 (or a negative value) to keep completed jobs indefinitely.
+JOB_COMPLETED_RETENTION = ENV.int("JOB_COMPLETED_RETENTION", default=90)
+
+# Number of days to retain failed/errored Job records before prune_tasks
+# deletes them.  Defaults to JOB_COMPLETED_RETENTION when not set.
+JOB_FAILED_RETENTION = ENV.int("JOB_FAILED_RETENTION", default=90)
+
 
 EXEMPT_VIEW_PERMISSIONS = []
 CHANGELOG_SKIP_EMPTY_CHANGES = True

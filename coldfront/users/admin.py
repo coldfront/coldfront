@@ -20,5 +20,3 @@ class ColdFrontGroupAdmin(GroupAdmin):
     model = Group
     list_display = ["name", "description"]
     search_fields = ["name"]
-
-

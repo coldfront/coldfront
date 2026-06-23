@@ -11,9 +11,10 @@ from coldfront.core.choices import (
     CustomFieldTypeChoices,
     CustomFieldUIEditableChoices,
     CustomFieldUIVisibleChoices,
+    JobStatusChoices,
     ObjectChangeActionChoices,
 )
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectChange, ObjectType, Tag
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, ObjectType, Tag
 from coldfront.forms import PrimaryModelFilterSetForm
 from coldfront.forms.fields import (
     ContentTypeChoiceField,
@@ -22,6 +23,22 @@ from coldfront.forms.fields import (
 from coldfront.forms.layouts import DateTime
 from coldfront.users.models import User
 from coldfront.utils.forms import add_blank_choice
+
+
+class JobFilterForm(PrimaryModelFilterSetForm):
+    model = Job
+    status = forms.MultipleChoiceField(
+        choices=JobStatusChoices,
+        required=False,
+        label=_("Status"),
+    )
+
+    fieldsets = (
+        Fieldset(
+            "Job",
+            "status",
+        ),
+    )
 
 
 class TagFilterForm(PrimaryModelFilterSetForm):

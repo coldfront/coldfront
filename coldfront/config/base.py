@@ -88,6 +88,7 @@ INSTALLED_APPS += [
     "drf_spectacular_sidecar",
     "social_django",
     "generic_notifications",
+    "django_rq",
 ]
 
 if DEBUG and importlib.util.find_spec("sslserver") is not None:
@@ -126,6 +127,52 @@ MIDDLEWARE = [
 # Django authentication backend. See auth.py
 # ------------------------------------------------------------------------------
 AUTHENTICATION_BACKENDS = []
+
+# ------------------------------------------------------------------------------
+# Django Tasks (background job framework)
+# ------------------------------------------------------------------------------
+# ColdFrontBackend handles queueing either directly via the Job model (DB
+# backend, default) or by delegating to django-tasks-rq (RQ backend).
+#
+# COLDFRONT_TASKS_BACKEND selects which path to use:
+#   "django_tasks_db.backend.DatabaseBackend"  — ORM-based (default, no Redis)
+#   "django_tasks_rq.backend.RQBackend"        — Redis-based via django-rq
+#
+# For the DB path, ColdFrontBackend uses the Job model as the queue record.
+# No separate DBTaskResult is created — the Job IS the queue entry.
+
+COLDFRONT_TASKS_BACKEND = ENV.str(
+    "COLDFRONT_TASKS_BACKEND",
+    default="django_tasks_db.backend.DatabaseBackend",
+)
+
+TASKS = {
+    "default": {
+        "BACKEND": "coldfront.core.tasks.backends.ColdFrontBackend",
+        "QUEUES": [],
+    },
+    "immediate": {
+        "BACKEND": "django_tasks.backends.immediate.ImmediateBackend",
+    },
+    "dummy": {
+        "BACKEND": "django_tasks.backends.dummy.DummyBackend",
+    },
+}
+
+# ------------------------------------------------------------------------------
+# RQ (Redis Queue) connection settings
+# ------------------------------------------------------------------------------
+# These are passed to django-rq for configuring the Redis connection.
+# Required when COLDFRONT_TASKS_BACKEND uses the RQ backend.
+
+RQ = {
+    "HOST": ENV.str("RQ_REDIS_HOST", default=ENV.str("REDIS_HOST", default="localhost")),
+    "PORT": ENV.int("RQ_REDIS_PORT", default=ENV.int("REDIS_PORT", default=6379)),
+    "DB": ENV.int("RQ_REDIS_DATABASE", default=8),
+    "USERNAME": ENV.str("RQ_REDIS_USERNAME", default=""),
+    "PASSWORD": ENV.str("RQ_REDIS_PASSWORD", default=""),
+    "DEFAULT_TIMEOUT": ENV.int("RQ_DEFAULT_TIMEOUT", default=300),
+}
 
 # ------------------------------------------------------------------------------
 # Django template and site settings

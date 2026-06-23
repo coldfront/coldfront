@@ -6,7 +6,7 @@
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectChange, Tag, TaggedItem
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, Tag, TaggedItem
 from coldfront.tables import ColdFrontTable, columns
 
 from .template_code import OBJECTCHANGE_FULL_NAME, OBJECTCHANGE_OBJECT, OBJECTCHANGE_REQUEST_ID
@@ -231,4 +231,60 @@ class CustomFieldTable(ColdFrontTable):
             "required",
             "unique",
             "description",
+        )
+
+
+class JobTable(ColdFrontTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    status = columns.ChoiceFieldColumn(
+        verbose_name=_("Status"),
+    )
+    created = columns.DateTimeColumn(
+        verbose_name=_("Created"),
+        timespec="minutes",
+    )
+    started = columns.DateTimeColumn(
+        verbose_name=_("Started"),
+        timespec="minutes",
+    )
+    completed = columns.DateTimeColumn(
+        verbose_name=_("Completed"),
+        timespec="minutes",
+    )
+    user = tables.Column(
+        verbose_name=_("User"),
+        linkify=True,
+    )
+    interval = tables.Column(
+        verbose_name=_("Interval"),
+    )
+    actions = columns.ActionsColumn(actions=())
+
+    class Meta(ColdFrontTable.Meta):
+        model = Job
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "status",
+            "created",
+            "started",
+            "completed",
+            "user",
+            "interval",
+            "error",
+            "queue_name",
+            "actions",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "status",
+            "created",
+            "started",
+            "completed",
+            "interval",
         )

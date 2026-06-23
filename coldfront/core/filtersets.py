@@ -8,6 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
+from coldfront.core.choices import JobStatusChoices
+from coldfront.core.models import Job
 from coldfront.users.models import User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet, ChangeLoggedModelFilterSet
@@ -220,3 +222,27 @@ class CustomFieldFilterSet(ChangeLoggedModelFilterSet):
             | Q(description__icontains=value)
             | Q(comments__icontains=value)
         )
+
+
+class JobFilterSet(ChangeLoggedModelFilterSet):
+    """FilterSet for the Job model."""
+
+    status = django_filters.MultipleChoiceFilter(
+        choices=JobStatusChoices,
+        label=_("Status"),
+    )
+
+    class Meta:
+        model = Job
+        fields = (
+            "id",
+            "name",
+            "status",
+            "interval",
+            "queue_name",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(name__icontains=value))

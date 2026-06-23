@@ -15,6 +15,7 @@ class CoreConfig(AppConfig):
         from . import (
             notifications,  # noqa: F401
             signals,  # noqa: F401
+            tasks,  # noqa: F401
         )
 
         # Register models

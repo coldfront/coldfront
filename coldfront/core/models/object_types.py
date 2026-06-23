@@ -13,7 +13,7 @@ from django.db.models import ManyToOneRel, Q
 from django.db.models.fields.json import KT
 from django.utils.translation import gettext as _
 
-from coldfront.constants import CORE_APPS, LEGACY_APPS
+from coldfront.constants import CORE_APPS
 from coldfront.plugins import PluginConfig
 from coldfront.registry import registry
 from coldfront.utils.strings import title
@@ -39,8 +39,7 @@ class ObjectTypeQuerySet(models.QuerySet):
 
 class ObjectTypeManager(models.Manager):
     def get_queryset(self):
-        # TODO: ignore legacy apps. Remove in future version
-        return ObjectTypeQuerySet(self.model, using=self._db).exclude(app_label__in=LEGACY_APPS)
+        return ObjectTypeQuerySet(self.model, using=self._db)
 
     def get_by_natural_key(self, app_label, model):
         """

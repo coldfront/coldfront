@@ -11,19 +11,14 @@ CORE_APPS = (
     "slurm",
 )
 
-# ColdFront 1.x legacy apps
-LEGACY_APPS = (
-    "allocation",
-    "project",
-    "grant",
-    "publication",
-    "research_output",
-    "resource",
-    "field_of_science",
-    "user",
-)
-
 CUSTOMFIELD_EMPTY_VALUES = (None, "", [])
+
+# Redis lock keys for job scheduling (used by ``enqueue_once()`` and
+# ``JobRunner.handle()`` to prevent duplicate periodic job schedules).
+# Must be unique across all Redis lock consumers.
+LOCK_KEYS = {
+    "job-schedules": "coldfront.job-schedules",
+}
 
 HTML_ALLOWED_TAGS = {
     "a",

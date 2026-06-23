@@ -3,20 +3,22 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import CASCADE, RESTRICT
 from django.db.models.fields.reverse_related import ManyToManyRel, ManyToOneRel
 from django.db.models.signals import m2m_changed, post_migrate, post_save, pre_delete
-from django.dispatch import receiver
+from django.dispatch import Signal, receiver
 
-from coldfront.constants import LEGACY_APPS
 from coldfront.context import current_request, signals_received
 from coldfront.core.choices import ObjectChangeActionChoices
 from coldfront.core.events import OBJECT_CREATED, OBJECT_DELETED, OBJECT_UPDATED
 from coldfront.core.models import CustomField, ObjectChange, ObjectType, Tag
 from coldfront.models.features import ChangeLoggingMixin
+
+# Job lifecycle signals
+job_start = Signal()
+job_end = Signal()
 
 
 @receiver(post_migrate)
@@ -26,10 +28,6 @@ def update_object_types(sender, **kwargs):
     """
     for model in sender.get_models():
         app_label, model_name = model._meta.label_lower.split(".")
-
-        # TODO: ignore lecacy apps. Remove this in future version
-        if app_label in LEGACY_APPS:
-            continue
 
         # Determine whether model is public and its supported features
         is_public = ObjectType.model_is_public(model)
