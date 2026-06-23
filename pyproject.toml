@@ -1,6 +1,6 @@
 [project]
 name = "coldfront"
-version = "1.1.7"
+version = "2.0.0"
 requires-python = ">=3.12"
 description = "HPC Resource Allocation System"
 readme = "README.md"
@@ -14,7 +14,7 @@ classifiers = [
 ]
 dependencies = [
     "crispy-bootstrap5>=2025.6",
-    "django>5.2,<6",
+    "django>6",
     "django-cotton>=2.6.1",
     "django-crispy-forms>=2.3",
     "django-environ>=0.12.0",
@@ -26,7 +26,6 @@ dependencies = [
     "django-mptt>=0.18.0",
     "django-q2>=1.7.6",
     "django-settings-export>=1.2.1",
-    "django-simple-history>=3.8.0",
     "django-split-settings>=1.3.2",
     "django-tables2>=2.8.0",
     "django-taggit>=6.1.0",
@@ -70,12 +69,6 @@ freeipa = [
     "ipaclient>=4.12.2",
     "setuptools==80.6.0",
     "cryptography==43.0.3",
-]
-iquota = [
-    "kerberos>=1.3.1",
-]
-oidc = [
-    "mozilla-django-oidc>=4.0.1",
 ]
 mysql = [
     "mysqlclient>=2.2.7",
@@ -132,7 +125,7 @@ indent-width = 4
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I", "S308"]
+select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.ruff.format]
 indent-style = "space"
@@ -150,10 +143,6 @@ filterwarnings = [
 [tool.coverage.run]
 branch = true
 source = ["coldfront/"]
-omit = [
-    "coldfront/legacy/*",
-    "coldfront/config/plugins/*",
-]
 
 [tool.uv.sources]
 coldfront-initializer = { url = "https://test-files.pythonhosted.org/packages/07/8f/0112b12e261d74bcb29facfc30e4fe205d7f5aa640bd6bc191e1cb8d97df/coldfront_initializer-0.0.4.tar.gz" }

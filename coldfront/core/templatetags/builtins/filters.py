@@ -9,9 +9,10 @@ import re
 
 from django import template
 from django.conf import settings
-from django.contrib.humanize.templatetags.humanize import naturalday, naturaltime
+from django.contrib.humanize.templatetags.humanize import naturalday
 from django.urls import NoReverseMatch, reverse
 from django.utils.html import escape, format_html
+from django.utils.safestring import mark_safe
 from django.utils.timezone import localtime
 from markdown import markdown
 from markdown.extensions.tables import TableExtension
@@ -43,7 +44,7 @@ def placeholder(value):
     if value not in ("", None):
         return value
 
-    return format_html('<span class="text-muted">&mdash;</span>')
+    return mark_safe('<span class="text-muted">&mdash;</span>')
 
 
 @register.filter()
@@ -100,11 +101,11 @@ def fgcolor(value, dark="000000", light="ffffff"):
 def isodate(value):
     if type(value) is datetime.date:
         text = value.isoformat()
-        return format_html(f'<span title="{naturalday(value)}">{text}</span>')
+        return format_html('<span title="{}">{}</span>', naturalday(value), text)
     elif type(value) is datetime.datetime:
         local_value = localtime(value) if value.tzinfo else value
         text = local_value.date().isoformat()
-        return format_html(f'<span title="{naturaltime(value)}">{text}</span>')
+        return format_html('<span title="{}">{}</span>', naturalday(value), text)
     else:
         return ""
 
@@ -125,7 +126,7 @@ def isodatetime(value, spec="seconds"):
         text = f"{isodate(value)} {isotime(value, spec=spec)}"
     else:
         return ""
-    return format_html(f'<span title="{naturaltime(value)}">{text}</span>')
+    return format_html('<span title="{}">{}</span>', naturalday(value), text)
 
 
 @register.filter("json")
@@ -173,7 +174,7 @@ def render_markdown(value):
     # Sanitize HTML
     html = clean_html(html, schemes)
 
-    return format_html(html)
+    return mark_safe(html)
 
 
 @register.filter()

@@ -33,7 +33,7 @@ class TokenAuthenticationTestCase(APITestCase):
 
         # Valid token should return a 200
         header = f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}"
-        response = self.client.get(reverse("ras-api:project-list"), HTTP_AUTHORIZATION=header)
+        response = self.client.get(reverse("ras-api:project-list"), headers={"authorization": header})
         self.assertEqual(response.status_code, 200, response.data)
 
         # Check that the token's last_used time has been updated
@@ -44,7 +44,7 @@ class TokenAuthenticationTestCase(APITestCase):
     def test_token_invalid(self):
         # Invalid token should return a 403
         header = f"Bearer {TOKEN_PREFIX}XXXXXX.XXXXXXXXXX"
-        response = self.client.get(reverse("tenancy-api:tenant-list"), HTTP_AUTHORIZATION=header)
+        response = self.client.get(reverse("tenancy-api:tenant-list"), headers={"authorization": header})
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["detail"], "Invalid token")
 
@@ -56,13 +56,13 @@ class TokenAuthenticationTestCase(APITestCase):
         token = Token.objects.create(user=self.user, enabled=True)
 
         # Request with an enabled token should succeed
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}")
+        response = self.client.get(url, headers={"authorization": f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}"})
         self.assertEqual(response.status_code, 200)
 
         # Request with a disabled token should fail
         token.enabled = False
         token.save()
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}")
+        response = self.client.get(url, headers={"authorization": f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}"})
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["detail"], "Token disabled")
 
@@ -75,14 +75,14 @@ class TokenAuthenticationTestCase(APITestCase):
         token = Token.objects.create(user=self.user, expires=future)
 
         # Request with a non-expired token should succeed
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}")
+        response = self.client.get(url, headers={"authorization": f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}"})
         self.assertEqual(response.status_code, 200)
 
         # Request with an expired token should fail
         past = datetime.datetime(2020, 1, 1, tzinfo=datetime.UTC)
         token.expires = past
         token.save()
-        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {TOKEN_PREFIX}{token.key}")
+        response = self.client.get(url, headers={"authorization": f"Bearer {TOKEN_PREFIX}{token.key}"})
         self.assertEqual(response.status_code, 403)
 
     @override_settings(LOGIN_REQUIRED=True, EXEMPT_VIEW_PERMISSIONS=["*"])
@@ -105,17 +105,17 @@ class TokenAuthenticationTestCase(APITestCase):
         token_header = f"Bearer {TOKEN_PREFIX}{token.key}.{token.token}"
 
         # GET request with a write-disabled token should succeed
-        response = self.client.get(url, HTTP_AUTHORIZATION=token_header)
+        response = self.client.get(url, headers={"authorization": token_header})
         self.assertEqual(response.status_code, 200)
 
         # POST request with a write-disabled token should fail
-        response = self.client.post(url, data[1], format="json", HTTP_AUTHORIZATION=token_header)
+        response = self.client.post(url, data[1], format="json", headers={"authorization": token_header})
         self.assertEqual(response.status_code, 403)
 
         # POST request with a write-enabled token should succeed
         token.write_enabled = True
         token.save()
-        response = self.client.post(url, data[1], format="json", HTTP_AUTHORIZATION=token_header)
+        response = self.client.post(url, data[1], format="json", headers={"authorization": token_header})
         self.assertEqual(response.status_code, 201)
 
 

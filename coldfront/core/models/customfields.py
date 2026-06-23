@@ -14,7 +14,8 @@ from django.db import models
 from django.db.models import F, Func, Value
 from django.db.models.expressions import RawSQL
 from django.urls import reverse
-from django.utils.html import escape, format_html
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_jsonform.models.fields import JSONField
 
@@ -699,7 +700,7 @@ class CustomField(CloningMixin, ChangeLoggedModel):
                 field.validators = [
                     RegexValidator(
                         regex=self.validation_regex,
-                        message=format_html(
+                        message=mark_safe(
                             _("Values must match this regex: <code>{regex}</code>").format(
                                 regex=escape(self.validation_regex)
                             )

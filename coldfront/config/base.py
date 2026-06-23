@@ -78,7 +78,6 @@ INSTALLED_APPS = [
 INSTALLED_APPS += [
     "crispy_forms",
     "crispy_bootstrap5",
-    "simple_history",
     "django_vite",
     "django_htmx",
     "django_tables2",
@@ -117,7 +116,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "simple_history.middleware.HistoryRequestMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
     "coldfront.auth.middleware.RemoteUserMiddleware",
     "coldfront.middleware.ColdFrontMiddleware",

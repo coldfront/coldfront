@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django import template
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 __all__ = ("action_buttons",)
 
@@ -17,4 +17,4 @@ def action_buttons(context, actions, obj, multi=False, **kwargs):
         actions = [actions]
 
     buttons = [action.render(context, obj, **kwargs) for action in actions if action.multi == multi]
-    return format_html("".join(buttons))
+    return mark_safe("".join(buttons))

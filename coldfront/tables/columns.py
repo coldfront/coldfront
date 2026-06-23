@@ -17,6 +17,7 @@ from django.template import Context, Template
 from django.urls import reverse
 from django.utils.dateparse import parse_date
 from django.utils.html import escape, format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_tables2.columns import library
 from django_tables2.utils import Accessor
@@ -109,9 +110,9 @@ class BooleanColumn(tables.Column):
     character.
     """
 
-    TRUE_MARK = format_html('<span class="text-success"><i class="fa-solid fa-square-check"></i></span>')
-    FALSE_MARK = format_html('<span class="text-danger"><i class="fa-solid fa-rectangle-xmark"></i></span>')
-    EMPTY_MARK = format_html('<span class="text-muted">&mdash;</span>')  # Placeholder
+    TRUE_MARK = mark_safe('<span class="text-success"><i class="fa-solid fa-square-check"></i></span>')
+    FALSE_MARK = mark_safe('<span class="text-danger"><i class="fa-solid fa-rectangle-xmark"></i></span>')
+    EMPTY_MARK = mark_safe('<span class="text-muted">&mdash;</span>')  # Placeholder
 
     def __init__(self, *args, true_mark=TRUE_MARK, false_mark=FALSE_MARK, **kwargs):
         self.true_mark = true_mark
@@ -351,7 +352,7 @@ class ActionsColumn(tables.Column):
             context.update({"record": record})
             html = template.render(context) + html
 
-        return format_html(html)
+        return mark_safe(html)
 
 
 class ColorColumn(tables.Column):
@@ -413,7 +414,7 @@ class ContentTypesColumn(tables.ManyToManyColumn):
     def __init__(self, separator=None, *args, **kwargs):
         # Use a line break as the default separator
         if separator is None:
-            separator = format_html("<br />")
+            separator = mark_safe("<br />")
         super().__init__(separator=separator, *args, **kwargs)
 
     def transform(self, obj):
@@ -429,7 +430,7 @@ class TemplateColumn(tables.TemplateColumn):
     is an empty string.
     """
 
-    PLACEHOLDER = format_html("&mdash;")
+    PLACEHOLDER = mark_safe("&mdash;")
 
     def __init__(self, export_raw=False, **kwargs):
         """
@@ -482,7 +483,7 @@ class ChoiceFieldColumn(tables.Column):
             except AttributeError:
                 bg_color = self.DEFAULT_BG_COLOR
 
-        return format_html(f'<span class="badge text-bg-{bg_color}">{value}</span>')
+        return format_html('<span class="badge text-bg-{}">{}</span>', bg_color, value)
 
     def value(self, value):
         return value
@@ -599,22 +600,22 @@ class CustomFieldColumn(tables.Column):
 
     def render(self, value):
         if self.customfield.type == CustomFieldTypeChoices.TYPE_BOOLEAN and value is True:
-            return format_html('<i class="fa-solid fa-square-check text-success"></i>')
+            return mark_safe('<i class="fa-solid fa-square-check text-success"></i>')
         if self.customfield.type == CustomFieldTypeChoices.TYPE_BOOLEAN and value is False:
-            return format_html('<i class="fa-solid fa-rectangle-xmark text-danger"></i>')
+            return mark_safe('<i class="fa-solid fa-rectangle-xmark text-danger"></i>')
         if self.customfield.type == CustomFieldTypeChoices.TYPE_SELECT:
             return self.customfield.get_choice_label(value)
         if self.customfield.type == CustomFieldTypeChoices.TYPE_MULTISELECT:
             return ", ".join(self.customfield.get_choice_label(v) for v in value)
         if self.customfield.type == CustomFieldTypeChoices.TYPE_MULTIOBJECT:
-            return format_html(", ".join(self._linkify_item(obj) for obj in self.customfield.deserialize(value)))
+            return mark_safe(", ".join(self._linkify_item(obj) for obj in self.customfield.deserialize(value)))
         if self.customfield.type == CustomFieldTypeChoices.TYPE_LONGTEXT and value:
-            return format_html(value)
+            return mark_safe(value)
         if self.customfield.type == CustomFieldTypeChoices.TYPE_DATE and value:
             return parse_date(value).isoformat()
         if value is not None:
             obj = self.customfield.deserialize(value)
-            return format_html(self._linkify_item(obj))
+            return mark_safe(self._linkify_item(obj))
         return self.default
 
     def value(self, value):

@@ -12,7 +12,7 @@ from django.db import router, transaction
 from django.db.models import ProtectedError, RestrictedError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django_cotton import render_component
 from django_tables2.export import TableExport
@@ -517,7 +517,7 @@ class BulkDeleteView(GetReturnURLMixin, BaseMultiObjectView):
 
                 except AbortRequest as e:
                     logger.debug(e.message)
-                    messages.error(request, format_html(e.message))
+                    messages.error(request, mark_safe(e.message))
 
                 return redirect(self.get_return_url(request))
 

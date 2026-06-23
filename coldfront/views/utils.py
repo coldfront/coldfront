@@ -6,7 +6,8 @@
 from django.contrib import messages
 from django.db.models import ProtectedError, RestrictedError
 from django.urls import reverse
-from django.utils.html import escape, format_html
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.plugins import PluginConfig
@@ -132,4 +133,4 @@ def handle_protectederror(obj_list, request, e):
             dependent_objects.append(escape(str(dependent)))
     err_message += ", ".join(dependent_objects)
 
-    messages.error(request, format_html(err_message))
+    messages.error(request, mark_safe(err_message))

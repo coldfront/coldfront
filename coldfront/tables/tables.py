@@ -14,7 +14,7 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db.models.fields.related import RelatedField
 from django.db.models.fields.reverse_related import ManyToOneRel
 from django.urls.exceptions import NoReverseMatch
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_tables2.data import TableQuerysetData
 
@@ -314,4 +314,4 @@ class SearchTable(tables.Table):
 
         value = highlight(value, self.highlight, trim_pre=self.trim_length, trim_post=self.trim_length)
 
-        return format_html(value)
+        return mark_safe(value)

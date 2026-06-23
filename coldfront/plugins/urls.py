@@ -6,8 +6,7 @@
 from importlib import import_module
 
 from django.apps import apps
-from django.conf.urls import include
-from django.urls import path
+from django.urls import include, path
 from django.utils.module_loading import import_string, module_has_submodule
 
 from coldfront.registry import registry

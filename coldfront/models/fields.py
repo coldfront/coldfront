@@ -10,8 +10,8 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.db import models
 from django.db.models.fields import SlugField
-from django.utils.html import format_html
 from django.utils.module_loading import import_string
+from django.utils.safestring import mark_safe
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -38,7 +38,7 @@ class ColorField(models.CharField):
             choices=add_blank_choice(ColorChoices),
             attrs={"class": "color-select"},
         )
-        kwargs["help_text"] = format_html(_("RGB color in hexadecimal. Example: ") + "<code>00ff00</code>")
+        kwargs["help_text"] = mark_safe(_("RGB color in hexadecimal. Example: ") + "<code>00ff00</code>")
         return super().formfield(**kwargs)
 
 

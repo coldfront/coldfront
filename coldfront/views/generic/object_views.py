@@ -15,6 +15,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import escape, format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_cotton import render_component
 
@@ -435,7 +436,7 @@ class ObjectDeleteView(GetReturnURLMixin, BaseObjectView):
                 return redirect(obj.get_absolute_url())
             except AbortRequest as e:
                 logger.debug(e.message)
-                messages.error(request, format_html(e.message))
+                messages.error(request, mark_safe(e.message))
                 return redirect(obj.get_absolute_url())
 
             msg = "Deleted {} {}".format(self.queryset.model._meta.verbose_name, obj)

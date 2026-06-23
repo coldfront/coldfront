@@ -33,7 +33,7 @@ def htmx_current_url(request) -> str:
     `HTTP_HX_CURRENT_URL` META data if the former is unavailable. If neither value
     exists, it returns an empty string.
     """
-    return request.headers.get("HX-Current-URL") or request.META.get("HTTP_HX_CURRENT_URL", "") or ""
+    return request.headers.get("HX-Current-URL") or request.headers.get("hx-current-url", "") or ""
 
 
 def htmx_maybe_redirect_current_page(

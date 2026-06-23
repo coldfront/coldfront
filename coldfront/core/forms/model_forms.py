@@ -5,7 +5,7 @@
 
 from crispy_forms.layout import Fieldset
 from django import forms
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_jsonform.models.fields import JSONFormField
 
@@ -58,7 +58,7 @@ class TagForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
 class CustomFieldChoiceSetForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
     choices = JSONFormField(
         schema=CustomFieldChoiceSet.CHOICES_SCHEMA,
-        help_text=format_html(
+        help_text=mark_safe(
             _("An optional label may be specified for each choice by appending it with a colon. Example:")
             + " <code>choice1:First Choice</code>"
         ),

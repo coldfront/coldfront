@@ -5,7 +5,7 @@
 
 from django import template as template_
 from django.conf import settings
-from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from coldfront.plugins import PluginTemplateExtension
 from coldfront.registry import registry
@@ -46,7 +46,7 @@ def _get_registered_content(obj, method, template_context):
         content = getattr(instance, method)()
         html += content
 
-    return format_html(html)
+    return mark_safe(html)
 
 
 @register.simple_tag(takes_context=True)
