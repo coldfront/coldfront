@@ -172,18 +172,17 @@ class DumpHelpersTestCase(TestCase):
         from coldfront.slurm.dump import _get_active_associations
 
         cluster = SlurmCluster.objects.create(name="hpc07")
-        account = SlurmAccount.objects.create(name="acct-d", cluster=cluster)
+        SlurmAccount.objects.create(name="acct-d", cluster=cluster)
         user = User.objects.create(username="dummy")
         project = Project.objects.create(name="Dummy", owner=user)
         ct = ContentType.objects.get_for_model(SlurmCluster)
-        alloc = Allocation.objects.create(
+        Allocation.objects.create(
             project=project,
             owner=user,
             resource_object_type=ct,
             resource_object_id=cluster.pk,
             status=AllocationStatusChoices.STATUS_ACTIVE,
         )
-        assoc = SlurmAssociation.objects.get(allocation=alloc)
         # Do NOT set slurm_account — it stays None
         assocs = _get_active_associations(cluster)
         self.assertEqual(assocs, [])
@@ -350,7 +349,7 @@ class GenerateClusterDumpTestCase(TestCase):
         dump = generate_cluster_dump(self.cluster)
         # alice has SlurmUser with default_account=acct-b (preserved)
         lines = dump.splitlines()
-        alice_line = [l for l in lines if "alice" in l]
+        alice_line = [line for line in lines if "alice" in line]
         self.assertTrue(len(alice_line) > 0)
         self.assertIn("DefaultAccount='acct-b'", alice_line[0])
 
@@ -370,7 +369,7 @@ class GenerateClusterDumpTestCase(TestCase):
 
         dump = generate_cluster_dump(self.cluster)
         lines = dump.splitlines()
-        alice_line = [l for l in lines if "alice" in l]
+        alice_line = [line for line in lines if "alice" in line]
         self.assertTrue(len(alice_line) > 0)
         self.assertIn("AdminLevel='1'", alice_line[0])
         self.assertIn("DefaultWCKey='mykey'", alice_line[0])
@@ -406,7 +405,7 @@ class GenerateClusterDumpTestCase(TestCase):
         dump = generate_cluster_dump(self.cluster)
         # Find the acct-a account line
         lines = dump.splitlines()
-        acct_line = [l for l in lines if "Account - 'acct-a'" in l]
+        acct_line = [line for line in lines if "Account - 'acct-a'" in line]
         self.assertTrue(len(acct_line) > 0)
         self.assertIn("Fairshare=5", acct_line[0])
         self.assertIn("QOS+=normal", acct_line[0])
@@ -420,10 +419,10 @@ class GenerateClusterDumpTestCase(TestCase):
         # Find the Parent line before acct-a
         acct_idx = None
         parent_idx = None
-        for i, l in enumerate(lines):
-            if "Account - 'acct-a'" in l:
+        for i, line in enumerate(lines):
+            if "Account - 'acct-a'" in line:
                 acct_idx = i
-            if "Parent -" in l:
+            if "Parent -" in line:
                 parent_idx = i
         self.assertIsNotNone(acct_idx)
         self.assertIsNotNone(parent_idx)
@@ -476,7 +475,7 @@ class GenerateClusterDumpTestCase(TestCase):
         # Count user lines for alice — should only appear once per association
         # (each association generates a user line for each project user)
         lines = dump.splitlines()
-        alice_count = sum(1 for l in lines if "User - 'alice'" in l)
+        alice_count = sum(1 for line in lines if "User - 'alice'" in line)
         # Two associations → two user lines for alice
         self.assertEqual(alice_count, 2)
 
@@ -491,7 +490,7 @@ class GenerateClusterDumpTestCase(TestCase):
     def test_null_slurm_account_excluded(self):
         """Association with null slurm_account is excluded from dump."""
         ct = ContentType.objects.get_for_model(SlurmCluster)
-        alloc = Allocation.objects.create(
+        Allocation.objects.create(
             project=self.project,
             owner=self.user1,
             resource_object_type=ct,
@@ -511,7 +510,7 @@ class GenerateClusterDumpTestCase(TestCase):
             resource_type=resource_type,
         )
         ct = ContentType.objects.get_for_model(Resource)
-        alloc = Allocation.objects.create(
+        Allocation.objects.create(
             project=self.project,
             owner=self.user1,
             resource_object_type=ct,

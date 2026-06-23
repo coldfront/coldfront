@@ -95,6 +95,8 @@ dev = [
     "factory-boy>=3.3.3",
     "faker>=37.1.0",
     "pytest-django>=4.11.1",
+    "pytest-httpserver>=1.1.5",
+    "responses>=0.26.1",
     "reuse>=5.0.2",
     "ruff>=0.11.4",
 ]

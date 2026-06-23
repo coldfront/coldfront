@@ -783,7 +783,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_same_cluster_same_account_direct_raises(self):
         """Two direct-to-cluster allocations on the same cluster with the
         same account should raise ValidationError."""
-        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
         # assoc1 is saved — now try creating a second one
         assoc2 = self._make_association(self.cluster_a, self.cluster_ct)
         assoc2.slurm_account = self.account_x
@@ -793,7 +793,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_same_cluster_different_accounts_direct_ok(self):
         """Two direct-to-cluster allocations on the same cluster with
         different accounts should be allowed."""
-        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
         assoc2 = self._make_association(self.cluster_a, self.cluster_ct)
         assoc2.slurm_account = self.account_y
         # Should not raise
@@ -802,7 +802,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_different_clusters_same_account_direct_ok(self):
         """Two direct-to-cluster allocations on different clusters with the
         same account should be allowed."""
-        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
         assoc2 = self._make_association(self.cluster_b, self.cluster_ct)
         assoc2.slurm_account = self.account_x
         # Should not raise (different clusters)
@@ -813,7 +813,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_same_partition_same_account_raises(self):
         """Two allocations targeting the same partition with the same
         account should raise ValidationError."""
-        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
         assoc2 = self._make_association(self.partition_gpu, self.partition_ct)
         assoc2.slurm_account = self.account_x
         with self.assertRaises(ValidationError):
@@ -822,7 +822,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_same_partition_different_accounts_ok(self):
         """Two allocations targeting the same partition with different
         accounts should be allowed."""
-        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
         assoc2 = self._make_association(self.partition_gpu, self.partition_ct)
         assoc2.slurm_account = self.account_y
         assoc2.full_clean()
@@ -830,7 +830,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_different_partitions_same_account_ok(self):
         """Two allocations on different partitions with the same account
         should be allowed (different partition values)."""
-        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
         assoc2 = self._make_association(self.partition_cpu, self.partition_ct)
         assoc2.slurm_account = self.account_x
         assoc2.full_clean()
@@ -838,7 +838,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_same_partition_different_clusters_same_account_ok(self):
         """Two allocations targeting 'gpu' on different clusters with the
         same account should be allowed."""
-        assoc1 = self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
+        self._make_association(self.partition_gpu, self.partition_ct, self.account_x)
         # partition_gpu_b is 'gpu' on cluster_b
         assoc2 = self._make_association(self.partition_gpu_b, self.partition_ct)
         assoc2.slurm_account = self.account_x
@@ -849,7 +849,7 @@ class SlurmAccountValidationTest(TestCase):
     def test_one_direct_one_partition_same_account_ok(self):
         """One direct-to-cluster and one partition-specific allocation with
         the same account should be allowed (partition='' vs partition='<name>')."""
-        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
         assoc2 = self._make_association(self.partition_gpu, self.partition_ct)
         assoc2.slurm_account = self.account_x
         assoc2.full_clean()
@@ -858,7 +858,7 @@ class SlurmAccountValidationTest(TestCase):
 
     def test_null_account_skips_validation(self):
         """Setting slurm_account to None should skip validation."""
-        assoc1 = self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
+        self._make_association(self.cluster_a, self.cluster_ct, self.account_x)
         assoc2 = self._make_association(self.cluster_a, self.cluster_ct)
         # Leave slurm_account as None
         assoc2.full_clean()  # should not raise
