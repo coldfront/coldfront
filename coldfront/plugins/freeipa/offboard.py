@@ -4,24 +4,29 @@
 
 """Offboarding helpers: revoke a user's FreeIPA group memberships.
 
-The signal path (``tasks.remove_user_group``) derives the ``.rw``/``.ro`` suffix from
-the user's ProjectUser *role* and skips users whose role can no longer be resolved
-(e.g. a departed user whose ProjectUser was hard-deleted). Those users therefore keep
-their FreeIPA group membership — and their filesystem access — indefinitely.
+``tasks.remove_user_group`` removes a user from their groups when their
+``AllocationUser`` is set to ``Removed``, but it is only ever called as a side effect of
+that status change. A user whose ``ProjectUser`` (and so, by the cascade, their
+``AllocationUser``) is hard-deleted rather than status-flipped never goes through that
+path, so they keep their FreeIPA group membership — and the access it grants —
+indefinitely.
 
-This module offboards a user by *capture-and-attempt*, not by role: it derives the set
-of managed groups from the user's allocations (the ``freeipa_group`` allocation attribute
-value plus ``.rw``/``.ro`` — the same construction ``tasks.add_user_group`` uses), drops
-any group the user still holds via another Active allocation, and removes the rest.
+This module offboards a user by *capture-and-attempt* instead: it derives the set of
+groups the user's allocations grant, drops any group the user still holds via another
+Active allocation (the same cross-allocation safeguard as ``tasks.remove_user_group``),
+and removes the rest.
+
+By default a group is the literal ``freeipa_group`` allocation attribute value, exactly
+as ``tasks.add_user_group``/``remove_user_group`` use it. Deployments where one
+allocation attribute value maps to more than one actual FreeIPA group — for example a
+role-based naming convention layered on top by a downstream plugin — can pass
+``group_names_for_allocation`` to every public function here to override the mapping.
 
 Both IPA-realm (internal) and AD-trust (external) members are supported; external
-detection is by email domain via the ``FREEIPA_EXTERNAL_DOMAIN`` setting, and
-``_remove_one`` attempts both member types so a misclassification is self-correcting.
-
-The ``freeipa_group`` attribute value is treated as an opaque group base name; any
-site-specific segments it carries (e.g. ``.e``/``.e.d`` markers for external/domain
-groups) are preserved as-is, and ``.rw``/``.ro`` is appended. For AD-trust external
-members there is no reverse "what groups is this user in" lookup, so we do not narrow by
+detection is by email domain via the optional ``FREEIPA_EXTERNAL_DOMAIN`` setting
+(unset → every user is treated as internal), and ``_remove_one``/``_add_one`` attempt
+both member types so a misclassification is self-correcting. For external members there
+is no reverse "what groups is this user in" lookup, so targets are not narrowed by
 current membership — we attempt ``group_remove_member`` on each candidate and treat *not
 a member* / *group not found* as harmless no-ops. The API result is the authoritative
 record for audit and backout.
@@ -46,7 +51,6 @@ from coldfront.plugins.freeipa.utils import (
 logger = logging.getLogger(__name__)
 
 STATUS_ACTIVE = "Active"
-GROUP_SUFFIXES = (".rw", ".ro")
 
 # Email domain whose users join FreeIPA groups as AD-trust external members
 # (``ipaexternalmember``). Empty (the default) means every user is treated as an
@@ -67,32 +71,37 @@ def is_external_member(user):
 
 
 def _allocation_base_groups(allocation):
-    """The ``freeipa_group`` attribute values on an allocation (already carry .e/.e.d)."""
+    """Default ``group_names_for_allocation``: the raw ``freeipa_group`` attribute
+    value(s) on an allocation, unchanged -- the same names ``tasks.add_user_group`` and
+    ``tasks.remove_user_group`` use."""
     return allocation.get_attribute_list(UNIX_GROUP_ATTRIBUTE_NAME)
 
 
-def _suffixed(base_values):
-    return {f"{value}{suffix}" for value in base_values for suffix in GROUP_SUFFIXES}
+def managed_groups_for_user(user, *, group_names_for_allocation=None):
+    """All FreeIPA groups derived from any allocation the user is on.
 
-
-def managed_groups_for_user(user):
-    """All ``<freeipa_group>.{rw,ro}`` groups derived from any allocation the user is on.
-
-    Both suffixes are included because an offboarded user's role may no longer be
-    resolvable, so we cannot know which they held; removing the other suffix is a no-op.
+    ``group_names_for_allocation`` is called once per allocation and must return an
+    iterable of group names; it defaults to the literal ``freeipa_group`` attribute
+    value(s) (see ``_allocation_base_groups``). Override it for a deployment where one
+    attribute value maps to more than one actual group.
     """
-    base_values = set()
+    if group_names_for_allocation is None:
+        group_names_for_allocation = _allocation_base_groups
+    names = set()
     for au in AllocationUser.objects.filter(user=user).select_related("allocation"):
-        base_values.update(_allocation_base_groups(au.allocation))
-    return _suffixed(base_values)
+        names.update(group_names_for_allocation(au.allocation))
+    return names
 
 
-def groups_to_keep(user, exclude_allocation_pk=None):
+def groups_to_keep(user, exclude_allocation_pk=None, *, group_names_for_allocation=None):
     """Groups the user still legitimately holds via an Active allocation elsewhere.
 
     Mirrors the cross-allocation safeguard in ``tasks.remove_user_group``: never remove a
-    group the user retains through another live membership.
+    group the user retains through another live membership. See ``managed_groups_for_user``
+    for ``group_names_for_allocation``.
     """
+    if group_names_for_allocation is None:
+        group_names_for_allocation = _allocation_base_groups
     keep_allocations = Allocation.objects.filter(
         allocationuser__user=user,
         allocationuser__status__name=STATUS_ACTIVE,
@@ -102,20 +111,23 @@ def groups_to_keep(user, exclude_allocation_pk=None):
     if exclude_allocation_pk is not None:
         keep_allocations = keep_allocations.exclude(pk=exclude_allocation_pk)
 
-    base_values = set()
+    names = set()
     for a in keep_allocations:
-        base_values.update(_allocation_base_groups(a))
-    return _suffixed(base_values)
+        names.update(group_names_for_allocation(a))
+    return names
 
 
-def plan_offboard(user, exclude_allocation_pk=None):
+def plan_offboard(user, exclude_allocation_pk=None, *, group_names_for_allocation=None):
     """Compute ``(target_groups, kept_groups)`` for a user, applying the safeguard.
 
     ``target_groups`` is sorted. Targets are NOT narrowed by current membership (external
-    members have no reverse lookup); removal of a non-membership is a no-op.
+    members have no reverse lookup); removal of a non-membership is a no-op. See
+    ``managed_groups_for_user`` for ``group_names_for_allocation``.
     """
-    candidates = managed_groups_for_user(user)
-    kept = groups_to_keep(user, exclude_allocation_pk=exclude_allocation_pk)
+    candidates = managed_groups_for_user(user, group_names_for_allocation=group_names_for_allocation)
+    kept = groups_to_keep(
+        user, exclude_allocation_pk=exclude_allocation_pk, group_names_for_allocation=group_names_for_allocation
+    )
     return sorted(candidates - kept), kept
 
 
@@ -222,12 +234,13 @@ def add_user_to_groups(user, groups, *, dry_run, external=None, bootstrap=True):
     return records
 
 
-def offboard_user_groups_task(user_pk):
+def offboard_user_groups_task(user_pk, *, group_names_for_allocation=None):
     """django-q entry point: revoke one user's FreeIPA groups (execute mode).
 
     Enqueued from the ProjectUser-removal cascade so the FreeIPA work runs in the
     qcluster worker, not the web request. Never raises. The cross-allocation safeguard in
-    ``plan_offboard`` keeps any group the user still holds via an Active allocation.
+    ``plan_offboard`` keeps any group the user still holds via an Active allocation. See
+    ``managed_groups_for_user`` for ``group_names_for_allocation``.
     """
     from django.contrib.auth.models import User
 
@@ -237,7 +250,7 @@ def offboard_user_groups_task(user_pk):
         logger.warning("offboard_user_groups_task: user pk=%s no longer exists", user_pk)
         return
     try:
-        targets, kept = plan_offboard(user)
+        targets, kept = plan_offboard(user, group_names_for_allocation=group_names_for_allocation)
         logger.info(
             "offboard_user_groups_task: %s — %d group(s) to revoke, %d kept (active elsewhere)",
             user.username,

@@ -152,6 +152,13 @@ class IsExternalMemberTest(TestCase):
         self.assertFalse(self.offboard.is_external_member(u))
 
 
+def _role_suffixed(allocation):
+    """Example group_names_for_allocation override: one attribute value -> two groups."""
+    from coldfront.plugins.freeipa.offboard import _allocation_base_groups
+
+    return {f"{v}{suffix}" for v in _allocation_base_groups(allocation) for suffix in (".rw", ".ro")}
+
+
 class ManagedGroupsForUserTest(TestCase):
     def test_no_allocations(self):
         from coldfront.plugins.freeipa.offboard import managed_groups_for_user
@@ -159,32 +166,39 @@ class ManagedGroupsForUserTest(TestCase):
         u = UserFactory()
         self.assertEqual(managed_groups_for_user(u), set())
 
-    def test_groups_from_single_allocation(self):
+    def test_default_uses_literal_attribute_value(self):
         from coldfront.plugins.freeipa.offboard import managed_groups_for_user
 
         u = UserFactory()
-        _make_allocation(u, "proj1.e.d")
+        _make_allocation(u, "proj1")
         result = managed_groups_for_user(u)
-        self.assertEqual(result, {"proj1.e.d.rw", "proj1.e.d.ro"})
+        self.assertEqual(result, {"proj1"})
 
     def test_dedup_across_allocations(self):
         from coldfront.plugins.freeipa.offboard import managed_groups_for_user
 
         u = UserFactory()
-        _make_allocation(u, "proj1.e.d")
-        _make_allocation(u, "proj1.e.d")  # same base, second allocation
+        _make_allocation(u, "proj1")
+        _make_allocation(u, "proj1")  # same base, second allocation
         result = managed_groups_for_user(u)
-        self.assertEqual(result, {"proj1.e.d.rw", "proj1.e.d.ro"})
+        self.assertEqual(result, {"proj1"})
 
     def test_multiple_allocations(self):
         from coldfront.plugins.freeipa.offboard import managed_groups_for_user
 
         u = UserFactory()
-        _make_allocation(u, "projA.e.d")
-        _make_allocation(u, "projB.e")
+        _make_allocation(u, "projA")
+        _make_allocation(u, "projB")
         result = managed_groups_for_user(u)
-        self.assertIn("projA.e.d.rw", result)
-        self.assertIn("projB.e.ro", result)
+        self.assertEqual(result, {"projA", "projB"})
+
+    def test_group_names_for_allocation_override(self):
+        from coldfront.plugins.freeipa.offboard import managed_groups_for_user
+
+        u = UserFactory()
+        _make_allocation(u, "proj1")
+        result = managed_groups_for_user(u, group_names_for_allocation=_role_suffixed)
+        self.assertEqual(result, {"proj1.rw", "proj1.ro"})
 
 
 class GroupsToKeepTest(TestCase):
@@ -192,34 +206,41 @@ class GroupsToKeepTest(TestCase):
         from coldfront.plugins.freeipa.offboard import groups_to_keep
 
         u = UserFactory()
-        _make_allocation(u, "live.e.d", alloc_status="Active", au_status="Active")
+        _make_allocation(u, "live", alloc_status="Active", au_status="Active")
         result = groups_to_keep(u)
-        self.assertIn("live.e.d.rw", result)
-        self.assertIn("live.e.d.ro", result)
+        self.assertIn("live", result)
 
     def test_removed_au_not_kept(self):
         from coldfront.plugins.freeipa.offboard import groups_to_keep
 
         u = UserFactory()
-        _make_allocation(u, "gone.e.d", alloc_status="Active", au_status="Removed")
+        _make_allocation(u, "gone", alloc_status="Active", au_status="Removed")
         result = groups_to_keep(u)
-        self.assertNotIn("gone.e.d.rw", result)
+        self.assertNotIn("gone", result)
 
     def test_inactive_allocation_not_kept(self):
         from coldfront.plugins.freeipa.offboard import groups_to_keep
 
         u = UserFactory()
-        _make_allocation(u, "expired.e.d", alloc_status="Expired", au_status="Active")
+        _make_allocation(u, "expired", alloc_status="Expired", au_status="Active")
         result = groups_to_keep(u)
-        self.assertNotIn("expired.e.d.rw", result)
+        self.assertNotIn("expired", result)
 
     def test_exclude_allocation_pk(self):
         from coldfront.plugins.freeipa.offboard import groups_to_keep
 
         u = UserFactory()
-        alloc = _make_allocation(u, "proj.e.d", alloc_status="Active", au_status="Active")
+        alloc = _make_allocation(u, "proj", alloc_status="Active", au_status="Active")
         result = groups_to_keep(u, exclude_allocation_pk=alloc.pk)
-        self.assertNotIn("proj.e.d.rw", result)
+        self.assertNotIn("proj", result)
+
+    def test_group_names_for_allocation_override(self):
+        from coldfront.plugins.freeipa.offboard import groups_to_keep
+
+        u = UserFactory()
+        _make_allocation(u, "live", alloc_status="Active", au_status="Active")
+        result = groups_to_keep(u, group_names_for_allocation=_role_suffixed)
+        self.assertEqual(result, {"live.rw", "live.ro"})
 
 
 class PlanOffboardTest(TestCase):
@@ -227,28 +248,37 @@ class PlanOffboardTest(TestCase):
         from coldfront.plugins.freeipa.offboard import plan_offboard
 
         u = UserFactory()
-        _make_allocation(u, "proj.e.d", alloc_status="Active", au_status="Removed")
+        _make_allocation(u, "proj", alloc_status="Active", au_status="Removed")
         targets, kept = plan_offboard(u)
-        self.assertIn("proj.e.d.rw", targets)
+        self.assertIn("proj", targets)
         self.assertEqual(len(kept), 0)
 
     def test_kept_excludes_from_targets(self):
         from coldfront.plugins.freeipa.offboard import plan_offboard
 
         u = UserFactory()
-        _make_allocation(u, "proj.e.d", alloc_status="Active", au_status="Active")
+        _make_allocation(u, "proj", alloc_status="Active", au_status="Active")
         targets, kept = plan_offboard(u)
-        self.assertNotIn("proj.e.d.rw", targets)
-        self.assertIn("proj.e.d.rw", kept)
+        self.assertNotIn("proj", targets)
+        self.assertIn("proj", kept)
 
     def test_targets_sorted(self):
         from coldfront.plugins.freeipa.offboard import plan_offboard
 
         u = UserFactory()
-        _make_allocation(u, "beta.e", alloc_status="Active", au_status="Removed")
-        _make_allocation(u, "alpha.e", alloc_status="Active", au_status="Removed")
+        _make_allocation(u, "beta", alloc_status="Active", au_status="Removed")
+        _make_allocation(u, "alpha", alloc_status="Active", au_status="Removed")
         targets, _ = plan_offboard(u)
         self.assertEqual(targets, sorted(targets))
+
+    def test_group_names_for_allocation_override(self):
+        from coldfront.plugins.freeipa.offboard import plan_offboard
+
+        u = UserFactory()
+        _make_allocation(u, "proj", alloc_status="Active", au_status="Removed")
+        targets, kept = plan_offboard(u, group_names_for_allocation=_role_suffixed)
+        self.assertEqual(set(targets), {"proj.rw", "proj.ro"})
+        self.assertEqual(kept, set())
 
 
 class RemoveUserFromGroupsTest(TestCase):
@@ -362,21 +392,30 @@ class OffboardUserGroupsTaskTest(TestCase):
 
         u = UserFactory()
         with (
-            patch(
-                "coldfront.plugins.freeipa.offboard.plan_offboard", return_value=(["proj.e.d.rw"], set())
-            ) as mock_plan,
+            patch("coldfront.plugins.freeipa.offboard.plan_offboard", return_value=(["proj"], set())) as mock_plan,
             patch("coldfront.plugins.freeipa.offboard.remove_user_from_groups") as mock_rm,
         ):
             offboard_user_groups_task(user_pk=u.pk)
-        mock_plan.assert_called_once_with(u)
-        mock_rm.assert_called_once_with(u, ["proj.e.d.rw"], dry_run=False)
+        mock_plan.assert_called_once_with(u, group_names_for_allocation=None)
+        mock_rm.assert_called_once_with(u, ["proj"], dry_run=False)
+
+    def test_group_names_for_allocation_threaded_through(self):
+        from coldfront.plugins.freeipa.offboard import offboard_user_groups_task
+
+        u = UserFactory()
+        with (
+            patch("coldfront.plugins.freeipa.offboard.plan_offboard", return_value=(["proj.rw"], set())) as mock_plan,
+            patch("coldfront.plugins.freeipa.offboard.remove_user_from_groups"),
+        ):
+            offboard_user_groups_task(user_pk=u.pk, group_names_for_allocation=_role_suffixed)
+        mock_plan.assert_called_once_with(u, group_names_for_allocation=_role_suffixed)
 
     def test_empty_targets_no_remove_call(self):
         from coldfront.plugins.freeipa.offboard import offboard_user_groups_task
 
         u = UserFactory()
         with (
-            patch("coldfront.plugins.freeipa.offboard.plan_offboard", return_value=([], {"proj.e.d.rw"})),
+            patch("coldfront.plugins.freeipa.offboard.plan_offboard", return_value=([], {"proj"})),
             patch("coldfront.plugins.freeipa.offboard.remove_user_from_groups") as mock_rm,
         ):
             offboard_user_groups_task(user_pk=u.pk)
