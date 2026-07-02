@@ -1102,6 +1102,82 @@ class SlurmClient:
         logger.debug("Fetching SlurmDBD config")
         return self._request("GET", url)
 
+    def upsert_config(
+        self,
+        config: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Upsert the full SlurmDBD accounting configuration.
+
+        Corresponds to ``POST /slurmdb/{version}/config``.
+
+        Sends the complete desired accounting state (clusters, accounts,
+        users, associations, QOS, TRES, wckeys) to slurmdbd.  Slurmdbd
+        creates missing entities and updates existing ones — this is an
+        upsert-only operation (no deletions).
+
+        Args:
+            config: A dict matching ``openapi_slurmdbd_config_resp``
+                schema, typically built by :meth:`serialize_config`.
+                Expected keys: ``clusters``, ``accounts``, ``users``,
+                ``associations``, ``qos``, ``tres``, ``wckeys``.
+
+        Returns:
+            Response body with ``errors``, ``warnings``, and ``meta``.
+
+        Raises:
+            SlurmException subclass if the API returned an error.
+        """
+        url = self._slurmdb_path("config")
+        logger.info("Upserting SlurmDBD accounting config")
+        return self._request("POST", url, json_body=config)
+
+    @staticmethod
+    def serialize_config(
+        *,
+        clusters: list[dict[str, Any]] | None = None,
+        accounts: list[dict[str, Any]] | None = None,
+        users: list[dict[str, Any]] | None = None,
+        associations: list[dict[str, Any]] | None = None,
+        qos: list[dict[str, Any]] | None = None,
+        tres: list[dict[str, Any]] | None = None,
+        wckeys: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        """Serialize a full accounting config payload for ``POST /config``.
+
+        Builds a dict matching the ``openapi_slurmdbd_config_resp``
+        schema expected by slurmdbd's upsert endpoint.  Each entity
+        list is optional — only the provided entity types are upserted.
+
+        Args:
+            clusters: List of cluster dicts.
+            accounts: List of account dicts (from :meth:`serialize_account`).
+            users: List of user dicts (from :meth:`serialize_user`).
+            associations: List of association dicts
+                (from :meth:`serialize_association`).
+            qos: List of QOS dicts.
+            tres: List of TRES dicts.
+            wckeys: List of wckey dicts.
+
+        Returns:
+            A dict suitable as the body of ``POST /config``.
+        """
+        body: dict[str, Any] = {}
+        if clusters is not None:
+            body["clusters"] = clusters
+        if accounts is not None:
+            body["accounts"] = accounts
+        if users is not None:
+            body["users"] = users
+        if associations is not None:
+            body["associations"] = associations
+        if qos is not None:
+            body["qos"] = qos
+        if tres is not None:
+            body["tres"] = tres
+        if wckeys is not None:
+            body["wckeys"] = wckeys
+        return body
+
     def dump_config(
         self,
         body: dict[str, Any] | None = None,
@@ -1110,17 +1186,22 @@ class SlurmClient:
 
         Corresponds to ``POST /slurmdb/{version}/config``.
 
-        The request body can specify entity selections to limit what
-        is returned.
+        .. deprecated::
+            Use :meth:`get_config` (GET) for fetching config or
+            :meth:`upsert_config` (POST) for applying config.
+            This method exists for backward compatibility; it sends a
+            POST with a body that slurmdbd interprets as an upsert
+            payload, not a dump request.
 
         Args:
-            body: Optional request body with entity selections.
+            body: Optional request body.  If provided, slurmdbd treats
+                it as an upsert payload (same as :meth:`upsert_config`).
 
         Returns:
-            Response body containing the config dump.
+            Response body.
         """
         url = self._slurmdb_path("config")
-        logger.info("Requesting SlurmDBD config dump")
+        logger.warning("dump_config() is deprecated — use get_config() or upsert_config()")
         return self._request("POST", url, json_body=body)
 
     # ------------------------------------------------------------------

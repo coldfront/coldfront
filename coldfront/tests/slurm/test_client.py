@@ -242,6 +242,54 @@ class TestSerializers:
         assert body["association"]["fairshare"] == 1
         assert body["wckeys"] == ["mykey"]
 
+    # ------------------------------------------------------------------
+    # Config serializers
+    # ------------------------------------------------------------------
+
+    def test_serialize_config_minimal(self):
+        """No entity lists → empty body."""
+        body = SlurmClient.serialize_config()
+        assert body == {}
+
+    def test_serialize_config_accounts_only(self):
+        body = SlurmClient.serialize_config(
+            accounts=[{"name": "hpc-lab"}],
+        )
+        assert body == {"accounts": [{"name": "hpc-lab"}]}
+
+    def test_serialize_config_all_entities(self):
+        body = SlurmClient.serialize_config(
+            clusters=[{"name": "hpc01"}],
+            accounts=[{"name": "hpc-lab"}],
+            users=[{"name": "jsmith", "default": {"account": "hpc-lab", "wckey": ""}}],
+            associations=[
+                {
+                    "account": "hpc-lab",
+                    "user": "jsmith",
+                    "cluster": "hpc01",
+                    "partition": "gpu",
+                    "fairshare": 1,
+                }
+            ],
+            qos=[{"name": "normal"}],
+            tres=[{"name": "node", "type": "cluster"}],
+            wckeys=[{"name": "mykey"}],
+        )
+        assert "clusters" in body
+        assert "accounts" in body
+        assert "users" in body
+        assert "associations" in body
+        assert "qos" in body
+        assert "tres" in body
+        assert "wckeys" in body
+        assert len(body["clusters"]) == 1
+        assert len(body["accounts"]) == 1
+        assert len(body["users"]) == 1
+        assert len(body["associations"]) == 1
+        assert len(body["qos"]) == 1
+        assert len(body["tres"]) == 1
+        assert len(body["wckeys"]) == 1
+
     def test_serialize_accounts_add_cond_minimal(self):
         body = SlurmClient.serialize_accounts_add_cond(accounts=["hpc-lab"])
         assert body == {"accounts": ["hpc-lab"]}
@@ -1066,6 +1114,65 @@ class TestConfigEndpoints:
         result = client.dump_config({"clusters": True})
         assert "clusters" in result
         assert "accounts" in result
+
+    @responses.activate
+    def test_upsert_config(self):
+        url = url_for("config")
+        responses.post(
+            url,
+            status=200,
+            json={
+                **_SUCCESS_RESPONSE,
+            },
+        )
+
+        config = SlurmClient.serialize_config(
+            accounts=[{"name": "hpc-lab"}],
+            users=[
+                {
+                    "name": "jsmith",
+                    "default": {"account": "hpc-lab", "wckey": ""},
+                }
+            ],
+            associations=[
+                {
+                    "account": "hpc-lab",
+                    "user": "jsmith",
+                    "cluster": "hpc01",
+                    "partition": "gpu",
+                    "fairshare": 1,
+                }
+            ],
+        )
+
+        client = make_client()
+        result = client.upsert_config(config)
+        assert "errors" in result
+        assert result["errors"] == []
+        assert "warnings" in result
+        assert result["warnings"] == []
+
+    @responses.activate
+    def test_upsert_config_error(self):
+        """Test error handling when upsert fails."""
+        url = url_for("config")
+        responses.post(
+            url,
+            status=400,
+            json={
+                "errors": ["ESLURM_REST_INVALID_QUERY: Bad request"],
+                "warnings": [],
+                "meta": {},
+            },
+        )
+
+        config = SlurmClient.serialize_config(
+            accounts=[{"name": ""}],  # invalid empty name
+        )
+
+        client = make_client()
+        with pytest.raises(SlurmBadRequestException):
+            client.upsert_config(config)
 
 
 # ======================================================================
