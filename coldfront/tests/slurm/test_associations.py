@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from unittest import mock
+
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -66,17 +68,42 @@ class SlurmAssociationLifecycleTest(TestCase):
         from coldfront.slurm.listeners import (
             can_activate_check,
             on_allocation_activated,
+            on_allocation_expired,
+            on_allocation_revoked,
         )
 
         AllocationStatusFlow.register_target_callback(
             AllocationStatusChoices.STATUS_ACTIVE,
             on_allocation_activated,
         )
+        AllocationStatusFlow.register_target_callback(
+            AllocationStatusChoices.STATUS_EXPIRED,
+            on_allocation_expired,
+        )
+        AllocationStatusFlow.register_target_callback(
+            AllocationStatusChoices.STATUS_REVOKED,
+            on_allocation_revoked,
+        )
 
         AllocationStatusFlow.register_transition_permission_callback(
             "activate",
             can_activate_check,
         )
+
+        # Patch enqueue wrappers so existing listener tests don't trigger
+        # REST API task enqueues (those are tested separately in test_sync.py)
+        patcher = mock.patch.multiple(
+            "coldfront.slurm.listeners",
+            enqueue_activate_allocation=mock.DEFAULT,
+            enqueue_deactivate_allocation=mock.DEFAULT,
+            enqueue_remove_project_user=mock.DEFAULT,
+        )
+        self._enqueue_patcher = patcher
+        patcher.start()
+
+    def tearDown(self):
+        self._enqueue_patcher.stop()
+        super().tearDown()
 
     def _create_allocation(self, resource, resource_ct):
         return Allocation.objects.create(

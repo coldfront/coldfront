@@ -15,6 +15,11 @@ from coldfront.slurm.models import (
     SlurmPartition,
     SlurmUser,
 )
+from coldfront.slurm.sync import (
+    enqueue_activate_allocation,
+    enqueue_deactivate_allocation,
+    enqueue_remove_project_user,
+)
 
 
 def _get_cluster_account_pairs(project):
@@ -115,9 +120,35 @@ def on_project_user_saved(instance, created, **kwargs):
 def on_project_user_deleted(instance, **kwargs):
     """
     When a ProjectUser is deleted, reconcile SlurmUser records for the user
-    against all remaining projects they belong to.
+    against all remaining projects they belong to, and enqueue a targeted
+    handler to remove the user's associations from Slurm.
     """
     _sync_slurm_users_for_user(instance.user)
+
+    # Determine clusters involved in this project's active allocations
+    project_cluster_ids: list[int] = []
+    allocations = Allocation.objects.filter(
+        project_id=instance.project_id,
+        status=AllocationStatusChoices.STATUS_ACTIVE,
+    ).select_related(
+        "resource_object_type",
+    )
+    for allocation in allocations:
+        resource = allocation.resource_object
+        if resource is None:
+            continue
+        if isinstance(resource, SlurmPartition):
+            if resource.cluster_id not in project_cluster_ids:
+                project_cluster_ids.append(resource.cluster_id)
+        elif isinstance(resource, SlurmCluster):
+            if resource.pk not in project_cluster_ids:
+                project_cluster_ids.append(resource.pk)
+
+    enqueue_remove_project_user(
+        instance.project_id,
+        instance.user_id,
+        cluster_ids=project_cluster_ids or None,
+    )
 
 
 @receiver(post_save, sender=SlurmAssociation)
@@ -206,6 +237,49 @@ def on_allocation_activated(allocation, *, source, target):
             cluster=cluster,
             defaults={"default_account": slurm_account},
         )
+
+    # Enqueue REST API sync for this allocation
+    enqueue_activate_allocation(allocation.pk, cluster_id=cluster.pk)
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_EXPIRED)
+def on_allocation_expired(allocation, *, source, target):
+    """
+    On allocation expired: enqueue deactivation to kill jobs and remove
+    associations from Slurm.
+    """
+    resource = allocation.resource_object
+    if resource is None:
+        return
+    if not isinstance(resource, (SlurmCluster, SlurmPartition)):
+        return
+    cluster = resource if isinstance(resource, SlurmCluster) else resource.cluster
+    enqueue_deactivate_allocation(allocation.pk, cluster_id=cluster.pk)
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_REVOKED)
+def on_allocation_revoked(allocation, *, source, target):
+    """
+    On allocation revoked: enqueue deactivation to kill jobs and remove
+    associations from Slurm.
+    """
+    resource = allocation.resource_object
+    if resource is None:
+        return
+    if not isinstance(resource, (SlurmCluster, SlurmPartition)):
+        return
+    cluster = resource if isinstance(resource, SlurmCluster) else resource.cluster
+    enqueue_deactivate_allocation(allocation.pk, cluster_id=cluster.pk)
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_RENEW)
+def on_allocation_renewed(allocation, *, source, target):
+    """
+    On allocation renewed: no Slurm action needed until the allocation is
+    re-activated.  The renewed allocation will trigger
+    ``on_allocation_activated`` when it transitions to ACTIVE again.
+    """
+    pass
 
 
 @register_transition_permission_callback(AllocationStatusFlow, "activate")

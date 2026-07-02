@@ -15,6 +15,7 @@ coldfront_configs = [
     "logging.py",
     "core.py",
     "email.py",
+    "slurm.py",
     "plugins.py",
 ]
 
