@@ -52,6 +52,14 @@
           </div>
       </c-card.fields.item>
 
+      {% if allocation_request_url %}
+      <c-card.fields.item label="{% trans 'Request Details' %}">
+          <a href="{{ allocation_request_url }}" class="btn btn-sm btn-outline-primary">
+              {% trans "Edit Request Details" %}
+          </a>
+      </c-card.fields.item>
+      {% endif %}
+
       <c-card.fields.item label="{% trans 'Description' %}">
           {{ object.description|placeholder }}
       </c-card.fields.item>

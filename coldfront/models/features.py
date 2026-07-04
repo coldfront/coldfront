@@ -353,6 +353,24 @@ class AllocatableResourceMixin(models.Model):
         """Checks if this resource is allocatable. Override to provide custom checks"""
         return not self.locked
 
+    def allocation_request_url(self, allocation):
+        """
+        Return a URL for a resource-specific post-request form, or None.
+
+        Called after an Allocation is created via ``AllocationRequestView``
+        and the request workflow transition has completed. The allocation's
+        ``resource_object`` is ``self``.
+
+        Override this on resource subclasses to redirect users to a custom
+        form for collecting resource-specific data after the initial
+        allocation request. Typically this returns the edit URL for the
+        bridge model linked to this allocation.
+
+        Returning ``None`` (the default) means the user is redirected to the
+        allocation detail page after requesting, matching the standard flow.
+        """
+        return None
+
 
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))
 register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))

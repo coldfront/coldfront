@@ -42,9 +42,16 @@ class AllocationView(GetRelatedModelsMixin, generic.ObjectView):
         # Get the outgoing transitions for the current status so we can display the appropriate buttons
         actions = AllocationStatusFlow.get_actions(instance.get_outgoing_transitions())
         transitions = self.get_permitted_actions(request.user, model=Allocation, actions=actions) if actions else None
+
+        # Check if the resource provides a custom post-request form URL
+        allocation_request_url = None
+        if instance.resource_object:
+            allocation_request_url = instance.resource_object.allocation_request_url(instance)
+
         return {
             "transitions": transitions,
             "related_models": self.get_related_models(request, instance),
+            "allocation_request_url": allocation_request_url,
         }
 
 
@@ -109,6 +116,15 @@ class AllocationRequestView(BaseAllocationFlowView):
 
         obj.owner = request.user
         return obj
+
+    def get_return_url(self, request, obj=None):
+        # Check if the resource provides a custom redirect for the
+        # post-request form (e.g., to collect resource-specific data)
+        if obj is not None and obj.pk and obj.resource_object:
+            url = obj.resource_object.allocation_request_url(obj)
+            if url:
+                return url
+        return super().get_return_url(request, obj)
 
 
 @register_model_view(Allocation, "approve")
