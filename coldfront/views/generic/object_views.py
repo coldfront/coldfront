@@ -145,6 +145,19 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
         """
         return {}
 
+    def alter_form(self, form, request, obj):
+        """
+        Provides a hook for views to modify the form after it is created but
+        before it is rendered or validated. For example, fields can be disabled
+        based on the object's state.
+
+        Args:
+            form: The form being processed
+            request: The current request
+            obj: The object being edited
+        """
+        pass
+
     #
     # Request handlers
     #
@@ -168,6 +181,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
             form = self.form(instance=obj, initial=initial_data, prefix=form_prefix)
 
         restrict_form_fields(form, request.user)
+        self.alter_form(form, request, obj)
 
         context = {
             "model": model,
@@ -221,6 +235,7 @@ class ObjectEditView(GetReturnURLMixin, BaseObjectView):
             form = self.form(data=request.POST, files=request.FILES, instance=obj, prefix=form_prefix)
 
         restrict_form_fields(form, request.user)
+        self.alter_form(form, request, obj)
 
         if form.is_valid():
             logger.debug("Form validation was successful")

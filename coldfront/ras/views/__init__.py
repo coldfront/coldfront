@@ -16,6 +16,7 @@ from .allocations import (
     AllocationRevokeView,
     AllocationView,
 )
+from .generic import AllocatableResourceRequestView
 from .projects import (
     ProjectAllocationTabView,
     ProjectBulkDeleteView,
@@ -48,6 +49,7 @@ from .resources import (
 )
 
 __all__ = (
+    "AllocatableResourceRequestView",
     "AllocationActivateView",
     "AllocationApproveView",
     "AllocationBulkDeleteView",
