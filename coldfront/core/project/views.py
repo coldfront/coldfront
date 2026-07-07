@@ -43,6 +43,7 @@ from coldfront.core.project.models import (
     Project,
     ProjectAdminComment,
     ProjectAttribute,
+    ProjectPermission,
     ProjectReview,
     ProjectReviewStatusChoice,
     ProjectStatusChoice,
@@ -108,17 +109,19 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         context = super().get_context_data(**kwargs)
         # Can the user update the project?
         project_obj = self.get_object(Project.objects.select_related("status"))
-        project_user = project_obj.projectuser_set.select_related("role").filter(user=self.request.user)
-        if self.request.user.is_superuser:
-            context["is_allowed_to_update_project"] = True
-        elif project_user:
-            project_user = project_user.first()
-            if project_user.role.name == "Manager":
-                context["is_allowed_to_update_project"] = True
-            else:
-                context["is_allowed_to_update_project"] = False
-        else:
-            context["is_allowed_to_update_project"] = False
+        project_perms = project_obj.user_permissions(self.request.user)
+        context["is_allowed_to_update_project"] = ProjectPermission.UPDATE in project_perms
+        # Is the user a PI or manager of the project? Actions whose views only
+        # accept project managers (review, renew, grants, publications) key off
+        # this instead of is_allowed_to_update_project, which permission
+        # holders outside the project also have.
+        context["is_project_manager"] = (
+            ProjectPermission.PI in project_perms or ProjectPermission.MANAGER in project_perms
+        )
+        # Can the user request a new allocation? Mirrors AllocationCreateView.test_func.
+        context["can_request_allocation"] = ProjectPermission.UPDATE in project_perms or self.request.user.has_perm(
+            "allocation.add_allocation"
+        )
 
         attributes_query = project_obj.projectattribute_set.select_related("proj_attr_type", "projectattributeusage")
         if self.request.user.is_superuser:
@@ -198,9 +201,12 @@ class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
                 user_status.append(allocation_user.first().status.name)
 
         note_set = project_obj.projectusermessage_set
-        notes = note_set.all() if self.request.user.is_superuser else note_set.filter(is_private=False)
+        can_view_private_notes = self.request.user.is_superuser or self.request.user.has_perm(
+            "project.view_projectusermessage"
+        )
+        notes = note_set.all() if can_view_private_notes else note_set.filter(is_private=False)
 
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.has_perm("project.view_projectadmincomment"):
             context["admin_notes"] = project_obj.projectadmincomment_set.order_by("-modified")
 
         context["notes"] = notes
@@ -541,6 +547,9 @@ class ProjectArchiveProjectView(LoginRequiredMixin, UserPassesTestMixin, Templat
         ).exists():
             return True
 
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
+            return True
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         pk = self.kwargs.get("pk")
@@ -622,6 +631,9 @@ class ProjectUpdateView(SuccessMessageMixin, LoginRequiredMixin, UserPassesTestM
         ).exists():
             return True
 
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
+            return True
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
 
@@ -665,6 +677,9 @@ class ProjectAddUsersSearchView(LoginRequiredMixin, UserPassesTestMixin, Templat
         ).exists():
             return True
 
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
+            return True
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project.objects.select_related("status"), pk=self.kwargs.get("pk"))
         if project_obj.status.name not in [
@@ -700,6 +715,9 @@ class ProjectAddUsersSearchResultsView(LoginRequiredMixin, UserPassesTestMixin, 
         if project_obj.projectuser_set.filter(
             user=self.request.user, role__name="Manager", status__name="Active"
         ).exists():
+            return True
+
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
             return True
 
     def dispatch(self, request, *args, **kwargs):
@@ -799,6 +817,9 @@ class ProjectAddUsersView(LoginRequiredMixin, UserPassesTestMixin, View):
         if project_obj.projectuser_set.filter(
             user=self.request.user, role__name="Manager", status__name="Active"
         ).exists():
+            return True
+
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
             return True
 
     def dispatch(self, request, *args, **kwargs):
@@ -938,6 +959,9 @@ class ProjectRemoveUsersView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         ).exists():
             return True
 
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
+            return True
+
     def dispatch(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         if project_obj.status.name not in [
@@ -1032,6 +1056,9 @@ class ProjectUserDetail(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         ).exists():
             return True
 
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
+            return True
+
     def get(self, request, *args, **kwargs):
         project_obj = get_object_or_404(Project, pk=self.kwargs.get("pk"))
         project_user_obj = get_object_or_404(ProjectUser, pk=self.kwargs.get("project_user_pk"))
@@ -1110,6 +1137,9 @@ def project_update_email_notification(request):
             allowed = True
 
         if request.user.is_superuser:
+            allowed = True
+
+        if project_obj.has_perm(request.user, ProjectPermission.UPDATE):
             allowed = True
 
         if allowed is False:
@@ -1350,7 +1380,7 @@ class ProjectNoteCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
     def test_func(self):
         """UserPassesTestMixin Tests"""
 
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.has_perm("project.add_projectusermessage"):
             return True
         else:
             messages.error(self.request, "You do not have permission to add project notes.")
@@ -1404,6 +1434,9 @@ class ProjectAttributeCreateView(LoginRequiredMixin, UserPassesTestMixin, Create
         ).exists():
             return True
 
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
+            return True
+
         messages.error(self.request, "You do not have permission to add project attributes.")
 
     def get_initial(self):
@@ -1449,6 +1482,9 @@ class ProjectAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Templa
         if project_obj.projectuser_set.filter(
             user=self.request.user, role__name="Manager", status__name="Active"
         ).exists():
+            return True
+
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
             return True
 
         messages.error(self.request, "You do not have permission to add project attributes.")
@@ -1521,6 +1557,9 @@ class ProjectAttributeUpdateView(LoginRequiredMixin, UserPassesTestMixin, Templa
         if project_obj.projectuser_set.filter(
             user=self.request.user, role__name="Manager", status__name="Active"
         ).exists():
+            return True
+
+        if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
             return True
 
     def get(self, request, *args, **kwargs):
@@ -1597,7 +1636,7 @@ class ProjectAdminCommentCreateView(SuccessMessageMixin, LoginRequiredMixin, Use
 
     def test_func(self):
         """UserPassesTestMixin Tests"""
-        return self.request.user.is_superuser
+        return self.request.user.is_superuser or self.request.user.has_perm("project.add_projectadmincomment")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

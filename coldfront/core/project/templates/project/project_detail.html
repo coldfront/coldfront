@@ -11,7 +11,7 @@ Project Detail
 
 
 {% block content %}
-{% if is_allowed_to_update_project and project.needs_review%}
+{% if is_project_manager and project.needs_review%}
   <div class="alert alert-warning">
     You need to review this project. <a href="{% url 'project-review' project.pk %}">Review Project</a>
   </div>
@@ -45,13 +45,13 @@ Project Detail
     <div class="card-body">
       {% if project.status.name != 'Archived' %}
         <a class="btn btn-success" href="{% url 'project-add-users-search' project.pk %}" role="button"><i class="fas fa-user-plus" aria-hidden="true"></i> Add Users</a>
-{% if settings.GRANT_ENABLE %}
+{% if settings.GRANT_ENABLE and is_project_manager %}
         <a class="btn btn-success" href="{% url 'grant-create' project.id %}" role="button"><i class="fas fa-trophy" aria-hidden="true"></i> Add Grant</a>
 {% endif %}
-{% if settings.PUBLICATION_ENABLE %}
+{% if settings.PUBLICATION_ENABLE and is_project_manager %}
         <a class="btn btn-success" href="{% url 'publication-search' project.pk %}" role="button"><i class="fas fa-newspaper" aria-hidden="true"></i> Add Publication</a>
 {% endif %}
-{% if settings.RESEARCH_OUTPUT_ENABLE %}
+{% if settings.RESEARCH_OUTPUT_ENABLE and is_project_manager %}
         <a class="btn btn-success" href="{% url 'add-research-output' project.pk %}" role="button"><i class="far fa-newspaper" aria-hidden="true"></i> Add Research Output</a>
 {% endif %}
       {% endif %}
@@ -174,7 +174,7 @@ Project Detail
   <div class="card-header">
     <h3 class="d-inline"><i class="fas fa-server" aria-hidden="true"></i> Allocations</h3> <span class="badge bg-secondary">{{allocations.count}}</span>
     <div class="float-end">
-      {% if project.status.name != 'Archived' and is_allowed_to_update_project %}
+      {% if project.status.name != 'Archived' and can_request_allocation %}
         <a class="btn btn-success" href="{% url 'allocation-create' project.pk %}" role="button"><i class="fas fa-plus" aria-hidden="true"></i> Request Resource Allocation</a>
       {% endif %}
     </div>
@@ -228,7 +228,7 @@ Project Detail
                 <span class="badge bg-warning"><i class="far fa-clock" aria-hidden="true"></i>
                   Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} <br> Not renewable
                 </span>
-                {% elif is_allowed_to_update_project and settings.ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
+                {% elif is_project_manager and settings.ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
                   <a href="{% url 'allocation-renew' allocation.pk %}">
                   <span class="badge bg-warning"><i class="fas fa-redo-alt" aria-hidden="true"></i>
                   Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} <br> Click to renew
@@ -333,7 +333,7 @@ Project Detail
         <span class="badge bg-info">Last Updated: {{latest_grant.modified|date:"M. d, Y"}}</span>
       {% endif %}
       {% endwith %}
-      {% if project.status.name != 'Archived' and is_allowed_to_update_project %}
+      {% if project.status.name != 'Archived' and is_project_manager %}
         <a class="btn btn-success" href="{% url 'grant-create' project.id %}" role="button"><i class="fas fa-plus" aria-hidden="true"></i> Add Grant</a>
         {% if grants %}
           <a class="btn btn-danger" href="{% url 'grant-delete-grants' project.pk %}" role="button"><i class="fas fa-minus" aria-hidden="true"></i> Delete Grants</a>
@@ -399,7 +399,7 @@ Project Detail
         <span class="badge bg-info">Last Updated: {{latest_publication.created|date:"M. d, Y"}}</span>
       {% endif %}
       {% endwith %}
-      {% if project.status.name != 'Archived' and is_allowed_to_update_project %}
+      {% if project.status.name != 'Archived' and is_project_manager %}
         <a class="btn btn-success" href="{% url 'publication-search' project.pk %}" role="button"><i class="fas fa-plus" aria-hidden="true"></i> Add Publication</a>
         {% if publications %}
         <a class="btn btn-success" href="{% url 'publication-export-publications' project.pk %}" role="button"><i class="fas fa-file-export" aria-hidden="true"></i> Export Publications</a>
@@ -450,7 +450,7 @@ Project Detail
   <div class="card-header">
     <h3 class="d-inline" id="research_outputs"><i class="far fa-newspaper" aria-hidden="true"></i> Research Outputs</h3> <span class="badge bg-secondary">{{ research_outputs.count}}</span>
     <div class="float-end">
-      {% if project.status.name != 'Archived' and is_allowed_to_update_project %}
+      {% if project.status.name != 'Archived' and is_project_manager %}
         <a class="btn btn-success" href="{% url 'add-research-output' project.pk %}" role="button"><i class="fas fa-plus" aria-hidden="true"></i> Add Research Output</a>
         {% if research_outputs %}
           <a class="btn btn-danger" href="{% url 'research-output-delete-research-outputs' project.pk %}" role="button"><i class="fas fa-minus" aria-hidden="true"></i> Delete Research Outputs</a>
@@ -491,7 +491,7 @@ Project Detail
   <div class="card-header">
     <h3 class="d-inline"><i class="fas fa-users" aria-hidden="true"></i> Notifications </h3> <span class="badge bg-secondary">{{notes.count}}</span>
     <div class="float-end">
-      {% if request.user.is_superuser %}
+      {% if request.user.is_superuser or perms.project.add_projectusermessage %}
         <a class="btn btn-success" href="{% url 'project-note-add' project.pk %}" role="button">
           <i class="fas fa-plus" aria-hidden="true"></i> Add Notification
         </a>
@@ -511,7 +511,7 @@ Project Detail
           </thead>
           <tbody>
             {% for message in notes %}
-              {% if not message.is_private or request.user.is_superuser %}
+              {% if not message.is_private or request.user.is_superuser or perms.project.view_projectusermessage %}
             <tr>
               <td>{{ message.message }}</td>
               <td>{{ message.author.first_name }} {{ message.author.last_name }}</td>
@@ -530,15 +530,17 @@ Project Detail
 <!-- End Admin Messages -->
 
 <!-- Start Admin Comments -->
-{% if request.user.is_superuser %}
+{% if request.user.is_superuser or perms.project.view_projectadmincomment %}
 <div class="card mb-3">
     <div class="card-header">
         <h3 class="d-inline"><i class="fas fa-lock" aria-hidden="true"></i><i class="fas fa-note-sticky" aria-hidden="true"></i> Admin Notes </h3>
         <span class="badge bg-secondary">{{admin_notes.count}}</span>
         <div class="float-end">
+          {% if request.user.is_superuser or perms.project.add_projectadmincomment %}
             <a class="btn btn-primary" href="{% url 'project-admin-comment-create' project.pk %}" role="button">
                 <i class="fas fa-plus" aria-hidden="true"></i> Add Admin Note
             </a>
+          {% endif %}
         </div>
     </div>
     <div class="card-body">
