@@ -661,6 +661,30 @@ class AllocationPermissionBasedAccessTest(AllocationViewBaseTest):
         self.allocation.refresh_from_db()
         self.assertEqual(self.allocation.description, old_description)
 
+    def test_change_allocation_without_view_perm_cannot_reach_view(self):
+        """change_allocation alone does not grant access to the allocation.
+
+        AllocationDetailView.test_func gates on can_view_all_allocations or
+        object membership, so a non-member holding only change_allocation is
+        rejected before the update logic runs -- via GET and via direct POST.
+        """
+        user = UserFactory(username="change_only_no_view")
+        user = utils.grant_user_permission(user, "allocation", "change_allocation")
+        # GET is blocked by the access gate
+        utils.test_user_cannot_access(self, user, self.url)
+        # direct POST is blocked by the same test_func and does not mutate the allocation
+        old_description = self.allocation.description
+        self.client.force_login(user, backend=BACKEND)
+        post_data = {
+            "status": self.allocation.status.pk,
+            "description": "should not be saved",
+            "action": "update",
+        }
+        response = self.client.post(self.url, data=post_data)
+        self.assertEqual(response.status_code, 403)
+        self.allocation.refresh_from_db()
+        self.assertEqual(self.allocation.description, old_description)
+
     def test_attribute_and_note_views_permission_access(self):
         """each attribute/note view unlocks with its matching built-in permission"""
         cases = [
