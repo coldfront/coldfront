@@ -17,6 +17,8 @@ In addition to this, you will need to add the following permissions:
 
 **Make sure to SAVE the change at the bottom right of this page.**
 
+Staff status is no longer strictly required for the Staff Menu to appear — any of the permissions above will display it — but it is still recommended for directors so they can use the User Search feature.
+
 With these permissions granted, the director will see additional options on the Staff Menu: Project Reviews and Grant Report:
 
 ![DirectorMenu](../../images/directoraccess.PNG)  
