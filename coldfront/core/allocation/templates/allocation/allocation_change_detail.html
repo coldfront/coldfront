@@ -142,7 +142,7 @@ Allocation Change Detail
                   <td>{{form.name.value}}</td>
                   {% if allocation_change.status.name == 'Pending' %}
                     <td>{{form.value.value}}</td>
-                    {% if request.user.is_superuser %}
+                    {% if request.user.is_superuser or perms.allocation.change_allocationchangerequest %}
                       <td>
                         {{form.new_value}}
                         <a href="{% url 'allocation-attribute-change-delete' form.change_pk.value %}" class="float-end confirm-delete">
@@ -178,7 +178,7 @@ Allocation Change Detail
 
   <hr/>
 
-  {% if request.user.is_superuser %}
+  {% if request.user.is_superuser or perms.allocation.change_allocationchangerequest %}
     <div class="card mb-3">
       <div class="card-header">
         <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Actions</h3>
@@ -204,7 +204,7 @@ Allocation Change Detail
   <a class="btn btn-secondary" href="{% url 'allocation-detail' allocation_change.allocation.pk %}" role="button">
     View Allocation
   </a>
-  {% if request.user.is_superuser %}
+  {% if request.user.is_superuser or perms.allocation.can_review_allocation_requests %}
     <a class="btn btn-secondary" href="{% url 'allocation-change-list' %}">
       See all allocation change requests
     </a>
