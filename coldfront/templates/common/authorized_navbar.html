@@ -33,10 +33,8 @@
         </li>
         {% if request.user.is_superuser %}
           {% include 'common/navbar_admin.html' %}
-        {% elif request.user.is_staff %}
+        {% elif request.user.is_staff or perms.project.can_view_all_projects or perms.allocation.can_view_all_allocations or perms.allocation.can_review_allocation_requests or perms.project.can_review_pending_project_reviews or perms.grant.can_view_all_grants %}
           {% include 'common/navbar_nonadmin_staff.html' %}
-        {% elif perms.project.can_review_pending_project_reviews or perms.grant.can_view_all_grants %}
-          {% include 'common/navbar_director.html' %}
         {% endif %}
         {% if settings.INVOICE_ENABLED %}
           {% if request.user.is_superuser or perms.allocation.can_manage_invoice %}
