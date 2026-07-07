@@ -56,6 +56,7 @@ DEFAULT_PERMISSIONS = ENV.dict(
         "ras.view_resource": ({"locked": False},),
         "slurm.view_slurmcluster": ({"locked": False},),
         "slurm.view_slurmpartition": ({"locked": False},),
+        "storage.view_storageresource": ({"locked": False},),
         "ras.view_resourcetype": None,
         # Permit users to view projects they own or are a member of
         "ras.view_project": (
@@ -72,6 +73,12 @@ DEFAULT_PERMISSIONS = ENV.dict(
         "ras.view_allocation": (
             {"owner": "$user"},
             {"project__owner": "$user"},
+        ),
+        # Permit users to view storage quotas allocations they own or own the project
+        "storage.view_storagequota": (
+            {"allocation__owner": "$user"},
+            {"allocation__project__owner": "$user"},
+            {"allocation__project__users__user": "$user"},
         ),
     },
 )

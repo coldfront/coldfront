@@ -75,12 +75,21 @@ RESOURCES_MENU = Menu(
         MenuGroup(
             label=_("Slurm"),
             items=(
-                get_model_item("slurm", "slurmcluster", _("Clusters")),
-                get_model_item("slurm", "slurmpartition", _("Partitions")),
-                get_model_item("slurm", "slurmaccount", _("Accounts")),
+                get_model_item("slurm", "slurmcluster", _("Slurm Clusters")),
+                get_model_item("slurm", "slurmpartition", _("Slurm Partitions")),
+                get_model_item("slurm", "slurmaccount", _("Slurm Accounts")),
+                get_model_item("slurm", "slurmuser", _("Slurm Users")),
                 get_model_item("slurm", "slurmassociation", _("Associations")),
-                get_model_item("slurm", "slurmuser", _("Users")),
                 get_model_item("slurm", "slurmqos", _("QOS")),
+            ),
+        ),
+        MenuGroup(
+            label=_("Storage"),
+            items=(
+                get_model_item("storage", "storageresource", _("Storage Resources")),
+                get_model_item("storage", "storagecluster", _("Storage Clusters")),
+                get_model_item("storage", "storagequota", _("Storage Quotas")),
+                get_model_item("storage", "storagesnapshotpolicy", _("Snapshot Policies")),
             ),
         ),
     ),

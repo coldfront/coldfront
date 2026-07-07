@@ -104,6 +104,7 @@ INSTALLED_APPS += [
     "coldfront.tenancy",
     "coldfront.ras",
     "coldfront.slurm",
+    "coldfront.storage",
 ]
 
 # ------------------------------------------------------------------------------

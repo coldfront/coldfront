@@ -664,6 +664,7 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
             "form": form,
             "flow": flow,
             "action": self.action,
+            **self.get_extra_context(request, obj),
         }
 
         # If the form is being displayed within a "modal" widget,
@@ -681,7 +682,6 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
             {
                 **context,
                 "return_url": self.get_return_url(request, obj),
-                **self.get_extra_context(request, obj),
             },
         )
 

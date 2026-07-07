@@ -18,6 +18,7 @@ ALLOWED_APPS = [
     "social_django",
     "generic_notifications",
     "slurm",
+    "storage",
 ]
 
 

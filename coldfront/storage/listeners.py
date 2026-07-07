@@ -1,0 +1,331 @@
+# SPDX-FileCopyrightText: (C) ColdFront Authors
+#
+# SPDX-License-Identifier: Apache-2.0
+
+import logging
+
+from django.db.models import F
+
+from coldfront.flows import register_target_callback
+from coldfront.ras.choices import AllocationStatusChoices
+from coldfront.ras.flows import AllocationStatusFlow
+from coldfront.storage.models import StorageCluster, StorageQuota, StorageResource
+from coldfront.storage.sync import enqueue_activate_allocation, enqueue_deactivate_allocation
+
+logger = logging.getLogger(__name__)
+
+
+def _auto_generate_path(allocation, resource):
+    """Generate a storage path from the resource's path_template.
+
+    Supports ``{project.slug}``, ``{resource.<field>}``, and
+    ``{allocation.id}`` variable syntax.
+    """
+    template = resource.path_template
+    if not template:
+        return f"/home/groups/{allocation.project.slug}/{allocation.pk}"
+
+    result = template.replace("{project.slug}", allocation.project.slug or "")
+    result = result.replace("{allocation.id}", str(allocation.pk))
+
+    # Resolve {resource.<field>} — look up the field by name on the resource
+    import re
+
+    for match in re.finditer(r"{resource\.(\w+)}", result):
+        field_name = match.group(1)
+        value = getattr(resource, field_name, "")
+        result = result.replace(match.group(0), str(value) if value else "")
+
+    return result
+
+
+def _resolve_owning_group(allocation):
+    """Resolve the owning Group for a StorageQuota from the project slug.
+
+    Tries to find a Group whose name matches the project slug.  Falls back
+    to a group named after the project owner's username if not found.
+    """
+    from coldfront.users.models import Group
+
+    slug = allocation.project.slug
+    try:
+        return Group.objects.get(name=slug)
+    except Group.DoesNotExist:
+        # Fall back to a group matching the owner username
+        try:
+            return Group.objects.get(name=allocation.project.owner.username)
+        except Group.DoesNotExist:
+            # Create a placeholder group if nothing matches
+            group = Group(name=slug)
+            group.save()
+            return group
+
+
+def _get_target_clusters(quota, resource):
+    """Return the list of clusters a quota should apply to.
+
+    If ``quota.clusters`` is set, use those.  Otherwise use ALL clusters
+    backing the resource.
+    """
+    if quota.clusters.exists():
+        return list(quota.clusters.all())
+    return list(resource.clusters.all())
+
+
+# ---------------------------------------------------------------------------
+# Callbacks
+# ---------------------------------------------------------------------------
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_NEW)
+def on_allocation_requested(allocation, *, source, target):
+    """
+    On allocation request: create StorageQuota skeleton so the
+    post-request form can be rendered.  The storage resource is
+    set here; clusters is left empty (meaning all clusters) so
+    the admin can narrow it before activation.  Limits are set
+    by the user on the post-request form.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, StorageResource):
+        return
+
+    StorageQuota.objects.get_or_create(
+        allocation=allocation,
+        defaults={
+            "storage": resource,
+            "path": _auto_generate_path(allocation, resource),
+            "owning_user": allocation.project.owner,
+            "owning_group": _resolve_owning_group(allocation),
+        },
+    )
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_APPROVED)
+def on_allocation_approved(allocation, *, source, target):
+    """
+    On allocation approved: StorageQuota already exists (created on
+    request).  The admin reviews and sets the final hard_limit
+    (which may differ from the user's hard_limit_requested), path,
+    owning_user, owning_group, and cluster selection before activation.
+
+    Validate that the proposed hard_limit doesn't exceed resource or
+    cluster capacity.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, StorageResource):
+        return
+
+    try:
+        quota = StorageQuota.objects.get(allocation=allocation)
+    except StorageQuota.DoesNotExist:
+        logger.warning("StorageQuota not found for allocation %s — skipping", allocation.pk)
+        return
+
+    # Capacity validation against the user's requested amount
+    # (advisory — admin can still approve).  The final hard_limit
+    # is validated later in on_allocation_activated.
+    requested = quota.hard_limit_requested or quota.hard_limit
+    if requested:
+        target_clusters = _get_target_clusters(quota, resource)
+
+        if resource.capacity_bytes:
+            projected = resource.allocated_bytes + requested
+            if projected > resource.capacity_bytes:
+                logger.warning(
+                    "Approval of allocation %s would exceed resource capacity: "
+                    "%d / %d bytes already allocated, +%d requested",
+                    allocation.pk,
+                    resource.allocated_bytes,
+                    resource.capacity_bytes,
+                    requested,
+                )
+
+        for cluster in target_clusters:
+            if cluster.capacity_bytes:
+                projected = cluster.allocated_bytes + requested
+                if projected > cluster.capacity_bytes:
+                    logger.warning(
+                        "Approval of allocation %s would exceed cluster %s capacity: "
+                        "%d / %d bytes already allocated, +%d requested",
+                        allocation.pk,
+                        cluster.name,
+                        cluster.allocated_bytes,
+                        cluster.capacity_bytes,
+                        requested,
+                    )
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_ACTIVE)
+def on_allocation_activated(allocation, *, source, target):
+    """
+    On allocation activate: enqueue the REST API call to create the
+    path and quota on each cluster.  The StorageQuota already exists
+    (created on request) with the storage set.
+
+    If ``quota.clusters`` is set, create on those clusters only.
+    If null, create on ALL clusters backing ``quota.storage``.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, StorageResource):
+        return
+
+    try:
+        quota = StorageQuota.objects.get(allocation=allocation)
+    except StorageQuota.DoesNotExist:
+        logger.warning("StorageQuota not found for allocation %s — skipping", allocation.pk)
+        return
+
+    target_clusters = _get_target_clusters(quota, resource)
+
+    # Capacity validation against the final hard_limit
+    if quota.hard_limit:
+        if resource.capacity_bytes:
+            projected = resource.allocated_bytes + quota.hard_limit
+            if projected > resource.capacity_bytes:
+                logger.warning(
+                    "Activation of allocation %s exceeds resource capacity: %d / %d bytes allocated, +%d activating",
+                    allocation.pk,
+                    resource.allocated_bytes,
+                    resource.capacity_bytes,
+                    quota.hard_limit,
+                )
+        for cluster in target_clusters:
+            if cluster.capacity_bytes:
+                projected = cluster.allocated_bytes + quota.hard_limit
+                if projected > cluster.capacity_bytes:
+                    logger.warning(
+                        "Activation of allocation %s exceeds cluster %s capacity: "
+                        "%d / %d bytes allocated, +%d activating",
+                        allocation.pk,
+                        cluster.name,
+                        cluster.allocated_bytes,
+                        cluster.capacity_bytes,
+                        quota.hard_limit,
+                    )
+
+    for cluster in target_clusters:
+        enqueue_activate_allocation(
+            allocation.pk,
+            cluster_id=cluster.pk,
+            share_type=quota.share_type,
+        )
+
+    # Apply snapshot policy: policy is owned by one cluster.
+    # Only apply it to its owning cluster, not to all target clusters.
+    if quota.snapshot_policy_id:
+        policy_cluster = quota.snapshot_policy.cluster
+        if policy_cluster in target_clusters:
+            # Skip if the policy's owning cluster has no backend
+            if policy_cluster.backend_path is None:
+                logger.warning(
+                    "Cluster %s has no backend — cannot apply snapshot policy for allocation %s",
+                    policy_cluster.name,
+                    allocation.pk,
+                )
+            else:
+                from coldfront.storage.backends.registry import get_backend
+
+                backend = get_backend(policy_cluster.backend_path, cluster_name=policy_cluster.name)
+                if hasattr(backend, "apply_snapshot_policy"):
+                    try:
+                        backend.apply_snapshot_policy(
+                            path=quota.path,
+                            policy={
+                                "interval": quota.snapshot_policy.interval,
+                                "retention_days": quota.snapshot_policy.retention_days,
+                                "extra_config": quota.snapshot_policy.extra_config,
+                            },
+                        )
+                    except Exception as exc:
+                        logger.warning(
+                            "Failed to apply snapshot policy for allocation %s: %s",
+                            allocation.pk,
+                            exc,
+                        )
+
+    # Update resource and cluster capacity tracking
+    if quota.hard_limit:
+        StorageResource.objects.filter(pk=quota.storage_id).update(
+            allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+        )
+        for cluster in target_clusters:
+            StorageCluster.objects.filter(pk=cluster.pk).update(
+                allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+            )
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_EXPIRED)
+def on_allocation_expired(allocation, *, source, target):
+    """
+    On allocation expired: enqueue deactivation to remove quota and
+    optionally lock the path on each cluster.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, StorageResource):
+        return
+
+    try:
+        quota = StorageQuota.objects.get(allocation=allocation)
+    except StorageQuota.DoesNotExist:
+        logger.warning("StorageQuota not found for allocation %s — skipping", allocation.pk)
+        return
+
+    target_clusters = _get_target_clusters(quota, resource)
+    for cluster in target_clusters:
+        enqueue_deactivate_allocation(allocation.pk, cluster_id=cluster.pk)
+
+    # Update capacity tracking
+    if quota.hard_limit:
+        StorageResource.objects.filter(pk=quota.storage_id).update(
+            allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+        )
+        for cluster in target_clusters:
+            StorageCluster.objects.filter(pk=cluster.pk).update(
+                allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+            )
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_REVOKED)
+def on_allocation_revoked(allocation, *, source, target):
+    """
+    On allocation revoked: enqueue deactivation to remove quota and
+    optionally lock/delete the path on each cluster.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, StorageResource):
+        return
+
+    try:
+        quota = StorageQuota.objects.get(allocation=allocation)
+    except StorageQuota.DoesNotExist:
+        logger.warning("StorageQuota not found for allocation %s — skipping", allocation.pk)
+        return
+
+    target_clusters = _get_target_clusters(quota, resource)
+    for cluster in target_clusters:
+        enqueue_deactivate_allocation(allocation.pk, cluster_id=cluster.pk)
+
+    # Update capacity tracking
+    if quota.hard_limit:
+        StorageResource.objects.filter(pk=quota.storage_id).update(
+            allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+        )
+        for cluster in target_clusters:
+            StorageCluster.objects.filter(pk=cluster.pk).update(
+                allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+            )
+
+
+@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_DENIED)
+def on_allocation_denied(allocation, *, source, target):
+    """
+    On allocation denied: clean up the StorageQuota skeleton that was
+    created on request.  No backend action is needed — the quota was
+    never activated.
+    """
+    resource = allocation.resource_object
+    if not isinstance(resource, StorageResource):
+        return
+
+    StorageQuota.objects.filter(allocation=allocation).delete()

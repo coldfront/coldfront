@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.conf import settings
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.utils.module_loading import import_string
@@ -116,6 +117,26 @@ class AllocationRequestView(BaseAllocationFlowView):
 
         obj.owner = request.user
         return obj
+
+    def get_extra_context(self, request, instance):
+        context = super().get_extra_context(request, instance)
+
+        # Determine if the selected resource provides a custom
+        # post-request form message
+        help_message = None
+        resource_value = request.GET.get("resource_object")
+        if resource_value:
+            try:
+                ct_id, obj_id = resource_value.split(":", 1)
+                ct = ContentType.objects.get_for_id(int(ct_id))
+                resource = ct.get_object_for_this_type(pk=int(obj_id))
+                help_message = resource.allocation_request_form_help_message()
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+        context["form_message"] = help_message
+
+        return context
 
     def get_return_url(self, request, obj=None):
         # Check if the resource provides a custom redirect for the

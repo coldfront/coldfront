@@ -49,6 +49,7 @@ urlpatterns = [
     path("tenancy/", include("coldfront.tenancy.urls")),
     path("ras/", include("coldfront.ras.urls")),
     path("slurm/", include("coldfront.slurm.urls")),
+    path("storage/", include("coldfront.storage.urls")),
     # REST API
     path("api/", APIRootView.as_view(), name="api-root"),
     path("api/status/", StatusView.as_view(), name="api-status"),
@@ -58,6 +59,7 @@ urlpatterns = [
     path("api/core/", include("coldfront.core.api.urls")),
     path("api/ras/", include("coldfront.ras.api.urls")),
     path("api/slurm/", include("coldfront.slurm.api.urls")),
+    path("api/storage/", include("coldfront.storage.api.urls")),
     # REST API schema
     path(
         "api/schema/",

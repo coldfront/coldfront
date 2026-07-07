@@ -3,6 +3,14 @@
 
 {% cotton:vars show_custom_fields=True %}
 
+{% if form_message %}
+<div class="row">
+    <div class="col-6 offset-3 mb-3 h4">
+        <c-alert type="info">{{ form_message }}</c-alert>
+    </div>
+</div>
+{% endif %}
+
 {% crispy form %}
 
 {% if show_custom_fields and form.custom_fields %}

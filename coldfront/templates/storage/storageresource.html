@@ -1,0 +1,63 @@
+{% extends 'storage/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<c-layout.panels>
+  <c-slot name="left">
+    <c-card.fields :object="object" only>
+      <c-card.fields.item label="{% trans 'Name' %}">
+        {{ object.name }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Description' %}">
+        {{ object.description|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Locked' %}">
+        <c-ui.checkmark :value="object.locked" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Tenant' %}">
+        {{ object.tenant|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Clusters' %}">
+        {% for cluster in object.clusters.all %}
+          {{ cluster.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Path Template' %}">
+        {{ object.path_template }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Capacity' %}">
+        {% if object.capacity_bytes %}
+          {{ object.capacity_bytes|filesizeformat }}
+        {% else %}
+          {% trans 'Unlimited' %}
+        {% endif %}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Allocated' %}">
+        {{ object.allocated_bytes|filesizeformat }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Used' %}">
+        {{ object.used_bytes|filesizeformat }}
+      </c-card.fields.item>
+    </c-card.fields>
+
+    <c-card.tags :object="object" only />
+  </c-slot>
+
+  <c-slot name="right">
+    <c-card.custom_fields :object="object" only />
+    <c-card.related_objects :object="object" :models="related_models" only />
+  </c-slot>
+
+  <c-slot name="bottom">
+    <c-card.schema :object="object" only />
+  </c-slot>
+</c-layout.panels>
+{% endblock %}

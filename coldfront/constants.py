@@ -9,6 +9,7 @@ CORE_APPS = (
     "ras",
     "account",
     "slurm",
+    "storage",
 )
 
 CUSTOMFIELD_EMPTY_VALUES = (None, "", [])

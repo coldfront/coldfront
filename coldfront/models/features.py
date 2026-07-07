@@ -353,6 +353,20 @@ class AllocatableResourceMixin(models.Model):
         """Checks if this resource is allocatable. Override to provide custom checks"""
         return not self.locked
 
+    def allocation_request_form_help_message(self):
+        """
+        Return a message to be displayed on the allocation request form.
+
+        Displayed above the allocation request form. Override this on resource
+        subclasses to provide any customized help text messaging to the user
+        about the resource being requested. For example, text indicating that
+        more data is to be collected on the next page, redirected to via
+        `allocation_request_url`.
+
+        Returning ``None`` (the default) shows no message.
+        """
+        return None
+
     def allocation_request_url(self, allocation):
         """
         Return a URL for a resource-specific post-request form, or None.
