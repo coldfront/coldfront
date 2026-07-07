@@ -211,19 +211,22 @@ We do not have information about your research. Please provide a detailed descri
         if user.is_superuser:
             return list(ProjectPermission)
 
+        permissions = []
         user_conditions = models.Q(status__name__in=("Active", "New")) & models.Q(user=user)
-        if not self.projectuser_set.filter(user_conditions).exists():
-            return []
+        if self.projectuser_set.filter(user_conditions).exists():
+            permissions.append(ProjectPermission.USER)
 
-        permissions = [ProjectPermission.USER]
+            if self.projectuser_set.filter(user_conditions & models.Q(role__name="Manager")).exists():
+                permissions.append(ProjectPermission.MANAGER)
 
-        if self.projectuser_set.filter(user_conditions & models.Q(role__name="Manager")).exists():
-            permissions.append(ProjectPermission.MANAGER)
+            if self.projectuser_set.filter(user_conditions & models.Q(project__pi_id=user.id)).exists():
+                permissions.append(ProjectPermission.PI)
 
-        if self.projectuser_set.filter(user_conditions & models.Q(project__pi_id=user.id)).exists():
-            permissions.append(ProjectPermission.PI)
-
-        if ProjectPermission.MANAGER in permissions or ProjectPermission.PI in permissions:
+        if (
+            ProjectPermission.MANAGER in permissions
+            or ProjectPermission.PI in permissions
+            or user.has_perm("project.change_project")
+        ):
             permissions.append(ProjectPermission.UPDATE)
 
         return permissions
