@@ -3,10 +3,23 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from django.contrib import messages
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.test import TestCase
 from requests import Response
 
 """utility functions for unit and integration testing"""
+
+
+def grant_user_permission(user, app_label, codename):
+    """Grant a model permission to a user and return a freshly-fetched user.
+
+    Re-fetching avoids Django's per-instance permission cache, so the new
+    permission is visible to has_perm() immediately.
+    """
+    permission = Permission.objects.get(content_type__app_label=app_label, codename=codename)
+    user.user_permissions.add(permission)
+    return get_user_model().objects.get(pk=user.pk)
 
 
 def login_and_get_page(client, user, page):

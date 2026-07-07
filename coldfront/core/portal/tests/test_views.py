@@ -7,6 +7,7 @@ import logging
 from django.test import TestCase
 
 from coldfront.core.test_helpers import utils
+from coldfront.core.test_helpers.factories import UserFactory
 
 logging.disable(logging.CRITICAL)
 
@@ -35,3 +36,20 @@ class CenterSummaryViewTest(PortalViewBaseTest):
         self.assertContains(response, "Active Allocations and Users")
         self.assertContains(response, "Resources and Allocations Summary")
         self.assertNotContains(response, "We're having a bit of system trouble at the moment. Please check back soon!")
+
+
+class NavbarPermissionTest(PortalViewBaseTest):
+    """The staff navbar menu appears for permission holders without staff status"""
+
+    def test_staff_menu_for_permission_holder(self):
+        user = UserFactory(username="menu_perm_holder", is_staff=False, is_superuser=False)
+        utils.page_does_not_contain_for_user(self, user, "/", 'id="navbar-admin"')
+        user = utils.grant_user_permission(user, "allocation", "can_view_all_allocations")
+        utils.page_contains_for_user(self, user, "/", 'id="navbar-admin"')
+        # User Search requires staff status; permission holders must not see it
+        utils.page_does_not_contain_for_user(self, user, "/", "User Search")
+
+    def test_staff_menu_for_staff_user(self):
+        staff_user = UserFactory(username="staff_menu_user", is_staff=True, is_superuser=False)
+        utils.page_contains_for_user(self, staff_user, "/", 'id="navbar-admin"')
+        utils.page_contains_for_user(self, staff_user, "/", "User Search")

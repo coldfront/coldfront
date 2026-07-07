@@ -430,3 +430,69 @@ class ProjectUserDetailViewTest(ProjectViewTestBase):
         # project user and nonproject user cannot access user detail page
         utils.test_user_cannot_access(self, self.project_user.user, self.url)
         utils.test_user_cannot_access(self, self.nonproject_user, self.url)
+
+
+class ProjectPermissionBasedAccessTest(ProjectViewTestBase):
+    """Built-in model permissions unlock project management without superuser status"""
+
+    def setUp(self):
+        self.url = f"/project/{self.project.pk}/"
+
+    def test_request_allocation_button_for_permission_holder(self):
+        """add_allocation shows the Request Resource Allocation button to a non-member"""
+        button_text = "Request Resource Allocation"
+        user = UserFactory(username="allocation_requester")
+        user = utils.grant_user_permission(user, "project", "can_view_all_projects")
+        utils.page_does_not_contain_for_user(self, user, self.url, button_text)
+        user = utils.grant_user_permission(user, "allocation", "add_allocation")
+        utils.page_contains_for_user(self, user, self.url, button_text)
+        response = utils.login_and_get_page(self.client, user, self.url)
+        self.assertTrue(response.context["can_request_allocation"])
+        self.assertFalse(response.context["is_project_manager"])
+
+    def test_change_project_perm_updates_context(self):
+        """change_project grants is_allowed_to_update_project without manager role"""
+        user = UserFactory(username="project_editor")
+        user = utils.grant_user_permission(user, "project", "can_view_all_projects")
+        response = utils.login_and_get_page(self.client, user, self.url)
+        self.assertFalse(response.context["is_allowed_to_update_project"])
+        user = utils.grant_user_permission(user, "project", "change_project")
+        response = utils.login_and_get_page(self.client, user, self.url)
+        self.assertTrue(response.context["is_allowed_to_update_project"])
+        self.assertFalse(response.context["is_project_manager"])
+
+    def test_change_project_perm_unlocks_management_views(self):
+        """change_project unlocks the project management views for a non-member"""
+        urls = [
+            f"/project/{self.project.pk}/update/",
+            f"/project/{self.project.pk}/add-users-search/",
+            f"/project/{self.project.pk}/project-attribute-create/",
+        ]
+        outsider = UserFactory(username="project_manager_by_perm")
+        for url in urls:
+            with self.subTest(url=url):
+                utils.test_user_cannot_access(self, outsider, url)
+        outsider = utils.grant_user_permission(outsider, "project", "change_project")
+        for url in urls:
+            with self.subTest(url=url):
+                utils.test_user_can_access(self, outsider, url)
+
+    def test_private_note_visible_with_view_projectusermessage(self):
+        """view_projectusermessage reveals private project notes"""
+        self.project.projectusermessage_set.create(
+            author=self.admin_user, is_private=True, message="secret project note"
+        )
+        user = UserFactory(username="note_viewer")
+        user = utils.grant_user_permission(user, "project", "can_view_all_projects")
+        utils.page_does_not_contain_for_user(self, user, self.url, "secret project note")
+        user = utils.grant_user_permission(user, "project", "view_projectusermessage")
+        utils.page_contains_for_user(self, user, self.url, "secret project note")
+
+    def test_admin_notes_visible_with_view_projectadmincomment(self):
+        """view_projectadmincomment reveals the admin notes card"""
+        self.project.projectadmincomment_set.create(author=self.admin_user, comment="internal admin comment")
+        user = UserFactory(username="admin_note_viewer")
+        user = utils.grant_user_permission(user, "project", "can_view_all_projects")
+        utils.page_does_not_contain_for_user(self, user, self.url, "internal admin comment")
+        user = utils.grant_user_permission(user, "project", "view_projectadmincomment")
+        utils.page_contains_for_user(self, user, self.url, "internal admin comment")
