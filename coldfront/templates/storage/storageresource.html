@@ -33,7 +33,7 @@
 
       <c-card.fields.item label="{% trans 'Capacity' %}">
         {% if object.capacity_bytes %}
-          {{ object.capacity_bytes|filesizeformat }}
+          {{ object.capacity_bytes|naturalsize }}
         {% else %}
           {% trans 'Unlimited' %}
         {% endif %}

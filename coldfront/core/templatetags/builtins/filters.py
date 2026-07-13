@@ -7,6 +7,7 @@ import datetime
 import json
 import re
 
+import humanize
 from django import template
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
@@ -230,3 +231,14 @@ def dict_get(dictionary, key):
     Get a value from a dictionary by key.
     """
     return dictionary.get(key)
+
+
+@register.filter()
+def naturalsize(value):
+    """
+    Return human readable bytes
+    """
+    if value not in ("", None):
+        return humanize.naturalsize(value)
+
+    return placeholder(value)

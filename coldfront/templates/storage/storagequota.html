@@ -40,27 +40,15 @@
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Hard Limit' %}">
-        {% if object.hard_limit %}
-          {{ object.hard_limit|filesizeformat }}
-        {% else %}
-          {% trans 'Not set' %}
-        {% endif %}
+          {{ object.hard_limit|naturalsize }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Hard Limit Requested' %}">
-        {% if object.hard_limit_requested %}
-          {{ object.hard_limit_requested|filesizeformat }}
-        {% else %}
-          {% trans 'Not set' %}
-        {% endif %}
+          {{ object.hard_limit_requested|naturalsize }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Soft Limit' %}">
-        {% if object.soft_limit %}
-          {{ object.soft_limit|filesizeformat }}
-        {% else %}
-          {% trans 'Not set' %}
-        {% endif %}
+          {{ object.soft_limit|naturalsize }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Share Type' %}">
@@ -68,11 +56,7 @@
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Used' %}">
-        {% if object.used %}
-          {{ object.used|filesizeformat }}
-        {% else %}
-          {% trans 'Not available' %}
-        {% endif %}
+          {{ object.used|naturalsize }}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'State' %}">

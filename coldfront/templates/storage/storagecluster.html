@@ -22,12 +22,16 @@
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Sync Interval' %}">
-        {% blocktrans %}{{ object.sync_interval }} minutes{% endblocktrans %}
+        {% if object.sync_interval %}
+          {{ object.sync_interval }}{% blocktrans %} minutes{% endblocktrans %}
+        {% else %}
+          {{ ""|placeholder }}
+        {% endif %}
       </c-card.fields.item>
 
       <c-card.fields.item label="{% trans 'Capacity' %}">
         {% if object.capacity_bytes %}
-          {{ object.capacity_bytes|filesizeformat }}
+          {{ object.capacity_bytes|naturalsize }}
         {% else %}
           {% trans 'Unlimited' %}
         {% endif %}

@@ -9,6 +9,7 @@ from typing import Optional
 from urllib.parse import quote
 
 import django_tables2 as tables
+import humanize
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.humanize.templatetags.humanize import naturalday
@@ -31,6 +32,7 @@ __all__ = (
     "ActionsColumn",
     "ArrayColumn",
     "BooleanColumn",
+    "BytesColumn",
     "ColorColumn",
     "ChoicesColumn",
     "ColoredLabelColumn",
@@ -624,3 +626,12 @@ class CustomFieldColumn(tables.Column):
         if value is not None:
             return self.customfield.deserialize(value)
         return self.default
+
+
+class BytesColumn(tables.Column):
+    """
+    Render a column as human readable bytes
+    """
+
+    def render(self, value):
+        return humanize.naturalsize(value)

@@ -19,6 +19,8 @@ class StorageResourceTable(TenancyColumnsMixin, PrimaryModelTable):
         url_name="storage:storageresource_list",
     )
 
+    capacity_bytes = columns.BytesColumn()
+
     class Meta(PrimaryModelTable.Meta):
         model = StorageResource
         fields = (
@@ -47,6 +49,7 @@ class StorageClusterTable(PrimaryModelTable):
     tags = columns.TagColumn(
         url_name="storage:storagecluster_list",
     )
+    capacity_bytes = columns.BytesColumn()
 
     class Meta(PrimaryModelTable.Meta):
         model = StorageCluster
@@ -76,6 +79,9 @@ class StorageQuotaTable(PrimaryModelTable):
     tags = columns.TagColumn(
         url_name="storage:storagequota_list",
     )
+    hard_limit = columns.BytesColumn()
+    hard_limit_requested = columns.BytesColumn()
+    soft_limit = columns.BytesColumn()
 
     class Meta(PrimaryModelTable.Meta):
         model = StorageQuota
