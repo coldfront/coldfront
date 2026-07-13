@@ -13,3 +13,6 @@ class UsersConfig(AppConfig):
 
         # Register models
         register_models(*self.get_models())
+
+        # Import signals so receivers can connect
+        import coldfront.users.signals  # noqa

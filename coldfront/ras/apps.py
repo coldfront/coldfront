@@ -13,3 +13,9 @@ class RASConfig(AppConfig):
         from coldfront.models.features import register_models
 
         register_models(*self.get_models())
+
+        # Import signals so receivers can connect
+        import coldfront.ras.signals  # noqa
+
+        # Connect Project group FK change tracking signals
+        coldfront.ras.signals._connect_project_group_signals()

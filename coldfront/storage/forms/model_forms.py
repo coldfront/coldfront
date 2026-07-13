@@ -264,6 +264,13 @@ class StorageQuotaForm(PrimaryModelForm):
                 cluster__in=instance.storage.clusters.values("pk")
             )
 
+        # Pre-fill owning_group from the allocation's project group
+        if instance and instance.pk is None and instance.allocation_id:
+            group = instance.allocation.project.group
+            if group:
+                self.fields["owning_group"].initial = group.pk
+                self.fields["owning_group"].disabled = True
+
 
 class StorageQuotaImportForm(PrimaryModelImportForm):
     storage = CSVModelChoiceField(

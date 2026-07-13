@@ -40,7 +40,19 @@ class Project(OrganizationalModel):
         null=False,
     )
 
-    clone_fields = ("status", "tenant")
+    group = models.ForeignKey(
+        to="users.Group",
+        on_delete=models.SET_NULL,
+        related_name="projects",
+        blank=True,
+        null=True,
+        verbose_name=_("group"),
+        help_text=_(
+            "The Group associated with this project. Users added to the project are automatically added to this group."
+        ),
+    )
+
+    clone_fields = ("status", "tenant", "group")
 
     class Meta:
         ordering = ["name"]

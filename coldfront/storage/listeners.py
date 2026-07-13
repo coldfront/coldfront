@@ -40,12 +40,18 @@ def _auto_generate_path(allocation, resource):
 
 
 def _resolve_owning_group(allocation):
-    """Resolve the owning Group for a StorageQuota from the project slug.
+    """Resolve the owning Group for a StorageQuota.
 
-    Tries to find a Group whose name matches the project slug.  Falls back
-    to a group named after the project owner's username if not found.
+    If the project has a ``group`` FK set, use that directly.
+    Otherwise fall back to matching by project slug or owner
+    username, creating a placeholder if nothing matches.
     """
     from coldfront.users.models import Group
+
+    # Check the project's explicit group FK first
+    group = allocation.project.group
+    if group:
+        return group
 
     slug = allocation.project.slug
     try:

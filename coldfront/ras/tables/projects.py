@@ -19,6 +19,10 @@ class ProjectTable(TenancyColumnsMixin, OrganizationalModelTable):
         linkify=True,
         verbose_name=_("Owner"),
     )
+    group = tables.Column(
+        linkify=True,
+        verbose_name=_("Group"),
+    )
     user_count = columns.LinkedCountColumn(
         viewname="ras:project_users",
         view_kwargs={"pk": "pk"},
@@ -43,6 +47,7 @@ class ProjectTable(TenancyColumnsMixin, OrganizationalModelTable):
             "id",
             "name",
             "owner",
+            "group",
             "status",
             "user_count",
             "allocation_count",

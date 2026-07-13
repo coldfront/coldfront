@@ -21,6 +21,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.users.querysets import RestrictedQuerySet
+from coldfront.users.signals import group_membership_changed
 
 __all__ = ("User", "UserManager", "Group", "GroupManager")
 
@@ -181,3 +182,29 @@ class Group(models.Model):
 
     def natural_key(self):
         return (self.name,)
+
+    def add_member(self, user):
+        """Add a user to this group.  Fires ``group_membership_changed``
+        signal so external sync jobs (LDAP, FreeIPA) can react.
+        """
+        if user in self.users.all():
+            return
+        self.users.add(user)
+        group_membership_changed.send(
+            sender=self,
+            action="added",
+            user=user,
+        )
+
+    def remove_member(self, user):
+        """Remove a user from this group.  Fires ``group_membership_changed``
+        signal so external sync jobs (LDAP, FreeIPA) can react.
+        """
+        if user not in self.users.all():
+            return
+        self.users.remove(user)
+        group_membership_changed.send(
+            sender=self,
+            action="removed",
+            user=user,
+        )

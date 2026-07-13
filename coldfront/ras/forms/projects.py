@@ -15,7 +15,7 @@ from coldfront.forms import (
 )
 from coldfront.forms.fields import CSVModelChoiceField, DynamicModelChoiceField
 from coldfront.ras.models import Project, ProjectUser
-from coldfront.users.models import User
+from coldfront.users.models import Group, User
 from coldfront.utils.forms import get_field_value
 
 
@@ -27,6 +27,7 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
             "slug",
             "status",
             "description",
+            "group",
             "tags",
             "tenant",
             "tenant_group",
@@ -39,6 +40,7 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
             "slug",
             "status",
             "description",
+            "group",
         ),
     )
 
@@ -103,6 +105,14 @@ class ProjectImportForm(TenancyImportForm, PrimaryModelImportForm):
         },
     )
 
+    group = CSVModelChoiceField(
+        label=_("Group"),
+        queryset=Group.objects.all(),
+        required=False,
+        to_field_name="name",
+        help_text=_("Group that maps to this project"),
+    )
+
     class Meta:
         model = Project
         fields = [
@@ -110,6 +120,7 @@ class ProjectImportForm(TenancyImportForm, PrimaryModelImportForm):
             "owner",
             "status",
             "description",
+            "group",
             "tags",
             "tenant",
         ]

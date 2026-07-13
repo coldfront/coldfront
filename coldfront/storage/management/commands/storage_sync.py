@@ -63,9 +63,7 @@ class Command(BaseCommand):
         # (or from LOGGING config).  We only manage StreamHandler instances
         # that write to stderr.
         console_handlers = [
-            h
-            for h in storage_logger.handlers
-            if isinstance(h, logging.StreamHandler) and h.stream is sys.stderr
+            h for h in storage_logger.handlers if isinstance(h, logging.StreamHandler) and h.stream is sys.stderr
         ]
 
         if verbosity >= 2:

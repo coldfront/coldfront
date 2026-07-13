@@ -6,13 +6,19 @@ from coldfront.api.serializers import OrganizationalModelSerializer, PrimaryMode
 from coldfront.api.serializers.fields import RelatedObjectCountField
 from coldfront.ras.models import Project, ProjectUser
 from coldfront.tenancy.api.serializers import TenantSerializer
-from coldfront.users.api.serializers import UserSerializer
+from coldfront.users.api.serializers import GroupSerializer, UserSerializer
 
 
 class ProjectSerializer(OrganizationalModelSerializer):
     allocation_count = RelatedObjectCountField("allocations")
     user_count = RelatedObjectCountField("users")
     owner = UserSerializer(nested=True)
+    group = GroupSerializer(
+        nested=True,
+        allow_null=True,
+        required=False,
+        default=None,
+    )
     tenant = TenantSerializer(
         nested=True,
         allow_null=True,
@@ -31,6 +37,7 @@ class ProjectSerializer(OrganizationalModelSerializer):
             "slug",
             "description",
             "status",
+            "group",
             "tags",
             "owner",
             "tenant",
