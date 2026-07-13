@@ -15,7 +15,6 @@ class ProjectFilterSet(OrganizationalModelFilterSet, TenancyFilterSet):
         fields = (
             "id",
             "name",
-            "status",
             "description",
             "owner",
             "tenant_id",

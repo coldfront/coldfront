@@ -4,7 +4,7 @@
 
 from django.contrib.contenttypes.models import ContentType
 
-from coldfront.ras.choices import ProjectStatusChoices, ResourceStatusChoices
+from coldfront.ras.choices import ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
     Project,
@@ -44,15 +44,14 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
         cls.form_data = {
             "name": "Project X",
             "description": "A new project",
-            "status": ProjectStatusChoices.STATUS_ACTIVE,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "name,description,status,owner",
-            "Project 4,Fourth project,active,User1",
-            "Project 5,Fifth project,active,User2",
-            "Project 6,Sixth project,active,User3",
+            "name,description,owner",
+            "Project 4,Fourth project,User1",
+            "Project 5,Fifth project,User2",
+            "Project 6,Sixth project,User3",
         )
 
         cls.csv_update_data = (
@@ -72,7 +71,6 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
         data = {
             "name": "Project X",
             "description": "A new project",
-            "status": ProjectStatusChoices.STATUS_ACTIVE,
             "tenant": tenant.pk,
         }
 

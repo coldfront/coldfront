@@ -5,7 +5,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 
-from coldfront.ras.choices import AllocationStatusChoices, ProjectStatusChoices, ResourceStatusChoices
+from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
     Project,
@@ -28,7 +28,7 @@ class AppTest(APITestCase):
 
 class ProjectTest(APIViewTestCases.APIViewTestCase):
     model = Project
-    brief_fields = ["description", "display", "id", "name", "slug", "status", "url"]
+    brief_fields = ["description", "display", "id", "name", "slug", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -57,19 +57,16 @@ class ProjectTest(APIViewTestCases.APIViewTestCase):
                 "name": "Project X",
                 "description": "A new project",
                 "owner": users[0].pk,
-                "status": ProjectStatusChoices.STATUS_ACTIVE,
             },
             {
                 "name": "Project Y",
                 "description": "A new project",
                 "owner": users[1].pk,
-                "status": ProjectStatusChoices.STATUS_ACTIVE,
             },
             {
                 "name": "Project Z",
                 "description": "A new project",
                 "owner": users[2].pk,
-                "status": ProjectStatusChoices.STATUS_ACTIVE,
             },
         ]
 

@@ -25,7 +25,6 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
         fields = [
             "name",
             "slug",
-            "status",
             "description",
             "group",
             "tags",
@@ -38,7 +37,6 @@ class ProjectForm(TenancyForm, OrganizationalModelForm):
             _("Project"),
             "name",
             "slug",
-            "status",
             "description",
             "group",
         ),
@@ -118,7 +116,6 @@ class ProjectImportForm(TenancyImportForm, PrimaryModelImportForm):
         fields = [
             "name",
             "owner",
-            "status",
             "description",
             "group",
             "tags",

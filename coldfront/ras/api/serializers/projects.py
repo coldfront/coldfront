@@ -36,7 +36,6 @@ class ProjectSerializer(OrganizationalModelSerializer):
             "name",
             "slug",
             "description",
-            "status",
             "group",
             "tags",
             "owner",
@@ -47,7 +46,7 @@ class ProjectSerializer(OrganizationalModelSerializer):
             "allocation_count",
             "user_count",
         ]
-        brief_fields = ("id", "url", "display", "name", "slug", "description", "status")
+        brief_fields = ("id", "url", "display", "name", "slug", "description")
 
 
 class ProjectUserSerializer(PrimaryModelSerializer):

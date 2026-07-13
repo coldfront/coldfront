@@ -23,9 +23,6 @@
           {{ object.description|placeholder }}
       </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Status' %}">
-          <c-ui.badge :value="object.status" :bg_color="object.get_status_color" />
-      </c-card.fields.item>
     </c-card.fields>
 
     <c-card.tags :object="object" only />

@@ -29,18 +29,6 @@ class ResourceStatusChoices(ChoiceSet):
     ]
 
 
-class ProjectStatusChoices(ChoiceSet):
-    key = "Project.status"
-
-    STATUS_ARCHIVED = "archived"
-    STATUS_ACTIVE = "active"
-
-    CHOICES = [
-        (STATUS_ARCHIVED, _("Archived"), "secondary"),
-        (STATUS_ACTIVE, _("Active"), "success"),
-    ]
-
-
 class AllocationStatusChoices(ChoiceSet):
     key = "Allocation.status"
 

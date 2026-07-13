@@ -33,9 +33,6 @@ class ProjectTable(TenancyColumnsMixin, OrganizationalModelTable):
         view_kwargs={"pk": "pk"},
         verbose_name=_("Allocation Count"),
     )
-    status = columns.ChoiceFieldColumn(
-        verbose_name=_("Status"),
-    )
     tags = columns.TagColumn(
         url_name="ras:project_list",
     )
@@ -48,7 +45,6 @@ class ProjectTable(TenancyColumnsMixin, OrganizationalModelTable):
             "name",
             "owner",
             "group",
-            "status",
             "user_count",
             "allocation_count",
             "description",
@@ -58,7 +54,7 @@ class ProjectTable(TenancyColumnsMixin, OrganizationalModelTable):
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "name", "owner", "status", "user_count", "allocation_count")
+        default_columns = ("pk", "name", "owner", "user_count", "allocation_count")
 
 
 class ProjectUserTable(PrimaryModelTable):

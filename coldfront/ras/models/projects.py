@@ -8,7 +8,6 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import ColdFrontModel, OrganizationalModel
 from coldfront.models.fields import AutoSlugField
-from coldfront.ras.choices import ProjectStatusChoices
 
 
 class Project(OrganizationalModel):
@@ -16,13 +15,6 @@ class Project(OrganizationalModel):
 
     slug = AutoSlugField(
         verbose_name=_("slug"),
-    )
-
-    status = models.CharField(
-        verbose_name=_("status"),
-        max_length=50,
-        choices=ProjectStatusChoices,
-        default=ProjectStatusChoices.STATUS_ACTIVE,
     )
 
     tenant = models.ForeignKey(
@@ -52,15 +44,12 @@ class Project(OrganizationalModel):
         ),
     )
 
-    clone_fields = ("status", "tenant", "group")
+    clone_fields = ("tenant", "group")
 
     class Meta:
         ordering = ["name"]
         verbose_name = _("project")
         verbose_name_plural = _("projects")
-
-    def get_status_color(self):
-        return ProjectStatusChoices.colors.get(self.status)
 
 
 class ProjectUser(ColdFrontModel):
