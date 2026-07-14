@@ -84,7 +84,7 @@ class SlurmClusterAPITestCase(APIViewTestCases.APIViewTestCase):
 
 class SlurmPartitionAPITestCase(APIViewTestCases.APIViewTestCase):
     model = SlurmPartition
-    brief_fields = ["description", "display", "id", "locked", "name", "nodes", "url"]
+    brief_fields = ["description", "display", "id", "is_default", "locked", "name", "nodes", "priority", "state", "url"]
     bulk_update_data = {
         "description": "New description",
     }
@@ -110,6 +110,11 @@ class SlurmPartitionAPITestCase(APIViewTestCases.APIViewTestCase):
                 "description": "A new partition",
                 "locked": True,
                 "nodes": "node[01-64]",
+                "priority": 100,
+                "is_default": True,
+                "state": "UP",
+                "preempt_mode": "off",
+                "def_mem_per_cpu": 2800,
                 "tags": [t.pk for t in tags],
             },
         ]
@@ -119,6 +124,11 @@ class SlurmPartitionAPITestCase(APIViewTestCases.APIViewTestCase):
             "description": "Updated partition",
             "locked": False,
             "nodes": "node[65-128]",
+            "priority": 50,
+            "is_default": False,
+            "state": "DOWN",
+            "preempt_mode": "REQUEUE",
+            "def_mem_per_cpu": 4000,
         }
 
 

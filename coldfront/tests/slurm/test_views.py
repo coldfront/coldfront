@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from datetime import timedelta
+
 from coldfront.slurm.models import (
     SlurmAccount,
     SlurmAssociation,
@@ -115,21 +117,27 @@ class SlurmPartitionTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "description": "A new Slurm partition",
             "locked": True,
             "nodes": "node[01-64]",
+            "priority": 100,
+            "is_default": True,
+            "default_time": timedelta(hours=1),
+            "state": "UP",
+            "preempt_mode": "off",
+            "def_mem_per_cpu": 2800,
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "cluster,name,description,nodes",
-            "Test Cluster,Partition 4,Fourth partition,node[01-16]",
-            "Test Cluster,Partition 5,Fifth partition,node[17-32]",
-            "Test Cluster,Partition 6,Sixth partition,node[33-48]",
+            "cluster,name,description,nodes,priority,is_default,state",
+            "Test Cluster,Partition 4,Fourth partition,node[01-16],100,TRUE,UP",
+            "Test Cluster,Partition 5,Fifth partition,node[17-32],50,FALSE,UP",
+            "Test Cluster,Partition 6,Sixth partition,node[33-48],10,FALSE,DOWN",
         )
 
         cls.csv_update_data = (
-            "id,cluster,name,description,nodes",
-            f"{partitions[0].pk},Test Cluster,Partition 7,Seven partition,node[49-64]",
-            f"{partitions[1].pk},Test Cluster,Partition 8,Eight partition,node[65-80]",
-            f"{partitions[2].pk},Test Cluster,Partition 9,Nine partition,node[81-96]",
+            "id,cluster,name,description,nodes,priority,is_default,state",
+            f"{partitions[0].pk},Test Cluster,Partition 7,Seven partition,node[49-64],100,TRUE,UP",
+            f"{partitions[1].pk},Test Cluster,Partition 8,Eight partition,node[65-80],50,FALSE,UP",
+            f"{partitions[2].pk},Test Cluster,Partition 9,Nine partition,node[81-96],10,FALSE,DOWN",
         )
 
 

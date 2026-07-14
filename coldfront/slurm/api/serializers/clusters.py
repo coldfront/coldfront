@@ -90,6 +90,12 @@ class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelS
             "description",
             "locked",
             "nodes",
+            "priority",
+            "is_default",
+            "default_time",
+            "state",
+            "preempt_mode",
+            "def_mem_per_cpu",
             "tags",
             "custom_fields",
             "created",
@@ -106,7 +112,18 @@ class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelS
             "allow_groups",
             "allow_accounts",
         ]
-        brief_fields = ("id", "url", "display", "name", "description", "locked", "nodes")
+        brief_fields = (
+            "id",
+            "url",
+            "display",
+            "name",
+            "description",
+            "locked",
+            "nodes",
+            "priority",
+            "is_default",
+            "state",
+        )
 
 
 class SlurmAccountSerializer(PrimaryModelSerializer):

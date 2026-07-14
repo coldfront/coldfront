@@ -3,5 +3,5 @@
 {% cotton:vars color value css_class title %}
 
 {% if value or show_empty %}
-{% if link %}<a href="{{ link  }}">{% endif %}<span {% if title %}title="{{ title }}"{% endif %} class="badge{% if not color %} text-bg-{{ bg_color }}{% endif %} {{ css_class }}"{% if color %} style="color: {{ color|fgcolor }}; background-color: #{{ color }}"{% endif %}>{{ value }}</span>{% if link %}</a>{% endif %}
+{% if link %}<a href="{{ link  }}">{% endif %}<span {% if title %}title="{{ title }}"{% endif %} class="badge{% if not color %} text-bg-{{ bg_color }}{% endif %} me-1 {{ css_class }}"{% if color %} style="color: {{ color|fgcolor }}; background-color: #{{ color }}"{% endif %}>{{ value }}</span>{% if link %}</a>{% endif %}
 {% endif %}

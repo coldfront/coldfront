@@ -13,6 +13,30 @@
         {{ object.nodes|placeholder }}
       </c-card.fields.item>
 
+      <c-card.fields.item label="{% trans 'Priority' %}">
+        {{ object.priority|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Default' %}">
+        <c-ui.checkmark :value="object.is_default" />
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Default Time' %}">
+        {{ object.default_time|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'State' %}">
+        {{ object.state|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Preempt Mode' %}">
+        {{ object.preempt_mode|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Default Memory Per CPU' %}">
+        {{ object.def_mem_per_cpu|placeholder }}
+      </c-card.fields.item>
+
       <c-card.fields.item label="{% trans 'Description' %}">
         {{ object.description|placeholder }}
       </c-card.fields.item>

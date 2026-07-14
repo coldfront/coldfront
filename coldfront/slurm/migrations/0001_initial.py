@@ -404,6 +404,15 @@ class Migration(migrations.Migration):
                         verbose_name="nodes",
                     ),
                 ),
+                ("priority", models.PositiveIntegerField(blank=True, null=True, verbose_name="priority")),
+                ("is_default", models.BooleanField(blank=True, default=False, verbose_name="default")),
+                ("default_time", models.DurationField(blank=True, null=True, verbose_name="default time")),
+                ("state", models.CharField(blank=True, max_length=20, null=True, verbose_name="state")),
+                ("preempt_mode", models.CharField(blank=True, max_length=20, null=True, verbose_name="preempt mode")),
+                (
+                    "def_mem_per_cpu",
+                    models.PositiveIntegerField(blank=True, null=True, verbose_name="default memory per CPU"),
+                ),
                 (
                     "allow_accounts",
                     models.ManyToManyField(

@@ -496,6 +496,79 @@ class SlurmClient:
             body["association"] = association
         return body
 
+    @staticmethod
+    def serialize_qos(
+        name: str,
+        description: str | None = None,
+        priority: int | None = None,
+        limit_factor: float | None = None,
+        flags: list[str] | None = None,
+        preempt: str | None = None,
+        preempt_mode: str | None = None,
+        grt_tres: dict[str, int] | None = None,
+        grt_wall: int | None = None,
+        max_tres_per_job: dict[str, int] | None = None,
+        max_wall_duration_per_job: int | None = None,
+        max_jobs: int | None = None,
+        max_submit_jobs: int | None = None,
+        max_tres_mins_per_job: dict[str, int] | None = None,
+        min_tres_per_job: dict[str, int] | None = None,
+    ) -> dict[str, Any]:
+        """Serialize a QOS record for ``POST /slurmdb/{version}/qos/``.
+
+        Works for v0.0.41 through v0.0.45.
+
+        Args:
+            name: QOS name.
+            description: Optional QOS description.
+            priority: Priority value for the QOS.
+            limit_factor: Limit factor.
+            flags: List of QOS flags (e.g., "Denormal", "NoNormal").
+            preempt: Preempting QOS name.
+            preempt_mode: Preempt mode.
+            grt_tres: Group TRES limits dict.
+            grt_wall: Group wall limit in minutes.
+            max_tres_per_job: Max TRES per job dict.
+            max_wall_duration_per_job: Max wall duration in minutes.
+            max_jobs: Max active jobs.
+            max_submit_jobs: Max submit jobs.
+            max_tres_mins_per_job: Max TRES minutes per job.
+            min_tres_per_job: Min TRES per job dict.
+
+        Returns:
+            A dict matching the ``qos_rec`` schema.
+        """
+        body: dict[str, Any] = {"name": name}
+        if description is not None:
+            body["description"] = description
+        if priority is not None:
+            body["priority"] = priority
+        if limit_factor is not None:
+            body["limit_factor"] = limit_factor
+        if flags is not None:
+            body["flags"] = flags
+        if preempt is not None:
+            body["preempt"] = preempt
+        if preempt_mode is not None:
+            body["preemptmode"] = preempt_mode
+        if grt_tres is not None:
+            body["grptres"] = grt_tres
+        if grt_wall is not None:
+            body["grpwall"] = grt_wall
+        if max_tres_per_job is not None:
+            body["maxtresperjob"] = max_tres_per_job
+        if max_wall_duration_per_job is not None:
+            body["maxwalldurationperjob"] = max_wall_duration_per_job
+        if max_jobs is not None:
+            body["maxjobs"] = max_jobs
+        if max_submit_jobs is not None:
+            body["maxsubmitjobs"] = max_submit_jobs
+        if max_tres_mins_per_job is not None:
+            body["maxtresminsperjob"] = max_tres_mins_per_job
+        if min_tres_per_job is not None:
+            body["mintresperjob"] = min_tres_per_job
+        return body
+
     # ------------------------------------------------------------------
     # Response parsing
     # ------------------------------------------------------------------
@@ -840,6 +913,102 @@ class SlurmClient:
         params = {"cluster": cluster}
         logger.info("Deleting account %s on cluster %s", account_name, cluster)
         return self._request("DELETE", url, params=params)
+
+    # ------------------------------------------------------------------
+    # QOS endpoints
+    # ------------------------------------------------------------------
+
+    def get_qos(
+        self,
+        name: str | None = None,
+        with_deleted: bool = False,
+    ) -> dict[str, Any]:
+        """Query Slurm QOS definitions.
+
+        Corresponds to ``GET /slurmdb/{version}/qos/``.
+
+        Args:
+            name: Filter by QOS name.
+            with_deleted: Include deleted QOS.
+
+        Returns:
+            Response body containing ``qos`` list.
+        """
+        params: dict[str, Any] = {}
+        if name is not None:
+            params["name"] = name
+        if with_deleted:
+            params["with_deleted"] = "true"
+
+        url = self._slurmdb_path("qos/")
+        logger.debug("Querying QOS: %s", params)
+        return self._request("GET", url, params=params)
+
+    def upsert_qos(
+        self,
+        qos_list: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Create or update Slurm QOS definitions.
+
+        Corresponds to ``POST /slurmdb/{version}/qos/``.
+
+        Args:
+            qos_list: List of QOS dicts from :meth:`serialize_qos`.
+
+        Returns:
+            Parsed response body.
+        """
+        url = self._slurmdb_path("qos/")
+        logger.info("Upserting %d QOS definitions", len(qos_list))
+        return self._request("POST", url, json_body=qos_list)
+
+    # ------------------------------------------------------------------
+    # Partition endpoints (slurmctld)
+    # ------------------------------------------------------------------
+
+    def get_partitions(
+        self,
+        partition_name: str | None = None,
+        **params: str,
+    ) -> dict[str, Any]:
+        """Get partition info from slurmctld.
+
+        Corresponds to ``GET /slurm/{version}/partitions/``.
+
+        Args:
+            partition_name: Filter by partition name.
+            **params: Additional query parameters.
+
+        Returns:
+            Response body containing ``partitions`` list.
+        """
+        url = self._slurm_path("partitions/")
+        if partition_name is not None:
+            url = self._slurm_path(f"partition/{partition_name}")
+        logger.debug("Querying partitions: %s", params)
+        return self._request("GET", url, params=params or None)
+
+    def get_nodes(
+        self,
+        node_name: str | None = None,
+        **params: str,
+    ) -> dict[str, Any]:
+        """Get node info from slurmctld.
+
+        Corresponds to ``GET /slurm/{version}/nodes/``.
+
+        Args:
+            node_name: Filter by node name.
+            **params: Additional query parameters.
+
+        Returns:
+            Response body containing ``nodes`` list.
+        """
+        url = self._slurm_path("nodes/")
+        if node_name is not None:
+            url = self._slurm_path(f"node/{node_name}")
+        logger.debug("Querying nodes: %s", params)
+        return self._request("GET", url, params=params or None)
 
     # ------------------------------------------------------------------
     # Association endpoints

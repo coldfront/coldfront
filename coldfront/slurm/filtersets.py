@@ -70,6 +70,10 @@ class SlurmPartitionFilterSet(PrimaryModelFilterSet):
             "name",
             "description",
             "nodes",
+            "priority",
+            "is_default",
+            "state",
+            "preempt_mode",
         )
 
     def search(self, queryset, name, value):

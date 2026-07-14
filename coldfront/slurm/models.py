@@ -190,6 +190,44 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         help_text=_("Comma-separated node list for this partition (e.g., node[01-64])."),
     )
 
+    priority = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("priority"),
+    )
+
+    is_default = models.BooleanField(
+        blank=True,
+        default=False,
+        verbose_name=_("default"),
+    )
+
+    default_time = models.DurationField(
+        blank=True,
+        null=True,
+        verbose_name=_("default time"),
+    )
+
+    state = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name=_("state"),
+    )
+
+    preempt_mode = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        verbose_name=_("preempt mode"),
+    )
+
+    def_mem_per_cpu = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("default memory per CPU"),
+    )
+
     clone_fields = (
         "cluster",
         "locked",
@@ -204,6 +242,12 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         "allow_groups",
         "allow_accounts",
         "nodes",
+        "priority",
+        "is_default",
+        "default_time",
+        "state",
+        "preempt_mode",
+        "def_mem_per_cpu",
     )
 
     prerequisite_models = ("slurm.SlurmCluster",)

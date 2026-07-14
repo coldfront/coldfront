@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any
 
 from django.conf import settings
@@ -38,11 +39,13 @@ from coldfront.slurm.client import SlurmClient
 from coldfront.slurm.client.exceptions import (
     SlurmAlreadyExistsException,
 )
+from coldfront.slurm.dump import parse_slurm_conf
 from coldfront.slurm.models import (
     SlurmAccount,
     SlurmAssociation,
     SlurmCluster,
     SlurmPartition,
+    SlurmQOS,
     SlurmUser,
 )
 
@@ -52,6 +55,8 @@ __all__ = (
     "enqueue_activate_allocation",
     "enqueue_deactivate_allocation",
     "enqueue_remove_project_user",
+    "import_cluster_from_conf",
+    "import_cluster_from_api",
 )
 
 logger = logging.getLogger(__name__)
@@ -898,3 +903,381 @@ def _reconfigure(client: SlurmClient) -> None:
         client._request("GET", client._slurm_path("reconfigure/"))
     except Exception as exc:
         logger.warning("Slurmctld reconfigure failed: %s", exc)
+
+
+# ---------------------------------------------------------------------------
+# Cluster import (slurm.conf / REST API)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ImportReport:
+    """Report from a cluster import operation."""
+
+    cluster: str
+    success: bool = False
+    cluster_created: bool = False
+    cluster_updated: bool = False
+    cluster_found: bool = False
+    partitions_created: int = 0
+    partitions_updated: int = 0
+    partitions_found: int = 0
+    qos_created: int = 0
+    qos_found: int = 0
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+
+
+def import_cluster_from_conf(
+    conf_path: str,
+    noop: bool = False,
+    update: bool = False,
+) -> ImportReport:
+    """Import a cluster from a slurm.conf file.
+
+    Parses the config file, then creates or updates SlurmCluster,
+    SlurmPartition, and SlurmQOS records in ColdFront.
+
+    Args:
+        conf_path: Path to the slurm.conf file.
+        noop: If True, print what would happen without writing to DB.
+        update: If True, update existing records; otherwise skip.
+
+    Returns:
+        An ImportReport with counts and errors.
+    """
+    report = ImportReport(cluster="", success=False)
+
+    parsed = parse_slurm_conf(conf_path)
+    if not parsed.cluster_name:
+        report.errors.append("No ClusterName found in slurm.conf")
+        return report
+
+    report.cluster = parsed.cluster_name
+
+    # --- QOS ---
+    for qos_name in sorted(parsed.qos_names):
+        if noop:
+            report.qos_found += 1
+            continue
+        try:
+            SlurmQOS.objects.get(name=qos_name)
+            report.qos_found += 1
+        except SlurmQOS.DoesNotExist:
+            SlurmQOS.objects.create(name=qos_name)
+            report.qos_created += 1
+
+    # --- Cluster ---
+    if noop:
+        report.cluster_created = True  # Would create
+    else:
+        try:
+            cluster = SlurmCluster.objects.get(name=parsed.cluster_name)
+            if update:
+                cluster.save()
+                report.cluster_updated = True
+            else:
+                report.cluster_found = True
+        except SlurmCluster.DoesNotExist:
+            cluster = SlurmCluster.objects.create(
+                name=parsed.cluster_name,
+            )
+            report.cluster_created = True
+
+    # --- Partitions ---
+    if not noop and not parsed.partitions:
+        report.warnings.append("No partitions found in slurm.conf")
+        report.success = True
+        return report
+
+    for pp in parsed.partitions:
+        # Skip DEFAULT template partition (it's not a real partition)
+        if pp.name.upper() == "DEFAULT":
+            continue
+
+        if noop:
+            report.partitions_created += 1
+            continue
+
+        # Build partition kwargs
+        kwargs: dict[str, Any] = {
+            "cluster": cluster,
+            "name": pp.name,
+        }
+        if pp.nodes:
+            kwargs["nodes"] = pp.nodes
+        if pp.priority is not None:
+            kwargs["priority"] = pp.priority
+        kwargs["is_default"] = pp.is_default
+        if pp.default_time:
+            kwargs["default_time"] = _parse_duration(pp.default_time)
+        if pp.state:
+            kwargs["state"] = pp.state
+        if pp.preempt_mode:
+            kwargs["preempt_mode"] = pp.preempt_mode
+        if pp.def_mem_per_cpu is not None:
+            kwargs["def_mem_per_cpu"] = pp.def_mem_per_cpu
+
+        try:
+            partition = SlurmPartition.objects.get(cluster=cluster, name=pp.name)
+            if update:
+                for k, v in kwargs.items():
+                    setattr(partition, k, v)
+                partition.save()
+                report.partitions_updated += 1
+            else:
+                report.partitions_found += 1
+        except SlurmPartition.DoesNotExist:
+            partition = SlurmPartition(**kwargs)
+            partition.save()
+            report.partitions_created += 1
+
+        # Link QOS references
+        if not noop:
+            qos_names = set()
+            if pp.allow_qos and pp.allow_qos.upper() != "ALL":
+                qos_names.update(n.strip() for n in pp.allow_qos.split(","))
+            if pp.qos and pp.qos.upper() != "ALL":
+                qos_names.update(n.strip() for n in pp.qos.split(","))
+            if qos_names:
+                qos_objs = SlurmQOS.objects.filter(name__in=list(qos_names))
+                partition.qos_list.set(qos_objs)
+
+    report.success = len(report.errors) == 0
+    return report
+
+
+def import_cluster_from_api(
+    cluster_name: str,
+    client: SlurmClient | None = None,
+    noop: bool = False,
+    update: bool = False,
+) -> ImportReport:
+    """Import a cluster from the Slurm REST API.
+
+    Fetches partition info from slurmctld and QOS info from slurmdbd,
+    then creates or updates models in ColdFront.
+
+    Args:
+        cluster_name: Name of the cluster to import.
+        client: A SlurmClient instance. If None, builds one from settings.
+        noop: If True, print what would happen without writing to DB.
+        update: If True, update existing records; otherwise skip.
+
+    Returns:
+        An ImportReport with counts and errors.
+    """
+    report = ImportReport(cluster=cluster_name, success=False)
+
+    # Build client if needed
+    if client is None:
+        client = _build_client(None)
+        if client is None:
+            report.errors.append("slurmrestd not configured")
+            return report
+
+    # Fetch partitions from slurmctld
+    try:
+        part_data = client.get_partitions()
+    except Exception as exc:
+        report.errors.append(f"Failed to fetch partitions: {exc}")
+        return report
+
+    partitions = part_data.get("partitions", [])
+    if not partitions:
+        report.warnings.append("No partitions returned by slurmctld")
+        report.success = True
+        return report
+
+    # Fetch QOS from slurmdbd
+    try:
+        qos_data = client.get_qos()
+    except Exception as exc:
+        report.warnings.append(f"Failed to fetch QOS (non-fatal): {exc}")
+        qos_data = {}
+
+    api_qos_list = qos_data.get("qos", [])
+    api_qos_names: set[str] = set()
+    for q in api_qos_list:
+        if isinstance(q, dict):
+            qname = q.get("name", "")
+            if qname:
+                api_qos_names.add(qname)
+
+    # --- QOS ---
+    if noop:
+        report.qos_found = len(api_qos_names)
+    else:
+        for qos_name in sorted(api_qos_names):
+            try:
+                SlurmQOS.objects.get(name=qos_name)
+                report.qos_found += 1
+            except SlurmQOS.DoesNotExist:
+                SlurmQOS.objects.create(
+                    name=qos_name,
+                )
+                report.qos_created += 1
+
+    # --- Cluster ---
+    if noop:
+        report.cluster_created = True
+    else:
+        try:
+            cluster = SlurmCluster.objects.get(name=cluster_name)
+            if update:
+                cluster.save()
+                report.cluster_updated = True
+            else:
+                report.cluster_found = True
+        except SlurmCluster.DoesNotExist:
+            cluster = SlurmCluster.objects.create(
+                name=cluster_name,
+            )
+            report.cluster_created = True
+
+    # --- Partitions ---
+    for part in partitions:
+        if not isinstance(part, dict):
+            continue
+        part_name = part.get("name", "")
+        if not part_name:
+            continue
+
+        if noop:
+            report.partitions_created += 1
+            continue
+
+        # Build kwargs from API response fields
+        kwargs: dict[str, Any] = {
+            "cluster": cluster,
+            "name": part_name,
+        }
+
+        nodes_str = part.get("nodes", "")
+        if isinstance(nodes_str, dict):
+            # nodes may be a dict with 'nodes' key containing the list
+            nodes_list = nodes_str.get("nodes", nodes_str.get("name", ""))
+            if isinstance(nodes_list, list):
+                kwargs["nodes"] = ",".join(nodes_list)
+            else:
+                kwargs["nodes"] = str(nodes_list)
+        elif nodes_str:
+            kwargs["nodes"] = nodes_str
+
+        priority = part.get("priority")
+        if priority is not None:
+            try:
+                kwargs["priority"] = int(priority)
+            except (ValueError, TypeError):
+                pass
+
+        # State
+        state = part.get("state", "")
+        if isinstance(state, dict):
+            state = state.get("state", "UP")
+        kwargs["state"] = state.upper() if state else "UP"
+
+        # Default flag
+        kwargs["is_default"] = part.get("default", "NO") == "YES"
+
+        # Preempt mode
+        preempt = part.get("preempt_mode", "")
+        if isinstance(preempt, dict):
+            preempt = preempt.get("preempt_mode", "")
+        kwargs["preempt_mode"] = preempt
+
+        # Max time -> max_wall_duration_per_job
+        max_time = part.get("max_time", "")
+        if isinstance(max_time, dict):
+            max_time = max_time.get("number", 0)
+        if isinstance(max_time, (int, float)) and max_time > 0:
+            kwargs["max_wall_duration_per_job"] = timedelta(minutes=int(max_time))
+
+        # Default time
+        default_time = part.get("default_time", "")
+        if isinstance(default_time, dict):
+            default_time = default_time.get("number", 0)
+        if isinstance(default_time, (int, float)) and default_time > 0:
+            kwargs["default_time"] = timedelta(minutes=int(default_time))
+
+        # DefMemPerCPU
+        def_mem = part.get("def_mem_per_cpu")
+        if def_mem is not None:
+            try:
+                kwargs["def_mem_per_cpu"] = int(def_mem)
+            except (ValueError, TypeError):
+                pass
+
+        # QOS references
+        qos_names: set[str] = set()
+        allow_qos = part.get("allow_qos", "")
+        if isinstance(allow_qos, str) and allow_qos and allow_qos.upper() != "ALL":
+            qos_names.update(n.strip() for n in allow_qos.split(","))
+        qos_assigned = part.get("qos", "")
+        if isinstance(qos_assigned, str) and qos_assigned and qos_assigned.upper() != "ALL":
+            qos_names.update(n.strip() for n in qos_assigned.split(","))
+
+        try:
+            partition = SlurmPartition.objects.get(cluster=cluster, name=part_name)
+            if update:
+                for k, v in kwargs.items():
+                    if k != "cluster":
+                        setattr(partition, k, v)
+                partition.save()
+                report.partitions_updated += 1
+            else:
+                report.partitions_found += 1
+        except SlurmPartition.DoesNotExist:
+            partition = SlurmPartition(**kwargs)
+            partition.save()
+            report.partitions_created += 1
+
+        # Link QOS references
+        if qos_names:
+            qos_objs = SlurmQOS.objects.filter(name__in=list(qos_names))
+            partition.qos_list.set(qos_objs)
+
+    report.success = len(report.errors) == 0
+    return report
+
+
+def _parse_duration(duration_str: str) -> timedelta | None:
+    """Parse a Slurm duration string into a timedelta.
+
+    Supports formats:
+        ``24:00:00`` (HH:MM:SS)
+        ``01:00:00`` (HH:MM:SS)
+        ``72:00:00`` (HH:MM:SS)
+        ``30-0`` (days-hours)
+        ``00:30:00`` (HH:MM:SS)
+    """
+    if not duration_str:
+        return None
+
+    duration_str = duration_str.strip()
+
+    # Try HH:MM:SS format
+    if ":" in duration_str:
+        parts = duration_str.split(":")
+        if len(parts) == 3:
+            try:
+                h, m, s = int(parts[0]), int(parts[1]), int(parts[2])
+                return timedelta(hours=h, minutes=m, seconds=s)
+            except ValueError:
+                pass
+
+    # Try days-hours format (e.g., "30-0")
+    if "-" in duration_str:
+        parts = duration_str.split("-", 1)
+        try:
+            days = int(parts[0])
+            hours = int(parts[1]) if len(parts) > 1 else 0
+            return timedelta(days=days, hours=hours)
+        except ValueError:
+            pass
+
+    # Try plain minutes
+    try:
+        return timedelta(minutes=int(duration_str))
+    except ValueError:
+        return None
