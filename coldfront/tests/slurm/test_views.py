@@ -114,21 +114,22 @@ class SlurmPartitionTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "name": "Partition X",
             "description": "A new Slurm partition",
             "locked": True,
+            "nodes": "node[01-64]",
             "tags": [t.pk for t in tags],
         }
 
         cls.csv_data = (
-            "cluster,name,description",
-            "Test Cluster,Partition 4,Fourth partition",
-            "Test Cluster,Partition 5,Fifth partition",
-            "Test Cluster,Partition 6,Sixth partition",
+            "cluster,name,description,nodes",
+            "Test Cluster,Partition 4,Fourth partition,node[01-16]",
+            "Test Cluster,Partition 5,Fifth partition,node[17-32]",
+            "Test Cluster,Partition 6,Sixth partition,node[33-48]",
         )
 
         cls.csv_update_data = (
-            "id,cluster,name,description",
-            f"{partitions[0].pk},Test Cluster,Partition 7,Seven partition",
-            f"{partitions[1].pk},Test Cluster,Partition 8,Eight partition",
-            f"{partitions[2].pk},Test Cluster,Partition 9,Nine partition",
+            "id,cluster,name,description,nodes",
+            f"{partitions[0].pk},Test Cluster,Partition 7,Seven partition,node[49-64]",
+            f"{partitions[1].pk},Test Cluster,Partition 8,Eight partition,node[65-80]",
+            f"{partitions[2].pk},Test Cluster,Partition 9,Nine partition,node[81-96]",
         )
 
 

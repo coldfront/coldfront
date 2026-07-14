@@ -185,6 +185,7 @@ class SlurmPartitionForm(PrimaryModelForm):
             "description",
             "locked",
             "schema",
+            "nodes",
             "max_jobs",
             "max_submit_jobs",
             "max_tres_per_job",
@@ -208,6 +209,7 @@ class SlurmPartitionForm(PrimaryModelForm):
                 "description",
                 "locked",
                 "schema",
+                "nodes",
             ),
             Fieldset(
                 _("Limits"),
@@ -247,6 +249,7 @@ class SlurmPartitionImportForm(PrimaryModelImportForm):
             "description",
             "locked",
             "schema",
+            "nodes",
             "max_jobs",
             "max_submit_jobs",
             "max_tres_per_job",

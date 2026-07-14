@@ -93,6 +93,7 @@ class SlurmPartitionTable(PrimaryModelTable):
             "name",
             "description",
             "locked",
+            "nodes",
             "tags",
             "created",
             "last_updated",

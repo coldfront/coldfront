@@ -9,6 +9,10 @@
         <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
       </c-card.fields.item>
 
+      <c-card.fields.item label="{% trans 'Nodes' %}">
+        {{ object.nodes|placeholder }}
+      </c-card.fields.item>
+
       <c-card.fields.item label="{% trans 'Description' %}">
         {{ object.description|placeholder }}
       </c-card.fields.item>

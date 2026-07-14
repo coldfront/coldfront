@@ -16,8 +16,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("core", "0006_customfield_required_action"),
-        ("ras", "0001_initial"),
+        ("core", "0009_rename_core_job_created_idx_core_job_created_efa7cb_idx_and_more"),
+        ("ras", "0002_remove_project_status_project_group"),
         ("tenancy", "0003_tenant_custom_field_data_and_more"),
         ("users", "0006_alter_token_pepper_id"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -395,6 +395,15 @@ class Migration(migrations.Migration):
                     models.DurationField(blank=True, null=True, verbose_name="max wall duration per job"),
                 ),
                 ("fairshare", models.PositiveIntegerField(blank=True, default=1, verbose_name="fairshare")),
+                (
+                    "nodes",
+                    models.TextField(
+                        blank=True,
+                        default="",
+                        help_text="Comma-separated node list for this partition (e.g., node[01-64]).",
+                        verbose_name="nodes",
+                    ),
+                ),
                 (
                     "allow_accounts",
                     models.ManyToManyField(

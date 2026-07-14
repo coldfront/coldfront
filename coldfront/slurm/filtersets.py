@@ -69,6 +69,7 @@ class SlurmPartitionFilterSet(PrimaryModelFilterSet):
             "cluster",
             "name",
             "description",
+            "nodes",
         )
 
     def search(self, queryset, name, value):

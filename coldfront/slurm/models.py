@@ -183,6 +183,13 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         verbose_name=_("allowed accounts"),
     )
 
+    nodes = models.TextField(
+        blank=True,
+        default="",
+        verbose_name=_("nodes"),
+        help_text=_("Comma-separated node list for this partition (e.g., node[01-64])."),
+    )
+
     clone_fields = (
         "cluster",
         "locked",
@@ -196,6 +203,7 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         "qos_list",
         "allow_groups",
         "allow_accounts",
+        "nodes",
     )
 
     prerequisite_models = ("slurm.SlurmCluster",)
