@@ -184,9 +184,18 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context["can_edit_allocation_changes"] = self.request.user.has_perm(
             "allocation.can_view_all_allocations"
         ) or allocation_obj.has_perm(self.request.user, AllocationPermission.MANAGER)
+        # Can the user manage the allocation as a project PI/manager?
+        context["user_can_manage_allocation"] = allocation_obj.has_perm(self.request.user, AllocationPermission.MANAGER)
+        # Can the user update the allocation itself (status, dates, attributes)?
+        context["can_update_allocation"] = self.request.user.is_superuser or self.request.user.has_perm(
+            "allocation.change_allocation"
+        )
 
         noteset = allocation_obj.allocationusernote_set.select_related("author")
-        notes = noteset.all() if self.request.user.is_superuser else noteset.filter(is_private=False)
+        can_view_private_notes = self.request.user.is_superuser or self.request.user.has_perm(
+            "allocation.view_allocationusernote"
+        )
+        notes = noteset.all() if can_view_private_notes else noteset.filter(is_private=False)
 
         context["notes"] = notes
         return context
@@ -205,7 +214,7 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         }
 
         form = AllocationUpdateForm(initial=initial_data)
-        if not self.request.user.is_superuser:
+        if not (self.request.user.is_superuser or self.request.user.has_perm("allocation.change_allocation")):
             form.fields["is_locked"].disabled = True
             form.fields["is_changeable"].disabled = True
 
@@ -221,8 +230,8 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
             "user__username"
         )
 
-        if not self.request.user.is_superuser:
-            messages.success(request, "You do not have permission to update the allocation")
+        if not (self.request.user.is_superuser or self.request.user.has_perm("allocation.change_allocation")):
+            messages.error(request, "You do not have permission to update the allocation")
             return redirect(allocation_obj)
 
         initial_data = {
@@ -607,6 +616,9 @@ class AllocationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         if project_obj.has_perm(self.request.user, ProjectPermission.UPDATE):
             return True
 
+        if self.request.user.has_perm("allocation.add_allocation"):
+            return True
+
         messages.error(self.request, "You do not have permission to create a new allocation.")
         return False
 
@@ -945,7 +957,7 @@ class AllocationAttributeCreateView(LoginRequiredMixin, UserPassesTestMixin, Cre
     def test_func(self):
         """UserPassesTestMixin Tests"""
 
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.has_perm("allocation.add_allocationattribute"):
             return True
         messages.error(self.request, "You do not have permission to add allocation attributes.")
         return False
@@ -980,7 +992,7 @@ class AllocationAttributeDeleteView(LoginRequiredMixin, UserPassesTestMixin, Tem
 
     def test_func(self):
         """UserPassesTestMixin Tests"""
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.has_perm("allocation.delete_allocationattribute"):
             return True
         messages.error(self.request, "You do not have permission to delete allocation attributes.")
         return False
@@ -1051,7 +1063,7 @@ class AllocationNoteCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVi
     def test_func(self):
         """UserPassesTestMixin Tests"""
 
-        if self.request.user.is_superuser:
+        if self.request.user.is_superuser or self.request.user.has_perm("allocation.add_allocationusernote"):
             return True
         messages.error(self.request, "You do not have permission to add allocation notes.")
         return False
@@ -1636,7 +1648,11 @@ class AllocationChangeDetailView(LoginRequiredMixin, UserPassesTestMixin, FormVi
         allocation_change_form.fields["justification"].disabled = True
         if allocation_change_obj.status.name != "Pending":
             allocation_change_form.fields["end_date_extension"].disabled = True
-        if not self.request.user.is_staff and not self.request.user.is_superuser:
+        if not (
+            self.request.user.is_staff
+            or self.request.user.is_superuser
+            or self.request.user.has_perm("allocation.change_allocationchangerequest")
+        ):
             allocation_change_form.fields["end_date_extension"].disabled = True
 
         note_form = AllocationChangeNoteForm(initial={"notes": allocation_change_obj.notes})
@@ -1649,7 +1665,9 @@ class AllocationChangeDetailView(LoginRequiredMixin, UserPassesTestMixin, FormVi
 
     def post(self, request, *args, **kwargs):
         pk = self.kwargs.get("pk")
-        if not self.request.user.is_superuser:
+        if not (
+            self.request.user.is_superuser or self.request.user.has_perm("allocation.change_allocationchangerequest")
+        ):
             messages.error(request, "You do not have permission to update an allocation change request")
             return HttpResponseRedirect(reverse("allocation-change-detail", kwargs={"pk": pk}))
 
@@ -2019,7 +2037,7 @@ class AllocationAttributeEditView(LoginRequiredMixin, UserPassesTestMixin, FormV
     def test_func(self):
         """UserPassesTestMixin Tests"""
         user = self.request.user
-        if user.is_superuser or user.is_staff:
+        if user.is_superuser or user.is_staff or user.has_perm("allocation.change_allocationattribute"):
             return True
 
         messages.error(self.request, "You do not have permission to edit this allocation's attributes.")
@@ -2121,6 +2139,9 @@ class AllocationChangeDeleteAttributeView(LoginRequiredMixin, UserPassesTestMixi
             return True
 
         if self.request.user.has_perm("allocation.can_review_allocation_requests"):
+            return True
+
+        if self.request.user.has_perm("allocation.change_allocationchangerequest"):
             return True
 
         messages.error(self.request, "You do not have permission to update an allocation change request.")

@@ -35,11 +35,32 @@ Notice there is now a folder icon next to the project name.  When clicked, this 
 
 ![UserProjects](../../images/userprofile3.PNG)
 
-The staff member can also choose to search "All Projects" or "All Allocations" just as admins do.  However, the allocation and project detail pages are displayed in a read-only view for staff members.  
+The staff member can also choose to search "All Projects" or "All Allocations" just as admins do.  However, the allocation and project detail pages are displayed in a read-only view for staff members unless they are granted the additional management permissions described below.  
 
 ### Give Staff Access to Review Allocation Requests
 
 In addition to the above permissions, add 'allocation|allocation|Can view all allocation requests' to allow the staff member to see the pending allocation requests menu.  This will display under the 'Staff' menu.  
+
+### Granting Management Permissions to Staff
+
+Django's built-in model permissions can grant specific management actions to staff (or any user), individually or via a group, without giving them superuser status:
+
+| Permission | What it unlocks |
+|---|---|
+| `allocation \| allocation \| Can add allocation` | The "Request Resource Allocation" button and form on any project |
+| `allocation \| allocation \| Can change allocation` | Approve/Deny/Update an allocation and edit its status, dates, description, and lock flags |
+| `allocation \| allocation attribute \| Can add/change/delete allocation attribute` | Manage allocation attributes |
+| `allocation \| allocation user note \| Can add/view allocation user note` | Add allocation notes; view private notes |
+| `allocation \| allocation change request \| Can change allocation change request` | Update, approve, and deny allocation change requests |
+| `project \| project \| Can change project` | Manage any project: update information, archive, add/remove users, edit project attributes, and request allocations |
+| `project \| project user message \| Can add/view project user message` | Add project notifications; view private ones |
+| `project \| project admin comment \| Can add/view project admin comment` | See and add admin-only project notes |
+
+**NOTE:** Some pages also require view access before the buttons are reachable: pair management permissions with 'Can view all allocations' and/or 'Can view all projects' (or project membership).
+
+**NOTE:** These permissions allow real administrative actions — for example, 'Can change allocation' lets the holder activate allocations, which triggers activation emails and plugin signals, and the note-view permissions expose private admin notes.  Grant them deliberately.
+
+Users granted any of the Staff Menu permissions will see the Staff Menu even without staff status.  The User Search feature still requires staff status.
 
 
 ### Director and Center Administration Staff

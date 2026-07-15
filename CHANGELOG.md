@@ -1,5 +1,9 @@
 # ColdFront Changelog
 
+## [Unreleased]
+
+- Honor built-in Django model permissions for allocation and project management views, buttons, and private notes, so staff no longer need superuser status [#607](https://github.com/coldfront/coldfront/issues/607). The staff navbar menu now appears for any user holding one of its permissions; the unreachable `navbar_director.html` template was removed.
+
 ## [1.1.8] - 2026-05-11
 
 - Add podman support [#733](https://github.com/coldfront/coldfront/pull/733)

@@ -618,3 +618,124 @@ class AllocationAccountCreateViewTest(AllocationViewBaseTest):
         invalid_data = {"name": ""}
         response = self.client.post(self.url, data=invalid_data, follow=True)
         self.assertContains(response, "This field is required.")
+
+
+class AllocationPermissionBasedAccessTest(AllocationViewBaseTest):
+    """Built-in model permissions unlock allocation management without superuser status"""
+
+    def setUp(self):
+        self.url = f"/allocation/{self.allocation.pk}/"
+
+    def test_change_allocation_perm_can_update_allocation(self):
+        """non-staff user with change_allocation can edit the allocation via AllocationDetailView"""
+        user = UserFactory(username="allocation_editor")
+        user = utils.grant_user_permission(user, "allocation", "can_view_all_allocations")
+        utils.page_does_not_contain_for_user(self, user, self.url, 'value="update"')
+        user = utils.grant_user_permission(user, "allocation", "change_allocation")
+        utils.page_contains_for_user(self, user, self.url, 'value="update"')
+        post_data = {
+            "status": self.allocation.status.pk,
+            "start_date": "",
+            "end_date": "",
+            "description": "updated by permission holder",
+            "is_locked": False,
+            "is_changeable": True,
+            "action": "update",
+        }
+        response = self.client.post(self.url, data=post_data, follow=True)
+        utils.assert_response_success(self, response)
+        self.allocation.refresh_from_db()
+        self.assertEqual(self.allocation.description, "updated by permission holder")
+
+    def test_update_without_perm_rejected(self):
+        """allocation member without change_allocation cannot update the allocation"""
+        self.client.force_login(self.allocation_user, backend=BACKEND)
+        old_description = self.allocation.description
+        post_data = {
+            "status": self.allocation.status.pk,
+            "description": "should not be saved",
+            "action": "update",
+        }
+        response = self.client.post(self.url, data=post_data, follow=True)
+        self.assertContains(response, "You do not have permission to update the allocation")
+        self.allocation.refresh_from_db()
+        self.assertEqual(self.allocation.description, old_description)
+
+    def test_change_allocation_without_view_perm_cannot_reach_view(self):
+        """change_allocation alone does not grant access to the allocation.
+
+        AllocationDetailView.test_func gates on can_view_all_allocations or
+        object membership, so a non-member holding only change_allocation is
+        rejected before the update logic runs -- via GET and via direct POST.
+        """
+        user = UserFactory(username="change_only_no_view")
+        user = utils.grant_user_permission(user, "allocation", "change_allocation")
+        # GET is blocked by the access gate
+        utils.test_user_cannot_access(self, user, self.url)
+        # direct POST is blocked by the same test_func and does not mutate the allocation
+        old_description = self.allocation.description
+        self.client.force_login(user, backend=BACKEND)
+        post_data = {
+            "status": self.allocation.status.pk,
+            "description": "should not be saved",
+            "action": "update",
+        }
+        response = self.client.post(self.url, data=post_data)
+        self.assertEqual(response.status_code, 403)
+        self.allocation.refresh_from_db()
+        self.assertEqual(self.allocation.description, old_description)
+
+    def test_attribute_and_note_views_permission_access(self):
+        """each attribute/note view unlocks with its matching built-in permission"""
+        cases = [
+            ("add_allocationattribute", reverse("allocation-attribute-add", kwargs={"pk": self.allocation.pk})),
+            ("delete_allocationattribute", reverse("allocation-attribute-delete", kwargs={"pk": self.allocation.pk})),
+            ("change_allocationattribute", reverse("allocation-attribute-edit", kwargs={"pk": self.allocation.pk})),
+            ("add_allocationusernote", reverse("allocation-note-add", kwargs={"pk": self.allocation.pk})),
+        ]
+        for codename, url in cases:
+            with self.subTest(codename=codename):
+                user = UserFactory(username=f"perm_{codename}")
+                utils.test_user_cannot_access(self, user, url)
+                user = utils.grant_user_permission(user, "allocation", codename)
+                utils.test_user_can_access(self, user, url)
+
+    def test_private_note_visible_with_view_allocationusernote(self):
+        """view_allocationusernote reveals private allocation notes"""
+        self.allocation.allocationusernote_set.create(author=self.admin_user, is_private=True, note="secret admin note")
+        user = UserFactory(username="note_viewer")
+        user = utils.grant_user_permission(user, "allocation", "can_view_all_allocations")
+        utils.page_does_not_contain_for_user(self, user, self.url, "secret admin note")
+        user = utils.grant_user_permission(user, "allocation", "view_allocationusernote")
+        utils.page_contains_for_user(self, user, self.url, "secret admin note")
+
+    def test_change_request_actions_permission(self):
+        """change_allocationchangerequest unlocks the change request actions"""
+        change_request = AllocationChangeRequestFactory(allocation=self.allocation)
+        url = reverse("allocation-change-detail", kwargs={"pk": change_request.pk})
+        user = UserFactory(username="change_request_editor")
+        user = utils.grant_user_permission(user, "allocation", "can_view_all_allocations")
+        utils.page_does_not_contain_for_user(self, user, url, 'value="approve"')
+        response = self.client.post(url, data={"action": "update"}, follow=True)
+        self.assertContains(response, "You do not have permission to update an allocation change request")
+        user = utils.grant_user_permission(user, "allocation", "change_allocationchangerequest")
+        utils.page_contains_for_user(self, user, url, 'value="approve"')
+
+
+class AllocationCreatePermissionTest(AllocationViewBaseTest):
+    """Non-members with the right permissions can request allocations"""
+
+    def setUp(self):
+        self.url = f"/allocation/project/{self.project.pk}/create"
+
+    def test_add_allocation_perm_grants_access(self):
+        outsider = UserFactory(username="allocation_requester")
+        utils.test_user_cannot_access(self, outsider, self.url)
+        outsider = utils.grant_user_permission(outsider, "allocation", "add_allocation")
+        utils.test_user_can_access(self, outsider, self.url)
+
+    def test_change_project_perm_grants_access(self):
+        outsider = UserFactory(username="project_editor")
+        utils.test_user_cannot_access(self, outsider, self.url)
+        outsider = utils.grant_user_permission(outsider, "project", "change_project")
+        utils.test_user_can_access(self, outsider, self.url)

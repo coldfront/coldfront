@@ -1,6 +1,7 @@
 {% extends "common/base.html" %}
 {% load crispy_forms_tags %}
 {% load static %}
+{% load allocation_extras %}
 
 
 {% block title %}
@@ -28,7 +29,7 @@ Allocation Detail
 
 <div class="card mb-3">
   <div class="card-header">
-    {% if allocation.is_changeable and not allocation.is_locked and is_allowed_to_update_project and allocation.status.name in 'Active, Renewal Requested, Payment Pending, Payment Requested, Paid' %}
+    {% if allocation.is_changeable and not allocation.is_locked and user_can_manage_allocation and allocation.status.name in 'Active, Renewal Requested, Payment Pending, Payment Requested, Paid' %}
     <div class="row">
       <div class="col">
         <h3><i class="fas fa-list" aria-hidden="true"></i> Allocation Information</h3>
@@ -67,7 +68,7 @@ Allocation Detail
             </td>
             {% endwith %}
           </tr>
-          {% if request.user.is_superuser %}
+          {% if can_update_allocation %}
             <tr>
               <th scope="row" class="text-nowrap">Quantity:</th>
               <td>{{ allocation.quantity }}</td>
@@ -80,7 +81,7 @@ Allocation Detail
           <tr>
             <th scope="row" class="text-nowrap">Status:</th>
             <td>
-              {% if request.user.is_superuser %}
+              {% if can_update_allocation %}
                 {{ form.status }}
               {% else %}
                 {{ allocation.status }}
@@ -90,7 +91,7 @@ Allocation Detail
           <tr>
             <th scope="row" class="text-nowrap">Start Date:</th>
             <td>
-              {% if request.user.is_superuser %}
+              {% if can_update_allocation %}
                 {{ form.start_date }}
               {% else %}
                 {{ allocation.start_date }}
@@ -100,7 +101,7 @@ Allocation Detail
           <tr>
             <th scope="row" class="text-nowrap">End Date:</th>
             <td>
-              {% if request.user.is_superuser %}
+              {% if can_update_allocation %}
                 {{ form.end_date }}
               {% else %}
                 {{ allocation.end_date }}
@@ -109,7 +110,7 @@ Allocation Detail
               <span class="badge bg-warning"><i class="far fa-clock" aria-hidden="true"></i>
                 Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} - Not renewable
               </span>
-              {% elif is_allowed_to_update_project and settings.ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
+              {% elif user_can_manage_allocation and settings.ALLOCATION_ENABLE_ALLOCATION_RENEWAL and allocation.status.name == 'Active' and allocation.expires_in <= 60 and allocation.expires_in >= 0 %}
                 <a href="{% url 'allocation-renew' allocation.pk %}">
                 <span class="badge bg-warning"><i class="fas fa-redo-alt" aria-hidden="true"></i>
                 Expires in {{allocation.expires_in}} day{{allocation.expires_in|pluralize}} - Click to renew
@@ -121,7 +122,7 @@ Allocation Detail
           <tr>
             <th scope="row" class="text-nowrap">Description:</th>
             <td>
-              {% if request.user.is_superuser %}
+              {% if can_update_allocation %}
                 {{ form.description }}
               {% else %}
                 {{ allocation.description|default_if_none:"" }}
@@ -137,7 +138,7 @@ Allocation Detail
             <td>{{ allocation.modified|date:"M. d, Y" }}</td>
           </tr>
           <tr>
-            {% if request.user.is_superuser or request.user.is_staff %}
+            {% if can_update_allocation or request.user.is_staff %}
               <th scope="row" class="text-nowrap">Lock/Unlock Allocation:</th>
               <td>
                 {{ form.is_locked }}
@@ -152,7 +153,7 @@ Allocation Detail
               {% endif %}
             {% endif %}
           </tr>
-          {% if request.user.is_superuser or request.user.is_staff %}
+          {% if can_update_allocation or request.user.is_staff %}
             <tr>
               <th scope="row" class="text-nowrap">Allow Change Requests:</th>
               <td>
@@ -162,7 +163,7 @@ Allocation Detail
           {% endif %}
         </table>
       </div>
-      {% if request.user.is_superuser %}
+      {% if can_update_allocation %}
       <div class="float-end">
         {% if allocation.status.name == 'New' or allocation.status.name == 'Renewal Requested' %}
           <button type="submit" name="action" value="approve" class="btn btn-success me-1 confirm-activate">Approve</button>
@@ -210,20 +211,24 @@ Allocation Detail
   </div>
   {% endif %}
 
-{% if attributes or attributes_with_usage or request.user.is_superuser %}
+{% if attributes or attributes_with_usage or can_update_allocation or perms.allocation.add_allocationattribute %}
   <div class="card mb-3">
     <div class="card-header">
       <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Attributes</h3>
       <div class="float-end">
-        {% if request.user.is_superuser %}
-          {% if attributes %}
+        {% if attributes %}
+          {% if request.user.is_superuser or request.user.is_staff or perms.allocation.change_allocationattribute %}
             <a class="btn btn-info" href="{% url 'allocation-attribute-edit' allocation.pk %}" role="button">
               <i class="fas fa-edit" aria-hidden="true"></i> Edit Allocation Attributes
             </a>
           {% endif %}
+        {% endif %}
+        {% if request.user.is_superuser or perms.allocation.add_allocationattribute %}
           <a class="btn btn-success" href="{% url 'allocation-attribute-add' allocation.pk %}" role="button">
             <i class="fas fa-plus" aria-hidden="true"></i> Add Allocation Attribute
           </a>
+        {% endif %}
+        {% if request.user.is_superuser or perms.allocation.delete_allocationattribute %}
           <a class="btn btn-danger" href="{% url 'allocation-attribute-delete' allocation.pk %}" role="button">
             <i class="fas fa-minus" aria-hidden="true"></i> Delete Allocation Attributes
           </a>
@@ -288,7 +293,7 @@ Allocation Detail
   <div class="card-header">
     <h3 class="d-inline"><i class="fas fa-info-circle" aria-hidden="true"></i> Allocation Change Requests</h3> <span class="badge bg-secondary">{{allocation_changes.count}}</span>
     <div class="float-end">
-      {% if request.user.is_superuser and allocation.is_changeable and not allocation.is_locked and is_allowed_to_update_project and allocation.status.name in 'Active, Renewal Requested, Payment Pending, Payment Requested, Paid' %}
+      {% if user_can_manage_allocation and allocation.is_changeable and not allocation.is_locked and allocation.status.name in 'Active, Renewal Requested, Payment Pending, Payment Requested, Paid' %}
         <a class="btn btn-primary float-end" href="{% url 'allocation-change' allocation.pk %}" role="button">
           Request Change
         </a>
@@ -347,7 +352,7 @@ Allocation Detail
     <h3 class="d-inline"><i class="fas fa-users" aria-hidden="true"></i> Users in Allocation</h3>
     <span class="badge bg-secondary">{{allocation_users.count}}</span>
     <div class="float-end">
-      {% if allocation.project.status.name != 'Archived' and is_allowed_to_update_project and allocation.status.name in 'Active,New,Renewal Requested' %}
+      {% if allocation.project.status.name != 'Archived' and user_can_manage_allocation and allocation.status.name in 'Active,New,Renewal Requested' %}
         <a class="btn btn-success" href="{% url 'allocation-add-users' allocation.pk %}" role="button">
           <i class="fas fa-user-plus" aria-hidden="true"></i> Add Users
         </a>
@@ -401,7 +406,7 @@ Allocation Detail
     <h3 class="d-inline"><i class="fas fa-users" aria-hidden="true"></i> Notifications</h3>
     <span class="badge bg-secondary">{{notes.count}}</span>
     <div class="float-end">
-      {% if request.user.is_superuser %}
+      {% if request.user.is_superuser or perms.allocation.add_allocationusernote %}
         <a class="btn btn-success" href="{% url 'allocation-note-add' allocation.pk %}" role="button">
           <i class="fas fa-plus" aria-hidden="true"></i> Add Notification
         </a>
@@ -421,7 +426,7 @@ Allocation Detail
           </thead>
           <tbody>
             {% for note in notes %}
-              {% if not note.is_private or request.user.is_superuser %}
+              {% if not note.is_private or request.user.is_superuser or perms.allocation.view_allocationusernote %}
                 <tr>
                   <td>{{ note.note }}</td>
                   <td>{{ note.author.first_name }} {{ note.author.last_name }}</td>

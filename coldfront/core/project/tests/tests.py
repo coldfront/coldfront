@@ -13,20 +13,25 @@ from coldfront.core.project.models import (
     Project,
     ProjectAttribute,
     ProjectAttributeType,
+    ProjectPermission,
 )
 from coldfront.core.project.utils import (
     determine_automated_institution_choice,
     generate_project_code,
 )
 from coldfront.core.test_helpers.factories import (
+    AllocationFactory,
     FieldOfScienceFactory,
     PAttributeTypeFactory,
     ProjectAttributeFactory,
     ProjectAttributeTypeFactory,
     ProjectFactory,
     ProjectStatusChoiceFactory,
+    ProjectUserFactory,
+    ProjectUserRoleChoiceFactory,
     UserFactory,
 )
+from coldfront.core.test_helpers.utils import grant_user_permission
 
 logging.disable(logging.CRITICAL)
 
@@ -427,3 +432,37 @@ class ProjectAttributeModelCleanMethodTests(TestCase):
 
     def test_expect_date_given_garbage(self):
         self._test_clean("Date", ["foobar", "", " ", "\0", "1", "1.0", "2e30", "1j"], True)
+
+
+class TestProjectUserPermissions(TestCase):
+    """Tests for Project.user_permissions with Django model permissions"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.project = ProjectFactory(status=ProjectStatusChoiceFactory(name="Active"))
+
+    def test_nonmember_has_no_permissions(self):
+        user = UserFactory(username="outsider")
+        self.assertEqual(self.project.user_permissions(user), [])
+
+    def test_change_project_permission_grants_update_only(self):
+        user = UserFactory(username="perm_holder")
+        user = grant_user_permission(user, "project", "change_project")
+        permissions = self.project.user_permissions(user)
+        self.assertIn(ProjectPermission.UPDATE, permissions)
+        self.assertNotIn(ProjectPermission.USER, permissions)
+        self.assertNotIn(ProjectPermission.MANAGER, permissions)
+        self.assertNotIn(ProjectPermission.PI, permissions)
+
+    def test_pi_with_user_role_gets_update(self):
+        ProjectUserFactory(project=self.project, user=self.project.pi, role=ProjectUserRoleChoiceFactory(name="User"))
+        permissions = self.project.user_permissions(self.project.pi)
+        self.assertIn(ProjectPermission.PI, permissions)
+        self.assertIn(ProjectPermission.UPDATE, permissions)
+
+    def test_permission_holder_gets_no_allocation_permissions(self):
+        """change_project must not leak allocation-level manager permissions"""
+        allocation = AllocationFactory(project=self.project)
+        user = UserFactory(username="perm_holder_alloc")
+        user = grant_user_permission(user, "project", "change_project")
+        self.assertEqual(allocation.user_permissions(user), [])
