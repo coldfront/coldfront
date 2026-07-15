@@ -127,17 +127,17 @@ class SlurmPartitionTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         }
 
         cls.csv_data = (
-            "cluster,name,description,nodes,priority,is_default,state",
-            "Test Cluster,Partition 4,Fourth partition,node[01-16],100,TRUE,UP",
-            "Test Cluster,Partition 5,Fifth partition,node[17-32],50,FALSE,UP",
-            "Test Cluster,Partition 6,Sixth partition,node[33-48],10,FALSE,DOWN",
+            "cluster,name,slug,description,nodes,priority,is_default,state",
+            "Test Cluster,Partition 4,test-cluster-partition-4,Fourth partition,node[01-16],100,TRUE,UP",
+            "Test Cluster,Partition 5,test-cluster-partition-5,Fifth partition,node[17-32],50,FALSE,UP",
+            "Test Cluster,Partition 6,test-cluster-partition-6,Sixth partition,node[33-48],10,FALSE,DOWN",
         )
 
         cls.csv_update_data = (
-            "id,cluster,name,description,nodes,priority,is_default,state",
-            f"{partitions[0].pk},Test Cluster,Partition 7,Seven partition,node[49-64],100,TRUE,UP",
-            f"{partitions[1].pk},Test Cluster,Partition 8,Eight partition,node[65-80],50,FALSE,UP",
-            f"{partitions[2].pk},Test Cluster,Partition 9,Nine partition,node[81-96],10,FALSE,DOWN",
+            "id,cluster,name,slug,description,nodes,priority,is_default,state",
+            f"{partitions[0].pk},Test Cluster,Partition 7,test-cluster-partition-7,Seven partition,node[49-64],100,TRUE,UP",
+            f"{partitions[1].pk},Test Cluster,Partition 8,test-cluster-partition-8,Eight partition,node[65-80],50,FALSE,UP",
+            f"{partitions[2].pk},Test Cluster,Partition 9,test-cluster-partition-9,Nine partition,node[81-96],10,FALSE,DOWN",
         )
 
 

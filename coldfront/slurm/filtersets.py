@@ -68,6 +68,7 @@ class SlurmPartitionFilterSet(PrimaryModelFilterSet):
             "id",
             "cluster",
             "name",
+            "slug",
             "description",
             "nodes",
             "priority",

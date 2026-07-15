@@ -182,6 +182,7 @@ class SlurmPartitionForm(PrimaryModelForm):
         fields = [
             "cluster",
             "name",
+            "slug",
             "description",
             "locked",
             "schema",
@@ -212,6 +213,7 @@ class SlurmPartitionForm(PrimaryModelForm):
                 _("Slurm Partition"),
                 "cluster",
                 "name",
+                "slug",
                 "description",
                 "locked",
                 "schema",
@@ -258,6 +260,7 @@ class SlurmPartitionImportForm(PrimaryModelImportForm):
         fields = [
             "cluster",
             "name",
+            "slug",
             "description",
             "locked",
             "schema",

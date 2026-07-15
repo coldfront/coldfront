@@ -91,6 +91,7 @@ class SlurmPartitionTable(PrimaryModelTable):
             "id",
             "cluster",
             "name",
+            "slug",
             "description",
             "locked",
             "nodes",

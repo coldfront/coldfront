@@ -413,6 +413,7 @@ class Migration(migrations.Migration):
                     "def_mem_per_cpu",
                     models.PositiveIntegerField(blank=True, null=True, verbose_name="default memory per CPU"),
                 ),
+                ("slug", models.SlugField(blank=True, max_length=100, unique=True, verbose_name="slug")),
                 (
                     "allow_accounts",
                     models.ManyToManyField(

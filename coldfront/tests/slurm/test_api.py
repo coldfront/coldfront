@@ -84,7 +84,19 @@ class SlurmClusterAPITestCase(APIViewTestCases.APIViewTestCase):
 
 class SlurmPartitionAPITestCase(APIViewTestCases.APIViewTestCase):
     model = SlurmPartition
-    brief_fields = ["description", "display", "id", "is_default", "locked", "name", "nodes", "priority", "state", "url"]
+    brief_fields = [
+        "description",
+        "display",
+        "id",
+        "is_default",
+        "locked",
+        "name",
+        "nodes",
+        "priority",
+        "slug",
+        "state",
+        "url",
+    ]
     bulk_update_data = {
         "description": "New description",
     }
@@ -121,6 +133,7 @@ class SlurmPartitionAPITestCase(APIViewTestCases.APIViewTestCase):
 
         cls.update_data = {
             "name": "Partition Y",
+            "slug": "test-cluster-partition-y",
             "description": "Updated partition",
             "locked": False,
             "nodes": "node[65-128]",

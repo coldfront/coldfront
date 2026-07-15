@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import OrganizationalModel, PrimaryModel
@@ -228,6 +229,13 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         verbose_name=_("default memory per CPU"),
     )
 
+    slug = models.SlugField(
+        verbose_name=_("slug"),
+        max_length=100,
+        blank=True,
+        unique=True,
+    )
+
     clone_fields = (
         "cluster",
         "locked",
@@ -248,6 +256,7 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         "state",
         "preempt_mode",
         "def_mem_per_cpu",
+        "slug",
     )
 
     prerequisite_models = ("slurm.SlurmCluster",)
@@ -268,6 +277,11 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
 
     def get_status_color(self):
         return "green"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(f"{self.cluster.name}-{self.name}")
+        super().save(*args, **kwargs)
 
 
 class SlurmAccount(PrimaryModel):
