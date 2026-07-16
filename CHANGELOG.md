@@ -1,5 +1,9 @@
 # ColdFront Changelog
 
+## [Unreleased]
+
+- Add `freeipa/offboard.py` helper for capture-based group-membership revocation on user offboarding: `managed_groups_for_user`, `plan_offboard`, `remove_user_from_groups`, `add_user_to_groups`, a cross-allocation safeguard, and a django-q task entry point
+
 ## [1.1.8] - 2026-05-11
 
 - Add podman support [#733](https://github.com/coldfront/coldfront/pull/733)
