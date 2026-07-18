@@ -59,30 +59,28 @@ Context:
       </div>
     </div>
 
-    <div class="row mt-3">
-      <form action="" method="post">
-        {% csrf_token %}
+    <form action="" method="post" class="form form-horizontal mt-5">
+      <div id="form_fields">
+          {% csrf_token %}
 
-        {# Form fields #}
-        {% for field in form.hidden_fields %}
+          {# Form fields #}
+          {% for field in form.hidden_fields %}
           {{ field|as_crispy_field }}
-        {% endfor %}
+          {% endfor %}
 
-        {# Meta fields #}
-        <div class="bg-primary-subtle border border-primary rounded-1 pt-3 px-3 mb-3">
+          {# Meta fields #}
           {% if form.changelog_message %}
-            {{ form.changelog_message|as_crispy_field }}
+          {{ form.changelog_message|as_crispy_field }}
           {% endif %}
-        </div>
 
-        {# Form buttons #}
-        <div class="text-end">
+          {# Form buttons #}
+          <div class="col-lg-9 text-end">
           <a href="{{ return_url }}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
           <button type="submit" name="_confirm" class="btn btn-danger">{% trans "Delete" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural" }}</button>
-        </div>
+          </div>
 
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
   {# /Confirmation form #}
 

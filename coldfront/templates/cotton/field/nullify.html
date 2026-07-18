@@ -1,0 +1,20 @@
+{% load crispy_forms_tags %}
+{% load i18n %}
+
+{% cotton:vars :field="field" %}
+{% cotton:vars :form="form" %}
+
+{{ field|as_crispy_field }}
+{% if field.name in form.nullable_fields %}
+<div class="mb-3 row">
+    <div class="col-lg-3">&nbsp;</div>
+    <div class="col-lg-6">
+        <div class="form-check">
+        <input type="checkbox" class="form-check-input" name="_nullify" value="{{ field.name }}" id="nullify_{{ field.id_for_label }}">
+        <label class="form-check-label small text-muted" for="nullify_{{ field.id_for_label }}">
+            {% trans "Set to None" %}
+        </label>
+        </div>
+    </div>
+</div>
+{% endif %}

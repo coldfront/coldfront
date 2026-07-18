@@ -80,6 +80,14 @@ class AllocationBulkImportView(generic.BulkImportView):
     model_form = forms.AllocationImportForm
 
 
+@register_model_view(Allocation, "bulk_edit", path="edit", detail=False)
+class AllocationBulkEditView(generic.BulkEditView):
+    queryset = Allocation.objects.all()
+    filterset = filtersets.AllocationFilterSet
+    table = tables.AllocationTable
+    form = forms.AllocationBulkEditForm
+
+
 @register_model_view(Allocation, "bulk_delete", path="delete", detail=False)
 class AllocationBulkDeleteView(generic.BulkDeleteView):
     queryset = Allocation.objects.all()

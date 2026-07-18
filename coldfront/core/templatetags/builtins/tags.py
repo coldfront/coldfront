@@ -12,6 +12,15 @@ from coldfront.forms import TableConfigForm
 register = template.Library()
 
 
+@register.filter
+def get_bound_field(form, field_name):
+    """
+    Return the bound field for a given field name from a form.
+    Usage: {{ form|get_bound_field:field_name }}
+    """
+    return form[field_name]
+
+
 @register.inclusion_tag("builtins/customfield_value.html")
 def customfield_value(customfield, value):
     """

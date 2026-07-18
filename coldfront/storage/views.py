@@ -60,6 +60,14 @@ class StorageResourceBulkImportView(generic.BulkImportView):
     model_form = forms.StorageResourceImportForm
 
 
+@register_model_view(StorageResource, "bulk_edit", path="edit", detail=False)
+class StorageResourceBulkEditView(generic.BulkEditView):
+    queryset = StorageResource.objects.all()
+    filterset = filtersets.StorageResourceFilterSet
+    table = tables.StorageResourceTable
+    form = forms.StorageResourceBulkEditForm
+
+
 @register_model_view(StorageResource, "bulk_delete", path="delete", detail=False)
 class StorageResourceBulkDeleteView(generic.BulkDeleteView):
     queryset = StorageResource.objects.all()
@@ -110,6 +118,14 @@ class StorageClusterBulkImportView(generic.BulkImportView):
     model_form = forms.StorageClusterImportForm
 
 
+@register_model_view(StorageCluster, "bulk_edit", path="edit", detail=False)
+class StorageClusterBulkEditView(generic.BulkEditView):
+    queryset = StorageCluster.objects.all()
+    filterset = filtersets.StorageClusterFilterSet
+    table = tables.StorageClusterTable
+    form = forms.StorageClusterBulkEditForm
+
+
 @register_model_view(StorageCluster, "bulk_delete", path="delete", detail=False)
 class StorageClusterBulkDeleteView(generic.BulkDeleteView):
     queryset = StorageCluster.objects.all()
@@ -156,6 +172,14 @@ class StorageQuotaDeleteView(generic.ObjectDeleteView):
 class StorageQuotaBulkImportView(generic.BulkImportView):
     queryset = StorageQuota.objects.all()
     model_form = forms.StorageQuotaImportForm
+
+
+@register_model_view(StorageQuota, "bulk_edit", path="edit", detail=False)
+class StorageQuotaBulkEditView(generic.BulkEditView):
+    queryset = StorageQuota.objects.all()
+    filterset = filtersets.StorageQuotaFilterSet
+    table = tables.StorageQuotaTable
+    form = forms.StorageQuotaBulkEditForm
 
 
 @register_model_view(StorageQuota, "bulk_delete", path="delete", detail=False)
@@ -214,6 +238,14 @@ class StorageSnapshotPolicyDeleteView(generic.ObjectDeleteView):
 class StorageSnapshotPolicyBulkImportView(generic.BulkImportView):
     queryset = StorageSnapshotPolicy.objects.all()
     model_form = forms.StorageSnapshotPolicyImportForm
+
+
+@register_model_view(StorageSnapshotPolicy, "bulk_edit", path="edit", detail=False)
+class StorageSnapshotPolicyBulkEditView(generic.BulkEditView):
+    queryset = StorageSnapshotPolicy.objects.all()
+    filterset = filtersets.StorageSnapshotPolicyFilterSet
+    table = tables.StorageSnapshotPolicyTable
+    form = forms.StorageSnapshotPolicyBulkEditForm
 
 
 @register_model_view(StorageSnapshotPolicy, "bulk_delete", path="delete", detail=False)

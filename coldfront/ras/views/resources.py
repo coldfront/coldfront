@@ -55,6 +55,14 @@ class ResourceTypeBulkImportView(generic.BulkImportView):
     model_form = forms.ResourceTypeImportForm
 
 
+@register_model_view(ResourceType, "bulk_edit", path="edit", detail=False)
+class ResourceTypeBulkEditView(generic.BulkEditView):
+    queryset = ResourceType.objects.all()
+    filterset = filtersets.ResourceTypeFilterSet
+    table = tables.ResourceTypeTable
+    form = forms.ResourceTypeBulkEditForm
+
+
 @register_model_view(ResourceType, "bulk_delete", path="delete", detail=False)
 class ResourceTypeBulkDeleteView(generic.BulkDeleteView):
     queryset = ResourceType.objects.all()
@@ -103,6 +111,14 @@ class ResourceDeleteView(generic.ObjectDeleteView):
 class ResourceBulkImportView(generic.BulkImportView):
     queryset = Resource.objects.all()
     model_form = forms.ResourceImportForm
+
+
+@register_model_view(Resource, "bulk_edit", path="edit", detail=False)
+class ResourceBulkEditView(generic.BulkEditView):
+    queryset = Resource.objects.all()
+    filterset = filtersets.ResourceFilterSet
+    table = tables.ResourceTable
+    form = forms.ResourceBulkEditForm
 
 
 @register_model_view(Resource, "bulk_delete", path="delete", detail=False)

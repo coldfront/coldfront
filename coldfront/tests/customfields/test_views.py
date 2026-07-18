@@ -49,7 +49,7 @@ class CustomFieldChoiceSetTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f'{choice_sets[3].pk},"A:L1,B:L2,C:L3"',
         )
 
-        cls.bulk_edit_data = {
+        cls.bulk_edit_form_data = {
             "description": "New description",
         }
 
@@ -107,3 +107,7 @@ class CustomFieldTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{custom_fields[1].pk},New label 2",
             f"{custom_fields[2].pk},New label 3",
         )
+
+        cls.bulk_edit_form_data = {
+            "label": "Updated label",
+        }

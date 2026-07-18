@@ -38,6 +38,10 @@ class SlurmQOSTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "tags": [t.pk for t in tags],
         }
 
+        cls.bulk_edit_form_data = {
+            "description": "Updated QOS",
+        }
+
         cls.csv_data = (
             "name,description",
             "QOS 4,Fourth QOS",
@@ -76,6 +80,12 @@ class SlurmClusterTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "description": "A new Slurm cluster",
             "locked": True,
             "tags": [t.pk for t in tags],
+        }
+
+        cls.bulk_edit_form_data = {
+            "description": "Updated cluster",
+            "locked": True,
+            "fairshare": 5,
         }
 
         cls.csv_data = (
@@ -126,6 +136,12 @@ class SlurmPartitionTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "tags": [t.pk for t in tags],
         }
 
+        cls.bulk_edit_form_data = {
+            "description": "Updated partition",
+            "locked": True,
+            "priority": 200,
+        }
+
         cls.csv_data = (
             "cluster,name,slug,description,nodes,priority,is_default,state",
             "Test Cluster,Partition 4,test-cluster-partition-4,Fourth partition,node[01-16],100,TRUE,UP",
@@ -166,6 +182,11 @@ class SlurmAccountTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "tags": [t.pk for t in tags],
         }
 
+        cls.bulk_edit_form_data = {
+            "description": "Updated account",
+            "fairshare": 10,
+        }
+
         cls.csv_data = (
             "cluster,name,description",
             "Test Cluster,Account 4,Fourth account",
@@ -188,6 +209,11 @@ class SlurmAssociationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     def setUpTestData(cls):
         cluster = SlurmCluster.objects.create(name="Test Cluster")
         account = SlurmAccount.objects.create(name="Test Account", cluster=cluster)
+
+        cls.bulk_edit_form_data = {
+            "fairshare": 10,
+            "max_jobs": 50,
+        }
 
         from django.contrib.contenttypes.models import ContentType
 
@@ -313,6 +339,11 @@ class SlurmUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "default_account": account.pk,
             "admin_level": 0,
             "tags": [t.pk for t in tags],
+        }
+
+        cls.bulk_edit_form_data = {
+            "default_wckey": "new_wckey",
+            "admin_level": 1,
         }
 
         cls.csv_data = (

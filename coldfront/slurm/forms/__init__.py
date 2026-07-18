@@ -2,6 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from .bulk_edit import (
+    SlurmAccountBulkEditForm,
+    SlurmAssociationBulkEditForm,
+    SlurmClusterBulkEditForm,
+    SlurmPartitionBulkEditForm,
+    SlurmQOSBulkEditForm,
+    SlurmUserBulkEditForm,
+)
 from .filterset_forms import (
     SlurmAccountFilterSetForm,
     SlurmAssociationFilterSetForm,
@@ -26,16 +34,22 @@ from .model_forms import (
 )
 
 __all__ = (
+    "SlurmQOSBulkEditForm",
     "SlurmQOSForm",
     "SlurmQOSImportForm",
+    "SlurmClusterBulkEditForm",
     "SlurmClusterForm",
     "SlurmClusterImportForm",
+    "SlurmPartitionBulkEditForm",
     "SlurmPartitionForm",
     "SlurmPartitionImportForm",
+    "SlurmAccountBulkEditForm",
     "SlurmAccountForm",
     "SlurmAccountImportForm",
+    "SlurmAssociationBulkEditForm",
     "SlurmAssociationForm",
     "SlurmAssociationImportForm",
+    "SlurmUserBulkEditForm",
     "SlurmUserForm",
     "SlurmUserImportForm",
     "SlurmQOSFilterSetForm",

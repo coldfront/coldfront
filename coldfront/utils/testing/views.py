@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import ForeignKey
 from django.test import override_settings
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CSVDelimiterChoices, ImportFormatChoices, ObjectChangeActionChoices
@@ -680,6 +680,140 @@ class ViewTestCases:
             self.assertHttpStatus(self.client.post(self._get_url("bulk_import"), data), 302)
             self.assertEqual(self._get_queryset().count(), initial_count + expected_new_objects)
 
+    class BulkEditObjectsViewTestCase(ModelViewTestCase):
+        """
+        Edit multiple instances.
+
+        Note: Tests are conditional on the model having a ``bulk_edit`` URL pattern
+        registered. If the URL pattern doesn't exist, the tests are skipped.
+
+        The test uses ``bulk_edit_form_data`` for form values. Subclasses must define
+        ``cls.bulk_edit_form_data`` to provide the fields to change during bulk edit.
+        """
+
+        bulk_edit_form_data = {}
+
+        def _bulk_edit_url_exists(self):
+            """
+            Check whether the bulk_edit URL pattern is registered for this model.
+            Returns True if the URL resolves, False otherwise.
+            """
+            try:
+                self._get_url("bulk_edit")
+                return True
+            except NoReverseMatch:
+                return False
+
+        def test_bulk_edit_objects_without_permission(self):
+            if not self._bulk_edit_url_exists():
+                self.skipTest("bulk_edit URL not registered for this model")
+
+            pk_list = self._get_queryset().values_list("pk", flat=True)[:3]
+            data = {
+                "pk": pk_list,
+                "_apply": True,  # Form button
+            }
+
+            # Test GET without permission
+            with disable_warnings("django.request"):
+                self.assertHttpStatus(self.client.get(self._get_url("bulk_edit")), 403)
+
+            # Try POST without permission
+            with disable_warnings("django.request"):
+                self.assertHttpStatus(self.client.post(self._get_url("bulk_edit"), data), 403)
+
+        @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], EXEMPT_EXCLUDE_MODELS=[])
+        def test_bulk_edit_objects_with_permission(self):
+            if not self._bulk_edit_url_exists():
+                self.skipTest("bulk_edit URL not registered for this model")
+
+            pk_list = list(self._get_queryset().values_list("pk", flat=True))[:3]
+            data = {
+                "pk": pk_list,
+                "_apply": True,  # Form button
+            }
+
+            # Merge bulk_edit_form_data into data
+            data.update(self.bulk_edit_form_data)
+
+            # If supported, add a changelog message
+            if issubclass(self.model, ChangeLoggingMixin):
+                if "changelog_message" not in data:
+                    data["changelog_message"] = get_random_string(10)
+
+            # Assign unconstrained permission
+            obj_perm = ObjectPermission(name="Test permission", actions=["change"])
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Try GET with model-level permission
+            self.assertHttpStatus(self.client.get(self._get_url("bulk_edit")), 302)  # GET redirects to return_url
+
+            # Try POST with model-level permission
+            response = self.client.post(self._get_url("bulk_edit"), data)
+            self.assertHttpStatus(response, 302)
+
+            # Verify objects were updated
+            for pk in pk_list:
+                instance = self._get_queryset().get(pk=pk)
+                self.assertInstanceEqual(instance, self.bulk_edit_form_data)
+
+            # Verify ObjectChange creation
+            if issubclass(self.model, ChangeLoggingMixin):
+                objectchanges = ObjectChange.objects.filter(
+                    changed_object_type=ContentType.objects.get_for_model(self.model),
+                    changed_object_id__in=pk_list,
+                )
+                self.assertEqual(len(objectchanges), len(pk_list))
+                for oc in objectchanges:
+                    self.assertEqual(oc.action, ObjectChangeActionChoices.ACTION_UPDATE)
+                    self.assertEqual(oc.message, data["changelog_message"])
+
+        @override_settings(EXEMPT_VIEW_PERMISSIONS=["*"], EXEMPT_EXCLUDE_MODELS=[])
+        def test_bulk_edit_objects_with_constrained_permission(self):
+            if not self._bulk_edit_url_exists():
+                self.skipTest("bulk_edit URL not registered for this model")
+
+            pk_list = self._get_queryset().values_list("pk", flat=True)[:3]
+            data = {
+                "pk": pk_list,
+                "_apply": True,  # Form button
+            }
+
+            # Merge bulk_edit_form_data into data
+            data.update(self.bulk_edit_form_data)
+
+            # Dynamically determine a constraint that will *not* be matched by the updated objects.
+            attr_name = list(self.bulk_edit_form_data.keys())[0]
+            field = self.model._meta.get_field(attr_name)
+            value = field.value_from_object(self._get_queryset().first())
+
+            # Assign constrained permission
+            obj_perm = ObjectPermission(
+                name="Test permission",
+                constraints={attr_name: value},
+                actions=["change"],
+            )
+            obj_perm.save()
+            obj_perm.users.add(self.user)
+            obj_perm.object_types.add(ObjectType.objects.get_for_model(self.model))
+
+            # Attempt to bulk edit permitted objects into a non-permitted state (should get form validation error)
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_edit"), data), 200)
+
+            # Update permission constraints
+            obj_perm.constraints = {"pk__gt": 0}
+            obj_perm.save()
+
+            # Bulk edit permitted objects (should succeed)
+            self.assertHttpStatus(self.client.post(self._get_url("bulk_edit"), data), 302)
+
+            # Verify objects were updated
+            for pk in pk_list:
+                instance = self._get_queryset().get(pk=pk)
+                self.assertInstanceEqual(instance, self.bulk_edit_form_data)
+
     class BulkDeleteObjectsViewTestCase(ModelViewTestCase):
         """
         Delete multiple instances.
@@ -773,6 +907,7 @@ class ViewTestCases:
         DeleteObjectViewTestCase,
         ListObjectsViewTestCase,
         BulkImportObjectsViewTestCase,
+        BulkEditObjectsViewTestCase,
         BulkDeleteObjectsViewTestCase,
     ):
         """
@@ -789,6 +924,7 @@ class ViewTestCases:
         DeleteObjectViewTestCase,
         ListObjectsViewTestCase,
         BulkImportObjectsViewTestCase,
+        BulkEditObjectsViewTestCase,
         BulkDeleteObjectsViewTestCase,
     ):
         """

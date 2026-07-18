@@ -61,6 +61,10 @@ class ProjectTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
             f"{projects[2].pk},Project 9,Sixth project9",
         )
 
+        cls.bulk_edit_form_data = {
+            "description": "Updated project",
+        }
+
     def test_tenant_validation_enforced(self):
         """
         Test that editing a tenant on a project is restricted.
@@ -129,6 +133,11 @@ class ResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{resources[1].pk},Resource 8,Eight resource8",
             f"{resources[2].pk},Resource 9,Nine resource9",
         )
+
+        cls.bulk_edit_form_data = {
+            "description": "Updated resource",
+            "locked": True,
+        }
 
 
 class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
@@ -202,6 +211,10 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{allocations[2].pk},Sixth allocation9",
         )
 
+        cls.bulk_edit_form_data = {
+            "description": "Updated allocation",
+        }
+
 
 class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     model = ProjectUser
@@ -252,3 +265,7 @@ class ProjectUserTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{project_users[1].pk},Project 4",
             f"{project_users[2].pk},Project 4",
         )
+
+        cls.bulk_edit_form_data = {
+            "project": projects[2].pk,
+        }

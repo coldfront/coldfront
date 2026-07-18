@@ -9,7 +9,6 @@ from coldfront.core.models import ObjectChange
 from coldfront.core.tables import ObjectChangeTable
 from coldfront.registry import register_model_view
 from coldfront.views import generic
-from coldfront.views.object_actions import AddObject, BulkExport
 
 from . import filtersets, forms, tables
 from .models import Group, ObjectPermission, Token, User
@@ -61,6 +60,20 @@ class UserBulkImportView(generic.BulkImportView):
     model_form = forms.UserImportForm
 
 
+@register_model_view(User, "bulk_edit", path="edit", detail=False)
+class UserBulkEditView(generic.BulkEditView):
+    queryset = User.objects.all()
+    filterset = filtersets.UserFilterSet
+    table = tables.UserTable
+    form = forms.UserBulkEditForm
+
+    def post_save_operations(self, form, obj):
+        if form.cleaned_data.get("add_groups", None):
+            obj.groups.add(*form.cleaned_data["add_groups"])
+        if form.cleaned_data.get("remove_groups", None):
+            obj.groups.remove(*form.cleaned_data["remove_groups"])
+
+
 @register_model_view(User, "bulk_delete", path="delete", detail=False)
 class UserBulkDeleteView(generic.BulkDeleteView):
     queryset = User.objects.all()
@@ -105,6 +118,17 @@ class GroupBulkImportView(generic.BulkImportView):
     model_form = forms.GroupImportForm
 
 
+@register_model_view(Group, "bulk_edit", path="edit", detail=False)
+class GroupBulkEditView(generic.BulkEditView):
+    queryset = Group.objects.all()
+    filterset = filtersets.GroupFilterSet
+    table = tables.GroupTable
+    form = forms.GroupBulkEditForm
+
+    def post_save_operations(self, form, obj):
+        pass
+
+
 @register_model_view(Group, "bulk_delete", path="delete", detail=False)
 class GroupBulkDeleteView(generic.BulkDeleteView):
     queryset = Group.objects.annotate(users_count=Count("user")).order_by("name")
@@ -123,10 +147,6 @@ class ObjectPermissionListView(generic.ObjectListView):
     filterset = filtersets.ObjectPermissionFilterSet
     filterset_form = forms.ObjectPermissionFilterSetForm
     table = tables.ObjectPermissionTable
-    actions = (
-        AddObject,
-        BulkExport,
-    )
 
 
 @register_model_view(ObjectPermission)
@@ -146,6 +166,17 @@ class ObjectPermissionEditView(generic.ObjectEditView):
 class ObjectPermissionDeleteView(generic.ObjectDeleteView):
     queryset = ObjectPermission.objects.all()
     filterset = filtersets.ObjectPermissionFilterSet
+
+
+@register_model_view(ObjectPermission, "bulk_edit", path="edit", detail=False)
+class ObjectPermissionBulkEditView(generic.BulkEditView):
+    queryset = ObjectPermission.objects.all()
+    filterset = filtersets.ObjectPermissionFilterSet
+    table = tables.ObjectPermissionTable
+    form = forms.ObjectPermissionBulkEditForm
+
+    def post_save_operations(self, form, obj):
+        pass
 
 
 @register_model_view(ObjectPermission, "bulk_delete", path="delete", detail=False)
@@ -190,6 +221,16 @@ class TokenDeleteView(generic.ObjectDeleteView):
 class TokenBulkImportView(generic.BulkImportView):
     queryset = Token.objects.all()
     model_form = forms.TokenImportForm
+
+
+@register_model_view(Token, "bulk_edit", path="edit", detail=False)
+class TokenBulkEditView(generic.BulkEditView):
+    queryset = Token.objects.all()
+    table = tables.TokenTable
+    form = forms.TokenBulkEditForm
+
+    def post_save_operations(self, form, obj):
+        pass
 
 
 @register_model_view(Token, "bulk_delete", path="delete", detail=False)

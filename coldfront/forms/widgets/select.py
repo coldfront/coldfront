@@ -25,3 +25,19 @@ class HTMXSelectWidget(forms.Select):
             _attrs.update(attrs)
 
         super().__init__(attrs=_attrs, **kwargs)
+
+
+class BulkEditNullBooleanSelect(forms.NullBooleanSelect):
+    """
+    A Select widget for NullBooleanFields
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Override the built-in choice labels
+        self.choices = (
+            ("1", "---------"),
+            ("2", "Yes"),
+            ("3", "No"),
+        )

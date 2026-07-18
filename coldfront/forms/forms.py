@@ -8,6 +8,7 @@ import json
 from io import StringIO
 
 import yaml
+from crispy_forms.helper import FormHelper
 from django import forms
 from django.utils.translation import gettext as _
 
@@ -251,6 +252,18 @@ class BulkDeleteForm(ConfirmationForm):
         # Hide the changelog_message filed if the model doesn't support change logging
         if model is None or not issubclass(model, ChangeLoggingMixin):
             self.fields.pop("changelog_message")
+
+    @property
+    def helper(self):
+        """
+        crispy forms helper which defines the form rendering behavior.
+        """
+        helper = FormHelper()
+        helper.form_class = "form-horizontal"
+        helper.form_tag = False
+        helper.label_class = "col-lg-3 text-end"
+        helper.field_class = "col-lg-6"
+        return helper
 
 
 class TenancyForm(forms.Form):

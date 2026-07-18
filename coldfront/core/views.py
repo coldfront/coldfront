@@ -128,6 +128,14 @@ class TagBulkImportView(generic.BulkImportView):
     model_form = forms.TagImportForm
 
 
+@register_model_view(Tag, "bulk_edit", path="edit", detail=False)
+class TagBulkEditView(generic.BulkEditView):
+    queryset = Tag.objects.all()
+    filterset = filtersets.TagFilterSet
+    table = tables.TagTable
+    form = forms.TagBulkEditForm
+
+
 @register_model_view(Tag, "bulk_delete", path="delete", detail=False)
 class TagBulkDeleteView(generic.BulkDeleteView):
     queryset = Tag.objects.annotate(
@@ -267,6 +275,14 @@ class CustomFieldChoiceSetBulkImportView(generic.BulkImportView):
     model_form = forms.CustomFieldChoiceSetImportForm
 
 
+@register_model_view(CustomFieldChoiceSet, "bulk_edit", path="edit", detail=False)
+class CustomFieldChoiceSetBulkEditView(generic.BulkEditView):
+    queryset = CustomFieldChoiceSet.objects.all()
+    filterset = filtersets.CustomFieldChoiceSetFilterSet
+    table = tables.CustomFieldChoiceSetTable
+    form = forms.CustomFieldChoiceSetBulkEditForm
+
+
 @register_model_view(CustomFieldChoiceSet, "bulk_delete", path="delete", detail=False)
 class CustomFieldChoiceSetBulkDeleteView(generic.BulkDeleteView):
     queryset = CustomFieldChoiceSet.objects.all()
@@ -323,6 +339,14 @@ class CustomFieldDeleteView(generic.ObjectDeleteView):
 class CustomFieldBulkImportView(generic.BulkImportView):
     queryset = CustomField.objects.select_related("choice_set")
     model_form = forms.CustomFieldImportForm
+
+
+@register_model_view(CustomField, "bulk_edit", path="edit", detail=False)
+class CustomFieldBulkEditView(generic.BulkEditView):
+    queryset = CustomField.objects.all()
+    filterset = filtersets.CustomFieldFilterSet
+    table = tables.CustomFieldTable
+    form = forms.CustomFieldBulkEditForm
 
 
 @register_model_view(CustomField, "bulk_delete", path="delete", detail=False)

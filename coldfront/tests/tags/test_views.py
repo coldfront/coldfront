@@ -46,3 +46,7 @@ class TagTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{tags[1].pk},Tag 8,Fifth tag8",
             f"{tags[2].pk},Tag 9,Sixth tag9",
         )
+
+        cls.bulk_edit_form_data = {
+            "description": "Updated tag",
+        }

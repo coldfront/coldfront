@@ -2,6 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from .bulk_edit import (
+    StorageClusterBulkEditForm,
+    StorageQuotaBulkEditForm,
+    StorageResourceBulkEditForm,
+    StorageSnapshotPolicyBulkEditForm,
+)
 from .filterset_forms import (
     StorageClusterFilterSetForm,
     StorageQuotaFilterSetForm,
@@ -21,13 +27,17 @@ from .model_forms import (
 )
 
 __all__ = (
+    "StorageResourceBulkEditForm",
     "StorageResourceForm",
     "StorageResourceImportForm",
+    "StorageClusterBulkEditForm",
     "StorageClusterForm",
     "StorageClusterImportForm",
+    "StorageQuotaBulkEditForm",
     "StorageQuotaForm",
     "StorageQuotaImportForm",
     "StorageQuotaRequestForm",
+    "StorageSnapshotPolicyBulkEditForm",
     "StorageSnapshotPolicyForm",
     "StorageSnapshotPolicyImportForm",
     "StorageResourceFilterSetForm",

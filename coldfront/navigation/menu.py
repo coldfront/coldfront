@@ -29,34 +29,20 @@ ORGANIZATION_MENU = Menu(
     ),
 )
 
-PROJECTS_MENU = Menu(
-    label=_("Projects"),
-    icon_class="fa-solid fa-folder",
-    groups=(
-        MenuGroup(
-            label=_("Projects"),
-            items=(
-                get_model_item("ras", "project", _("Projects")),
-                get_model_item("ras", "projectuser", _("Project Users")),
-            ),
-        ),
-    ),
-)
-
 ALLOCATIONS_MENU = Menu(
     label=_("Allocations"),
     icon_class="fa-solid fa-list-check",
     groups=(
         MenuGroup(
+            label=_("Allocations"),
+            items=(get_model_item("ras", "allocation", _("Allocations")),),
+        ),
+        MenuGroup(
             label=_("Projects"),
             items=(
                 get_model_item("ras", "project", _("Projects")),
                 get_model_item("ras", "projectuser", _("Project Users")),
             ),
-        ),
-        MenuGroup(
-            label=_("Allocations"),
-            items=(get_model_item("ras", "allocation", _("Allocations")),),
         ),
     ),
 )

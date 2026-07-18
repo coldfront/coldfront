@@ -16,6 +16,7 @@ class UserTestCase(
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.BulkImportObjectsViewTestCase,
+    ViewTestCases.BulkEditObjectsViewTestCase,
 ):
     model = User
     maxDiff = None
@@ -27,6 +28,7 @@ class UserTestCase(
 
     @classmethod
     def setUpTestData(cls):
+        group = Group.objects.create(name="Test Group")
         users = (
             User(
                 username="username1", first_name="first1", last_name="last1", email="user1@foo.com", password="pass1xxx"
@@ -39,6 +41,7 @@ class UserTestCase(
             ),
         )
         User.objects.bulk_create(users)
+        cls.group = group
 
         cls.form_data = {
             "username": "usernamex",
@@ -63,8 +66,9 @@ class UserTestCase(
             f"{users[2].pk},first9,last9",
         )
 
-        cls.bulk_edit_data = {
+        cls.bulk_edit_form_data = {
             "last_name": "newlastname",
+            "add_groups": [cls.group.pk],
         }
 
     def test_password_validation_enforced(self):
@@ -136,7 +140,7 @@ class GroupTestCase(
             f"{groups[2].pk},group9",
         )
 
-        cls.bulk_edit_data = {
+        cls.bulk_edit_form_data = {
             "description": "New description",
         }
 
@@ -147,6 +151,7 @@ class ObjectPermissionTestCase(
     ViewTestCases.EditObjectViewTestCase,
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
+    ViewTestCases.BulkEditObjectsViewTestCase,
 ):
     model = ObjectPermission
     maxDiff = None
@@ -169,7 +174,7 @@ class ObjectPermissionTestCase(
             "actions": '["view", "edit", "delete"]',
         }
 
-        cls.bulk_edit_data = {
+        cls.bulk_edit_form_data = {
             "description": "New description",
         }
 
@@ -181,6 +186,7 @@ class TokenTestCase(
     ViewTestCases.DeleteObjectViewTestCase,
     ViewTestCases.ListObjectsViewTestCase,
     ViewTestCases.BulkImportObjectsViewTestCase,
+    ViewTestCases.BulkEditObjectsViewTestCase,
 ):
     model = Token
     maxDiff = None
@@ -225,3 +231,7 @@ class TokenTestCase(
             f"{tokens[1].pk},New description",
             f"{tokens[2].pk},New description",
         )
+
+        cls.bulk_edit_form_data = {
+            "description": "New description",
+        }

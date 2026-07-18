@@ -66,6 +66,11 @@ class StorageResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{resources[2].pk},Resource 9,Nine resource,{DEFAULT_PATH_TEMPLATE}",
         )
 
+        cls.bulk_edit_form_data = {
+            "description": "Updated resource",
+            "locked": True,
+        }
+
 
 class StorageClusterTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     model = StorageCluster
@@ -106,6 +111,11 @@ class StorageClusterTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{clusters[1].pk},Cluster 8,Eight cluster,coldfront.storage.backends.dummy.DummyBackend,1440",
             f"{clusters[2].pk},Cluster 9,Nine cluster,coldfront.storage.backends.dummy.DummyBackend,1440",
         )
+
+        cls.bulk_edit_form_data = {
+            "description": "Updated cluster",
+            "auto_sync_enabled": True,
+        }
 
 
 class StorageSnapshotPolicyTestCase(ViewTestCases.PrimaryObjectViewTestCase):
@@ -149,6 +159,11 @@ class StorageSnapshotPolicyTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{policies[1].pk},Test Cluster,Policy 8,Eight policy,weekly,14",
             f"{policies[2].pk},Test Cluster,Policy 9,Nine policy,monthly,30",
         )
+
+        cls.bulk_edit_form_data = {
+            "description": "Updated policy",
+            "retention_days": 90,
+        }
 
 
 class StorageQuotaTestCase(ViewTestCases.PrimaryObjectViewTestCase):
@@ -242,6 +257,11 @@ class StorageQuotaTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{quotas[1].pk},{allocations[1].pk},Test Resource,/test/8,testuser8,testgroup8,2770,1073741824,posix",
             f"{quotas[2].pk},{allocations[2].pk},Test Resource,/test/9,testuser9,testgroup9,2770,1073741824,posix",
         )
+
+        cls.bulk_edit_form_data = {
+            "path_mode": 2775,
+            "share_type": "nfs",
+        }
 
     def test_bulk_update_objects_with_permission(self):
         # Grant view permissions for User and Group so CSV import can look them up by username

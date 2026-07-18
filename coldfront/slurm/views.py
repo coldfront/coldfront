@@ -63,6 +63,14 @@ class SlurmQOSBulkImportView(generic.BulkImportView):
     model_form = forms.SlurmQOSImportForm
 
 
+@register_model_view(SlurmQOS, "bulk_edit", path="edit", detail=False)
+class SlurmQOSBulkEditView(generic.BulkEditView):
+    queryset = SlurmQOS.objects.all()
+    filterset = filtersets.SlurmQOSFilterSet
+    table = tables.SlurmQOSTable
+    form = forms.SlurmQOSBulkEditForm
+
+
 @register_model_view(SlurmQOS, "bulk_delete", path="delete", detail=False)
 class SlurmQOSBulkDeleteView(generic.BulkDeleteView):
     queryset = SlurmQOS.objects.all()
@@ -111,6 +119,14 @@ class SlurmClusterDeleteView(generic.ObjectDeleteView):
 class SlurmClusterBulkImportView(generic.BulkImportView):
     queryset = SlurmCluster.objects.all()
     model_form = forms.SlurmClusterImportForm
+
+
+@register_model_view(SlurmCluster, "bulk_edit", path="edit", detail=False)
+class SlurmClusterBulkEditView(generic.BulkEditView):
+    queryset = SlurmCluster.objects.all()
+    filterset = filtersets.SlurmClusterFilterSet
+    table = tables.SlurmClusterTable
+    form = forms.SlurmClusterBulkEditForm
 
 
 @register_model_view(SlurmCluster, "bulk_delete", path="delete", detail=False)
@@ -198,6 +214,14 @@ class SlurmPartitionBulkImportView(generic.BulkImportView):
     model_form = forms.SlurmPartitionImportForm
 
 
+@register_model_view(SlurmPartition, "bulk_edit", path="edit", detail=False)
+class SlurmPartitionBulkEditView(generic.BulkEditView):
+    queryset = SlurmPartition.objects.all()
+    filterset = filtersets.SlurmPartitionFilterSet
+    table = tables.SlurmPartitionTable
+    form = forms.SlurmPartitionBulkEditForm
+
+
 @register_model_view(SlurmPartition, "bulk_delete", path="delete", detail=False)
 class SlurmPartitionBulkDeleteView(generic.BulkDeleteView):
     queryset = SlurmPartition.objects.all()
@@ -244,6 +268,14 @@ class SlurmAccountDeleteView(generic.ObjectDeleteView):
 class SlurmAccountBulkImportView(generic.BulkImportView):
     queryset = SlurmAccount.objects.all()
     model_form = forms.SlurmAccountImportForm
+
+
+@register_model_view(SlurmAccount, "bulk_edit", path="edit", detail=False)
+class SlurmAccountBulkEditView(generic.BulkEditView):
+    queryset = SlurmAccount.objects.all()
+    filterset = filtersets.SlurmAccountFilterSet
+    table = tables.SlurmAccountTable
+    form = forms.SlurmAccountBulkEditForm
 
 
 @register_model_view(SlurmAccount, "bulk_delete", path="delete", detail=False)
@@ -294,6 +326,14 @@ class SlurmAssociationBulkImportView(generic.BulkImportView):
     model_form = forms.SlurmAssociationImportForm
 
 
+@register_model_view(SlurmAssociation, "bulk_edit", path="edit", detail=False)
+class SlurmAssociationBulkEditView(generic.BulkEditView):
+    queryset = SlurmAssociation.objects.all()
+    filterset = filtersets.SlurmAssociationFilterSet
+    table = tables.SlurmAssociationTable
+    form = forms.SlurmAssociationBulkEditForm
+
+
 @register_model_view(SlurmAssociation, "bulk_delete", path="delete", detail=False)
 class SlurmAssociationBulkDeleteView(generic.BulkDeleteView):
     queryset = SlurmAssociation.objects.all()
@@ -340,6 +380,14 @@ class SlurmUserDeleteView(generic.ObjectDeleteView):
 class SlurmUserBulkImportView(generic.BulkImportView):
     queryset = SlurmUser.objects.all()
     model_form = forms.SlurmUserImportForm
+
+
+@register_model_view(SlurmUser, "bulk_edit", path="edit", detail=False)
+class SlurmUserBulkEditView(generic.BulkEditView):
+    queryset = SlurmUser.objects.all()
+    filterset = filtersets.SlurmUserFilterSet
+    table = tables.SlurmUserTable
+    form = forms.SlurmUserBulkEditForm
 
 
 @register_model_view(SlurmUser, "bulk_delete", path="delete", detail=False)

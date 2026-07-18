@@ -44,7 +44,7 @@ class TenantGroupTestCase(ViewTestCases.OrganizationalObjectViewTestCase):
             f"{tenant_groups[2].pk},Tenant Group 9,Ninth group9",
         )
 
-        cls.bulk_edit_data = {
+        cls.bulk_edit_form_data = {
             "description": "New description",
         }
 
@@ -120,3 +120,7 @@ class TenantTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             f"{tenants[1].pk},Tenant 8,New description 8",
             f"{tenants[2].pk},Tenant 9,New description 9",
         )
+
+        cls.bulk_edit_form_data = {
+            "description": "Updated tenant",
+        }

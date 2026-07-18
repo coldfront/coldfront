@@ -7,9 +7,10 @@ import logging
 from collections import Counter
 
 from django.contrib import messages
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRel
+from django.core.exceptions import FieldDoesNotExist, ImproperlyConfigured, ObjectDoesNotExist, ValidationError
 from django.db import router, transaction
-from django.db.models import ProtectedError, RestrictedError
+from django.db.models import ManyToManyField, ManyToManyRel, ProtectedError, RestrictedError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.safestring import mark_safe
@@ -31,7 +32,7 @@ from coldfront.utils.strings import title
 from coldfront.views import get_action_url, handle_protectederror
 from coldfront.views.htmx import htmx_partial
 from coldfront.views.mixins import GetReturnURLMixin
-from coldfront.views.object_actions import AddObject, BulkDelete, BulkExport, BulkImport
+from coldfront.views.object_actions import AddObject, BulkDelete, BulkEdit, BulkExport, BulkImport
 
 from .base import BaseMultiObjectView
 from .mixins import ActionsMixin, TableMixin
@@ -51,7 +52,7 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
     filterset = None
     filterset_form = None
     # actions = (AddObject, BulkImport, BulkExport, BulkEdit, BulkRename, BulkDelete)
-    actions = (AddObject, BulkImport, BulkExport, BulkDelete)
+    actions = (AddObject, BulkImport, BulkExport, BulkEdit, BulkDelete)
 
     def get_required_permission(self):
         return get_permission_for_model(self.queryset.model, "view")
@@ -537,6 +538,203 @@ class BulkDeleteView(GetReturnURLMixin, BaseMultiObjectView):
         if not table.rows:
             messages.warning(
                 request, _("No {object_type} were selected.").format(object_type=model._meta.verbose_name_plural)
+            )
+            return redirect(self.get_return_url(request))
+
+        return render(
+            request,
+            self.template_name,
+            {
+                "model": model,
+                "form": form,
+                "table": table,
+                "return_url": self.get_return_url(request),
+                **self.get_extra_context(request),
+            },
+        )
+
+
+class BulkEditView(GetReturnURLMixin, BaseMultiObjectView):
+    """
+    Edit objects in bulk.
+
+    Attributes:
+        filterset: FilterSet to apply when editing by QuerySet
+        form: The form class used to edit objects in bulk
+    """
+
+    template_name = "generic/bulk_edit.html"
+    filterset = None
+    form = None
+
+    def get_required_permission(self):
+        return get_permission_for_model(self.queryset.model, "change")
+
+    def post_save_operations(self, form, obj):
+        """
+        This method is called for each object in _update_objects. Override to perform additional object-level
+        operations that are specific to a particular ModelForm.
+        """
+        # Add/remove tags
+        if form.cleaned_data.get("add_tags", None):
+            obj.tags.add(*form.cleaned_data["add_tags"])
+        if form.cleaned_data.get("remove_tags", None):
+            obj.tags.remove(*form.cleaned_data["remove_tags"])
+
+    def _update_objects(self, form, request):
+        custom_fields = getattr(form, "custom_fields", {})
+        standard_fields = [field for field in form.fields if field not in list(custom_fields) + ["pk"]]
+        nullified_fields = request.POST.getlist("_nullify")
+        updated_objects = []
+        model_fields = {}
+        m2m_fields = {}
+
+        # Build list of model fields and m2m fields for later iteration
+        for name in standard_fields:
+            try:
+                model_field = self.queryset.model._meta.get_field(name)
+                if isinstance(model_field, (ManyToManyField, ManyToManyRel)):
+                    m2m_fields[name] = model_field
+                elif isinstance(model_field, GenericRel):
+                    # Ignore generic relations (these may be used for other purposes in the form)
+                    continue
+                else:
+                    model_fields[name] = model_field
+            except FieldDoesNotExist:
+                # This form field is used to modify a field rather than set its value directly
+                model_fields[name] = None
+
+        for obj in self.queryset.filter(pk__in=form.cleaned_data["pk"]):
+            # Take a snapshot of change-logged models
+            if hasattr(obj, "snapshot"):
+                obj.snapshot()
+
+            # Attach the changelog message (if any) to the object
+            obj._changelog_message = form.cleaned_data.get("changelog_message")
+
+            # Update standard fields. If a field is listed in _nullify, delete its value.
+            for name, model_field in model_fields.items():
+                # Handle nullification
+                if name in form.nullable_fields and name in nullified_fields:
+                    if type(model_field) is GenericForeignKey:
+                        setattr(obj, name, None)
+                    else:
+                        setattr(obj, name, None if model_field.null else "")
+                # Normal fields
+                elif name in form.changed_data:
+                    setattr(obj, name, form.cleaned_data[name])
+
+            # Update custom fields
+            for name, customfield in custom_fields.items():
+                if not name.startswith("cf_"):
+                    raise ImproperlyConfigured(
+                        _("Custom field form field name must begin with 'cf_': {name}").format(name=name)
+                    )
+                cf_name = name[3:]  # Strip cf_ prefix
+                if name in form.nullable_fields and name in nullified_fields:
+                    obj.custom_field_data[cf_name] = None
+                elif name in form.changed_data:
+                    obj.custom_field_data[cf_name] = customfield.serialize(form.cleaned_data[name])
+
+            # Store M2M values for validation
+            obj._m2m_values = {}
+            for field in obj._meta.local_many_to_many:
+                if value := form.cleaned_data.get(field.name):
+                    obj._m2m_values[field.name] = list(value)
+                elif field.name in nullified_fields:
+                    obj._m2m_values[field.name] = []
+
+            obj.full_clean()
+            obj.save()
+            updated_objects.append(obj)
+
+            # Handle M2M fields after save
+            for name, m2m_field in m2m_fields.items():
+                if name in form.nullable_fields and name in nullified_fields:
+                    getattr(obj, name).clear()
+                elif form.cleaned_data[name]:
+                    getattr(obj, name).set(form.cleaned_data[name])
+
+            self.post_save_operations(form, obj)
+
+        # Rebuild the tree for MPTT models
+        if issubclass(self.queryset.model, MPTTModel):
+            self.queryset.model.objects.rebuild()
+
+        return updated_objects
+
+    #
+    # Request handlers
+    #
+
+    def get(self, request):
+        return redirect(self.get_return_url(request))
+
+    def post(self, request, **kwargs):
+        logger = logging.getLogger("coldfront.views.BulkEditView")
+        model = self.queryset.model
+
+        # If we are editing *all* objects in the queryset, replace the PK list with all matched objects.
+        if request.POST.get("_all") and self.filterset is not None:
+            pk_list = self.filterset(request.GET, self.queryset.values_list("pk", flat=True), request=request).qs
+        else:
+            pk_list = request.POST.getlist("pk")
+
+        # Include the PK list as initial data for the form
+        initial_data = {"pk": pk_list}
+
+        # Check for other contextual data needed for the form. We avoid passing all of request.GET because the
+        # filter values will conflict with the bulk edit form fields.
+        # TODO: Find a better way to accomplish this
+        if "device" in request.GET:
+            initial_data["device"] = request.GET.get("device")
+        elif "device_type" in request.GET:
+            initial_data["device_type"] = request.GET.get("device_type")
+        elif "virtual_machine" in request.GET:
+            initial_data["virtual_machine"] = request.GET.get("virtual_machine")
+
+        post_data = request.POST.copy()
+        post_data.setlist("pk", pk_list)
+        form = self.form(post_data, initial=initial_data)
+        restrict_form_fields(form, request.user)
+
+        if "_apply" in request.POST:
+            if form.is_valid():
+                logger.debug("Form validation was successful")
+
+                try:
+                    with transaction.atomic(using=router.db_for_write(model)):
+                        updated_objects = self._update_objects(form, request)
+
+                        # Enforce object-level permissions
+                        object_count = self.queryset.filter(pk__in=[obj.pk for obj in updated_objects]).count()
+                        if object_count != len(updated_objects):
+                            raise PermissionsViolation
+
+                    msg = _("Updated {count} {object_type}").format(
+                        count=len(updated_objects),
+                        object_type=model._meta.verbose_name_plural,
+                    )
+                    logger.info(msg)
+
+                    messages.success(self.request, msg)
+                    return redirect(self.get_return_url(request))
+
+                except (AbortRequest, PermissionsViolation, ValidationError) as e:
+                    err_messages = e.messages if type(e) is ValidationError else [e.message]
+                    for msg in err_messages:
+                        logger.debug(msg)
+                        form.add_error(None, msg)
+
+            else:
+                logger.debug("Form validation failed")
+
+        # Retrieve objects being edited
+        table = self.table(self.queryset.filter(pk__in=pk_list), orderable=False)
+        if not table.rows:
+            messages.warning(
+                request,
+                _("No {object_type} were selected.").format(object_type=model._meta.verbose_name_plural),
             )
             return redirect(self.get_return_url(request))
 

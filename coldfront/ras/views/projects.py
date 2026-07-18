@@ -75,6 +75,14 @@ class ProjectBulkImportView(generic.BulkImportView):
     model_form = forms.ProjectImportForm
 
 
+@register_model_view(Project, "bulk_edit", path="edit", detail=False)
+class ProjectBulkEditView(generic.BulkEditView):
+    queryset = Project.objects.all()
+    filterset = filtersets.ProjectFilterSet
+    table = tables.ProjectTable
+    form = forms.ProjectBulkEditForm
+
+
 @register_model_view(Project, "bulk_delete", path="delete", detail=False)
 class ProjectBulkDeleteView(generic.BulkDeleteView):
     queryset = Project.objects.all()
@@ -190,6 +198,14 @@ class ProjectUserBulkImportView(generic.BulkImportView):
         for pu in saved_objects:
             _sync_add_member(pu.project, pu.user)
         return saved_objects
+
+
+@register_model_view(ProjectUser, "bulk_edit", path="edit", detail=False)
+class ProjectUserBulkEditView(generic.BulkEditView):
+    queryset = ProjectUser.objects.all()
+    filterset = filtersets.ProjectUserFilterSet
+    table = tables.ProjectUserTable
+    form = forms.ProjectUserBulkEditForm
 
 
 @register_model_view(ProjectUser, "bulk_delete", path="delete", detail=False)
