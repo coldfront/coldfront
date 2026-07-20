@@ -16,7 +16,8 @@ class SlurmConfig(AppConfig):
 
         register_models(*self.get_models())
 
-        # Import listeners to register ViewFlow callbacks
+        # Import views (including cross-app views) and listeners
         from . import (
             listeners,  # noqa: F401
+            views,  # noqa: F401
         )

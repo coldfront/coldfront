@@ -6,6 +6,7 @@
 from django.http import HttpResponse
 from django.utils.translation import gettext_lazy as _
 
+from coldfront.ras.models import Allocation
 from coldfront.registry import register_model_view
 from coldfront.slurm import filtersets, forms, tables
 from coldfront.slurm.dump import generate_cluster_dump
@@ -20,7 +21,7 @@ from coldfront.slurm.models import (
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
-from coldfront.views.utils import ViewTab
+from coldfront.views.utils import ViewTab, get_action_url
 
 #
 # Slurm QOS
@@ -395,3 +396,29 @@ class SlurmUserBulkDeleteView(generic.BulkDeleteView):
     queryset = SlurmUser.objects.all()
     filterset = filtersets.SlurmUserFilterSet
     table = tables.SlurmUserTable
+
+
+@register_model_view(Allocation, "slurm-association", path="slurm-association")
+class AllocationSlurmAssociationView(generic.ObjectView):
+    queryset = Allocation.objects.all()
+    template_name = "slurm/allocation/slurm_association.html"
+    tab = ViewTab(
+        label=_("Slurm Association"),
+        visible=lambda obj: obj.slurm_associations.exists(),
+        permission="slurm.view_slurmassociation",
+        weight=500,
+    )
+
+    def get_permitted_actions(self, request, model=None, actions=None):
+        # Actions target the SlurmAssociation, not the Allocation
+        from coldfront.slurm.models import SlurmAssociation
+
+        return super().get_permitted_actions(request, model=SlurmAssociation, actions=actions)
+
+    def get_extra_context(self, request, instance):
+        slurm_association = instance.slurm_associations.first()
+        return_url = get_action_url(instance, action="slurm-association", kwargs={"pk": instance.pk})
+        return {
+            "slurm_association": slurm_association,
+            "return_url": return_url,
+        }

@@ -21,6 +21,9 @@ class StorageConfig(AppConfig):
 
         discover_backends()
 
-        # Register ViewFlow callbacks and signals
-        import coldfront.storage.listeners  # noqa
-        import coldfront.storage.signals  # noqa
+        # Import views (including cross-app views) and register callbacks/signals
+        from . import (
+            listeners,  # noqa: F401
+            signals,  # noqa: F401
+            views,  # noqa: F401
+        )

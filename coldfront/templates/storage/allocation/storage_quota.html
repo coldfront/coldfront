@@ -1,0 +1,107 @@
+{% extends 'generic/object.html' %}
+{% load buttons %}
+{% load i18n %}
+
+{% block control-buttons %}
+  {% if storage_quota %}
+    {% action_buttons actions storage_quota return_url=return_url %}
+  {% endif %}
+{% endblock control-buttons %}
+
+{% block content %}
+  {% if storage_quota %}
+    <c-layout.panels>
+      <c-slot name="left">
+        <c-card.fields header="{% trans 'Storage Quota' %}" only>
+          <c-card.fields.item label="{% trans 'Allocation' %}">
+            {{ storage_quota.allocation|linkify }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Storage Resource' %}">
+            {{ storage_quota.storage|linkify }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Path' %}">
+            {{ storage_quota.path }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Owning User' %}">
+            {{ storage_quota.owning_user }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Owning Group' %}">
+            {{ storage_quota.owning_group }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Path Mode' %}">
+            {{ storage_quota.path_mode }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Clusters' %}">
+            {% if storage_quota.clusters.all %}
+              {% for cluster in storage_quota.clusters.all %}
+                {{ cluster.name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% else %}
+              {% trans 'All clusters of storage resource' %}
+            {% endif %}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Hard Limit' %}">
+            {{ storage_quota.hard_limit|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Hard Limit Requested' %}">
+            {{ storage_quota.hard_limit_requested|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Soft Limit' %}">
+            {{ storage_quota.soft_limit|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Hard Limit Files' %}">
+            {{ storage_quota.hard_limit_files|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Soft Limit Files' %}">
+            {{ storage_quota.soft_limit_files|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Grace Period' %}">
+            {{ storage_quota.grace_period|placeholder }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Share Type' %}">
+            {{ storage_quota.share_type }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Used' %}">
+            {{ storage_quota.used|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Used Files' %}">
+            {{ storage_quota.used_files|naturalsize }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'State' %}">
+            {{ storage_quota.state|placeholder }}
+          </c-card.fields.item>
+
+          <c-card.fields.item label="{% trans 'Snapshot Policy' %}">
+            {{ storage_quota.snapshot_policy|placeholder }}
+          </c-card.fields.item>
+        </c-card.fields>
+
+        <c-card.tags :object="storage_quota" only />
+      </c-slot>
+
+      <c-slot name="right">
+        <c-card.custom_fields :object="storage_quota" only />
+      </c-slot>
+    </c-layout.panels>
+  {% else %}
+    <c-card.alert header="{% trans 'No Storage Quota' %}">
+      {% trans 'This allocation does not have an associated storage quota.' %}
+    </c-card.alert>
+  {% endif %}
+{% endblock %}

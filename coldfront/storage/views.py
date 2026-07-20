@@ -3,6 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from django.utils.translation import gettext_lazy as _
+
+from coldfront.ras.models import Allocation
 from coldfront.ras.views import AllocatableResourceRequestView
 from coldfront.registry import register_model_view
 from coldfront.storage import filtersets, forms, tables
@@ -16,6 +19,7 @@ from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
+from coldfront.views.utils import ViewTab, get_action_url
 
 #
 # Storage Resources
@@ -253,3 +257,29 @@ class StorageSnapshotPolicyBulkDeleteView(generic.BulkDeleteView):
     queryset = StorageSnapshotPolicy.objects.all()
     filterset = filtersets.StorageSnapshotPolicyFilterSet
     table = tables.StorageSnapshotPolicyTable
+
+
+@register_model_view(Allocation, "storage-quota", path="storage-quota")
+class AllocationStorageQuotaView(generic.ObjectView):
+    queryset = Allocation.objects.all()
+    template_name = "storage/allocation/storage_quota.html"
+    tab = ViewTab(
+        label=_("Storage Quota"),
+        visible=lambda obj: obj.storage_quotas.exists(),
+        permission="storage.view_storagequota",
+        weight=400,
+    )
+
+    def get_permitted_actions(self, request, model=None, actions=None):
+        # Actions target the StorageQuota, not the Allocation
+        from coldfront.storage.models import StorageQuota
+
+        return super().get_permitted_actions(request, model=StorageQuota, actions=actions)
+
+    def get_extra_context(self, request, instance):
+        storage_quota = instance.storage_quotas.first()
+        return_url = get_action_url(instance, action="storage-quota", kwargs={"pk": instance.pk})
+        return {
+            "storage_quota": storage_quota,
+            "return_url": return_url,
+        }
