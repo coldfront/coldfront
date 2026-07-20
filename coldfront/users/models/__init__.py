@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .permissions import ObjectPermission
+from .preferences import UserConfig
 from .tokens import Token
 from .users import Group, GroupManager, User, UserManager
 
@@ -13,4 +14,5 @@ __all__ = (
     "GroupManager",
     "ObjectPermission",
     "Token",
+    "UserConfig",
 )

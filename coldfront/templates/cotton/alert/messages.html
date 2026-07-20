@@ -1,20 +1,14 @@
+<div id="django-messages" class="toast-container position-fixed bottom-0 end-0 p-3" hx-swap-oob="true">
+
 {# Non-Field Form Errors #}
 {% if form and form.non_field_errors %}
   {% for error in form.non_field_errors.get_json_data %}
-    <div class="alert alert-danger alert-dismissible" role="alert">
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true"></span>
-      </button>
-      {{ error.message }}
-    </div>
+    <c-alert.toast status="danger" title="Error" :message="error.message" />
   {% endfor %}
 {% endif %}
 
 {% for message in messages %}
-  <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert">
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true"></span>
-    </button>
-    {{ message }}
-  </div>
+    <c-alert.toast status="{{message.level_tag|status_from_tag}}" :message="message" />
 {% endfor %}
+
+</div>

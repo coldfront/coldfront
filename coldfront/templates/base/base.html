@@ -46,5 +46,8 @@
     {% block layout %}{% endblock %}
 
     {% block javascript %} {% endblock %}
+
+    {# Toast Alerts #}
+    <c-alert.messages :messages="messages" :form="form" only />
 </body>
 </html>

@@ -8,9 +8,42 @@ from django.utils import timezone
 from django.utils.timezone import localtime
 
 __all__ = (
+    "deepmerge",
+    "flatten_dict",
     "get_config_value_ci",
     "shallow_compare_dict",
 )
+
+
+def deepmerge(original, new):
+    """
+    Deep merge two dictionaries (new into original) and return a new dict.
+    """
+    merged = dict(original)
+    for key, val in new.items():
+        if key in original and isinstance(original[key], dict) and val and isinstance(val, dict):
+            merged[key] = deepmerge(original[key], val)
+        else:
+            merged[key] = val
+    return merged
+
+
+def flatten_dict(d, prefix="", separator="."):
+    """
+    Flatten nested dictionaries into a single level by joining key names with a separator.
+
+    :param d: The dictionary to be flattened
+    :param prefix: Initial prefix (if any)
+    :param separator: The character to use when concatenating key names
+    """
+    ret = {}
+    for k, v in d.items():
+        key = separator.join([prefix, k]) if prefix else k
+        if type(v) is dict:
+            ret.update(flatten_dict(v, prefix=key, separator=separator))
+        else:
+            ret[key] = v
+    return ret
 
 
 def get_config_value_ci(config_dict, key, default=None):

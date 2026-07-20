@@ -9,6 +9,10 @@ declare global {
   }
 }
 
+type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
+type ReqData = URLSearchParams | Dict | undefined | unknown;
+type SelectedOption = { name: string; options: string[] };
+
 /**
  * Generator that yields HTML elements by CSS query selector
  * @param query - CSS query selector string
@@ -60,6 +64,80 @@ export function getElement<E extends HTMLElement>(id: string): Nullable<E> {
  * @param replacement replacement substring with which `pattern` matches will be replaced.
  * @returns processed version of `input`.
  */
+export function hasError<E extends ErrorBase = ErrorBase>(
+  data: Record<string, unknown>
+): data is E {
+  return 'error' in data;
+}
+
+export async function apiRequest<R extends Dict, D extends ReqData = undefined>(
+  url: string,
+  method: Method,
+  data?: D
+): Promise<APIResponse<R>> {
+  const token = window.CSRF_TOKEN;
+  const headers = new Headers({ 'X-CSRFToken': token });
+
+  let body;
+  if (typeof data !== 'undefined') {
+    body = JSON.stringify(data);
+    headers.set('content-type', 'application/json');
+  }
+
+  const res = await fetch(url, {
+    method,
+    body,
+    headers,
+    credentials: 'same-origin',
+  });
+  const contentType = res.headers.get('Content-Type');
+  if (typeof contentType === 'string' && contentType.includes('text')) {
+    const error = await res.text();
+    return { error } as ErrorBase;
+  }
+  const json = (await res.json()) as R | APIError;
+  if (!res.ok && Array.isArray(json)) {
+    const error = json.join('\n');
+    return { error } as ErrorBase;
+  } else if (!res.ok && 'detail' in json) {
+    return { error: json.detail } as ErrorBase;
+  }
+  return json;
+}
+
+export async function apiPatch<R extends Dict, D extends ReqData = Dict>(
+  url: string,
+  data: D
+): Promise<APIResponse<R>> {
+  return await apiRequest(url, 'PATCH', data);
+}
+
+/**
+ * Iterate through a select element's options and return an array of options that are selected.
+ *
+ * @param base Select element.
+ * @param selector Optionally specify a selector. 'select' by default.
+ * @returns Array of selected options.
+ */
+export function getSelectedOptions<E extends HTMLElement>(
+  base: E,
+  selector: string = 'select'
+): SelectedOption[] {
+  let selected = [] as SelectedOption[];
+  for (const element of base.querySelectorAll<HTMLSelectElement>(selector)) {
+    if (element !== null) {
+      const select = { name: element.name, options: [] } as SelectedOption;
+      for (const option of element.options) {
+        if (option.selected) {
+          select.options.push(option.value);
+        }
+      }
+      selected = [...selected, select];
+    }
+  }
+  return selected;
+}
+
 export function replaceAll(
   input: string,
   pattern: string | RegExp,

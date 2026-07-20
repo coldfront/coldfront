@@ -14,6 +14,7 @@ import { initTableConfig } from './tableConfig';
 import { initButtons } from './buttons';
 import { initBootstrap } from './bs';
 import { initNavLinks } from './sidenav';
+import { initMessages } from './messages';
 import { initTheme } from './theme';
 import { initClipboard } from './clipboard';
 import { initObjectSelector } from './objectSelector';
@@ -23,6 +24,7 @@ function initDocument(): void {
   for (const init of [
     initBootstrap,
     initTheme,
+    initMessages,
     initDateSelector,
     initForm,
     initSelects,

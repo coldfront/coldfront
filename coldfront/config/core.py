@@ -44,6 +44,8 @@ FIELD_CHOICES = ENV.dict("FIELD_CHOICES", cast={"value": parse_choices_from_env}
 AUTO_SLUG_FUNC = ENV.str("AUTO_SLUG_FUNC", default="coldfront.models.utils.auto_generate_slug")
 ALLOCATION_WORKFLOW = ENV.str("ALLOCATION_WORKFLOW", default="coldfront.ras.flows.AllocationStatusFlow")
 
+DEFAULT_USER_PREFERENCES = ENV.dict("DEFAULT_PERMISSIONS", default={})
+
 DEFAULT_PERMISSIONS = ENV.dict(
     "DEFAULT_PERMISSIONS",
     default={

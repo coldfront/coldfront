@@ -16,6 +16,7 @@ router.register("users", views.UserViewSet)
 router.register("groups", views.GroupViewSet)
 router.register("tokens", views.TokenViewSet)
 router.register("permissions", views.ObjectPermissionViewSet)
+router.register("config", views.UserConfigViewSet, basename="userconfig")
 
 app_name = "users-api"
 urlpatterns = [

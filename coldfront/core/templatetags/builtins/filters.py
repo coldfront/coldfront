@@ -242,3 +242,33 @@ def naturalsize(value):
         return humanize.naturalsize(value)
 
     return placeholder(value)
+
+
+@register.filter
+def status_from_tag(tag: str = "info") -> str:
+    """
+    Determine Bootstrap theme status/level from Django's Message.level_tag.
+    """
+    status_map = {
+        "warning": "warning",
+        "success": "success",
+        "error": "danger",
+        "danger": "danger",
+        "debug": "info",
+        "info": "info",
+    }
+    return status_map.get(tag.lower(), "info")
+
+
+@register.filter
+def icon_from_status(status: str = "info") -> str:
+    """
+    Determine icon class name from Bootstrap theme status/level.
+    """
+    icon_map = {
+        "warning": "fa-solid fa-circle-exclamation",
+        "success": "fa-solid fa-check-circle",
+        "info": "fa-solid fa-circle-info",
+        "danger": "fa-solid fa-circle-exclamation",
+    }
+    return icon_map.get(status.lower(), "information")

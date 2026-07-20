@@ -8,6 +8,7 @@ import { initClipboard } from './clipboard';
 import { initQuickAdd } from './quickAdd';
 import { initSelects } from './select';
 import { initObjectSelector } from './objectSelector';
+import { initTableConfig } from './tableConfig';
 
 function initDepedencies(): void {
   initBootstrap();
@@ -16,6 +17,7 @@ function initDepedencies(): void {
   initObjectSelector();
   initClipboard();
   initQuickAdd();
+  initTableConfig();
 }
 
 /**

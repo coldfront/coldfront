@@ -3,13 +3,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import logging
+
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView, LogoutView
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.http import urlencode
@@ -55,6 +58,23 @@ class ColdFrontLoginView(LoginView):
             "url": f"{url}?{urlencode(params)}",
         }
 
+    def form_valid(self, form):
+        """Security check complete. Log the user in."""
+        logger = logging.getLogger("coldfront.auth.login")
+        auth_login(self.request, form.get_user())
+
+        logger.info(f"User {self.request.user} successfully authenticated")
+        messages.success(self.request, _("Logged in as {user}.").format(user=self.request.user))
+
+        # Ensure the user has a UserConfig defined. (This should normally be handled by
+        # create_userconfig() on user creation.)
+        if not hasattr(self.request.user, "config"):
+            from coldfront.users.models import UserConfig
+
+            UserConfig(user=self.request.user, data=settings.DEFAULT_USER_PREFERENCES).save()
+
+        return HttpResponseRedirect(self.get_success_url())
+
     def get_auth_backends(self):
         """
         Return a list of configured auth backends from SOCIAL_AUTH settings.
@@ -86,7 +106,10 @@ class HtmxLogoutView(LogoutView):
     """
 
     def post(self, request, *args, **kwargs):
+        logger = logging.getLogger("coldfront.auth.logout")
         auth_logout(request)
+        logger.info(f"User {request.user} has logged out")
+        messages.info(request, _("You have logged out."))
         redirect_to = self.get_success_url()
         if redirect_to != request.get_full_path():
             response = HttpResponse(status=204)

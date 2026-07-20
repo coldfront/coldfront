@@ -162,13 +162,31 @@ class BaseTable(tables.Table):
                 # If an ordering has been specified as a query parameter, save it as the
                 # user's preferred ordering for this table.
                 ordering = request.GET.getlist(self.prefixed_order_by_field)
-                # request.user.config.set(f"tables.{self.name}.ordering", ordering, commit=True)
+                if request.user.is_authenticated:
+                    user_config = getattr(request.user, "config", None)
+                    if user_config is not None:
+                        user_config.set(f"tables.{self.name}.ordering", ordering, commit=True)
             else:
                 pass
                 # If the ordering has been set to none (empty), clear any existing preference.
-                # request.user.config.clear(f"tables.{self.name}.ordering", commit=True)
+                if request.user.is_authenticated:
+                    user_config = getattr(request.user, "config", None)
+                    if user_config is not None:
+                        user_config.clear(f"tables.{self.name}.ordering", commit=True)
 
-        # Fall back to the default columns & ordering
+        # If no ordering was specified in the request, check for a saved user preference
+        if ordering is None and request.user.is_authenticated:
+            user_config = getattr(request.user, "config", None)
+            if user_config is not None:
+                ordering = user_config.get(f"tables.{self.name}.ordering")
+
+        # Check for a saved columns preference
+        if columns is None and request.user.is_authenticated:
+            user_config = getattr(request.user, "config", None)
+            if user_config is not None:
+                columns = user_config.get(f"tables.{self.name}.columns")
+
+        # Fall back to the application-wide defaults
         if columns is None and hasattr(settings, "DEFAULT_USER_PREFERENCES"):
             columns = settings.DEFAULT_USER_PREFERENCES.get("tables", {}).get(self.name, {}).get("columns")
         if columns is None:
