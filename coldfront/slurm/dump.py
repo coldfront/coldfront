@@ -8,10 +8,16 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from coldfront.slurm.choices import (
+    SlurmAdminLevelChoices,
+    SlurmPartitionStateChoices,
+    SlurmPreemptModeChoices,
+)
 from coldfront.slurm.models import (
     SlurmAssociation,
     SlurmCluster,
     SlurmPartition,
+    SlurmQOS,
     SlurmUser,
 )
 
@@ -36,14 +42,23 @@ def generate_cluster_dump(cluster):
     """
     lines = []
 
+    # -- QOS definitions (global to slurmdbd) --
+    qos_objects = list(SlurmQOS.objects.all())
+    for qos in qos_objects:
+        qos_line = _format_qos(qos)
+        if qos_line:
+            lines.append(qos_line)
+    if qos_objects:
+        lines.append("")
+
     # -- Cluster header --
     cluster_line = _format_cluster(cluster)
     lines.append(cluster_line)
     lines.append("")
 
-    # -- Root account --
+    # -- Root user (slurm default administrator) --
     lines.append("Parent - 'root'")
-    lines.append("Account - 'root':Fairshare=1:QOS+=normal")
+    lines.append("User - 'root':DefaultAccount='root':AdminLevel='Administrator':Fairshare=1")
     lines.append("")
 
     # -- SlurmAccounts with active associations --
@@ -82,17 +97,61 @@ def _format_cluster(cluster):
     """Format the Cluster header line."""
     parts = [f"Cluster - '{cluster.name}'"]
 
-    # QOS list
-    qos_names = _get_qos_names(cluster.qos_list.all())
-    if qos_names:
-        parts.append(f"QOS+={','.join(qos_names)}")
+    # Default QOS
+    if cluster.default_qos:
+        parts.append(f"DefaultQOS='{cluster.default_qos.name}'")
 
     # Fairshare
     parts.append(f"Fairshare={cluster.fairshare}")
 
-    # Default QOS
-    if cluster.default_qos:
-        parts.append(f"DefaultQOS='{cluster.default_qos.name}'")
+    # QOS list — absolute assignment since cluster is the root
+    qos_names = _get_qos_names(cluster.qos_list.all())
+    if qos_names:
+        parts.append(f"QOS='{','.join(qos_names)}'")
+
+    return ":".join(parts)
+
+
+def _format_qos(qos: SlurmQOS):
+    """Format a QOS definition line."""
+    parts = [f"QOS - '{qos.name}'"]
+
+    # Description (inherited from OrganizationalModel)
+    if qos.description:
+        parts.append(f"Description='{qos.description}'")
+
+    # Priority
+    if qos.priority is not None:
+        parts.append(f"Priority={qos.priority}")
+
+    # MaxSubmitJobsPU
+    if qos.max_submit_jobs_per_user is not None:
+        parts.append(f"MaxSubmitJobsPU={qos.max_submit_jobs_per_user}")
+
+    # MaxJobsPU
+    if qos.max_jobs_per_user is not None:
+        parts.append(f"MaxJobsPU={qos.max_jobs_per_user}")
+
+    # MaxSubmitJobsPA
+    if qos.max_submit_jobs_per_account is not None:
+        parts.append(f"MaxSubmitJobsPA={qos.max_submit_jobs_per_account}")
+
+    # MaxJobsPA
+    if qos.max_jobs_per_account is not None:
+        parts.append(f"MaxJobsPA={qos.max_jobs_per_account}")
+
+    # MaxWallDurationPerJob
+    if qos.max_wall_duration_per_job is not None:
+        seconds = int(qos.max_wall_duration_per_job.total_seconds())
+        parts.append(f"MaxWallDurationPerJob={seconds}")
+
+    # LimitFactor
+    if qos.limit_factor is not None:
+        parts.append(f"LimitFactor={qos.limit_factor}")
+
+    # GraceTime
+    if qos.grace_time is not None:
+        parts.append(f"GraceTime={qos.grace_time}")
 
     return ":".join(parts)
 
@@ -105,10 +164,12 @@ def _format_account(account):
     if account.fairshare is not None:
         parts.append(f"Fairshare={account.fairshare}")
 
-    # QOS list
-    qos_names = _get_qos_names(account.qos_list.all())
-    if qos_names:
-        parts.append(f"QOS+={','.join(qos_names)}")
+    # QOS add/remove — combined +/- format
+    qos_add_names = _get_qos_names(account.qos_add.all())
+    qos_remove_names = _get_qos_names(account.qos_remove.all())
+    if qos_add_names or qos_remove_names:
+        qos_items = [f"+{n}" for n in qos_add_names] + [f"-{n}" for n in qos_remove_names]
+        parts.append(f"QOS='{','.join(qos_items)}'")
 
     return ":".join(parts)
 
@@ -133,9 +194,9 @@ def _format_user_lines(assoc, cluster):
     if resource is None:
         return lines
 
-    # Get QOS list from partition or cluster
+    # Get allowed QOS list from partition or cluster
     if isinstance(resource, SlurmPartition):
-        qos_list = resource.qos_list.all()
+        qos_list = resource.allow_qos.all()
         partition_name = resource.name
     elif isinstance(resource, SlurmCluster):
         qos_list = resource.qos_list.all()
@@ -183,9 +244,24 @@ def _format_user_lines(assoc, cluster):
         # Fairshare
         parts.append(f"Fairshare={fairshare_value}")
 
-        # QOS list
-        if qos_names:
-            parts.append(f"QOS+={','.join(qos_names)}")
+        # Default QOS from the association
+        if assoc.default_qos:
+            parts.append(f"DefaultQOS='{assoc.default_qos.name}'")
+
+        # QOS list — combine partition allow_qos with association add/remove
+        qos_add_names = _get_qos_names(assoc.qos_add.all())
+        qos_remove_names = _get_qos_names(assoc.qos_remove.all())
+
+        if qos_names or qos_add_names or qos_remove_names:
+            # Build combined QOS string with + prefix for add, - prefix for remove
+            qos_parts = []
+            for qn in qos_names:
+                qos_parts.append(f"+{qn}")
+            for qn in qos_add_names:
+                qos_parts.append(f"+{qn}")
+            for qn in qos_remove_names:
+                qos_parts.append(f"-{qn}")
+            parts.append(f"QOS='{','.join(qos_parts)}'")
 
         # Limits from association
         limits = _format_limits(assoc)
@@ -195,7 +271,15 @@ def _format_user_lines(assoc, cluster):
         # Admin level and default WCKey from SlurmUser
         if slurm_user:
             if slurm_user.admin_level and slurm_user.admin_level > 0:
-                parts.append(f"AdminLevel='{slurm_user.admin_level}'")
+                # Map numeric admin level to Slurm dump string format
+                admin_map = {
+                    SlurmAdminLevelChoices.LEVEL_NONE: "None",
+                    SlurmAdminLevelChoices.LEVEL_OPERATOR: "Operator",
+                    SlurmAdminLevelChoices.LEVEL_ADMIN: "Administrator",
+                }
+                admin_str = admin_map.get(slurm_user.admin_level, "")
+                if admin_str:
+                    parts.append(f"AdminLevel='{admin_str}'")
             if slurm_user.default_wckey:
                 parts.append(f"DefaultWCKey='{slurm_user.default_wckey}'")
 
@@ -530,13 +614,21 @@ def _flush_partition_buffer(
     pp.default_time = merged_defaults.get("DefaultTime", "")
     pp.max_time = merged_defaults.get("MaxTime", "")
 
-    # State
+    # State — validate against SlurmPartitionStateChoices
     state_str = merged_defaults.get("State", "UP").upper()
-    if state_str in ("UP", "DOWN", "DRAIN", "INACTIVE"):
+    if state_str in SlurmPartitionStateChoices.values():
+        pp.state = state_str
+    elif state_str:
+        # Warn about invalid state but accept it
         pp.state = state_str
 
-    # PreemptMode
-    pp.preempt_mode = merged_defaults.get("PreemptMode", "")
+    # PreemptMode — validate against SlurmPreemptModeChoices
+    preempt_str = merged_defaults.get("PreemptMode", "").upper()
+    if preempt_str and preempt_str in SlurmPreemptModeChoices.values():
+        pp.preempt_mode = preempt_str
+    elif preempt_str:
+        # Warn about invalid preempt mode but accept it
+        pp.preempt_mode = preempt_str
 
     # DefMemPerCPU
     def_mem_str = merged_defaults.get("DefMemPerCPU", "")
@@ -547,7 +639,7 @@ def _flush_partition_buffer(
             pass
 
     # QOS references
-    pp.allow_qos = merged_defaults.get("AllowQos", "")
+    pp.allow_qos = merged_defaults.get("AllowQOS", "")
     pp.qos = merged_defaults.get("QOS", "")
 
     # Account/Groups references

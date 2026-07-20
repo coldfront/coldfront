@@ -125,7 +125,7 @@ class SlurmPartitionAPITestCase(APIViewTestCases.APIViewTestCase):
                 "priority": 100,
                 "is_default": True,
                 "state": "UP",
-                "preempt_mode": "off",
+                "preempt_mode": "OFF",
                 "def_mem_per_cpu": 2800,
                 "tags": [t.pk for t in tags],
             },
@@ -192,6 +192,8 @@ class SlurmAssociationAPITestCase(APIViewTestCases.APIViewTestCase):
     def setUpTestData(cls):
         cluster = SlurmCluster.objects.create(name="Test Cluster")
         account = SlurmAccount.objects.create(name="Test Account", cluster=cluster)
+        qos1 = SlurmQOS.objects.create(name="high")
+        qos2 = SlurmQOS.objects.create(name="normal")
 
         from django.contrib.contenttypes.models import ContentType
 
@@ -247,6 +249,8 @@ class SlurmAssociationAPITestCase(APIViewTestCases.APIViewTestCase):
                 "allocation": allocation4.pk,
                 "slurm_account": account.pk,
                 "fairshare": 1,
+                "qos_add": [qos1.pk],
+                "qos_remove": [qos2.pk],
                 "tags": [t.pk for t in tags],
             },
         ]

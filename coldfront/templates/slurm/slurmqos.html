@@ -12,6 +12,38 @@
       <c-card.fields.item label="{% trans 'Description' %}">
         {{ object.description|placeholder }}
       </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Priority' %}">
+        {{ object.priority|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Submit Jobs per User' %}">
+        {{ object.max_submit_jobs_per_user|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Jobs per User' %}">
+        {{ object.max_jobs_per_user|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Submit Jobs per Account' %}">
+        {{ object.max_submit_jobs_per_account|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Jobs per Account' %}">
+        {{ object.max_jobs_per_account|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Wall Duration per Job' %}">
+        {{ object.max_wall_duration_per_job|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Limit Factor' %}">
+        {{ object.limit_factor|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Grace Time' %}">
+        {{ object.grace_time|placeholder }}
+      </c-card.fields.item>
     </c-card.fields>
 
     <c-card.tags :object="object" only />

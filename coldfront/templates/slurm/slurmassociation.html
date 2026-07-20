@@ -36,6 +36,34 @@
       <c-card.fields.item label="{% trans 'Max Submit Jobs' %}">
         {{ object.max_submit_jobs|placeholder }}
       </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max TRES per Job' %}">
+        {{ object.max_tres_per_job|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max TRES Minutes per Job' %}">
+        {{ object.max_tres_mins_per_job|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'Max Wall Duration per Job' %}">
+        {{ object.max_wall_duration_per_job|placeholder }}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'QOS Add' %}">
+        {% for qos in object.qos_add.all %}
+            <c-ui.badge link="{{ qos.get_absolute_url }}" :value="qos" />
+        {% empty %}
+            {{ ""|placeholder }}
+        {% endfor %}
+      </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'QOS Remove' %}">
+        {% for qos in object.qos_remove.all %}
+            <c-ui.badge link="{{ qos.get_absolute_url }}" :value="qos" />
+        {% empty %}
+            {{ ""|placeholder }}
+        {% endfor %}
+      </c-card.fields.item>
     </c-card.fields>
 
     <c-card.tags :object="object" only />

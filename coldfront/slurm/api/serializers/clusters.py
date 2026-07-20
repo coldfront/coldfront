@@ -32,6 +32,14 @@ class SlurmQOSSerializer(PrimaryModelSerializer):
             "display",
             "name",
             "description",
+            "priority",
+            "max_submit_jobs_per_user",
+            "max_jobs_per_user",
+            "max_submit_jobs_per_account",
+            "max_jobs_per_account",
+            "max_wall_duration_per_job",
+            "limit_factor",
+            "grace_time",
             "tags",
             "custom_fields",
             "created",
@@ -74,7 +82,8 @@ class SlurmClusterSerializer(AllocatableResourceModelSerializer, PrimaryModelSer
 
 class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelSerializer):
     cluster = NestedSlurmClusterSerializer(nested=True)
-    qos_list = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
+    allow_qos = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
+    qos = NestedSlurmQOSSerializer(nested=True, required=False, allow_null=True, default=None)
     allow_groups = NestedGroupSerializer(nested=True, many=True, required=False)
     allow_accounts = NestedSlurmAccountSerializer(nested=True, many=True, required=False)
 
@@ -109,7 +118,8 @@ class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelS
             "max_tres_mins_per_job",
             "max_wall_duration_per_job",
             "fairshare",
-            "qos_list",
+            "allow_qos",
+            "qos",
             "allow_groups",
             "allow_accounts",
         ]
@@ -130,7 +140,8 @@ class SlurmPartitionSerializer(AllocatableResourceModelSerializer, PrimaryModelS
 
 class SlurmAccountSerializer(PrimaryModelSerializer):
     cluster = NestedSlurmClusterSerializer(nested=True)
-    qos_list = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
+    qos_add = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
+    qos_remove = NestedSlurmQOSSerializer(nested=True, many=True, required=False)
 
     class Meta:
         model = SlurmAccount
@@ -147,7 +158,8 @@ class SlurmAccountSerializer(PrimaryModelSerializer):
             "created",
             "last_updated",
             "fairshare",
-            "qos_list",
+            "qos_add",
+            "qos_remove",
         ]
         brief_fields = ("id", "url", "display", "name", "description")
 
@@ -174,6 +186,8 @@ class SlurmAssociationSerializer(PrimaryModelSerializer):
             "max_tres_per_job",
             "max_tres_mins_per_job",
             "max_wall_duration_per_job",
+            "qos_add",
+            "qos_remove",
             "tags",
             "custom_fields",
             "created",

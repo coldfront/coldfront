@@ -53,11 +53,34 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
-                ("fairshare", models.PositiveIntegerField(blank=True, default=1, verbose_name="fairshare")),
-                ("features", models.JSONField(blank=True, default=list, null=True, verbose_name="features")),
+                (
+                    "fairshare",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        default=1,
+                        help_text="Default fairshare value for this cluster. Used as the root association's shares_raw. All associations under this cluster inherit unless overridden. Maps to Fairshare in the dump format.",
+                        verbose_name="fairshare",
+                    ),
+                ),
+                (
+                    "features",
+                    models.JSONField(
+                        blank=True,
+                        default=list,
+                        help_text="Cluster features (GPU types, etc.) used to describe federated cluster capabilities. When submitting a federated job, --features filters which cluster receives the job.",
+                        null=True,
+                        verbose_name="features",
+                    ),
+                ),
                 (
                     "classification",
-                    models.CharField(blank=True, max_length=50, null=True, verbose_name="classification"),
+                    models.CharField(
+                        blank=True,
+                        help_text="How this machine is classified.",
+                        max_length=50,
+                        null=True,
+                        verbose_name="classification",
+                    ),
                 ),
                 (
                     "tags",
@@ -100,7 +123,13 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=100, verbose_name="name")),
                 (
                     "fairshare",
-                    models.PositiveIntegerField(blank=True, default=None, null=True, verbose_name="fairshare"),
+                    models.PositiveIntegerField(
+                        blank=True,
+                        default=None,
+                        help_text="Account-level fairshare. When set, all user associations under this account inherit via Fairshare=parent in the dump. ",
+                        null=True,
+                        verbose_name="fairshare",
+                    ),
                 ),
                 (
                     "tags",
@@ -141,6 +170,78 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=100, unique=True, verbose_name="name")),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
                 (
+                    "priority",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="QOS priority factor. Higher values increase a job's priority when this QOS is used. Maps to Priority in the dump format.",
+                        null=True,
+                        verbose_name="priority",
+                    ),
+                ),
+                (
+                    "max_submit_jobs_per_user",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of jobs a user can submit with this QOS. Maps to MaxSubmitJobsPU in the dump format.",
+                        null=True,
+                        verbose_name="max submit jobs per user",
+                    ),
+                ),
+                (
+                    "max_jobs_per_user",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of running jobs a user can have with this QOS. Maps to MaxJobsPU in the dump format.",
+                        null=True,
+                        verbose_name="max jobs per user",
+                    ),
+                ),
+                (
+                    "max_submit_jobs_per_account",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of jobs an account can submit with this QOS. Maps to MaxSubmitJobsPA in the dump format.",
+                        null=True,
+                        verbose_name="max submit jobs per account",
+                    ),
+                ),
+                (
+                    "max_jobs_per_account",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of running jobs an account can have with this QOS. Maps to MaxJobsPA in the dump format.",
+                        null=True,
+                        verbose_name="max jobs per account",
+                    ),
+                ),
+                (
+                    "max_wall_duration_per_job",
+                    models.DurationField(
+                        blank=True,
+                        help_text="Maximum wall clock time per job using this QOS. Maps to MaxWallDurationPerJob in the dump format.",
+                        null=True,
+                        verbose_name="max wall duration per job",
+                    ),
+                ),
+                (
+                    "limit_factor",
+                    models.FloatField(
+                        blank=True,
+                        help_text="A float that is factored into an association's GrpTRES limits. Maps to LimitFactor in the dump format.",
+                        null=True,
+                        verbose_name="limit factor",
+                    ),
+                ),
+                (
+                    "grace_time",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Preemption grace time in seconds. Jobs selected for preemption are given this much time before termination. Maps to GraceTime in the dump format.",
+                        null=True,
+                        verbose_name="grace time",
+                    ),
+                ),
+                (
                     "tags",
                     taggit.managers.TaggableManager(
                         help_text="A comma-separated list of tags.",
@@ -162,6 +263,7 @@ class Migration(migrations.Migration):
             name="default_qos",
             field=models.ForeignKey(
                 blank=True,
+                help_text="Default QOS applied to jobs that do not specify one. Maps to DefaultQOS in the dump format",
                 null=True,
                 on_delete=django.db.models.deletion.PROTECT,
                 related_name="default_for_clusters",
@@ -174,6 +276,7 @@ class Migration(migrations.Migration):
             name="qos_list",
             field=models.ManyToManyField(
                 blank=True,
+                help_text="QOS options available on this cluster. Associations inherit these via QOS+= syntax.",
                 related_name="clusters",
                 related_query_name="cluster",
                 to="slurm.slurmqos",
@@ -191,17 +294,59 @@ class Migration(migrations.Migration):
                     models.JSONField(blank=True, default=dict, encoder=coldfront.core.utils.CustomFieldJSONEncoder),
                 ),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
-                ("fairshare", models.PositiveIntegerField(blank=True, default=1, verbose_name="fairshare")),
-                ("max_jobs", models.PositiveIntegerField(blank=True, null=True, verbose_name="max jobs")),
-                ("max_submit_jobs", models.PositiveIntegerField(blank=True, null=True, verbose_name="max submit jobs")),
-                ("max_tres_per_job", models.JSONField(blank=True, null=True, verbose_name="max TRES per job")),
+                (
+                    "fairshare",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        default=1,
+                        help_text="Fairshare value for this association. Determines relative priority within the fairshare tree.",
+                        verbose_name="fairshare",
+                    ),
+                ),
+                (
+                    "max_jobs",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of jobs that can run simultaneously in this association.",
+                        null=True,
+                        verbose_name="max jobs",
+                    ),
+                ),
+                (
+                    "max_submit_jobs",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of jobs that can be submitted by this association.",
+                        null=True,
+                        verbose_name="max submit jobs",
+                    ),
+                ),
+                (
+                    "max_tres_per_job",
+                    models.JSONField(
+                        blank=True,
+                        help_text='JSON dict of TRES limits per job (e.g., {"node":5,"cpu":20}).',
+                        null=True,
+                        verbose_name="max TRES per job",
+                    ),
+                ),
                 (
                     "max_tres_mins_per_job",
-                    models.JSONField(blank=True, null=True, verbose_name="max TRES minutes per job"),
+                    models.JSONField(
+                        blank=True,
+                        help_text='JSON dict of TRES minute limits per job (e.g., {"cpu":360}).',
+                        null=True,
+                        verbose_name="max TRES minutes per job",
+                    ),
                 ),
                 (
                     "max_wall_duration_per_job",
-                    models.DurationField(blank=True, null=True, verbose_name="max wall duration per job"),
+                    models.DurationField(
+                        blank=True,
+                        help_text="Maximum wall clock duration per job.",
+                        null=True,
+                        verbose_name="max wall duration per job",
+                    ),
                 ),
                 (
                     "allocation",
@@ -217,6 +362,7 @@ class Migration(migrations.Migration):
                     "parent",
                     models.ForeignKey(
                         blank=True,
+                        help_text="Parent account in the Slurm hierarchy for this association.",
                         null=True,
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="child_associations",
@@ -228,6 +374,7 @@ class Migration(migrations.Migration):
                     "slurm_account",
                     models.ForeignKey(
                         blank=True,
+                        help_text="The Slurm account for this allocation. Links the allocation to a named Slurm accounting account.",
                         null=True,
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="associations",
@@ -248,11 +395,34 @@ class Migration(migrations.Migration):
                     "default_qos",
                     models.ForeignKey(
                         blank=True,
+                        help_text="Default QOS for this association. Jobs under this association inherit this QOS unless they specify one.",
                         null=True,
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="associations",
                         to="slurm.slurmqos",
                         verbose_name="default QOS",
+                    ),
+                ),
+                (
+                    "qos_add",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="QOSes to add to this association via QOS+= in the dump format. These are added on top of the cluster/account defaults.",
+                        related_name="added_to_associations",
+                        related_query_name="added_to_association",
+                        to="slurm.slurmqos",
+                        verbose_name="QOS add",
+                    ),
+                ),
+                (
+                    "qos_remove",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="QOSes to remove from this association via QOS-= in the dump format. These are subtracted from the inherited QOS list.",
+                        related_name="removed_from_associations",
+                        related_query_name="removed_from_association",
+                        to="slurm.slurmqos",
+                        verbose_name="QOS remove",
                     ),
                 ),
             ],
@@ -265,13 +435,26 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="slurmaccount",
-            name="qos_list",
+            name="qos_add",
             field=models.ManyToManyField(
                 blank=True,
-                related_name="accounts",
-                related_query_name="account",
+                help_text="QOSes to add to this account via QOS+= in the dump format. These are added on top of the cluster defaults.",
+                related_name="added_to_accounts",
+                related_query_name="added_to_account",
                 to="slurm.slurmqos",
-                verbose_name="QOS list",
+                verbose_name="QOS add",
+            ),
+        ),
+        migrations.AddField(
+            model_name="slurmaccount",
+            name="qos_remove",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="QOSes to remove from this account via QOS-= in the dump format. These are subtracted from the inherited QOS list.",
+                related_name="removed_from_accounts",
+                related_query_name="removed_from_account",
+                to="slurm.slurmqos",
+                verbose_name="QOS remove",
             ),
         ),
         migrations.CreateModel(
@@ -287,13 +470,20 @@ class Migration(migrations.Migration):
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
                 (
                     "default_wckey",
-                    models.CharField(blank=True, max_length=100, null=True, verbose_name="default wckey"),
+                    models.CharField(
+                        blank=True,
+                        help_text="Default wckey for fairshare and accounting.",
+                        max_length=100,
+                        null=True,
+                        verbose_name="default wckey",
+                    ),
                 ),
                 (
                     "admin_level",
                     models.SmallIntegerField(
                         blank=True,
-                        choices=[(0, "None"), (1, "Operator"), (2, "Admin")],
+                        choices=[(0, "Not Set"), (1, "None"), (2, "Operator"), (3, "Administrator")],
+                        help_text="Slurm administrator level for this user. Not Set (0), None (1), Operator (2), or Administrator (3). Operators can modify accounting entities; Administrators have full control.",
                         null=True,
                         verbose_name="admin level",
                     ),
@@ -310,6 +500,7 @@ class Migration(migrations.Migration):
                 (
                     "default_account",
                     models.ForeignKey(
+                        help_text="User's default Slurm account on this cluster. Jobs submitted by this user without specifying an account use this.",
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="default_for_users",
                         to="slurm.slurmaccount",
@@ -320,6 +511,7 @@ class Migration(migrations.Migration):
                     "default_qos",
                     models.ForeignKey(
                         blank=True,
+                        help_text="Default QOS for this user on this cluster. Applies to all jobs regardless of association.",
                         null=True,
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="default_for_users",
@@ -382,19 +574,69 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("description", models.CharField(blank=True, max_length=200, verbose_name="description")),
-                ("max_jobs", models.PositiveIntegerField(blank=True, null=True, verbose_name="max jobs")),
-                ("max_submit_jobs", models.PositiveIntegerField(blank=True, null=True, verbose_name="max submit jobs")),
-                ("max_tres_per_job", models.JSONField(blank=True, null=True, verbose_name="max TRES per job")),
-                ("max_tres_per_node", models.JSONField(blank=True, null=True, verbose_name="max TRES per node")),
+                (
+                    "max_jobs",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of jobs that can run simultaneously in this partition.",
+                        null=True,
+                        verbose_name="max jobs",
+                    ),
+                ),
+                (
+                    "max_submit_jobs",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Maximum number of jobs that can be submitted by this association.",
+                        null=True,
+                        verbose_name="max submit jobs",
+                    ),
+                ),
+                (
+                    "max_tres_per_job",
+                    models.JSONField(
+                        blank=True,
+                        help_text='JSON dict of TRES limits per job (e.g., {"node":5,"cpu":20}).',
+                        null=True,
+                        verbose_name="max TRES per job",
+                    ),
+                ),
+                (
+                    "max_tres_per_node",
+                    models.JSONField(
+                        blank=True,
+                        help_text='JSON dict of TRES limits per node (e.g., {"gpu":8}).',
+                        null=True,
+                        verbose_name="max TRES per node",
+                    ),
+                ),
                 (
                     "max_tres_mins_per_job",
-                    models.JSONField(blank=True, null=True, verbose_name="max TRES minutes per job"),
+                    models.JSONField(
+                        blank=True,
+                        help_text='JSON dict of TRES minute limits per job (e.g., {"cpu":360}).',
+                        null=True,
+                        verbose_name="max TRES minutes per job",
+                    ),
                 ),
                 (
                     "max_wall_duration_per_job",
-                    models.DurationField(blank=True, null=True, verbose_name="max wall duration per job"),
+                    models.DurationField(
+                        blank=True,
+                        help_text="Maximum wall clock duration per job.",
+                        null=True,
+                        verbose_name="max wall duration per job",
+                    ),
                 ),
-                ("fairshare", models.PositiveIntegerField(blank=True, default=1, verbose_name="fairshare")),
+                (
+                    "fairshare",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        default=1,
+                        help_text="Fairshare value for this partition's associations. Determines relative priority within the fairshare tree. Higher values allow more jobs before priority decays.",
+                        verbose_name="fairshare",
+                    ),
+                ),
                 (
                     "nodes",
                     models.TextField(
@@ -404,20 +646,78 @@ class Migration(migrations.Migration):
                         verbose_name="nodes",
                     ),
                 ),
-                ("priority", models.PositiveIntegerField(blank=True, null=True, verbose_name="priority")),
-                ("is_default", models.BooleanField(blank=True, default=False, verbose_name="default")),
-                ("default_time", models.DurationField(blank=True, null=True, verbose_name="default time")),
-                ("state", models.CharField(blank=True, max_length=20, null=True, verbose_name="state")),
-                ("preempt_mode", models.CharField(blank=True, max_length=20, null=True, verbose_name="preempt mode")),
+                (
+                    "priority",
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Priority tier for scheduling and preemption. Higher priority partitions are scheduled first.",
+                        null=True,
+                        verbose_name="priority",
+                    ),
+                ),
+                (
+                    "is_default",
+                    models.BooleanField(
+                        blank=True,
+                        default=False,
+                        help_text="If set, this is the default partition for jobs that do not specify one.",
+                        verbose_name="default",
+                    ),
+                ),
+                (
+                    "default_time",
+                    models.DurationField(
+                        blank=True,
+                        help_text="Default job time limit for this partition.",
+                        null=True,
+                        verbose_name="default time",
+                    ),
+                ),
+                (
+                    "state",
+                    models.CharField(
+                        blank=True,
+                        choices=[("UP", "UP"), ("DOWN", "DOWN"), ("DRAIN", "DRAIN"), ("INACTIVE", "INACTIVE")],
+                        help_text="Partition state (UP, DOWN, DRAIN, INACTIVE).",
+                        max_length=20,
+                        null=True,
+                        verbose_name="state",
+                    ),
+                ),
+                (
+                    "preempt_mode",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("OFF", "OFF"),
+                            ("SUSPEND", "SUSPEND"),
+                            ("REQUEUE", "REQUEUE"),
+                            ("CANCEL", "CANCEL"),
+                            ("GANG", "GANG"),
+                            ("WITHIN", "WITHIN"),
+                            ("PRIORITY", "PRIORITY"),
+                        ],
+                        help_text="Preemption mode for this partition (e.g., OFF, SUSPEND, GANG, CANCEL).",
+                        max_length=20,
+                        null=True,
+                        verbose_name="preempt mode",
+                    ),
+                ),
                 (
                     "def_mem_per_cpu",
-                    models.PositiveIntegerField(blank=True, null=True, verbose_name="default memory per CPU"),
+                    models.PositiveIntegerField(
+                        blank=True,
+                        help_text="Default memory per CPU in MB for jobs in this partition.",
+                        null=True,
+                        verbose_name="default memory per CPU",
+                    ),
                 ),
                 ("slug", models.SlugField(blank=True, max_length=100, unique=True, verbose_name="slug")),
                 (
                     "allow_accounts",
                     models.ManyToManyField(
                         blank=True,
+                        help_text="Restrict which SlurmAccounts can submit jobs to this partition. When set, only associations under one of these accounts are permitted.",
                         related_name="allowed_partitions",
                         related_query_name="allowed_partition",
                         to="slurm.slurmaccount",
@@ -428,6 +728,7 @@ class Migration(migrations.Migration):
                     "allow_groups",
                     models.ManyToManyField(
                         blank=True,
+                        help_text="Restrict partition access to specific ColdFront Groups. Users must be in one of these groups to submit allocations to this partition. Maps to AllowGroups in slurm.conf.",
                         related_name="allowed_partitions",
                         related_query_name="allowed_partition",
                         to="users.group",
@@ -453,13 +754,26 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "qos_list",
+                    "allow_qos",
                     models.ManyToManyField(
                         blank=True,
-                        related_name="partitions",
-                        related_query_name="partition",
+                        help_text="QOS whitelist for admission control. Only jobs requesting one of these QOSes are permitted to submit to this partition. Maps to AllowQOS in slurm.conf.",
+                        related_name="allowed_partitions",
+                        related_query_name="allowed_partition",
                         to="slurm.slurmqos",
-                        verbose_name="QOS list",
+                        verbose_name="allowed QOS",
+                    ),
+                ),
+                (
+                    "qos",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Partition-level QOS whose resource limits (max time, CPUs, memory) apply to every job in this partition. The partition QOS and the job's QOS are both enforced — the stricter limit wins. Maps to QOS in slurm.conf.",
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="assigned_partitions",
+                        to="slurm.slurmqos",
+                        verbose_name="QOS",
                     ),
                 ),
             ],

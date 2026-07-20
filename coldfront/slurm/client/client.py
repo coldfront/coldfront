@@ -278,6 +278,7 @@ class SlurmClient:
         max_wall_duration_per_job: int | None = None,
         grp_tres: dict[str, int] | None = None,
         grp_wall: int | None = None,
+        qoslevel: list[str] | None = None,
     ) -> dict[str, Any]:
         """Serialize an association record for ``POST /associations/``.
 
@@ -299,6 +300,8 @@ class SlurmClient:
             max_wall_duration_per_job: Max wall duration in minutes.
             grp_tres: Group TRES limits dict.
             grp_wall: Group wall duration limit in minutes.
+            qoslevel: List of QOS names for this association.
+                Maps to ``assoc_rec_set.qoslevel`` in the REST API.
 
         Returns:
             A dict matching the ``assoc_rec_set`` schema.
@@ -329,6 +332,8 @@ class SlurmClient:
             body["grptres"] = grp_tres
         if grp_wall is not None:
             body["grpwall"] = grp_wall
+        if qoslevel is not None:
+            body["qoslevel"] = qoslevel
         return body
 
     @staticmethod

@@ -32,6 +32,14 @@
       <c-card.fields.item label="{% trans 'Classification' %}">
         {{ object.classification|placeholder }}
       </c-card.fields.item>
+
+      <c-card.fields.item label="{% trans 'QOS List' %}">
+        {% for qos in object.qos_list.all %}
+            <c-ui.badge link="{{ qos.get_absolute_url }}" :value="qos" />
+        {% empty %}
+            {{ ""|placeholder }}
+        {% endfor %}
+      </c-card.fields.item>
     </c-card.fields>
 
     <c-card.tags :object="object" only />

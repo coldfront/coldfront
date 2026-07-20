@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import PrimaryModelForm, PrimaryModelImportForm, TenancyForm, TenancyImportForm
-from coldfront.forms.fields import CSVModelChoiceField, JSONField
+from coldfront.forms.fields import CSVModelChoiceField, CSVModelMultipleChoiceField, JSONField
 from coldfront.slurm.models import SlurmAccount, SlurmAssociation, SlurmCluster, SlurmPartition, SlurmQOS, SlurmUser
 from coldfront.users.models.users import Group
 
@@ -18,6 +18,14 @@ class SlurmQOSForm(PrimaryModelForm):
         fields = [
             "name",
             "description",
+            "priority",
+            "max_submit_jobs_per_user",
+            "max_jobs_per_user",
+            "max_submit_jobs_per_account",
+            "max_jobs_per_account",
+            "max_wall_duration_per_job",
+            "limit_factor",
+            "grace_time",
             "tags",
         ]
 
@@ -29,6 +37,17 @@ class SlurmQOSForm(PrimaryModelForm):
                 "name",
                 "description",
             ),
+            Fieldset(
+                _("Limits"),
+                "priority",
+                "max_submit_jobs_per_user",
+                "max_jobs_per_user",
+                "max_submit_jobs_per_account",
+                "max_jobs_per_account",
+                "max_wall_duration_per_job",
+                "limit_factor",
+                "grace_time",
+            ),
         ]
 
 
@@ -38,6 +57,14 @@ class SlurmQOSImportForm(PrimaryModelImportForm):
         fields = [
             "name",
             "description",
+            "priority",
+            "max_submit_jobs_per_user",
+            "max_jobs_per_user",
+            "max_submit_jobs_per_account",
+            "max_jobs_per_account",
+            "max_wall_duration_per_job",
+            "limit_factor",
+            "grace_time",
             "tags",
         ]
 
@@ -52,7 +79,12 @@ class SlurmClusterForm(TenancyForm, PrimaryModelForm):
     features = JSONField(
         label=_("Features"),
         required=False,
-        help_text=_("Enter valid JSON."),
+        help_text=_(
+            'Cluster features (GPU types, etc.) as a JSON array (e.g., ["gpu","highmem"]). '
+            "Used to describe federated cluster capabilities. "
+            "When submitting a federated job, --features filters which "
+            "cluster receives the job based on these values."
+        ),
     )
 
     default_qos = forms.ModelChoiceField(
@@ -144,37 +176,62 @@ class SlurmPartitionForm(PrimaryModelForm):
     max_tres_per_job = JSONField(
         label=_("Max TRES per Job"),
         required=False,
-        help_text=_("Enter valid JSON."),
+        help_text=_('JSON dict of TRES limits per job (e.g., {"node":5,"cpu":20}).'),
     )
 
     max_tres_per_node = JSONField(
         label=_("Max TRES per node"),
         required=False,
-        help_text=_("Enter valid JSON."),
+        help_text=_('JSON dict of TRES limits per node (e.g., {"gpu":8}).'),
     )
 
     max_tres_mins_per_job = JSONField(
         label=_("Max TRES minutes per job"),
         required=False,
-        help_text=_("Enter valid JSON."),
+        help_text=_('JSON dict of TRES minute limits per job (e.g., {"cpu":360}).'),
     )
 
-    qos_list = forms.ModelMultipleChoiceField(
+    allow_qos = forms.ModelMultipleChoiceField(
         queryset=SlurmQOS.objects.all(),
         required=False,
-        label=_("QOS List"),
+        label=_("Allowed QOS"),
+        help_text=_(
+            "QOS whitelist for admission control. Only jobs requesting one of "
+            "these QOSes are permitted to submit to this partition. "
+            "Maps to AllowQOS in slurm.conf."
+        ),
+    )
+    qos = forms.ModelChoiceField(
+        queryset=SlurmQOS.objects.all(),
+        required=False,
+        label=_("QOS"),
+        help_text=_(
+            "Partition-level QOS whose resource limits (max time, CPUs, "
+            "memory) apply to every job in this partition. The partition "
+            "QOS and the job's QOS are both enforced — the stricter limit "
+            "wins. Maps to QOS in slurm.conf."
+        ),
     )
 
     allow_groups = forms.ModelMultipleChoiceField(
         queryset=Group.objects.all(),
         required=False,
         label=_("Allowed Groups"),
+        help_text=_(
+            "Restrict partition access to specific ColdFront Groups. Users "
+            "must be in one of these groups to submit allocations to this "
+            "partition. Maps to AllowGroups in slurm.conf."
+        ),
     )
 
     allow_accounts = forms.ModelMultipleChoiceField(
         queryset=SlurmAccount.objects.all(),
         required=False,
         label=_("Allowed Accounts"),
+        help_text=_(
+            "Restrict which SlurmAccounts can submit jobs to this partition. "
+            "When set, only associations under one of these accounts are permitted."
+        ),
     )
 
     class Meta:
@@ -200,7 +257,8 @@ class SlurmPartitionForm(PrimaryModelForm):
             "max_tres_mins_per_job",
             "max_wall_duration_per_job",
             "fairshare",
-            "qos_list",
+            "allow_qos",
+            "qos",
             "allow_groups",
             "allow_accounts",
             "tags",
@@ -237,7 +295,8 @@ class SlurmPartitionForm(PrimaryModelForm):
             ),
             Fieldset(
                 _("Access Control"),
-                "qos_list",
+                "allow_qos",
+                "qos",
                 "allow_groups",
                 "allow_accounts",
             ),
@@ -288,10 +347,17 @@ class SlurmAccountForm(PrimaryModelForm):
         label=_("Cluster"),
     )
 
-    qos_list = forms.ModelMultipleChoiceField(
+    qos_add = forms.ModelMultipleChoiceField(
         queryset=SlurmQOS.objects.all(),
         required=False,
-        label=_("QOS List"),
+        label=_("QOS Add"),
+        help_text=_("QOSes to add to this account via QOS+= in the dump format."),
+    )
+    qos_remove = forms.ModelMultipleChoiceField(
+        queryset=SlurmQOS.objects.all(),
+        required=False,
+        label=_("QOS Remove"),
+        help_text=_("QOSes to remove from this account via QOS-= in the dump format."),
     )
 
     class Meta:
@@ -301,7 +367,8 @@ class SlurmAccountForm(PrimaryModelForm):
             "name",
             "description",
             "fairshare",
-            "qos_list",
+            "qos_add",
+            "qos_remove",
             "tags",
         ]
 
@@ -314,7 +381,8 @@ class SlurmAccountForm(PrimaryModelForm):
                 "name",
                 "description",
                 "fairshare",
-                "qos_list",
+                "qos_add",
+                "qos_remove",
             ),
         ]
 
@@ -333,6 +401,8 @@ class SlurmAccountImportForm(PrimaryModelImportForm):
             "name",
             "description",
             "fairshare",
+            "qos_add",
+            "qos_remove",
             "tags",
         ]
 
@@ -364,13 +434,13 @@ class SlurmAssociationForm(PrimaryModelForm):
     max_tres_per_job = JSONField(
         label=_("Max TRES per Job"),
         required=False,
-        help_text=_("Enter valid JSON."),
+        help_text=_('JSON dict of TRES limits per job (e.g., {"node":5,"cpu":20}).'),
     )
 
     max_tres_mins_per_job = JSONField(
         label=_("Max TRES minutes per job"),
         required=False,
-        help_text=_("Enter valid JSON."),
+        help_text=_('JSON dict of TRES minute limits per job (e.g., {"cpu":360}).'),
     )
 
     class Meta:
@@ -386,6 +456,8 @@ class SlurmAssociationForm(PrimaryModelForm):
             "max_tres_per_job",
             "max_tres_mins_per_job",
             "max_wall_duration_per_job",
+            "qos_add",
+            "qos_remove",
             "tags",
         ]
 
@@ -407,6 +479,11 @@ class SlurmAssociationForm(PrimaryModelForm):
                 "max_tres_per_job",
                 "max_tres_mins_per_job",
                 "max_wall_duration_per_job",
+            ),
+            Fieldset(
+                _("QOS Configuration"),
+                "qos_add",
+                "qos_remove",
             ),
         ]
 
@@ -448,6 +525,19 @@ class SlurmAssociationImportForm(PrimaryModelImportForm):
         label=_("Default QOS"),
     )
 
+    qos_add = CSVModelMultipleChoiceField(
+        queryset=SlurmQOS.objects.all(),
+        to_field_name="name",
+        required=False,
+        label=_("QOS Add"),
+    )
+    qos_remove = CSVModelMultipleChoiceField(
+        queryset=SlurmQOS.objects.all(),
+        to_field_name="name",
+        required=False,
+        label=_("QOS Remove"),
+    )
+
     class Meta:
         model = SlurmAssociation
         fields = [
@@ -461,6 +551,8 @@ class SlurmAssociationImportForm(PrimaryModelImportForm):
             "max_tres_per_job",
             "max_tres_mins_per_job",
             "max_wall_duration_per_job",
+            "qos_add",
+            "qos_remove",
             "tags",
         ]
 
@@ -479,22 +571,29 @@ class SlurmUserForm(PrimaryModelForm):
     user = forms.ModelChoiceField(
         queryset=SlurmUser.objects.all(),  # placeholder, will override __init__
         label=_("User"),
+        help_text=_("The ColdFront user this Slurm user record represents."),
     )
 
     cluster = forms.ModelChoiceField(
         queryset=SlurmCluster.objects.all(),
         label=_("Cluster"),
+        help_text=_("The Slurm cluster this user record lives on. One record per (user, cluster) pair."),
     )
 
     default_account = forms.ModelChoiceField(
         queryset=SlurmAccount.objects.all(),
         label=_("Default Account"),
+        help_text=_(
+            "User's default Slurm account on this cluster. Jobs submitted "
+            "by this user without specifying an account use this."
+        ),
     )
 
     default_qos = forms.ModelChoiceField(
         queryset=SlurmQOS.objects.all(),
         required=False,
         label=_("Default QOS"),
+        help_text=_("Default QOS for this user on this cluster. Applies to all jobs regardless of association."),
     )
 
     class Meta:

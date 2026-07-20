@@ -35,6 +35,10 @@ from django.utils import timezone
 from coldfront.core.models import Job
 from coldfront.ras.choices import AllocationStatusChoices
 from coldfront.ras.models import Allocation, ProjectUser
+from coldfront.slurm.choices import (
+    SlurmPartitionStateChoices,
+    SlurmPreemptModeChoices,
+)
 from coldfront.slurm.client import SlurmClient
 from coldfront.slurm.client.exceptions import (
     SlurmAlreadyExistsException,
@@ -755,6 +759,36 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
     }
 
 
+def _build_effective_qos(
+    account: SlurmAccount | None,
+    association: SlurmAssociation,
+) -> list[str] | None:
+    """
+    Compute the effective QOS list for an association by merging
+    account-level and association-level qos_add/qos_remove.
+
+    The effective list is:
+        (account_qos_add ∪ assoc_qos_add) ∖ (account_qos_remove ∪ assoc_qos_remove)
+
+    Returns ``None`` if both sources have no QOS add/remove entries.
+    """
+    qos_add_names: set[str] = set()
+    qos_remove_names: set[str] = set()
+
+    # Account-level QOS
+    if account:
+        qos_add_names.update(q.name for q in account.qos_add.all())
+        qos_remove_names.update(q.name for q in account.qos_remove.all())
+
+    # Association-level QOS
+    qos_add_names.update(q.name for q in association.qos_add.all())
+    qos_remove_names.update(q.name for q in association.qos_remove.all())
+
+    # Compute effective list
+    effective = list(qos_add_names - qos_remove_names)
+    return effective if effective else None
+
+
 def _build_assoc_payload(
     association: SlurmAssociation,
     user: Any,
@@ -788,7 +822,70 @@ def _build_assoc_payload(
     if association.max_wall_duration_per_job is not None:
         payload["maxwalldurationperjob"] = int(association.max_wall_duration_per_job.total_seconds())
 
+    # QOS add/remove — merge account-level and association-level
+    qoslevel = _build_effective_qos(slurm_account, association)
+    if qoslevel:
+        payload["qoslevel"] = qoslevel
+
     return payload
+
+
+def _sync_association_qos(
+    association: SlurmAssociation,
+    cluster: SlurmCluster,
+) -> None:
+    """
+    Targeted sync of QOS changes for a single association.
+
+    Called when ``qos_add`` or ``qos_remove`` changes on either the
+    association itself or its parent ``SlurmAccount``.  Builds an
+    association payload with the merged effective QOS list and sends
+    it via ``POST /associations/`` (upsert).
+
+    Only syncs if the association has an active allocation and a
+    ``slurm_account`` set.
+    """
+    allocation = association.allocation
+    if not allocation:
+        return
+    if allocation.status != AllocationStatusChoices.STATUS_ACTIVE:
+        return
+    if not association.slurm_account:
+        return
+
+    resource = allocation.resource_object
+    if resource is None:
+        return
+    if not isinstance(resource, (SlurmCluster, SlurmPartition)):
+        return
+
+    client = _build_client(cluster)
+    if client is None:
+        logger.warning(
+            "slurmrestd not configured — cannot sync QOS for association %s",
+            association.pk,
+        )
+        return
+
+    # Build and send association payload for each project user
+    project = allocation.project
+    for pu in ProjectUser.objects.filter(project=project).select_related("user"):
+        user = pu.user
+        if user is None:
+            continue
+
+        assoc_payload = _build_assoc_payload(association, user, cluster, resource)
+        try:
+            client.create_associations([assoc_payload])
+        except SlurmAlreadyExistsException:
+            pass  # idempotent — desired state achieved
+        except Exception as exc:
+            logger.warning(
+                "Failed to sync QOS for association %s (user=%s): %s",
+                association.pk,
+                user.username,
+                exc,
+            )
 
 
 def _build_expected_tuples(cluster: SlurmCluster) -> set[tuple[str, str, str]]:
@@ -1012,9 +1109,19 @@ def import_cluster_from_conf(
         if pp.default_time:
             kwargs["default_time"] = _parse_duration(pp.default_time)
         if pp.state:
-            kwargs["state"] = pp.state
+            # Validate state against SlurmPartitionStateChoices
+            state_upper = pp.state.upper()
+            if state_upper in SlurmPartitionStateChoices.values():
+                kwargs["state"] = state_upper
+            else:
+                kwargs["state"] = pp.state
         if pp.preempt_mode:
-            kwargs["preempt_mode"] = pp.preempt_mode
+            # Validate preempt_mode against SlurmPreemptModeChoices
+            preempt_upper = pp.preempt_mode.upper()
+            if preempt_upper in SlurmPreemptModeChoices.values():
+                kwargs["preempt_mode"] = preempt_upper
+            else:
+                kwargs["preempt_mode"] = pp.preempt_mode
         if pp.def_mem_per_cpu is not None:
             kwargs["def_mem_per_cpu"] = pp.def_mem_per_cpu
 
@@ -1034,14 +1141,19 @@ def import_cluster_from_conf(
 
         # Link QOS references
         if not noop:
-            qos_names = set()
+            # AllowQOS (whitelist) -> partition.allow_qos M2M
             if pp.allow_qos and pp.allow_qos.upper() != "ALL":
-                qos_names.update(n.strip() for n in pp.allow_qos.split(","))
+                allow_qos_names = [n.strip() for n in pp.allow_qos.split(",") if n.strip()]
+                allow_qos_objs = SlurmQOS.objects.filter(name__in=allow_qos_names)
+                partition.allow_qos.set(allow_qos_objs)
+
+            # QOS (assigned partition QOS) -> partition.qos FK
             if pp.qos and pp.qos.upper() != "ALL":
-                qos_names.update(n.strip() for n in pp.qos.split(","))
-            if qos_names:
-                qos_objs = SlurmQOS.objects.filter(name__in=list(qos_names))
-                partition.qos_list.set(qos_objs)
+                try:
+                    partition.qos = SlurmQOS.objects.get(name=pp.qos.strip())
+                    partition.save()
+                except SlurmQOS.DoesNotExist:
+                    pass
 
     report.success = len(report.errors) == 0
     return report
@@ -1175,7 +1287,12 @@ def import_cluster_from_api(
         state = part.get("state", "")
         if isinstance(state, dict):
             state = state.get("state", "UP")
-        kwargs["state"] = state.upper() if state else "UP"
+        state_upper = state.upper() if state else "UP"
+        # Validate against SlurmPartitionStateChoices
+        if state_upper in SlurmPartitionStateChoices.values():
+            kwargs["state"] = state_upper
+        else:
+            kwargs["state"] = state_upper  # still accept it but warn
 
         # Default flag
         kwargs["is_default"] = part.get("default", "NO") == "YES"
@@ -1184,7 +1301,14 @@ def import_cluster_from_api(
         preempt = part.get("preempt_mode", "")
         if isinstance(preempt, dict):
             preempt = preempt.get("preempt_mode", "")
-        kwargs["preempt_mode"] = preempt
+        preempt_upper = preempt.upper()
+        # Validate against SlurmPreemptModeChoices
+        if preempt_upper and preempt_upper in SlurmPreemptModeChoices.values():
+            kwargs["preempt_mode"] = preempt_upper
+        elif preempt:
+            kwargs["preempt_mode"] = preempt
+        else:
+            kwargs["preempt_mode"] = ""
 
         # Max time -> max_wall_duration_per_job
         max_time = part.get("max_time", "")
@@ -1209,13 +1333,11 @@ def import_cluster_from_api(
                 pass
 
         # QOS references
-        qos_names: set[str] = set()
+        allow_qos_names: set[str] = set()
         allow_qos = part.get("allow_qos", "")
         if isinstance(allow_qos, str) and allow_qos and allow_qos.upper() != "ALL":
-            qos_names.update(n.strip() for n in allow_qos.split(","))
+            allow_qos_names.update(n.strip() for n in allow_qos.split(","))
         qos_assigned = part.get("qos", "")
-        if isinstance(qos_assigned, str) and qos_assigned and qos_assigned.upper() != "ALL":
-            qos_names.update(n.strip() for n in qos_assigned.split(","))
 
         try:
             partition = SlurmPartition.objects.get(cluster=cluster, name=part_name)
@@ -1233,9 +1355,18 @@ def import_cluster_from_api(
             report.partitions_created += 1
 
         # Link QOS references
-        if qos_names:
-            qos_objs = SlurmQOS.objects.filter(name__in=list(qos_names))
-            partition.qos_list.set(qos_objs)
+        # AllowQOS (whitelist) -> partition.allow_qos M2M
+        if allow_qos_names:
+            allow_qos_objs = SlurmQOS.objects.filter(name__in=list(allow_qos_names))
+            partition.allow_qos.set(allow_qos_objs)
+
+        # QOS (assigned partition QOS) -> partition.qos FK
+        if isinstance(qos_assigned, str) and qos_assigned and qos_assigned.upper() != "ALL":
+            try:
+                partition.qos = SlurmQOS.objects.get(name=qos_assigned.strip())
+                partition.save()
+            except SlurmQOS.DoesNotExist:
+                pass
 
     report.success = len(report.errors) == 0
     return report

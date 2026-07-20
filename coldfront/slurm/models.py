@@ -11,14 +11,98 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import OrganizationalModel, PrimaryModel
 from coldfront.models.features import AllocatableResourceMixin
+from coldfront.slurm.choices import (
+    SlurmAdminLevelChoices,
+    SlurmPartitionStateChoices,
+    SlurmPreemptModeChoices,
+)
 
 
 class SlurmQOS(OrganizationalModel):
     """
     A model representing a Slurm Quality of Service profile.
-    Referenced by SlurmPartition.qos_list (M2M), SlurmCluster.qos_list (M2M),
+    Referenced by SlurmPartition.allow_qos (M2M), SlurmCluster.qos_list (M2M),
     and SlurmAccount.qos_list (M2M).
     """
+
+    priority = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("priority"),
+        help_text=_(
+            "QOS priority factor. Higher values increase a job's priority "
+            "when this QOS is used. Maps to Priority in the dump format."
+        ),
+    )
+    max_submit_jobs_per_user = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("max submit jobs per user"),
+        help_text=_(
+            "Maximum number of jobs a user can submit with this QOS. Maps to MaxSubmitJobsPU in the dump format."
+        ),
+    )
+    max_jobs_per_user = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("max jobs per user"),
+        help_text=_(
+            "Maximum number of running jobs a user can have with this QOS. Maps to MaxJobsPU in the dump format."
+        ),
+    )
+    max_submit_jobs_per_account = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("max submit jobs per account"),
+        help_text=_(
+            "Maximum number of jobs an account can submit with this QOS. Maps to MaxSubmitJobsPA in the dump format."
+        ),
+    )
+    max_jobs_per_account = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("max jobs per account"),
+        help_text=_(
+            "Maximum number of running jobs an account can have with this QOS. Maps to MaxJobsPA in the dump format."
+        ),
+    )
+    max_wall_duration_per_job = models.DurationField(
+        blank=True,
+        null=True,
+        verbose_name=_("max wall duration per job"),
+        help_text=_(
+            "Maximum wall clock time per job using this QOS. Maps to MaxWallDurationPerJob in the dump format."
+        ),
+    )
+    limit_factor = models.FloatField(
+        blank=True,
+        null=True,
+        verbose_name=_("limit factor"),
+        help_text=_(
+            "A float that is factored into an association's GrpTRES limits. Maps to LimitFactor in the dump format."
+        ),
+    )
+    grace_time = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        verbose_name=_("grace time"),
+        help_text=_(
+            "Preemption grace time in seconds. Jobs selected for preemption "
+            "are given this much time before termination. "
+            "Maps to GraceTime in the dump format."
+        ),
+    )
+
+    clone_fields = (
+        "priority",
+        "max_submit_jobs_per_user",
+        "max_jobs_per_user",
+        "max_submit_jobs_per_account",
+        "max_jobs_per_account",
+        "max_wall_duration_per_job",
+        "limit_factor",
+        "grace_time",
+    )
 
     class Meta:
         ordering = ["name"]
@@ -51,6 +135,7 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("default QOS"),
+        help_text=_("Default QOS applied to jobs that do not specify one. Maps to DefaultQOS in the dump format"),
     )
 
     qos_list = models.ManyToManyField(
@@ -59,12 +144,19 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
         related_name="clusters",
         related_query_name="cluster",
         verbose_name=_("QOS list"),
+        help_text=_("QOS options available on this cluster. Associations inherit these via QOS+= syntax."),
     )
 
     fairshare = models.PositiveIntegerField(
         blank=True,
         default=1,
         verbose_name=_("fairshare"),
+        help_text=_(
+            "Default fairshare value for this cluster. Used as the root "
+            "association's shares_raw. All associations under this cluster "
+            "inherit unless overridden. Maps to Fairshare in the dump "
+            "format."
+        ),
     )
 
     features = models.JSONField(
@@ -72,6 +164,10 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
         null=True,
         default=list,
         verbose_name=_("features"),
+        help_text=_(
+            "Cluster features (GPU types, etc.) used to describe federated cluster capabilities. "
+            "When submitting a federated job, --features filters which cluster receives the job."
+        ),
     )
 
     classification = models.CharField(
@@ -79,6 +175,7 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("classification"),
+        help_text=_("How this machine is classified."),
     )
 
     clone_fields = (
@@ -122,50 +219,80 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("max jobs"),
+        help_text=_("Maximum number of jobs that can run simultaneously in this partition."),
     )
 
     max_submit_jobs = models.PositiveIntegerField(
         blank=True,
         null=True,
         verbose_name=_("max submit jobs"),
+        help_text=_("Maximum number of jobs that can be submitted by this association."),
     )
 
     max_tres_per_job = models.JSONField(
         blank=True,
         null=True,
         verbose_name=_("max TRES per job"),
+        help_text=_('JSON dict of TRES limits per job (e.g., {"node":5,"cpu":20}).'),
     )
 
     max_tres_per_node = models.JSONField(
         blank=True,
         null=True,
         verbose_name=_("max TRES per node"),
+        help_text=_('JSON dict of TRES limits per node (e.g., {"gpu":8}).'),
     )
 
     max_tres_mins_per_job = models.JSONField(
         blank=True,
         null=True,
         verbose_name=_("max TRES minutes per job"),
+        help_text=_('JSON dict of TRES minute limits per job (e.g., {"cpu":360}).'),
     )
 
     max_wall_duration_per_job = models.DurationField(
         blank=True,
         null=True,
         verbose_name=_("max wall duration per job"),
+        help_text=_("Maximum wall clock duration per job."),
     )
 
     fairshare = models.PositiveIntegerField(
         blank=True,
         default=1,
         verbose_name=_("fairshare"),
+        help_text=_(
+            "Fairshare value for this partition's associations. Determines "
+            "relative priority within the fairshare tree. Higher values "
+            "allow more jobs before priority decays."
+        ),
     )
 
-    qos_list = models.ManyToManyField(
+    allow_qos = models.ManyToManyField(
         to="slurm.SlurmQOS",
         blank=True,
-        related_name="partitions",
-        related_query_name="partition",
-        verbose_name=_("QOS list"),
+        related_name="allowed_partitions",
+        related_query_name="allowed_partition",
+        verbose_name=_("allowed QOS"),
+        help_text=_(
+            "QOS whitelist for admission control. Only jobs requesting one "
+            "of these QOSes are permitted to submit to this partition. "
+            "Maps to AllowQOS in slurm.conf."
+        ),
+    )
+    qos = models.ForeignKey(
+        to="slurm.SlurmQOS",
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True,
+        related_name="assigned_partitions",
+        verbose_name=_("QOS"),
+        help_text=_(
+            "Partition-level QOS whose resource limits (max time, CPUs, "
+            "memory) apply to every job in this partition. The partition "
+            "QOS and the job's QOS are both enforced — the stricter limit "
+            "wins. Maps to QOS in slurm.conf."
+        ),
     )
 
     allow_groups = models.ManyToManyField(
@@ -174,6 +301,11 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         related_name="allowed_partitions",
         related_query_name="allowed_partition",
         verbose_name=_("allowed groups"),
+        help_text=_(
+            "Restrict partition access to specific ColdFront Groups. Users "
+            "must be in one of these groups to submit allocations to this "
+            "partition. Maps to AllowGroups in slurm.conf."
+        ),
     )
 
     allow_accounts = models.ManyToManyField(
@@ -182,6 +314,10 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         related_name="allowed_partitions",
         related_query_name="allowed_partition",
         verbose_name=_("allowed accounts"),
+        help_text=_(
+            "Restrict which SlurmAccounts can submit jobs to this partition. "
+            "When set, only associations under one of these accounts are permitted."
+        ),
     )
 
     nodes = models.TextField(
@@ -195,18 +331,21 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("priority"),
+        help_text=_("Priority tier for scheduling and preemption. Higher priority partitions are scheduled first."),
     )
 
     is_default = models.BooleanField(
         blank=True,
         default=False,
         verbose_name=_("default"),
+        help_text=_("If set, this is the default partition for jobs that do not specify one."),
     )
 
     default_time = models.DurationField(
         blank=True,
         null=True,
         verbose_name=_("default time"),
+        help_text=_("Default job time limit for this partition."),
     )
 
     state = models.CharField(
@@ -214,6 +353,8 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("state"),
+        choices=SlurmPartitionStateChoices,
+        help_text=_("Partition state (UP, DOWN, DRAIN, INACTIVE)."),
     )
 
     preempt_mode = models.CharField(
@@ -221,12 +362,15 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("preempt mode"),
+        choices=SlurmPreemptModeChoices,
+        help_text=_("Preemption mode for this partition (e.g., OFF, SUSPEND, GANG, CANCEL)."),
     )
 
     def_mem_per_cpu = models.PositiveIntegerField(
         blank=True,
         null=True,
         verbose_name=_("default memory per CPU"),
+        help_text=_("Default memory per CPU in MB for jobs in this partition."),
     )
 
     slug = models.SlugField(
@@ -246,7 +390,8 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
         "max_tres_mins_per_job",
         "max_wall_duration_per_job",
         "fairshare",
-        "qos_list",
+        "allow_qos",
+        "qos",
         "allow_groups",
         "allow_accounts",
         "nodes",
@@ -308,20 +453,39 @@ class SlurmAccount(PrimaryModel):
         null=True,
         default=None,
         verbose_name=_("fairshare"),
+        help_text=_(
+            "Account-level fairshare. When set, all user associations "
+            "under this account inherit via Fairshare=parent in the dump. "
+        ),
     )
 
-    qos_list = models.ManyToManyField(
+    qos_add = models.ManyToManyField(
         to="slurm.SlurmQOS",
         blank=True,
-        related_name="accounts",
-        related_query_name="account",
-        verbose_name=_("QOS list"),
+        related_name="added_to_accounts",
+        related_query_name="added_to_account",
+        verbose_name=_("QOS add"),
+        help_text=_(
+            "QOSes to add to this account via QOS+= in the dump format. These are added on top of the cluster defaults."
+        ),
+    )
+    qos_remove = models.ManyToManyField(
+        to="slurm.SlurmQOS",
+        blank=True,
+        related_name="removed_from_accounts",
+        related_query_name="removed_from_account",
+        verbose_name=_("QOS remove"),
+        help_text=_(
+            "QOSes to remove from this account via QOS-= in the dump format. "
+            "These are subtracted from the inherited QOS list."
+        ),
     )
 
     clone_fields = (
         "cluster",
         "fairshare",
-        "qos_list",
+        "qos_add",
+        "qos_remove",
     )
 
     prerequisite_models = ("slurm.SlurmCluster",)
@@ -369,6 +533,7 @@ class SlurmAssociation(PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("Slurm account"),
+        help_text=_("The Slurm account for this allocation. Links the allocation to a named Slurm accounting account."),
     )
 
     parent = models.ForeignKey(
@@ -378,6 +543,7 @@ class SlurmAssociation(PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("parent account"),
+        help_text=_("Parent account in the Slurm hierarchy for this association."),
     )
 
     default_qos = models.ForeignKey(
@@ -387,42 +553,74 @@ class SlurmAssociation(PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("default QOS"),
+        help_text=_(
+            "Default QOS for this association. Jobs under this association inherit this QOS unless they specify one."
+        ),
     )
 
     fairshare = models.PositiveIntegerField(
         blank=True,
         default=1,
         verbose_name=_("fairshare"),
+        help_text=_("Fairshare value for this association. Determines relative priority within the fairshare tree."),
     )
 
     max_jobs = models.PositiveIntegerField(
         blank=True,
         null=True,
         verbose_name=_("max jobs"),
+        help_text=_("Maximum number of jobs that can run simultaneously in this association."),
     )
 
     max_submit_jobs = models.PositiveIntegerField(
         blank=True,
         null=True,
         verbose_name=_("max submit jobs"),
+        help_text=_("Maximum number of jobs that can be submitted by this association."),
     )
 
     max_tres_per_job = models.JSONField(
         blank=True,
         null=True,
         verbose_name=_("max TRES per job"),
+        help_text=_('JSON dict of TRES limits per job (e.g., {"node":5,"cpu":20}).'),
     )
 
     max_tres_mins_per_job = models.JSONField(
         blank=True,
         null=True,
         verbose_name=_("max TRES minutes per job"),
+        help_text=_('JSON dict of TRES minute limits per job (e.g., {"cpu":360}).'),
     )
 
     max_wall_duration_per_job = models.DurationField(
         blank=True,
         null=True,
         verbose_name=_("max wall duration per job"),
+        help_text=_("Maximum wall clock duration per job."),
+    )
+
+    qos_add = models.ManyToManyField(
+        to="slurm.SlurmQOS",
+        blank=True,
+        related_name="added_to_associations",
+        related_query_name="added_to_association",
+        verbose_name=_("QOS add"),
+        help_text=_(
+            "QOSes to add to this association via QOS+= in the dump format. "
+            "These are added on top of the cluster/account defaults."
+        ),
+    )
+    qos_remove = models.ManyToManyField(
+        to="slurm.SlurmQOS",
+        blank=True,
+        related_name="removed_from_associations",
+        related_query_name="removed_from_association",
+        verbose_name=_("QOS remove"),
+        help_text=_(
+            "QOSes to remove from this association via QOS-= in the dump format. "
+            "These are subtracted from the inherited QOS list."
+        ),
     )
 
     def clean(self):
@@ -506,6 +704,8 @@ class SlurmAssociation(PrimaryModel):
         "max_tres_per_job",
         "max_tres_mins_per_job",
         "max_wall_duration_per_job",
+        "qos_add",
+        "qos_remove",
     )
 
     prerequisite_models = ("ras.Allocation",)
@@ -549,6 +749,10 @@ class SlurmUser(PrimaryModel):
         on_delete=models.PROTECT,
         related_name="default_for_users",
         verbose_name=_("default account"),
+        help_text=_(
+            "User's default Slurm account on this cluster. Jobs submitted "
+            "by this user without specifying an account use this."
+        ),
     )
 
     default_wckey = models.CharField(
@@ -556,6 +760,7 @@ class SlurmUser(PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("default wckey"),
+        help_text=_("Default wckey for fairshare and accounting."),
     )
 
     default_qos = models.ForeignKey(
@@ -565,17 +770,19 @@ class SlurmUser(PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("default QOS"),
+        help_text=_("Default QOS for this user on this cluster. Applies to all jobs regardless of association."),
     )
 
     admin_level = models.SmallIntegerField(
-        choices=[
-            (0, _("None")),
-            (1, _("Operator")),
-            (2, _("Admin")),
-        ],
+        choices=SlurmAdminLevelChoices,
         blank=True,
         null=True,
         verbose_name=_("admin level"),
+        help_text=_(
+            "Slurm administrator level for this user. Not Set (0), None (1), "
+            "Operator (2), or Administrator (3). Operators can modify "
+            "accounting entities; Administrators have full control."
+        ),
     )
 
     clone_fields = (

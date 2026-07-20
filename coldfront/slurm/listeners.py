@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save
 from django.dispatch import receiver
 
 from coldfront.flows import register_target_callback, register_transition_permission_callback
@@ -10,12 +10,14 @@ from coldfront.ras.choices import AllocationStatusChoices
 from coldfront.ras.flows import AllocationStatusFlow
 from coldfront.ras.models import Allocation, ProjectUser
 from coldfront.slurm.models import (
+    SlurmAccount,
     SlurmAssociation,
     SlurmCluster,
     SlurmPartition,
     SlurmUser,
 )
 from coldfront.slurm.sync import (
+    _sync_association_qos,
     enqueue_activate_allocation,
     enqueue_deactivate_allocation,
     enqueue_remove_project_user,
@@ -174,6 +176,88 @@ def on_slurm_association_saved(instance, **kwargs):
     # Sync SlurmUser for each project member
     for project_user in allocation.project.users.all():
         _sync_slurm_users_for_user(project_user.user)
+
+    # Sync QOS changes for this association
+    cluster = resource if isinstance(resource, SlurmCluster) else resource.cluster
+    _sync_association_qos(instance, cluster)
+
+
+# ------------------------------------------------------------------
+# M2M change handlers for QOS fields
+# ------------------------------------------------------------------
+
+
+def _sync_associations_for_account(account: SlurmAccount) -> None:
+    """
+    Sync QOS for all active associations linked to an account.
+
+    Called when ``qos_add`` or ``qos_remove`` changes on the account.
+    Finds all SlurmAssociation records that reference this account
+    and triggers a targeted QOS sync for each.
+    """
+    from coldfront.slurm.models import SlurmCluster
+
+    # Collect unique (association, cluster) pairs
+    assocs = SlurmAssociation.objects.filter(slurm_account=account).select_related(
+        "allocation__resource_object_type",
+    )
+    for assoc in assocs:
+        allocation = assoc.allocation
+        if not allocation:
+            continue
+        if allocation.status != AllocationStatusChoices.STATUS_ACTIVE:
+            continue
+        resource = allocation.resource_object
+        if resource is None:
+            continue
+        if isinstance(resource, SlurmCluster):
+            cluster = resource
+        elif isinstance(resource, SlurmPartition):
+            cluster = resource.cluster
+        else:
+            continue
+
+        _sync_association_qos(assoc, cluster)
+
+
+@receiver(m2m_changed, sender=SlurmAccount.qos_add.through)
+@receiver(m2m_changed, sender=SlurmAccount.qos_remove.through)
+def on_account_qos_changed(action, instance, pk_set, **kwargs):
+    """
+    When ``qos_add`` or ``qos_remove`` changes on a ``SlurmAccount``,
+    sync all active associations linked to that account.
+    """
+    if action not in ("post_add", "post_remove", "post_clear"):
+        return
+    _sync_associations_for_account(instance)
+
+
+@receiver(m2m_changed, sender=SlurmAssociation.qos_add.through)
+@receiver(m2m_changed, sender=SlurmAssociation.qos_remove.through)
+def on_association_qos_changed(action, instance, pk_set, **kwargs):
+    """
+    When ``qos_add`` or ``qos_remove`` changes on a ``SlurmAssociation``,
+    sync the association's QOS with Slurm.
+    """
+    if action not in ("post_add", "post_remove", "post_clear"):
+        return
+
+    allocation = instance.allocation
+    if not allocation:
+        return
+    if allocation.status != AllocationStatusChoices.STATUS_ACTIVE:
+        return
+    resource = allocation.resource_object
+    if resource is None:
+        return
+    if isinstance(resource, SlurmCluster):
+        cluster = resource
+    elif isinstance(resource, SlurmPartition):
+        cluster = resource.cluster
+    else:
+        return
+
+    _sync_association_qos(instance, cluster)
 
 
 @receiver(post_save, sender=Allocation)

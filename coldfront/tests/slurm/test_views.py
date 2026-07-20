@@ -131,7 +131,7 @@ class SlurmPartitionTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "is_default": True,
             "default_time": timedelta(hours=1),
             "state": "UP",
-            "preempt_mode": "off",
+            "preempt_mode": "OFF",
             "def_mem_per_cpu": 2800,
             "tags": [t.pk for t in tags],
         }
@@ -209,11 +209,16 @@ class SlurmAssociationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
     def setUpTestData(cls):
         cluster = SlurmCluster.objects.create(name="Test Cluster")
         account = SlurmAccount.objects.create(name="Test Account", cluster=cluster)
+        cls.qos1 = SlurmQOS.objects.create(name="high")
+        cls.qos2 = SlurmQOS.objects.create(name="normal")
 
         cls.bulk_edit_form_data = {
             "fairshare": 10,
             "max_jobs": 50,
         }
+        # qos_add/qos_remove are optional M2M fields — not set in bulk edit
+        cls.bulk_edit_form_data.setdefault("qos_add", [])
+        cls.bulk_edit_form_data.setdefault("qos_remove", [])
 
         from django.contrib.contenttypes.models import ContentType
 
@@ -283,6 +288,8 @@ class SlurmAssociationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "allocation": allocation4.pk,
             "slurm_account": account.pk,
             "fairshare": 1,
+            "qos_add": [cls.qos1.pk],
+            "qos_remove": [cls.qos2.pk],
             "tags": [t.pk for t in tags],
         }
 

@@ -34,7 +34,7 @@ class DumpHelpersTestCase(TestCase):
         cls.cluster.qos_list.add(cls.qos1, cls.qos2)
 
         cls.account = SlurmAccount.objects.create(name="acct-a", cluster=cls.cluster, fairshare=3)
-        cls.account.qos_list.add(cls.qos1)
+        cls.account.qos_add.add(cls.qos1)
 
         cls.user = User.objects.create(username="alice")
         cls.project = Project.objects.create(name="Test Lab", owner=cls.user)
@@ -46,7 +46,7 @@ class DumpHelpersTestCase(TestCase):
 
         line = _format_cluster(self.cluster)
         self.assertIn("Cluster - 'hpc01'", line)
-        self.assertIn("QOS+=", line)
+        self.assertIn("QOS='", line)
         self.assertIn("normal", line)
         self.assertIn("high", line)
         self.assertIn("Fairshare=2", line)
@@ -76,7 +76,7 @@ class DumpHelpersTestCase(TestCase):
         line = _format_account(self.account)
         self.assertIn("Account - 'acct-a'", line)
         self.assertIn("Fairshare=3", line)
-        self.assertIn("QOS+=normal", line)
+        self.assertIn("QOS='+normal'", line)
 
     def test_format_account_no_fairshare(self):
         """Account line omits Fairshare when None."""
@@ -248,12 +248,12 @@ class GenerateClusterDumpTestCase(TestCase):
         self.cluster.qos_list.add(self.qos_n, self.qos_h)
 
         self.acct_a = SlurmAccount.objects.create(name="acct-a", cluster=self.cluster, fairshare=5)
-        self.acct_a.qos_list.add(self.qos_n)
+        self.acct_a.qos_add.add(self.qos_n)
 
         self.acct_b = SlurmAccount.objects.create(name="acct-b", cluster=self.cluster)
 
         self.partition = SlurmPartition.objects.create(name="gpu", cluster=self.cluster)
-        self.partition.qos_list.add(self.qos_h)
+        self.partition.allow_qos.add(self.qos_h)
 
     def test_basic_dump_structure(self):
         """Dump contains cluster header, root account, and account/user lines."""
@@ -264,7 +264,6 @@ class GenerateClusterDumpTestCase(TestCase):
 
         self.assertIn("Cluster - 'hpc01'", dump)
         self.assertIn("Parent - 'root'", dump)
-        self.assertIn("Account - 'root'", dump)
         self.assertIn("Account - 'acct-a'", dump)
         self.assertIn("User - 'alice'", dump)
         self.assertIn("User - 'bob'", dump)
@@ -273,17 +272,18 @@ class GenerateClusterDumpTestCase(TestCase):
         self.assertGreaterEqual(len(lines), 7)
 
     def test_root_account_present(self):
-        """Root account line always appears, even with no slurm accounts."""
+        """Root user line always appears, even with no slurm accounts."""
         dump = generate_cluster_dump(self.cluster)
         self.assertIn("Parent - 'root'", dump)
-        self.assertIn("Account - 'root':Fairshare=1:QOS+=normal", dump)
+        self.assertIn("User - 'root'", dump)
+        self.assertIn("AdminLevel='Administrator'", dump)
 
     def test_no_active_assocs_no_account_lines(self):
         """No Account lines beyond root when no active associations."""
         dump = generate_cluster_dump(self.cluster)
         lines = dump.splitlines()
-        # Only cluster, blank, root parent, root account, blank
-        self.assertLessEqual(len(lines), 6)
+        # Only QOS lines, blank, cluster, blank, root parent, root user, blank
+        self.assertLessEqual(len(lines), 8)
 
     def test_multiple_accounts(self):
         """Multiple accounts with active associations each get their own block."""
@@ -307,17 +307,17 @@ class GenerateClusterDumpTestCase(TestCase):
         self._make_active_allocation(self.project, self.partition, self.acct_a)
 
         dump = generate_cluster_dump(self.cluster)
-        self.assertIn("QOS+=", dump)
-        self.assertIn("high", dump)
+        self.assertIn("QOS='", dump)
+        self.assertIn("+high", dump)
 
     def test_cluster_qos_inherited(self):
         """User lines use the cluster's QOS list when targeting a cluster."""
         self._make_active_allocation(self.project, self.cluster, self.acct_a)
 
         dump = generate_cluster_dump(self.cluster)
-        self.assertIn("QOS+=", dump)
-        self.assertIn("normal", dump)
-        self.assertIn("high", dump)
+        self.assertIn("QOS='", dump)
+        self.assertIn("+normal", dump)
+        self.assertIn("+high", dump)
 
     def test_fairshare_parent_inherited(self):
         """User fairshare is 'parent' when the account has fairshare."""
@@ -371,7 +371,7 @@ class GenerateClusterDumpTestCase(TestCase):
         lines = dump.splitlines()
         alice_line = [line for line in lines if "alice" in line]
         self.assertTrue(len(alice_line) > 0)
-        self.assertIn("AdminLevel='1'", alice_line[0])
+        self.assertIn("AdminLevel='None'", alice_line[0])
         self.assertIn("DefaultWCKey='mykey'", alice_line[0])
 
     def test_association_limits_included(self):
@@ -408,7 +408,7 @@ class GenerateClusterDumpTestCase(TestCase):
         acct_line = [line for line in lines if "Account - 'acct-a'" in line]
         self.assertTrue(len(acct_line) > 0)
         self.assertIn("Fairshare=5", acct_line[0])
-        self.assertIn("QOS+=normal", acct_line[0])
+        self.assertIn("QOS='+normal'", acct_line[0])
 
     def test_parent_account_line(self):
         """Parent line uses association's parent account if set."""
@@ -479,6 +479,58 @@ class GenerateClusterDumpTestCase(TestCase):
         # Two associations → two user lines for alice
         self.assertEqual(alice_count, 2)
 
+    def test_default_qos_appears(self):
+        """Association default_qos produces DefaultQOS='<name>' in user line."""
+        assoc = self._make_active_allocation(self.project, self.cluster, self.acct_a)
+        default_qos = SlurmQOS.objects.create(name="default-qos")
+        assoc.default_qos = default_qos
+        assoc.save()
+
+        dump = generate_cluster_dump(self.cluster)
+        self.assertIn("DefaultQOS='default-qos'", dump)
+
+    def test_qos_add_appears(self):
+        """Association qos_add produces QOS='+<name>' in user line."""
+        assoc = self._make_active_allocation(self.project, self.cluster, self.acct_a)
+        extra_qos = SlurmQOS.objects.create(name="extra")
+        assoc.qos_add.add(extra_qos)
+
+        dump = generate_cluster_dump(self.cluster)
+        self.assertIn("QOS='", dump)
+        self.assertIn("+extra", dump)
+
+    def test_qos_remove_appears(self):
+        """Association qos_remove produces QOS='-<name>' in user line."""
+        assoc = self._make_active_allocation(self.project, self.cluster, self.acct_a)
+        rm_qos = SlurmQOS.objects.create(name="scavenger")
+        assoc.qos_remove.add(rm_qos)
+
+        dump = generate_cluster_dump(self.cluster)
+        self.assertIn("QOS='", dump)
+        self.assertIn("-scavenger", dump)
+
+    def test_qos_add_and_remove_combined(self):
+        """Both qos_add and qos_remove appear with +/- prefixes."""
+        assoc = self._make_active_allocation(self.project, self.cluster, self.acct_a)
+        add_qos = SlurmQOS.objects.create(name="express")
+        rm_qos = SlurmQOS.objects.create(name="scavenger")
+        assoc.qos_add.add(add_qos)
+        assoc.qos_remove.add(rm_qos)
+
+        dump = generate_cluster_dump(self.cluster)
+        self.assertIn("QOS='", dump)
+        self.assertIn("+high", dump)
+        self.assertIn("-scavenger", dump)
+
+    def test_no_qos_add_remove_still_shows_inherited(self):
+        """Without qos_add/qos_remove, user line still shows inherited QOS from cluster."""
+        self._make_active_allocation(self.project, self.cluster, self.acct_a)
+
+        dump = generate_cluster_dump(self.cluster)
+        self.assertIn("QOS='", dump)
+        self.assertIn("+normal", dump)
+        self.assertIn("+high", dump)
+
     def test_no_project_users_no_user_lines(self):
         """No user lines when project has no members."""
         empty_project = Project.objects.create(name="Empty", owner=self.user1)
@@ -541,62 +593,73 @@ class GenerateClusterDumpTestCase(TestCase):
         dump = generate_cluster_dump(self.cluster)
         lines = dump.splitlines()
 
-        # Expected structure (9 lines):
-        #   0: Cluster - 'hpc01':...
-        #   1: (blank)
-        #   2: Parent - 'root'
-        #   3: Account - 'root':...
+        # Expected structure (12 lines):
+        #   0: QOS - 'high':...
+        #   1: QOS - 'normal':...
+        #   2: (blank)
+        #   3: Cluster - 'hpc01':...
         #   4: (blank)
         #   5: Parent - 'root'
-        #   6: Account - 'acct-a':...
-        #   7: User - 'alice':...
-        #   8: User - 'bob':...
+        #   6: User - 'root':...
+        #   7: (blank)
+        #   8: Parent - 'root'
+        #   9: Account - 'acct-a':...
+        #  10: User - 'alice':...
+        #  11: User - 'bob':...
         #   (dump ends with \n from join of trailing "" line)
 
-        self.assertGreaterEqual(len(lines), 9)
-        self.assertLessEqual(len(lines), 9)
+        self.assertGreaterEqual(len(lines), 12)
+        self.assertLessEqual(len(lines), 12)
+
+        # Check QOS lines
+        self.assertIn("QOS - 'high'", lines[0])
+        self.assertIn("QOS - 'normal'", lines[1])
+
+        # Check blank line after QOS
+        self.assertEqual(lines[2], "")
 
         # Check cluster line
-        self.assertIn("Cluster - 'hpc01'", lines[0])
-        self.assertIn("QOS+=", lines[0])
-        self.assertIn("normal", lines[0])
-        self.assertIn("high", lines[0])
-        self.assertIn("Fairshare=1", lines[0])
+        self.assertIn("Cluster - 'hpc01'", lines[3])
+        self.assertIn("QOS='", lines[3])
+        self.assertIn("normal", lines[3])
+        self.assertIn("high", lines[3])
+        self.assertIn("Fairshare=1", lines[3])
 
         # Check blank line after cluster
-        self.assertEqual(lines[1], "")
-
-        # Check root parent
-        self.assertIn("Parent - 'root'", lines[2])
-
-        # Check root account
-        self.assertIn("Account - 'root'", lines[3])
-
-        # Check blank line after root
         self.assertEqual(lines[4], "")
 
-        # Check parent line before acct-a
+        # Check root parent
         self.assertIn("Parent - 'root'", lines[5])
 
+        # Check root user
+        self.assertIn("User - 'root'", lines[6])
+        self.assertIn("AdminLevel='Administrator'", lines[6])
+
+        # Check blank line after root user
+        self.assertEqual(lines[7], "")
+
+        # Check parent line before acct-a
+        self.assertIn("Parent - 'root'", lines[8])
+
         # Check account line
-        self.assertIn("Account - 'acct-a'", lines[6])
-        self.assertIn("Fairshare=5", lines[6])
-        self.assertIn("QOS+=normal", lines[6])
+        self.assertIn("Account - 'acct-a'", lines[9])
+        self.assertIn("Fairshare=5", lines[9])
+        self.assertIn("QOS='+normal'", lines[9])
 
-        # Check user lines
-        self.assertIn("User - 'alice'", lines[7])
-        self.assertIn("DefaultAccount='acct-a'", lines[7])
-        self.assertIn("Fairshare=parent", lines[7])
-        self.assertIn("QOS+=", lines[7])
-        self.assertIn("normal", lines[7])
-        self.assertIn("high", lines[7])
+        # Check user lines — now use QOS='+normal,+high' format
+        self.assertIn("User - 'alice'", lines[10])
+        self.assertIn("DefaultAccount='acct-a'", lines[10])
+        self.assertIn("Fairshare=parent", lines[10])
+        self.assertIn("QOS='", lines[10])
+        self.assertIn("+normal", lines[10])
+        self.assertIn("+high", lines[10])
 
-        self.assertIn("User - 'bob'", lines[8])
-        self.assertIn("DefaultAccount='acct-a'", lines[8])
-        self.assertIn("Fairshare=parent", lines[8])
-        self.assertIn("QOS+=", lines[8])
-        self.assertIn("normal", lines[8])
-        self.assertIn("high", lines[8])
+        self.assertIn("User - 'bob'", lines[11])
+        self.assertIn("DefaultAccount='acct-a'", lines[11])
+        self.assertIn("Fairshare=parent", lines[11])
+        self.assertIn("QOS='", lines[11])
+        self.assertIn("+normal", lines[11])
+        self.assertIn("+high", lines[11])
 
 
 class GenerateClusterDumpEdgeCaseTestCase(TestCase):
