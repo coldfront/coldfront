@@ -61,7 +61,7 @@ Context:
     <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
 
       {# Object table controls #}
-      <c-table.controls :table="table" table_modal="ObjectTable_config" only />
+      <c-table.controls :table="table" table_modal="ObjectTable_config" :table_configs="table_configs" only />
 
       <form method="post" class="form form-horizontal">
         {% csrf_token %}

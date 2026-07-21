@@ -14,7 +14,7 @@ from coldfront.core.choices import (
     JobStatusChoices,
     ObjectChangeActionChoices,
 )
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, ObjectType, Tag
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, ObjectType, TableConfig, Tag
 from coldfront.forms import PrimaryModelFilterSetForm
 from coldfront.forms.fields import (
     ContentTypeChoiceField,
@@ -101,6 +101,45 @@ class ObjectChangeFilterForm(PrimaryModelFilterSetForm):
             "user_id",
             "changed_object_type_id",
         ),
+    )
+
+
+class TableConfigFilterForm(PrimaryModelFilterSetForm):
+    model = TableConfig
+    fieldsets = (
+        Fieldset(
+            "q",
+        ),
+        Fieldset(
+            "object_type_id",
+            "enabled",
+            "shared",
+            "weight",
+            name=_("Attributes"),
+        ),
+    )
+    object_type_id = ContentTypeMultipleChoiceField(
+        label=_("Object types"),
+        queryset=ObjectType.objects.public(),
+        required=False,
+    )
+    enabled = forms.NullBooleanField(
+        label=_("Enabled"),
+        required=False,
+        widget=forms.Select(
+            choices=BOOLEAN_WITH_BLANK_CHOICES,
+        ),
+    )
+    shared = forms.NullBooleanField(
+        label=_("Shared"),
+        required=False,
+        widget=forms.Select(
+            choices=BOOLEAN_WITH_BLANK_CHOICES,
+        ),
+    )
+    weight = forms.IntegerField(
+        label=_("Weight"),
+        required=False,
     )
 
 

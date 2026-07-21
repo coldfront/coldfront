@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 
+from django.shortcuts import get_object_or_404
+
 from coldfront.users.permissions import get_permission_for_model
 
 __all__ = (
@@ -51,6 +53,15 @@ class TableMixin:
             request: The current request
             bulk_actions: Render checkboxes for object selection
         """
+
+        # If a TableConfig has been specified, apply it and update the user's saved preference
+        if tableconfig_id := request.GET.get("tableconfig_id"):
+            from coldfront.core.models import TableConfig
+
+            tableconfig = get_object_or_404(TableConfig, pk=tableconfig_id)
+            table_name = self.table.__name__
+            request.user.config.set(f"tables.{table_name}.columns", tableconfig.columns)
+            request.user.config.set(f"tables.{table_name}.ordering", tableconfig.ordering, commit=True)
 
         table = self.table(data, user=request.user)
         if "pk" in table.base_columns and bulk_actions:

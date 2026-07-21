@@ -6,7 +6,7 @@
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, Tag, TaggedItem
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, TableConfig, Tag, TaggedItem
 from coldfront.tables import ColdFrontTable, columns
 
 from .template_code import OBJECTCHANGE_FULL_NAME, OBJECTCHANGE_OBJECT, OBJECTCHANGE_REQUEST_ID
@@ -287,4 +287,51 @@ class JobTable(ColdFrontTable):
             "started",
             "completed",
             "interval",
+        )
+
+
+class TableConfigTable(ColdFrontTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    object_type = columns.ContentTypeColumn(
+        verbose_name=_("Object Type"),
+    )
+    table = tables.Column(
+        verbose_name=_("Table Name"),
+    )
+    enabled = columns.BooleanColumn(
+        verbose_name=_("Enabled"),
+    )
+    shared = columns.BooleanColumn(
+        verbose_name=_("Shared"),
+        false_mark=None,
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = TableConfig
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "object_type",
+            "table",
+            "description",
+            "user",
+            "weight",
+            "enabled",
+            "shared",
+            "created",
+            "last_updated",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "object_type",
+            "table",
+            "user",
+            "description",
+            "enabled",
+            "shared",
         )

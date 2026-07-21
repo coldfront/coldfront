@@ -21,7 +21,7 @@ from coldfront.utils.data import shallow_compare_dict
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.htmx import htmx_partial
-from coldfront.views.object_actions import BulkDelete, BulkExport, DeleteObject
+from coldfront.views.object_actions import BulkDelete, BulkEdit, BulkExport, DeleteObject
 from coldfront.views.utils import ViewTab
 
 from . import (
@@ -29,10 +29,79 @@ from . import (
     forms,
     tables,
 )
-from .models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, Tag, TaggedItem
+from .models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, TableConfig, Tag, TaggedItem
 from .plugins import get_local_plugins
 from .tables import CatalogPluginTable, PluginVersionTable
 from .templatetags.builtins.filters import render_markdown
+
+#
+# Table Config views
+#
+
+
+@register_model_view(TableConfig, "list", path="", detail=False)
+class TableConfigListView(generic.ObjectListView):
+    queryset = TableConfig.objects.all()
+    filterset = filtersets.TableConfigFilterSet
+    filterset_form = forms.TableConfigFilterForm
+    table = tables.TableConfigTable
+    actions = (BulkExport, BulkEdit, BulkDelete)
+
+
+@register_model_view(TableConfig)
+class TableConfigView(generic.ObjectView):
+    queryset = TableConfig.objects.all()
+
+    def get_extra_context(self, request, instance):
+        table = instance.table_class([])
+        return {
+            "columns": dict(table.columns.items()),
+        }
+
+
+@register_model_view(TableConfig, "add", detail=False)
+@register_model_view(TableConfig, "edit")
+class TableConfigEditView(generic.ObjectEditView):
+    queryset = TableConfig.objects.all()
+    form = forms.TableConfigForm
+    template_name = "core/tableconfig_edit.html"
+
+    def get(self, request, *args, **kwargs):
+        # The add view requires the object_type & table parameters from the source table view
+        if not kwargs and not (request.GET.get("object_type") and request.GET.get("table")):
+            messages.warning(
+                request,
+                _("Table configurations must be created from an object list view."),
+            )
+            return redirect("home")
+
+        return super().get(request, *args, **kwargs)
+
+    def alter_object(self, obj, request, url_args, url_kwargs):
+        if not obj.pk:
+            obj.user = request.user
+        return obj
+
+
+@register_model_view(TableConfig, "delete")
+class TableConfigDeleteView(generic.ObjectDeleteView):
+    queryset = TableConfig.objects.all()
+
+
+@register_model_view(TableConfig, "bulk_edit", path="edit", detail=False)
+class TableConfigBulkEditView(generic.BulkEditView):
+    queryset = TableConfig.objects.all()
+    filterset = filtersets.TableConfigFilterSet
+    table = tables.TableConfigTable
+    form = forms.TableConfigBulkEditForm
+
+
+@register_model_view(TableConfig, "bulk_delete", path="delete", detail=False)
+class TableConfigBulkDeleteView(generic.BulkDeleteView):
+    queryset = TableConfig.objects.all()
+    filterset = filtersets.TableConfigFilterSet
+    table = tables.TableConfigTable
+
 
 # Job model views
 

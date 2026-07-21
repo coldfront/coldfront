@@ -15,6 +15,32 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.forms import widgets
 
 
+class SimpleArrayField(forms.CharField):
+    """
+    A form field which represents a list of values as a comma-separated string.
+    This provides a simple alternative to Django's SimpleArrayField (which requires psycopg2).
+    """
+
+    def __init__(self, base_field=None, delimiter=",", *args, **kwargs):
+        self.base_field = base_field or forms.CharField()
+        self.delimiter = delimiter
+        kwargs.setdefault("widget", forms.TextInput(attrs={"class": "form-control"}))
+        kwargs.setdefault("required", False)
+        super().__init__(*args, **kwargs)
+
+    def to_python(self, value):
+        if not value:
+            return []
+        if isinstance(value, list):
+            return value
+        return [v.strip() for v in value.split(self.delimiter) if v.strip()]
+
+    def prepare_value(self, value):
+        if isinstance(value, list):
+            return self.delimiter.join(str(v) for v in value)
+        return value or ""
+
+
 class QueryField(forms.CharField):
     """
     A CharField subclass used for global search/query fields in filter forms.

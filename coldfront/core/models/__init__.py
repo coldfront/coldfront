@@ -6,6 +6,7 @@ from .change_logging import ObjectChange
 from .customfields import CustomField, CustomFieldChoiceSet, CustomFieldManager
 from .jobs import Job, JobLogEntry
 from .object_types import ObjectType, ObjectTypeManager, ObjectTypeQuerySet
+from .table_configs import TableConfig
 from .tags import Tag, TaggedItem
 
 __all__ = (
@@ -20,4 +21,5 @@ __all__ = (
     "CustomFieldManager",
     "Job",
     "JobLogEntry",
+    "TableConfig",
 )

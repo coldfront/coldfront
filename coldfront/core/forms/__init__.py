@@ -2,17 +2,23 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .bulk_edit import CustomFieldBulkEditForm, CustomFieldChoiceSetBulkEditForm, TagBulkEditForm
+from .bulk_edit import (
+    CustomFieldBulkEditForm,
+    CustomFieldChoiceSetBulkEditForm,
+    TableConfigBulkEditForm,
+    TagBulkEditForm,
+)
 from .bulk_import import CustomFieldChoiceSetImportForm, CustomFieldImportForm, TagImportForm
 from .filtersets import (
     CustomFieldChoiceSetFilterForm,
     CustomFieldFilterForm,
     JobFilterForm,
     ObjectChangeFilterForm,
+    TableConfigFilterForm,
     TagFilterForm,
 )
 from .misc import RenderMarkdownForm
-from .model_forms import CustomFieldChoiceSetForm, CustomFieldForm, TagForm
+from .model_forms import CustomFieldChoiceSetForm, CustomFieldForm, TableConfigForm, TagForm
 
 __all__ = (
     "TagBulkEditForm",
@@ -30,4 +36,7 @@ __all__ = (
     "JobFilterForm",
     "ObjectChangeFilterForm",
     "RenderMarkdownForm",
+    "TableConfigBulkEditForm",
+    "TableConfigFilterForm",
+    "TableConfigForm",
 )

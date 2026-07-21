@@ -11,7 +11,7 @@ from rest_framework.routers import APIRootView
 from coldfront.api.metadata import ContentTypeMetadata
 from coldfront.api.viewsets import BaseViewSet, ColdFrontModelViewSet
 from coldfront.core import filtersets
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, Tag, TaggedItem
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, TableConfig, Tag, TaggedItem
 
 from . import serializers
 
@@ -73,6 +73,12 @@ class TagViewSet(ColdFrontModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     filterset_class = filtersets.TagFilterSet
+
+
+class TableConfigViewSet(ColdFrontModelViewSet):
+    queryset = TableConfig.objects.all()
+    serializer_class = serializers.TableConfigSerializer
+    filterset_class = filtersets.TableConfigFilterSet
 
 
 class TaggedItemViewSet(RetrieveModelMixin, ListModelMixin, BaseViewSet):

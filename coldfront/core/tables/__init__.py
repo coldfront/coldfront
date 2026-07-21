@@ -3,7 +3,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .plugins import CatalogPluginTable, PluginVersionTable
-from .tables import CustomFieldChoiceSetTable, CustomFieldTable, JobTable, ObjectChangeTable, TaggedItemTable, TagTable
+from .tables import (
+    CustomFieldChoiceSetTable,
+    CustomFieldTable,
+    JobTable,
+    ObjectChangeTable,
+    TableConfigTable,
+    TaggedItemTable,
+    TagTable,
+)
 
 __all__ = (
     "TagTable",
@@ -14,4 +22,5 @@ __all__ = (
     "CatalogPluginTable",
     "PluginVersionTable",
     "JobTable",
+    "TableConfigTable",
 )

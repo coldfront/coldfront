@@ -24,7 +24,7 @@ from .tables import (
     PrimaryModelTable,
     SearchTable,
 )
-from .utils import register_table_column
+from .utils import get_table_configs, register_table_column
 
 __all__ = (
     "BaseTable",
@@ -45,5 +45,6 @@ __all__ = (
     "ToggleColumn",
     "TemplateColumn",
     "CustomFieldColumn",
+    "get_table_configs",
     "register_table_column",
 )

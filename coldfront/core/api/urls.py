@@ -13,6 +13,7 @@ router.APIRootView = views.CoreRootView
 router.register("custom-fields", views.CustomFieldViewSet)
 router.register("custom-field-choice-sets", views.CustomFieldChoiceSetViewSet)
 router.register("tags", views.TagViewSet)
+router.register("table-configs", views.TableConfigViewSet)
 router.register("tagged-objects", views.TaggedItemViewSet)
 
 app_name = "core-api"

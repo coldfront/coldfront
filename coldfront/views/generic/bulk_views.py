@@ -24,6 +24,7 @@ from coldfront.core.models import CustomField
 from coldfront.exceptions import AbortRequest, PermissionsViolation
 from coldfront.forms import BulkDeleteForm, BulkImportForm
 from coldfront.models.features import ChangeLoggingMixin
+from coldfront.tables import get_table_configs
 from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.forms import restrict_form_fields
 from coldfront.utils.query import reapply_model_ordering
@@ -161,7 +162,7 @@ class ObjectListView(BaseMultiObjectView, ActionsMixin, TableMixin):
         context = {
             "model": model,
             "table": table,
-            "table_configs": None,
+            "table_configs": get_table_configs(table, request.user),
             "actions": actions,
             "filter_form": filter_form,
             "prerequisite_model": self.get_prerequisite_model(),

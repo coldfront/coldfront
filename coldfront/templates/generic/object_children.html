@@ -23,7 +23,7 @@ Context:
 
 {% block content %}
     {% block table_controls %}
-        <c-table.controls :table="table" :table_modal="table_config" only />
+        <c-table.controls :table="table" :table_modal="table_config" :table_configs="table_configs" only />
     {% endblock table_controls %}
     <form method="post">
         {% csrf_token %}

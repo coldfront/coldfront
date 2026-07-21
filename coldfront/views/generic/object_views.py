@@ -21,6 +21,7 @@ from django_cotton import render_component
 
 from coldfront.exceptions import AbortRequest, PermissionsViolation
 from coldfront.forms import ColdFrontModelForm, DeleteForm
+from coldfront.tables import get_table_configs
 from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.forms import restrict_form_fields
 from coldfront.utils.querydict import normalize_querydict, prepare_cloned_fields
@@ -563,7 +564,7 @@ class ObjectChildrenView(ObjectView, ActionsMixin, TableMixin):
                 "base_template": f"{instance._meta.app_label}/{instance._meta.model_name}.html",
                 "table": table,
                 "table_config": f"{table.name}_config",
-                "table_configs": None,  # get_table_configs(table, request.user),
+                "table_configs": get_table_configs(table, request.user),
                 "filter_form": self.filterset_form(request.GET) if self.filterset_form else None,
                 "actions": actions,
                 "tab": self.tab,

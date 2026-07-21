@@ -26,6 +26,7 @@ from .fields import (
     CommentField,
     JSONField,
     QueryField,
+    SimpleArrayField,
     SlugField,
     TagFilterField,
 )
@@ -48,6 +49,7 @@ __all__ = (
     "DynamicMultipleChoiceField",
     "JSONField",
     "QueryField",
+    "SimpleArrayField",
     "SlugField",
     "TagFilterField",
 )
