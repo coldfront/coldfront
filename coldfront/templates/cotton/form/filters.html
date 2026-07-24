@@ -5,6 +5,25 @@
   <div class="card">
     <div class="card-body justify-content-between py-3">
     {% crispy filter_form %}
+
+    {% if filter_form.custom_fields %}
+    <fieldset>
+      <legend class="col-9 offset-3">{% trans "Custom Fields" %}</legend>
+
+      {% for group, fields in filter_form.custom_field_groups.items %}
+        {% if group %}
+        <div class="row">
+          <h3 class="col-9 offset-3 mb-3 h4">{{ group }}</h3>
+        </div>
+        {% endif %}
+        {% for name in fields %}
+          {{ filter_form|getfield:name|as_crispy_field }}
+        {% endfor %}
+      {% endfor %}
+
+    </fieldset>
+    {% endif %}
+
     </div>
   </div>
   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
