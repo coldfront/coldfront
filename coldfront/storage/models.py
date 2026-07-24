@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from coldfront.models import PrimaryModel
 from coldfront.models.features import AllocatableResourceMixin
 
-from .choices import StorageShareTypeChoices
+from .choices import StorageShareTypeChoices, StorageSnapshotIntervalChoices
 
 
 class StorageResource(AllocatableResourceMixin, PrimaryModel):
@@ -402,12 +402,7 @@ class StorageSnapshotPolicy(PrimaryModel):
     interval = models.CharField(
         verbose_name=_("interval"),
         max_length=50,
-        choices=[
-            ("hourly", _("Hourly")),
-            ("daily", _("Daily")),
-            ("weekly", _("Weekly")),
-            ("monthly", _("Monthly")),
-        ],
+        choices=StorageSnapshotIntervalChoices,
     )
 
     retention_days = models.PositiveIntegerField(

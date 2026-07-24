@@ -19,3 +19,19 @@ class StorageShareTypeChoices(ChoiceSet):
         (SHARE_TYPE_SMB, _("SMB"), "primary"),
         (SHARE_TYPE_NFS, _("NFS"), "success"),
     ]
+
+
+class StorageSnapshotIntervalChoices(ChoiceSet):
+    key = "StorageSnapshotPolicy.interval"
+
+    INTERVAL_HOURLY = "hourly"
+    INTERVAL_DAILY = "daily"
+    INTERVAL_WEEKLY = "weekly"
+    INTERVAL_MONTHLY = "monthly"
+
+    CHOICES = [
+        (INTERVAL_HOURLY, _("Hourly"), "info"),
+        (INTERVAL_DAILY, _("Daily"), "success"),
+        (INTERVAL_WEEKLY, _("Weekly"), "warning"),
+        (INTERVAL_MONTHLY, _("Monthly"), "primary"),
+    ]

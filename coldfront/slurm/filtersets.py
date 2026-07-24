@@ -6,6 +6,7 @@ import django_filters
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
+from coldfront.ras.models import Allocation
 from coldfront.slurm.models import (
     SlurmAccount,
     SlurmAssociation,
@@ -15,6 +16,7 @@ from coldfront.slurm.models import (
     SlurmUser,
 )
 from coldfront.tenancy.filtersets import TenancyFilterSet
+from coldfront.users.models import User
 from coldfront.views.filtersets import PrimaryModelFilterSet
 
 
@@ -34,12 +36,29 @@ class SlurmQOSFilterSet(PrimaryModelFilterSet):
 
 
 class SlurmClusterFilterSet(TenancyFilterSet, PrimaryModelFilterSet):
+    locked = django_filters.BooleanFilter(
+        label=_("Locked"),
+    )
+    default_qos_id = django_filters.ModelChoiceFilter(
+        field_name="default_qos",
+        queryset=SlurmQOS.objects.all(),
+        label=_("Default QOS"),
+    )
+    classification = django_filters.CharFilter(
+        field_name="classification",
+        lookup_expr="icontains",
+        label=_("Classification"),
+    )
+
     class Meta:
         model = SlurmCluster
         fields = (
             "id",
             "name",
             "description",
+            "locked",
+            "default_qos_id",
+            "classification",
         )
 
     def search(self, queryset, name, value):
@@ -61,6 +80,14 @@ class SlurmPartitionFilterSet(PrimaryModelFilterSet):
         to_field_name="name",
         label=_("Cluster (name)"),
     )
+    qos_id = django_filters.ModelChoiceFilter(
+        field_name="qos",
+        queryset=SlurmQOS.objects.all(),
+        label=_("QOS"),
+    )
+    locked = django_filters.BooleanFilter(
+        label=_("Locked"),
+    )
 
     class Meta:
         model = SlurmPartition
@@ -75,6 +102,8 @@ class SlurmPartitionFilterSet(PrimaryModelFilterSet):
             "is_default",
             "state",
             "preempt_mode",
+            "qos_id",
+            "locked",
         )
 
     def search(self, queryset, name, value):
@@ -117,6 +146,21 @@ class SlurmAssociationFilterSet(PrimaryModelFilterSet):
         queryset=SlurmAccount.objects.all(),
         label=_("Slurm Account"),
     )
+    allocation_id = django_filters.ModelChoiceFilter(
+        field_name="allocation",
+        queryset=Allocation.objects.all(),
+        label=_("Allocation"),
+    )
+    parent_id = django_filters.ModelChoiceFilter(
+        field_name="parent",
+        queryset=SlurmAccount.objects.all(),
+        label=_("Parent Account"),
+    )
+    default_qos_id = django_filters.ModelChoiceFilter(
+        field_name="default_qos",
+        queryset=SlurmQOS.objects.all(),
+        label=_("Default QOS"),
+    )
 
     class Meta:
         model = SlurmAssociation
@@ -124,6 +168,9 @@ class SlurmAssociationFilterSet(PrimaryModelFilterSet):
             "id",
             "slurm_account",
             "fairshare",
+            "allocation_id",
+            "parent_id",
+            "default_qos_id",
         )
 
     def search(self, queryset, name, value):
@@ -145,6 +192,21 @@ class SlurmUserFilterSet(PrimaryModelFilterSet):
         to_field_name="name",
         label=_("Cluster (name)"),
     )
+    user_id = django_filters.ModelChoiceFilter(
+        field_name="user",
+        queryset=User.objects.all(),
+        label=_("User"),
+    )
+    default_account_id = django_filters.ModelChoiceFilter(
+        field_name="default_account",
+        queryset=SlurmAccount.objects.all(),
+        label=_("Default Account"),
+    )
+    default_qos_id = django_filters.ModelChoiceFilter(
+        field_name="default_qos",
+        queryset=SlurmQOS.objects.all(),
+        label=_("Default QOS"),
+    )
 
     class Meta:
         model = SlurmUser
@@ -152,6 +214,9 @@ class SlurmUserFilterSet(PrimaryModelFilterSet):
             "id",
             "cluster",
             "admin_level",
+            "user_id",
+            "default_account_id",
+            "default_qos_id",
         )
 
     def search(self, queryset, name, value):

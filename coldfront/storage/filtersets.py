@@ -6,6 +6,8 @@ import django_filters
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
+from coldfront.ras.models import Allocation
+from coldfront.storage.choices import StorageShareTypeChoices
 from coldfront.storage.models import StorageCluster, StorageQuota, StorageResource, StorageSnapshotPolicy
 from coldfront.tenancy.filtersets import TenancyFilterSet
 from coldfront.views.filtersets import PrimaryModelFilterSet
@@ -17,6 +19,9 @@ class StorageResourceFilterSet(TenancyFilterSet, PrimaryModelFilterSet):
         distinct=False,
         label=_("Clusters"),
     )
+    locked = django_filters.BooleanFilter(
+        label=_("Locked"),
+    )
 
     class Meta:
         model = StorageResource
@@ -25,6 +30,7 @@ class StorageResourceFilterSet(TenancyFilterSet, PrimaryModelFilterSet):
             "name",
             "description",
             "clusters",
+            "locked",
         )
 
     def search(self, queryset, name, value):
@@ -34,12 +40,23 @@ class StorageResourceFilterSet(TenancyFilterSet, PrimaryModelFilterSet):
 
 
 class StorageClusterFilterSet(PrimaryModelFilterSet):
+    backend_path = django_filters.CharFilter(
+        field_name="backend_path",
+        lookup_expr="icontains",
+        label=_("Backend Path"),
+    )
+    auto_sync_enabled = django_filters.BooleanFilter(
+        label=_("Auto Sync Enabled"),
+    )
+
     class Meta:
         model = StorageCluster
         fields = (
             "id",
             "name",
             "description",
+            "backend_path",
+            "auto_sync_enabled",
         )
 
     def search(self, queryset, name, value):
@@ -61,6 +78,19 @@ class StorageQuotaFilterSet(PrimaryModelFilterSet):
         to_field_name="name",
         label=_("Storage Resource (name)"),
     )
+    allocation_id = django_filters.ModelChoiceFilter(
+        field_name="allocation",
+        queryset=Allocation.objects.all(),
+        label=_("Allocation"),
+    )
+    share_type = django_filters.ChoiceFilter(
+        choices=StorageShareTypeChoices,
+    )
+    snapshot_policy_id = django_filters.ModelChoiceFilter(
+        field_name="snapshot_policy",
+        queryset=StorageSnapshotPolicy.objects.all(),
+        label=_("Snapshot Policy"),
+    )
 
     class Meta:
         model = StorageQuota
@@ -71,6 +101,9 @@ class StorageQuotaFilterSet(PrimaryModelFilterSet):
             "owning_user",
             "owning_group",
             "state",
+            "allocation_id",
+            "share_type",
+            "snapshot_policy_id",
         )
 
     def search(self, queryset, name, value):
@@ -94,6 +127,9 @@ class StorageSnapshotPolicyFilterSet(PrimaryModelFilterSet):
         to_field_name="name",
         label=_("Cluster (name)"),
     )
+    retention_days = django_filters.NumberFilter(
+        label=_("Retention Days"),
+    )
 
     class Meta:
         model = StorageSnapshotPolicy
@@ -102,6 +138,7 @@ class StorageSnapshotPolicyFilterSet(PrimaryModelFilterSet):
             "cluster",
             "name",
             "interval",
+            "retention_days",
         )
 
     def search(self, queryset, name, value):
