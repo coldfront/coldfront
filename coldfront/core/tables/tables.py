@@ -3,10 +3,21 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import json
+
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, TableConfig, Tag, TaggedItem
+from coldfront.core.models import (
+    CustomField,
+    CustomFieldChoiceSet,
+    Job,
+    ObjectChange,
+    SavedFilter,
+    TableConfig,
+    Tag,
+    TaggedItem,
+)
 from coldfront.tables import ColdFrontTable, columns
 
 from .template_code import OBJECTCHANGE_FULL_NAME, OBJECTCHANGE_OBJECT, OBJECTCHANGE_REQUEST_ID
@@ -287,6 +298,57 @@ class JobTable(ColdFrontTable):
             "started",
             "completed",
             "interval",
+        )
+
+
+class SavedFilterTable(ColdFrontTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    object_types = columns.ContentTypesColumn(
+        verbose_name=_("Object Types"),
+    )
+    enabled = columns.BooleanColumn(
+        verbose_name=_("Enabled"),
+    )
+    shared = columns.BooleanColumn(
+        verbose_name=_("Shared"),
+        false_mark=None,
+    )
+    parameters = tables.TemplateColumn(
+        template_code="""{{ value|json }}""",
+        verbose_name=_("Parameters"),
+    )
+
+    def value_parameters(self, value):
+        return json.dumps(value)
+
+    class Meta(ColdFrontTable.Meta):
+        model = SavedFilter
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "slug",
+            "object_types",
+            "description",
+            "user",
+            "weight",
+            "enabled",
+            "shared",
+            "parameters",
+            "created",
+            "last_updated",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "object_types",
+            "user",
+            "description",
+            "enabled",
+            "shared",
         )
 
 

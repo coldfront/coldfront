@@ -29,10 +29,72 @@ from . import (
     forms,
     tables,
 )
-from .models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, TableConfig, Tag, TaggedItem
+from .models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, SavedFilter, TableConfig, Tag, TaggedItem
 from .plugins import get_local_plugins
 from .tables import CatalogPluginTable, PluginVersionTable
 from .templatetags.builtins.filters import render_markdown
+
+#
+# Saved Filter views
+#
+
+
+@register_model_view(SavedFilter, "list", path="", detail=False)
+class SavedFilterListView(generic.ObjectListView):
+    queryset = SavedFilter.objects.all()
+    filterset = filtersets.SavedFilterFilterSet
+    filterset_form = forms.SavedFilterFilterForm
+    table = tables.SavedFilterTable
+    actions = (BulkExport, BulkEdit, BulkDelete)
+
+
+@register_model_view(SavedFilter)
+class SavedFilterView(generic.ObjectView):
+    queryset = SavedFilter.objects.all()
+
+    def get_extra_context(self, request, instance):
+        return {
+            "parameters": instance.parameters,
+        }
+
+
+@register_model_view(SavedFilter, "add", detail=False)
+@register_model_view(SavedFilter, "edit")
+class SavedFilterEditView(generic.ObjectEditView):
+    queryset = SavedFilter.objects.all()
+    form = forms.SavedFilterForm
+
+    def alter_object(self, obj, request, url_args, url_kwargs):
+        if not obj.pk:
+            obj.user = request.user
+        return obj
+
+
+@register_model_view(SavedFilter, "delete")
+class SavedFilterDeleteView(generic.ObjectDeleteView):
+    queryset = SavedFilter.objects.all()
+
+
+@register_model_view(SavedFilter, "bulk_import", path="import", detail=False)
+class SavedFilterBulkImportView(generic.BulkImportView):
+    queryset = SavedFilter.objects.all()
+    model_form = forms.SavedFilterImportForm
+
+
+@register_model_view(SavedFilter, "bulk_edit", path="edit", detail=False)
+class SavedFilterBulkEditView(generic.BulkEditView):
+    queryset = SavedFilter.objects.all()
+    filterset = filtersets.SavedFilterFilterSet
+    table = tables.SavedFilterTable
+    form = forms.SavedFilterBulkEditForm
+
+
+@register_model_view(SavedFilter, "bulk_delete", path="delete", detail=False)
+class SavedFilterBulkDeleteView(generic.BulkDeleteView):
+    queryset = SavedFilter.objects.all()
+    filterset = filtersets.SavedFilterFilterSet
+    table = tables.SavedFilterTable
+
 
 #
 # Table Config views

@@ -15,7 +15,68 @@ from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet, ChangeLoggedModelFilterSet
 
 from .choices import CustomFieldTypeChoices
-from .models import CustomField, CustomFieldChoiceSet, ObjectChange, ObjectType, TableConfig, Tag, TaggedItem
+from .models import (
+    CustomField,
+    CustomFieldChoiceSet,
+    ObjectChange,
+    ObjectType,
+    SavedFilter,
+    TableConfig,
+    Tag,
+    TaggedItem,
+)
+
+
+class SavedFilterFilterSet(ChangeLoggedModelFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    object_type_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=ObjectType.objects.all(),
+        field_name="object_types",
+    )
+    object_type = django_filters.CharFilter(
+        field_name="object_types__name",
+        lookup_expr="exact",
+    )
+    user_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=User.objects.all(),
+        distinct=False,
+        label=_("User (ID)"),
+    )
+    user = django_filters.ModelMultipleChoiceFilter(
+        field_name="user__username",
+        queryset=User.objects.all(),
+        distinct=False,
+        to_field_name="username",
+        label=_("User (name)"),
+    )
+    usable = django_filters.BooleanFilter(
+        method="_usable",
+    )
+
+    class Meta:
+        model = SavedFilter
+        fields = ("id", "name", "slug", "description", "enabled", "shared", "weight")
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
+
+    def _usable(self, queryset, name, value):
+        """
+        Return only SavedFilters that are both enabled and are shared (or belong to the current user).
+        """
+        user = self.request.user if self.request else None
+        if not user or user.is_anonymous:
+            if value:
+                return queryset.filter(enabled=True, shared=True)
+            return queryset.filter(Q(enabled=False) | Q(shared=False))
+        if value:
+            return queryset.filter(enabled=True).filter(Q(shared=True) | Q(user=user))
+        return queryset.filter(Q(enabled=False) | Q(Q(shared=False) & ~Q(user=user)))
 
 
 class TableConfigFilterSet(ChangeLoggedModelFilterSet):

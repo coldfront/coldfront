@@ -13,7 +13,7 @@ from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CustomFieldFilterLogicChoices, ObjectChangeActionChoices
 from coldfront.core.filters import TagFilter, TagIDFilter
-from coldfront.core.models import CustomField, ObjectChange
+from coldfront.core.models import CustomField, ObjectChange, SavedFilter
 
 __all__ = (
     "BaseFilterSet",
@@ -75,6 +75,32 @@ class ColdFrontModelFilterSet(ChangeLoggedModelFilterSet):
     tag_id = TagIDFilter()
 
     def __init__(self, *args, **kwargs):
+        # Determine the data from positional args (django-filter convention: first arg is data)
+        data = args[0] if args else kwargs.get("data")
+
+        # Apply any referenced SavedFilters
+        if data is not None and ("filter" in data or "filter_id" in data):
+            data = data.copy()  # Get a mutable copy
+            saved_filters = SavedFilter.objects.filter(
+                Q(slug__in=data.pop("filter", [])) | Q(pk__in=data.pop("filter_id", []))
+            )
+            for sf in saved_filters:
+                for key, value in sf.parameters.items():
+                    # QueryDicts are... fun
+                    if type(value) not in (list, tuple):
+                        value = [value]
+                    if key in data:
+                        for v in value:
+                            data.appendlist(key, v)
+                    else:
+                        data.setlist(key, value)
+
+            # Replace the original data with the merged copy when forwarding to parent
+            if args:
+                args = (data,) + args[1:]
+            else:
+                kwargs["data"] = data
+
         super().__init__(*args, **kwargs)
 
         custom_field_filters = {}

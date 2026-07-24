@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from crispy_forms.layout import Fieldset, Layout
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .mixins import HorizontalFormMixin
+from .mixins import HorizontalFormMixin, SavedFiltersMixin
 
 __all__ = (
     "ColdFrontModelFilterSetForm",
@@ -15,7 +16,7 @@ __all__ = (
 )
 
 
-class BaseModelFilterSetForm(HorizontalFormMixin, forms.Form):
+class BaseModelFilterSetForm(SavedFiltersMixin, HorizontalFormMixin, forms.Form):
     """
     Base form for FilerSet forms. These are used to filter object lists in the ColdFront UI. Note that the
     corresponding FilterSet *must* provide a `q` filter.
@@ -33,6 +34,14 @@ class BaseModelFilterSetForm(HorizontalFormMixin, forms.Form):
         helper = super().helper
         helper.form_method = "get"
         return helper
+
+    def get_layout(self):
+        """
+        Override crispy layout to include search and filter fields
+        """
+        fieldsets = [Fieldset(_("Search"), "q", "filter_id"), *self.fieldsets]
+
+        return Layout(*fieldsets)
 
 
 class ColdFrontModelFilterSetForm(BaseModelFilterSetForm):

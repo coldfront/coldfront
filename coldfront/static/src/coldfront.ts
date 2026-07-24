@@ -19,6 +19,7 @@ import { initTheme } from './theme';
 import { initClipboard } from './clipboard';
 import { initObjectSelector } from './objectSelector';
 import { initQuickAdd } from './quickAdd';
+import { initSavedFilterSelect } from './savedFilters';
 
 function initDocument(): void {
   for (const init of [
@@ -36,6 +37,7 @@ function initDocument(): void {
     initClipboard,
     initObjectSelector,
     initQuickAdd,
+    initSavedFilterSelect,
   ]) {
     init();
   }

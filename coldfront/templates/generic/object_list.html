@@ -60,8 +60,13 @@ Context:
     {# Object list tab #}
     <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
 
+      {# Applied filters #}
+      {% if filter_form %}
+        {% applied_filters model filter_form request.GET %}
+      {% endif %}
+
       {# Object table controls #}
-      <c-table.controls :table="table" table_modal="ObjectTable_config" :table_configs="table_configs" only />
+      <c-table.controls :table="table" table_modal="ObjectTable_config" :table_configs="table_configs" :filter_form="filter_form" only />
 
       <form method="post" class="form form-horizontal">
         {% csrf_token %}

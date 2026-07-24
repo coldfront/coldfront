@@ -15,6 +15,18 @@
     </div>
   </div>
 
+  {% if filter_form %}
+    <div class="col-auto d-print-none">
+      <div class="input-group">
+        <label for="{{ filter_form.filter_id.id_for_label }}" class="input-group-text">
+          <i class="fa-solid fa-filter" title="{% trans "Saved filter" %}" aria-hidden="true"></i>
+          <span class="visually-hidden">{% trans "Saved filter" %}</span>
+        </label>
+        {{ filter_form.filter_id }}
+      </div>
+    </div>
+  {% endif %}
+
   <div class="col-auto ms-auto d-print-none">
     {% if request.user.is_authenticated and table_modal %}
       <div class="table-configure btn-group">

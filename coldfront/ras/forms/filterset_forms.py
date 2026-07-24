@@ -6,8 +6,15 @@ from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from coldfront.core.choices import ColorChoices
+from coldfront.core.models import ObjectType
 from coldfront.forms import OrganizationalModelFilterSetForm, PrimaryModelFilterSetForm
-from coldfront.forms.fields import DynamicModelMultipleChoiceField, TagFilterField
+from coldfront.forms.fields import (
+    ContentTypeChoiceField,
+    DynamicModelMultipleChoiceField,
+    TagFilterField,
+)
+from coldfront.forms.layouts import Date
 from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
@@ -17,16 +24,22 @@ from coldfront.ras.models import (
     ResourceType,
 )
 from coldfront.tenancy.forms import TenancyFilterSetForm
-from coldfront.users.models import User
+from coldfront.users.models import Group, User
 
 
 class ResourceTypeFilterSetForm(OrganizationalModelFilterSetForm):
     model = ResourceType
+    color = forms.MultipleChoiceField(
+        choices=ColorChoices.CHOICES,
+        required=False,
+        label=_("Color"),
+    )
     tag = TagFilterField(model)
 
     fieldsets = (
         Fieldset(
             "Resource Type",
+            "color",
             "tag",
         ),
     )
@@ -74,12 +87,18 @@ class ProjectFilterSetForm(TenancyFilterSetForm, OrganizationalModelFilterSetFor
         label=_("Owner"),
         required=False,
     )
+    group_id = forms.ModelChoiceField(
+        queryset=Group.objects.all(),
+        label=_("Group"),
+        required=False,
+    )
     tag = TagFilterField(model)
 
     fieldsets = (
         Fieldset(
             _("Project"),
             "owner",
+            "group_id",
             "tag",
         ),
         Fieldset(
@@ -98,6 +117,11 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
         required=False,
         label=_("Project"),
     )
+    resource_object_type_id = ContentTypeChoiceField(
+        label=_("Resource Object"),
+        queryset=ObjectType.objects.with_feature("allocatable_resource"),
+        required=False,
+    )
     status = forms.MultipleChoiceField(
         label=_("Status"),
         choices=AllocationStatusChoices,
@@ -108,14 +132,25 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
         label=_("Owner"),
         required=False,
     )
+    start_date = forms.DateField(
+        required=False,
+        label=_("Start date (on or after)"),
+    )
+    end_date = forms.DateField(
+        required=False,
+        label=_("End date (on or before)"),
+    )
     tag = TagFilterField(model)
 
     fieldsets = (
         Fieldset(
             _("Allocation"),
             "project_id",
+            "resource_object_type_id",
             "status",
             "owner",
+            Date("start_date"),
+            Date("end_date"),
             "tag",
         ),
         Fieldset(
@@ -133,13 +168,18 @@ class ProjectUserFilterSetForm(PrimaryModelFilterSetForm):
         required=False,
         label=_("Project"),
     )
+    user_id = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        label=_("User"),
+        required=False,
+    )
     tag = TagFilterField(model)
 
     fieldsets = (
         Fieldset(
             _("User"),
-            "q",
             "project_id",
+            "user_id",
             "tag",
         ),
     )

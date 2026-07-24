@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+import json
+
 from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.safestring import mark_safe
@@ -10,7 +12,7 @@ from django.utils.translation import gettext_lazy as _
 from django_jsonform.models.fields import JSONFormField
 
 from coldfront.core.choices import CustomFieldTypeChoices
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, TableConfig, Tag
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, SavedFilter, TableConfig, Tag
 from coldfront.forms.fields import (
     ContentTypeChoiceField,
     ContentTypeMultipleChoiceField,
@@ -111,6 +113,41 @@ class TableConfigForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelFor
         ),
         Fieldset(_("Columns"), "available_columns", "columns"),
     )
+
+
+class SavedFilterForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
+    slug = SlugField()
+    object_types = ContentTypeMultipleChoiceField(
+        label=_("Object types"),
+        queryset=ObjectType.objects.public(),
+    )
+    parameters = JSONField()
+
+    class Meta:
+        model = SavedFilter
+        exclude = ("user",)
+
+    fieldsets = (
+        Fieldset(
+            _("Saved Filter"),
+            "name",
+            Slug("slug"),
+            "object_types",
+            "description",
+            "weight",
+            "enabled",
+            "shared",
+        ),
+        Fieldset(_("Parameters"), "parameters"),
+    )
+
+    def __init__(self, *args, initial=None, **kwargs):
+        # Convert any parameters delivered via initial data to JSON data
+        if initial and "parameters" in initial:
+            if type(initial["parameters"]) is str:
+                initial["parameters"] = json.loads(initial["parameters"])
+
+        super().__init__(*args, initial=initial, **kwargs)
 
 
 class TagForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):

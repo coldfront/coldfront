@@ -12,7 +12,8 @@ from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CustomFieldUIEditableChoices
-from coldfront.core.models import CustomField, ObjectType, Tag
+from coldfront.core.models import CustomField, ObjectType, SavedFilter, Tag
+from coldfront.forms.fields import DynamicModelMultipleChoiceField
 from coldfront.users.permissions import get_permission_for_model
 
 
@@ -63,6 +64,36 @@ class TagsMixin(forms.Form):
         self.fields["tags"].queryset = self.fields["tags"].queryset.filter(
             Q(object_types__id=object_type.pk) | Q(object_types__isnull=True)
         )
+
+
+class SavedFiltersMixin(forms.Form):
+    """
+    Form mixin for forms that support saved filters.
+
+    Provides a field for selecting a saved filter,
+    with options limited to those applicable to the form's model.
+    """
+
+    filter_id = DynamicModelMultipleChoiceField(
+        queryset=SavedFilter.objects.all(),
+        required=False,
+        label=_("Saved Filter"),
+        query_params={
+            "usable": True,
+        },
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Limit saved filters to those applicable to the form's model
+        if hasattr(self, "model"):
+            object_type = ObjectType.objects.get_for_model(self.model)
+            self.fields["filter_id"].widget.add_query_params(
+                {
+                    "object_type_id": object_type.pk,
+                }
+            )
 
 
 class ChangelogMessageMixin(forms.Form):

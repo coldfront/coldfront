@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.choices import ColorChoices, CustomFieldUIEditableChoices, CustomFieldUIVisibleChoices
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, TableConfig, Tag
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, SavedFilter, TableConfig, Tag
 from coldfront.forms import ColdFrontModelBulkEditForm
 from coldfront.forms.widgets.select import BulkEditNullBooleanSelect
 from coldfront.utils.forms import add_blank_choice
@@ -159,6 +159,47 @@ class TagBulkEditForm(ColdFrontModelBulkEditForm):
                 "color",
                 "weight",
                 "description",
+            ),
+        ]
+
+
+class SavedFilterBulkEditForm(ColdFrontModelBulkEditForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=SavedFilter.objects.all(),
+        widget=forms.MultipleHiddenInput,
+    )
+    description = forms.CharField(
+        label=_("Description"),
+        max_length=200,
+        required=False,
+    )
+    weight = forms.IntegerField(
+        label=_("Weight"),
+        required=False,
+    )
+    enabled = forms.NullBooleanField(
+        label=_("Enabled"),
+        required=False,
+        widget=BulkEditNullBooleanSelect,
+    )
+    shared = forms.NullBooleanField(
+        label=_("Shared"),
+        required=False,
+        widget=BulkEditNullBooleanSelect,
+    )
+
+    model = SavedFilter
+    nullable_fields = ("description",)
+
+    @property
+    def fieldsets(self):
+        return [
+            Fieldset(
+                _("Saved Filter"),
+                "description",
+                "weight",
+                "enabled",
+                "shared",
             ),
         ]
 

@@ -8,6 +8,7 @@ from .tables import (
     CustomFieldTable,
     JobTable,
     ObjectChangeTable,
+    SavedFilterTable,
     TableConfigTable,
     TaggedItemTable,
     TagTable,
@@ -22,5 +23,6 @@ __all__ = (
     "CatalogPluginTable",
     "PluginVersionTable",
     "JobTable",
+    "SavedFilterTable",
     "TableConfigTable",
 )

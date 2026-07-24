@@ -10,6 +10,8 @@ from . import views
 
 app_name = "core"
 urlpatterns = [
+    path("saved-filters/", include(get_model_urls("core", "savedfilter", detail=False))),
+    path("saved-filters/<int:pk>/", include(get_model_urls("core", "savedfilter"))),
     path("table-configs/", include(get_model_urls("core", "tableconfig", detail=False))),
     path("table-configs/<int:pk>/", include(get_model_urls("core", "tableconfig"))),
     path("tags/", include(get_model_urls("core", "tag", detail=False))),

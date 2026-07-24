@@ -194,3 +194,11 @@ class AllocationStatusFlow(ColdFrontFlow):
         if not self._check_permission_callbacks("renew", self.allocation, user):
             return False
         return True
+
+    def can_revoke(self, user):
+        """
+        This function checks to see if the allocation can be revoked.
+        """
+        if not self._check_permission_callbacks("revoke", self.allocation, user):
+            return False
+        return True

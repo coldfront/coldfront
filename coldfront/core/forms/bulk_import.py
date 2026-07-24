@@ -11,7 +11,7 @@ from coldfront.core.choices import (
     CustomFieldUIEditableChoices,
     CustomFieldUIVisibleChoices,
 )
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, Tag
+from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, SavedFilter, Tag
 from coldfront.forms import CSVModelForm
 from coldfront.forms.fields import (
     CSVChoiceField,
@@ -20,6 +20,28 @@ from coldfront.forms.fields import (
     CSVMultipleContentTypeField,
     SlugField,
 )
+
+
+class SavedFilterImportForm(CSVModelForm):
+    slug = SlugField()
+    object_types = CSVMultipleContentTypeField(
+        label=_("Object types"),
+        queryset=ObjectType.objects.public(),
+        help_text=_("One or more assigned object types"),
+    )
+
+    class Meta:
+        model = SavedFilter
+        fields = (
+            "name",
+            "slug",
+            "object_types",
+            "description",
+            "weight",
+            "enabled",
+            "shared",
+            "parameters",
+        )
 
 
 class CustomFieldImportForm(CSVModelForm):

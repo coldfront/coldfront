@@ -15,10 +15,21 @@ from coldfront.users.models import Group, ObjectPermission, Token, User
 
 
 class GroupFilterSetForm(ColdFrontModelFilterSetForm):
+    name = forms.CharField(
+        label=_("Name"),
+        required=False,
+    )
+    description = forms.CharField(
+        label=_("Description"),
+        required=False,
+    )
+
     model = Group
     fieldsets = (
         Fieldset(
-            "q",
+            _("Group"),
+            "name",
+            "description",
         ),
     )
 
@@ -48,8 +59,7 @@ class UserFilterSetForm(ColdFrontModelFilterSetForm):
     model = User
     fieldsets = (
         Fieldset(
-            _("Search"),
-            "q",
+            _(""),
             "group_id",
             "project_id",
         ),
@@ -99,10 +109,6 @@ class ObjectPermissionFilterSetForm(ColdFrontModelFilterSetForm):
     model = ObjectPermission
     fieldsets = (
         Fieldset(
-            _("Search"),
-            "q",
-        ),
-        Fieldset(
             _("Permission"),
             "enabled",
             "group_id",
@@ -145,10 +151,6 @@ class TokenFilterSetForm(ColdFrontModelFilterSetForm):
 
     model = Token
     fieldsets = (
-        Fieldset(
-            _("Search"),
-            "q",
-        ),
         Fieldset(
             _("Token"),
             "user_id",
