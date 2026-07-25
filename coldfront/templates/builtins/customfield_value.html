@@ -1,32 +1,32 @@
 {% load i18n %}
 {% if customfield.type == 'integer' and value is not None %}
-  {{ value }}
+    {{ value }}
 {% elif customfield.type == 'longtext' and value %}
-  {{ value|markdown }}
+    {{ value|markdown }}
 {% elif customfield.type == 'boolean' and value == True %}
-  <c-ui.checkmark :value="value" true_label="True" only />
+    <c-ui.checkmark :value="value" true_label="True" only />
 {% elif customfield.type == 'boolean' and value == False %}
-  <c-ui.checkmark :value="value" false_label="False" only />
+    <c-ui.checkmark :value="value" false_label="False" only />
 {% elif customfield.type == 'date' and value %}
-  {{ value|isodate }}
+    {{ value|isodate }}
 {% elif customfield.type == 'datetime' and value %}
-  {{ value|isodatetime }}
+    {{ value|isodatetime }}
 {% elif customfield.type == 'url' and value %}
-  <a href="{{ value }}">{{ value|truncatechars:70 }}</a>
+    <a href="{{ value }}">{{ value|truncatechars:70 }}</a>
 {% elif customfield.type == 'json' and value is not None %}
-  <pre>{{ value|json }}</pre>
+    <pre>{{ value|json }}</pre>
 {% elif customfield.type == 'multiselect' and value %}
-  {{ value|join:", " }}
+    {{ value|join:", " }}
 {% elif customfield.type == 'object' and value %}
-  {{ value|linkify }}
+    {{ value|linkify }}
 {% elif customfield.type == 'multiobject' and value %}
-  {% for object in value %}
-    {{ object|linkify }}{% if not forloop.last %}<br />{% endif %}
-  {% endfor %}
+    {% for object in value %}
+        {{ object|linkify }}{% if not forloop.last %}<br>{% endif %}
+    {% endfor %}
 {% elif value %}
-  {{ value }}
+    {{ value }}
 {% elif customfield.required %}
-  <span class="text-warning"><i class="fa-solid fa-exclamation"></i> {% trans "Not defined" %}</span>
+    <span class="text-warning"><i class="fa-solid fa-exclamation"></i> {% trans "Not defined" %}</span>
 {% else %}
-  {{ ''|placeholder }}
+    {{ ''|placeholder }}
 {% endif %}

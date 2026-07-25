@@ -7,12 +7,12 @@
 {% cotton:vars table %}
 
 {% if table.rows %}
-  <div class="table-container table-responsive">
-    {% render_table table 'generic/table.html' %}
-  </div>
-  {% if show_paginator %}
-  <c-table.paginator :paginator="table.paginator" :page="table.page" only />
-  {% endif %}
+    <div class="table-container table-responsive">
+        {% render_table table 'generic/table.html' %}
+    </div>
+    {% if show_paginator %}
+        <c-table.paginator :paginator="table.paginator" :page="table.page" only />
+    {% endif %}
 {% else %}
-  <div class="card-body text-muted">{% trans "None" %}</div>
+    <div class="card-body text-muted">{% trans "None" %}</div>
 {% endif %}

@@ -3,6 +3,9 @@
 
 {% block extra_controls %}
     {% if perms.ras.request_allocation %}
-        <c-button.request url="{% url 'ras:project_allocationrequest' pk=object.pk %}?return_url={% url 'ras:project_allocations' pk=object.pk %}" label="{% trans "Request Allocation" %}" />
+        <c-button.request
+            url="{% url 'ras:project_allocationrequest' pk=object.pk %}?return_url={% url 'ras:project_allocations' pk=object.pk %}"
+            label='{% trans "Request Allocation" %}'
+        />
     {% endif %}
 {% endblock extra_controls %}

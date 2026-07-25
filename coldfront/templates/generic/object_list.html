@@ -27,110 +27,141 @@ Context:
 {% block title %}{{ model|meta:"verbose_name_plural"|title }}{% endblock %}
 
 {% block controls %}
-  <div class="btn-list">
-    {% plugin_list_buttons model %}
-    {% block extra_controls %}{% endblock %}
-    {% action_buttons actions model %}
-  </div>
+    <div class="btn-list">
+        {% plugin_list_buttons model %}
+        {% block extra_controls %}{% endblock %}
+        {% action_buttons actions model %}
+    </div>
 {% endblock controls %}
 
 {% block tabs %}
-  <ul class="nav nav-tabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <a class="nav-link active" id="object-list-tab" data-bs-toggle="tab" data-bs-target="#object-list" type="button" role="tab" aria-controls="edit-form" aria-selected="true">
-        {% trans "Results" %}
-        <c-ui.badge css_class="total-object-count" only>
-          <c-slot name="value">{% if table.page.paginator.count %}{{ table.page.paginator.count }}{% else %}{{ total_count|default:"0" }}{% endif %}</c-slot>
-        </c-ui.badge>
-      </a>
-    </li>
-    {% if filter_form %}
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="filters-form-tab" data-bs-toggle="tab" data-bs-target="#filters-form" type="button" role="tab" aria-controls="object-list" aria-selected="false">
-          {% trans "Filters" %}
-          {% if filter_form %}<c-ui.badge :value="{{ filter_form.changed_data|length }}" bg_color="primary" only />{% endif %}
-        </button>
-      </li>
-    {% endif %}
-  </ul>
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a
+                class="nav-link active"
+                id="object-list-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#object-list"
+                type="button"
+                role="tab"
+                aria-controls="edit-form"
+                aria-selected="true"
+            >
+                {% trans "Results" %}
+                <c-ui.badge css_class="total-object-count" only>
+                    <c-slot
+                        name="value"
+                    >{% if table.page.paginator.count %}{{ table.page.paginator.count }}{% else %}{{ total_count|default:"0" }}{% endif %}</c-slot>
+                </c-ui.badge>
+            </a>
+        </li>
+        {% if filter_form %}
+            <li class="nav-item" role="presentation">
+                <button
+                    class="nav-link"
+                    id="filters-form-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#filters-form"
+                    type="button"
+                    role="tab"
+                    aria-controls="object-list"
+                    aria-selected="false"
+                >
+                    {% trans "Filters" %}
+                    {% if filter_form %}<c-ui.badge
+                            :value="{{ filter_form.changed_data|length }}"
+                            bg_color="primary"
+                            only
+                        />{% endif %}
+                </button>
+            </li>
+        {% endif %}
+    </ul>
 {% endblock tabs %}
 
 {% block content %}
-
     {# Object list tab #}
     <div class="tab-pane show active" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
-
-      {# Applied filters #}
-      {% if filter_form %}
-        {% applied_filters model filter_form request.GET %}
-      {% endif %}
-
-      {# Object table controls #}
-      <c-table.controls :table="table" table_modal="ObjectTable_config" :table_configs="table_configs" :filter_form="filter_form" only />
-
-      <form method="post" class="form form-horizontal">
-        {% csrf_token %}
-        {# "Select all" form #}
-        {% if table.paginator.num_pages > 1 %}
-          <div id="select-all-box" class="d-none card d-print-none">
-            <div class="form col-md-12">
-              <div class="card-body d-flex justify-content-between">
-                <div class="form-check">
-                  <input type="checkbox" id="select-all" name="_all" class="form-check-input" />
-                  <label for="select-all" class="form-check-label">
-                    {% blocktrans trimmed with count=table.page.paginator.count object_type_plural=table.data.verbose_name_plural %}
-                      Select <strong>all <span class="total-object-count">{{ count }}</span> {{ object_type_plural }}</strong> matching query
-                    {% endblocktrans %}
-                  </label>
-                </div>
-                <div class="bulk-action-buttons">
-                  {% action_buttons actions model multi=True %}
-                </div>
-              </div>
-            </div>
-          </div>
+        {# Applied filters #}
+        {% if filter_form %}
+            {% applied_filters model filter_form request.GET %}
         {% endif %}
 
-        <div class="form form-horizontal">
-          {% csrf_token %}
-          <input type="hidden" name="return_url" value="{% if return_url %}{{ return_url }}{% else %}{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}{% endif %}" />
+        {# Object table controls #}
+        <c-table.controls
+            :table="table"
+            table_modal="ObjectTable_config"
+            :table_configs="table_configs"
+            :filter_form="filter_form"
+            only
+        />
 
-          {# Warn of any missing prerequisite objects #}
-          {% if prerequisite_model %}
-            <c-alert.missing_prereqs :model="model" :prerequisite_model="prerequisite_model" only />
-          {% endif %}
+        <form method="post" class="form form-horizontal">
+            {% csrf_token %}
+            {# "Select all" form #}
+            {% if table.paginator.num_pages > 1 %}
+                <div id="select-all-box" class="d-none card d-print-none">
+                    <div class="form col-md-12">
+                        <div class="card-body d-flex justify-content-between">
+                            <div class="form-check">
+                                <input type="checkbox" id="select-all" name="_all" class="form-check-input">
+                                <label for="select-all" class="form-check-label">
+                                    {% blocktrans trimmed with count=table.page.paginator.count object_type_plural=table.data.verbose_name_plural %}
+                                        Select <strong>all <span class="total-object-count">{{ count }}</span>
+                                            {{ object_type_plural }}</strong> matching query
+                                    {% endblocktrans %}
+                                </label>
+                            </div>
+                            <div class="bulk-action-buttons">
+                                {% action_buttons actions model multi=True %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
-          {# Objects table #}
-          <c-card.table.htmx :table="table" only />
-          {# /Objects table #}
+            <div class="form form-horizontal">
+                {% csrf_token %}
+                <input
+                    type="hidden"
+                    name="return_url"
+                    value="{% if return_url %}{{ return_url }}{% else %}{{ request.path }}{% if request.GET %}?{{ request.GET.urlencode }}{% endif %}{% endif %}"
+                >
 
-          {# Form buttons #}
-          <div class="btn-list d-print-none">
-            {% block bulk_buttons %}
-              {% if table.rows %}
-              <div class="bulk-action-buttons">
-                {% action_buttons actions model multi=True %}
-              </div>
-              {% endif %}
-            {% endblock %}
-          </div>
-          {# /Form buttons #}
+                {# Warn of any missing prerequisite objects #}
+                {% if prerequisite_model %}
+                    <c-alert.missing_prereqs :model="model" :prerequisite_model="prerequisite_model" only />
+                {% endif %}
 
-        </div>
-      </form>
+                {# Objects table #}
+                <c-card.table.htmx :table="table" only />
+                {# /Objects table #}
+
+                {# Form buttons #}
+                <div class="btn-list d-print-none">
+                    {% block bulk_buttons %}
+                        {% if table.rows %}
+                            <div class="bulk-action-buttons">
+                                {% action_buttons actions model multi=True %}
+                            </div>
+                        {% endif %}
+                    {% endblock %}
+                </div>
+                {# /Form buttons #}
+            </div>
+        </form>
     </div>
     {# /Object list tab #}
 
     {# Filters tab #}
     {% if filter_form %}
-      <div class="tab-pane show" id="filters-form" role="tabpanel" aria-labelledby="filters-form-tab">
-          <c-form.filters :filter_form="filter_form" only />
-      </div>
+        <div class="tab-pane show" id="filters-form" role="tabpanel" aria-labelledby="filters-form-tab">
+            <c-form.filters :filter_form="filter_form" only />
+        </div>
     {% endif %}
     {# /Filters tab #}
-
 {% endblock content %}
 
 {% block modals %}
-  {% table_config_form table table_name="ObjectTable" %}
+    {% table_config_form table table_name="ObjectTable" %}
 {% endblock modals %}

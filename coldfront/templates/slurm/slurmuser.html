@@ -2,40 +2,39 @@
 {% load i18n %}
 
 {% block content %}
-<c-layout.panels>
-  <c-slot name="left">
-    <c-card.fields :object="object" only>
-      <c-card.fields.item label="{% trans 'User' %}">
-        <c-ui.badge link="{{ object.user.get_absolute_url }}" :value="object.user" />
-      </c-card.fields.item>
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields :object="object" only>
+                <c-card.fields.item label="{% trans 'User' %}">
+                    <c-ui.badge link="{{ object.user.get_absolute_url }}" :value="object.user" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Cluster' %}">
-        <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Cluster' %}">
+                    <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Default Account' %}">
-        {{ object.default_account|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default Account' %}">
+                    {{ object.default_account|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Default WCKey' %}">
-        {{ object.default_wckey|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default WCKey' %}">
+                    {{ object.default_wckey|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Default QOS' %}">
-        {{ object.default_qos|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default QOS' %}">
+                    {{ object.default_qos|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Admin Level' %}">
-        {{ object.get_admin_level_display|placeholder }}
-      </c-card.fields.item>
-    </c-card.fields>
+                <c-card.fields.item label="{% trans 'Admin Level' %}">
+                    {{ object.get_admin_level_display|placeholder }}
+                </c-card.fields.item>
+            </c-card.fields>
 
-    <c-card.tags :object="object" only />
-  </c-slot>
+            <c-card.tags :object="object" only />
+        </c-slot>
 
-  <c-slot name="right">
-    <c-card.custom_fields :object="object" only />
-  </c-slot>
-
-</c-layout.panels>
+        <c-slot name="right">
+            <c-card.custom_fields :object="object" only />
+        </c-slot>
+    </c-layout.panels>
 {% endblock %}

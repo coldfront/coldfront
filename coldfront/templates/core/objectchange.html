@@ -4,16 +4,20 @@
 {% block title %}{{ object }}{% endblock %}
 
 {% block breadcrumbs %}
-  <li class="breadcrumb-item"><a href="{% url 'core:objectchange_list' %}">{% trans "Change Log" %}</a></li>
-  {% if object.related_object and object.related_object.get_absolute_url %}
-    <li class="breadcrumb-item"><a href="{{ object.related_object.get_absolute_url }}changelog/">{{ object.related_object }}</a></li>
-  {% elif object.changed_object and object.changed_object.get_absolute_url %}
-    <li class="breadcrumb-item"><a href="{{ object.changed_object.get_absolute_url }}changelog/">{{ object.changed_object }}</a></li>
-  {% elif object.changed_object and object.changed_object.get_display %}
-    <li class="breadcrumb-item">{{ object.changed_object }}</li>
-  {% else %}
-    <li class="breadcrumb-item">{{ object.object_repr }}</li>
-  {% endif %}
+    <li class="breadcrumb-item"><a href="{% url 'core:objectchange_list' %}">{% trans "Change Log" %}</a></li>
+    {% if object.related_object and object.related_object.get_absolute_url %}
+        <li class="breadcrumb-item">
+            <a href="{{ object.related_object.get_absolute_url }}changelog/">{{ object.related_object }}</a>
+        </li>
+    {% elif object.changed_object and object.changed_object.get_absolute_url %}
+        <li class="breadcrumb-item">
+            <a href="{{ object.changed_object.get_absolute_url }}changelog/">{{ object.changed_object }}</a>
+        </li>
+    {% elif object.changed_object and object.changed_object.get_display %}
+        <li class="breadcrumb-item">{{ object.changed_object }}</li>
+    {% else %}
+        <li class="breadcrumb-item">{{ object.object_repr }}</li>
+    {% endif %}
 {% endblock %}
 
 {# ObjectChange does not support the default add/edit/delete controls #}
@@ -21,152 +25,158 @@
 {% block subtitle %}{% endblock %}
 
 {% block content %}
-<c-layout.row>
-  <c-layout.col>
+    <c-layout.row>
+        <c-layout.col>
+            <c-card.fields header='{% trans "Change" %}' only>
+                <c-card.fields.item label="{% trans 'Time' %}">
+                    {{ object.time|isodatetime }}
+                </c-card.fields.item>
 
-    <c-card.fields header="{% trans "Change" %}" only>
-      <c-card.fields.item label="{% trans 'Time' %}">
-          {{ object.time|isodatetime }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'User' %}">
+                    {% if object.user.get_full_name %}
+                        {{ object.user.get_full_name }} ({{ object.user_name }})
+                    {% else %}
+                        {{ object.user_name }}
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'User' %}">
-          {% if object.user.get_full_name %}
-            {{ object.user.get_full_name }} ({{ object.user_name }})
-          {% else %}
-            {{ object.user_name }}
-          {% endif %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Action' %}">
+                    {{ object.get_action_display }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Action' %}">
-          {{ object.get_action_display }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Object Type' %}">
+                    {{ object.changed_object_type }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Object Type' %}">
-          {{ object.changed_object_type }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Object' %}">
+                    {% if object.changed_object and object.changed_object.get_absolute_url %}
+                        {{ object.changed_object|linkify }}
+                    {% else %}
+                        {{ object.object_repr }}
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Object' %}">
-          {% if object.changed_object and object.changed_object.get_absolute_url %}
-              {{ object.changed_object|linkify }}
-          {% else %}
-              {{ object.object_repr }}
-          {% endif %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Message' %}">
+                    {{ object.message|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Message' %}">
-          {{ object.message|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Request ID' %}">
+                    <a
+                        href="{% url 'core:objectchange_list' %}?request_id={{ object.request_id }}"
+                    >{{ object.request_id }}</a>
+                </c-card.fields.item>
+            </c-card.fields>
+        </c-layout.col>
 
-      <c-card.fields.item label="{% trans 'Request ID' %}">
-          <a href="{% url 'core:objectchange_list' %}?request_id={{ object.request_id }}">{{ object.request_id }}</a>
-      </c-card.fields.item>
-    </c-card.fields>
+        <c-layout.col>
+            <c-card only>
+                <c-slot name="header">
+                    {% trans "Difference" %}
+                    <div class="btn-group btn-group-sm d-print-none">
+                        <a
+                            {% if prev_change %}
+                                href="{% url 'core:objectchange' pk=prev_change.pk %}"
+                            {% else %}
+                                disabled
+                            {% endif %}
+                            class="btn btn-outline-secondary"
+                        >
+                            <i class="fa fa-chevron-left" aria-hidden="true"></i> {% trans "Previous" %}
+                        </a>
+                        <a
+                            {% if next_change %}
+                                href="{% url 'core:objectchange' pk=next_change.pk %}"
+                            {% else %}
+                                disabled
+                            {% endif %}
+                            class="btn btn-outline-secondary"
+                        >
+                            {% trans "Next" %} <i class="fa fa-chevron-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </c-slot>
 
-  </c-layout.col>
+                <div class="card-body">
+                    {% if diff_added == diff_removed %}
+                        <span class="text-muted" style="margin-left: 10px">
+                            {% if object.action == 'create' %}
+                                {% trans "Object Created" %}
+                            {% elif object.action == 'delete' %}
+                                {% trans "Object Deleted" %}
+                            {% else %}
+                                {% trans "No Changes" %}
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <pre class="change-diff change-removed">{{ diff_removed|json }}</pre>
+                        <pre class="change-diff change-added">{{ diff_added|json }}</pre>
+                    {% endif %}
+                </div>
+            </c-card>
+        </c-layout.col>
+    </c-layout.row>
 
-  <c-layout.col>
-
-    <c-card only>
-      <c-slot name="header">
-        {% trans "Difference" %}
-        <div class="btn-group btn-group-sm d-print-none">
-          <a {% if prev_change %}href="{% url 'core:objectchange' pk=prev_change.pk %}"{% else %}disabled{% endif %} class="btn btn-outline-secondary">
-            <i class="fa fa-chevron-left" aria-hidden="true"></i> {% trans "Previous" %}
-          </a>
-          <a {% if next_change %}href="{% url 'core:objectchange' pk=next_change.pk %}"{% else %}disabled{% endif %} class="btn btn-outline-secondary">
-            {% trans "Next" %} <i class="fa fa-chevron-right" aria-hidden="true"></i>
-          </a>
-        </div>
-      </c-slot>
-
-      <div class="card-body">
-        {% if diff_added == diff_removed %}
-            <span class="text-muted" style="margin-left: 10px;">
-                {% if object.action == 'create' %}
-                    {% trans "Object Created" %}
-                {% elif object.action == 'delete' %}
-                    {% trans "Object Deleted" %}
-                {% else %}
-                    {% trans "No Changes" %}
-                {% endif %}
-            </span>
-        {% else %}
-            <pre class="change-diff change-removed">{{ diff_removed|json }}</pre>
-            <pre class="change-diff change-added">{{ diff_added|json }}</pre>
-        {% endif %}
-      </div>
-    </c-card>
-
-  </c-layout.col>
-
-</c-layout.row>
-
-<c-layout.row>
-
-  <c-layout.col>
-
-    <c-card header="{% trans 'Pre-Change Data' %}" only>
-      <div class="card-body">
-        {% if object.prechange_data %}
-          {% spaceless %}
-            <pre class="change-data">
+    <c-layout.row>
+        <c-layout.col>
+            <c-card header="{% trans 'Pre-Change Data' %}" only>
+                <div class="card-body">
+                    {% if object.prechange_data %}
+                        {% spaceless %}
+                            <pre class="change-data">
               {% for k, v in object.prechange_data_clean.items %}
                 <span{% if k in diff_removed %} class="removed"{% endif %}>{{ k }}: {{ v|json }}</span>
               {% endfor %}
             </pre>
-          {% endspaceless %}
-        {% elif non_atomic_change %}
-          {% trans "Warning: Comparing non-atomic change to previous change record" %} (<a href="{% url 'core:objectchange' pk=prev_change.pk %}">{{ prev_change.pk }}</a>)
-        {% else %}
-          <span class="text-muted">{% trans "None" %}</span>
-        {% endif %}
-      </div>
-    </c-card>
+                        {% endspaceless %}
+                    {% elif non_atomic_change %}
+                        {% trans "Warning: Comparing non-atomic change to previous change record" %} (<a
+                            href="{% url 'core:objectchange' pk=prev_change.pk %}"
+                        >{{ prev_change.pk }}</a>)
+                    {% else %}
+                        <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}
+                </div>
+            </c-card>
+        </c-layout.col>
 
-  </c-layout.col>
-
-  <c-layout.col>
-
-    <c-card header="{% trans 'Post-Change Data' %}" only>
-      <div class="card-body">
-        {% if object.postchange_data %}
-          {% spaceless %}
-            <pre class="change-data">
+        <c-layout.col>
+            <c-card header="{% trans 'Post-Change Data' %}" only>
+                <div class="card-body">
+                    {% if object.postchange_data %}
+                        {% spaceless %}
+                            <pre class="change-data">
               {% for k, v in object.postchange_data_clean.items %}
                 <span{% if k in diff_added %} class="added"{% endif %}>{{ k }}: {{ v|json }}</span>
               {% endfor %}
             </pre>
-          {% endspaceless %}
-        {% else %}
-          <span class="text-muted">{% trans "None" %}</span>
-        {% endif %}
-      </div>
-    </c-card>
+                        {% endspaceless %}
+                    {% else %}
+                        <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}
+                </div>
+            </c-card>
+        </c-layout.col>
+    </c-layout.row>
 
-  </c-layout.col>
-
-</c-layout.row>
-
-<c-layout.row>
-
-  <c-layout.col>
-
-    <c-card.table :table="related_changes_table" :show_paginator=False only>
-        <c-slot name="header">
-            {% trans "Related Changes" %}
-            {% if related_changes_count > related_changes_table.rows|length %}
-            <div class="float-end">
-            <a href="{% url 'core:objectchange_list' %}?request_id={{ object.request_id }}" class="btn btn-primary">
-                {% blocktrans trimmed with count=related_changes_count|add:"1" %}
-                See All {{ count }} Changes
-                {% endblocktrans %}
-            </a>
-            </div>
-            {% endif %}
-        </c-slot>
-    </c-card.table>
-
-  </c-layout.col>
-
-</c-layout.row>
+    <c-layout.row>
+        <c-layout.col>
+            <c-card.table :table="related_changes_table" :show_paginator=False only>
+                <c-slot name="header">
+                    {% trans "Related Changes" %}
+                    {% if related_changes_count > related_changes_table.rows|length %}
+                        <div class="float-end">
+                            <a
+                                href="{% url 'core:objectchange_list' %}?request_id={{ object.request_id }}"
+                                class="btn btn-primary"
+                            >
+                                {% blocktrans trimmed with count=related_changes_count|add:"1" %}
+                                    See All {{ count }} Changes
+                                {% endblocktrans %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </c-slot>
+            </c-card.table>
+        </c-layout.col>
+    </c-layout.row>
 {% endblock %}

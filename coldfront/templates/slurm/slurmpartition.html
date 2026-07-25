@@ -2,120 +2,120 @@
 {% load i18n %}
 
 {% block content %}
-<c-layout.panels>
-  <c-slot name="left">
-    <c-card.fields :object="object" only>
-      <c-card.fields.item label="{% trans 'Cluster' %}">
-        <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
-      </c-card.fields.item>
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields :object="object" only>
+                <c-card.fields.item label="{% trans 'Cluster' %}">
+                    <c-ui.badge link="{{ object.cluster.get_absolute_url }}" :value="object.cluster" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Slug' %}">
-        {{ object.slug }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Slug' %}">
+                    {{ object.slug }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Nodes' %}">
-        {{ object.nodes|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Nodes' %}">
+                    {{ object.nodes|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Priority' %}">
-        {{ object.priority|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Priority' %}">
+                    {{ object.priority|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Default' %}">
-        <c-ui.checkmark :value="object.is_default" />
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default' %}">
+                    <c-ui.checkmark :value="object.is_default" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Default Time' %}">
-        {{ object.default_time|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default Time' %}">
+                    {{ object.default_time|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'State' %}">
-        {{ object.state|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'State' %}">
+                    {{ object.state|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Preempt Mode' %}">
-        {{ object.preempt_mode|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Preempt Mode' %}">
+                    {{ object.preempt_mode|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Default Memory Per CPU' %}">
-        {{ object.def_mem_per_cpu|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default Memory Per CPU' %}">
+                    {{ object.def_mem_per_cpu|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Description' %}">
-        {{ object.description|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Description' %}">
+                    {{ object.description|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Locked' %}">
-        <c-ui.checkmark :value="object.locked" />
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Locked' %}">
+                    <c-ui.checkmark :value="object.locked" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Max Jobs' %}">
-        {{ object.max_jobs|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Max Jobs' %}">
+                    {{ object.max_jobs|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Max Submit Jobs' %}">
-        {{ object.max_submit_jobs|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Max Submit Jobs' %}">
+                    {{ object.max_submit_jobs|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Fairshare' %}">
-        {{ object.fairshare }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Fairshare' %}">
+                    {{ object.fairshare }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Allowed Groups' %}">
-        {% for group in object.allow_groups.all %}
-            <c-ui.badge link="{{ group.get_absolute_url }}" :value="group" />
-        {% empty %}
-            {{ ""|placeholder }}
-        {% endfor %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Allowed Groups' %}">
+                    {% for group in object.allow_groups.all %}
+                        <c-ui.badge link="{{ group.get_absolute_url }}" :value="group" />
+                    {% empty %}
+                        {{ ""|placeholder }}
+                    {% endfor %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Allowed Accounts' %}">
-        {% for acct in object.allow_accounts.all %}
-            <c-ui.badge link="{{ acct.get_absolute_url }}" :value="acct" />
-        {% empty %}
-            {{ ""|placeholder }}
-        {% endfor %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Allowed Accounts' %}">
+                    {% for acct in object.allow_accounts.all %}
+                        <c-ui.badge link="{{ acct.get_absolute_url }}" :value="acct" />
+                    {% empty %}
+                        {{ ""|placeholder }}
+                    {% endfor %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Allow QOS' %}">
-        {% for qos in object.allow_qos.all %}
-            <c-ui.badge link="{{ qos.get_absolute_url }}" :value="qos" />
-        {% empty %}
-            {{ ""|placeholder }}
-        {% endfor %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Allow QOS' %}">
+                    {% for qos in object.allow_qos.all %}
+                        <c-ui.badge link="{{ qos.get_absolute_url }}" :value="qos" />
+                    {% empty %}
+                        {{ ""|placeholder }}
+                    {% endfor %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'QOS' %}">
-        {{ object.qos|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'QOS' %}">
+                    {{ object.qos|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Max TRES per Job' %}">
-        {{ object.max_tres_per_job|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Max TRES per Job' %}">
+                    {{ object.max_tres_per_job|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Max TRES per Node' %}">
-        {{ object.max_tres_per_node|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Max TRES per Node' %}">
+                    {{ object.max_tres_per_node|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Max TRES Minutes per Job' %}">
-        {{ object.max_tres_mins_per_job|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Max TRES Minutes per Job' %}">
+                    {{ object.max_tres_mins_per_job|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Max Wall Duration per Job' %}">
-        {{ object.max_wall_duration_per_job|placeholder }}
-      </c-card.fields.item>
-    </c-card.fields>
+                <c-card.fields.item label="{% trans 'Max Wall Duration per Job' %}">
+                    {{ object.max_wall_duration_per_job|placeholder }}
+                </c-card.fields.item>
+            </c-card.fields>
 
-    <c-card.tags :object="object" only />
-  </c-slot>
+            <c-card.tags :object="object" only />
+        </c-slot>
 
-  <c-slot name="right">
-    <c-card.custom_fields :object="object" only />
-    <c-card.related_objects :object="object" :models="related_models" only />
-  </c-slot>
+        <c-slot name="right">
+            <c-card.custom_fields :object="object" only />
+            <c-card.related_objects :object="object" :models="related_models" only />
+        </c-slot>
 
-  <c-slot name="bottom">
-    <c-card.schema :object="object" only />
-  </c-slot>
-</c-layout.panels>
+        <c-slot name="bottom">
+            <c-card.schema :object="object" only />
+        </c-slot>
+    </c-layout.panels>
 {% endblock %}

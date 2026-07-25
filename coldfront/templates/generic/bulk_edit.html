@@ -17,82 +17,97 @@ Context:
 {% endcomment %}
 
 {% block title %}
-  {% trans "Editing" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural"|bettertitle }}
+    {% trans "Editing" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural"|bettertitle }}
 {% endblock %}
 
 {% block tabs %}
-  <ul class="nav nav-tabs">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="edit-form-tab" data-bs-toggle="tab" data-bs-target="#edit-form" type="button" role="tab" aria-controls="edit-form" aria-selected="true">
-        {% trans "Bulk Edit" %}
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="object-list-tab" data-bs-toggle="tab" data-bs-target="#object-list" type="button" role="tab" aria-controls="object-list" aria-selected="false">
-        {% trans "Selected Objects" %}
-        <c-ui.badge value="{{ table.rows|length }}" />
-      </button>
-    </li>
-  </ul>
+    <ul class="nav nav-tabs">
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link active"
+                id="edit-form-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#edit-form"
+                type="button"
+                role="tab"
+                aria-controls="edit-form"
+                aria-selected="true"
+            >
+                {% trans "Bulk Edit" %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link"
+                id="object-list-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#object-list"
+                type="button"
+                role="tab"
+                aria-controls="object-list"
+                aria-selected="false"
+            >
+                {% trans "Selected Objects" %}
+                <c-ui.badge value="{{ table.rows|length }}" />
+            </button>
+        </li>
+    </ul>
 {% endblock tabs %}
 
 {% block alerts %}
-<c-alert.messages :form="form" only />
+    <c-alert.messages :form="form" only />
 {% endblock %}
 
 {% block content %}
+    {# Edit form #}
+    <div class="tab-pane show active" id="edit-form" role="tabpanel" aria-labelledby="edit-form-tab">
+        <form action="" method="post" class="form form-horizontal mt-5">
+            <div id="form_fields">
+                {% csrf_token %}
+                {% if request.POST.return_url %}
+                    <input type="hidden" name="return_url" value="{{ request.POST.return_url }}">
+                {% endif %}
+                {% for field in form.hidden_fields %}
+                    {{ field|as_crispy_field }}
+                {% endfor %}
 
-  {# Edit form #}
-  <div class="tab-pane show active" id="edit-form" role="tabpanel" aria-labelledby="edit-form-tab">
-    <form action="" method="post" class="form form-horizontal mt-5">
-      <div id="form_fields">
-        {% csrf_token %}
-        {% if request.POST.return_url %}
-          <input type="hidden" name="return_url" value="{{ request.POST.return_url }}" />
-        {% endif %}
-        {% for field in form.hidden_fields %}
-          {{ field|as_crispy_field }}
-        {% endfor %}
+                {# Render visible fields with nullable support #}
+                {% if form.fieldsets %}
+                    <c-form.fieldsets :form="form" />
+                {% else %}
+                    {% for field in form.visible_fields %}
+                        {% if field.name in form.meta_fields %}
+                            {# Skip meta fields - they're rendered separately #}
+                        {% elif field.name in form.nullable_fields %}
+                            <c-field.nullify :field="field" :form="form" />
+                        {% else %}
+                            {{ field|as_crispy_field }}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
 
-        {# Render visible fields with nullable support #}
-        {% if form.fieldsets %}
-          <c-form.fieldsets :form="form" />
-        {% else %}
-          {% for field in form.visible_fields %}
-            {% if field.name in form.meta_fields %}
-              {# Skip meta fields - they're rendered separately #}
-            {% elif field.name in form.nullable_fields %}
-              <c-field.nullify :field="field" :form="form" />
-            {% else %}
-              {{ field|as_crispy_field }}
-            {% endif %}
-          {% endfor %}
-        {% endif %}
+                {# Meta fields #}
+                {% if form.changelog_message %}
+                    {{ form.changelog_message|as_crispy_field }}
+                {% endif %}
 
-        {# Meta fields #}
-        {% if form.changelog_message %}
-          {{ form.changelog_message|as_crispy_field }}
-        {% endif %}
-
-        {# Form buttons #}
-        <div class="col-lg-9 text-end">
-          <a href="{{ return_url }}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
-          <button type="submit" name="_apply" class="btn btn-primary">{% trans "Apply" %}</button>
-        </div>
-
-      </div>
-    </form>
-  </div>
-  {# /Edit form #}
-
-  {# Selected objects list #}
-  <div class="tab-pane" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
-    <div class="card">
-      <div class="table-responsive">
-        <c-table :table="table" />
-      </div>
+                {# Form buttons #}
+                <div class="col-lg-9 text-end">
+                    <a href="{{ return_url }}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    <button type="submit" name="_apply" class="btn btn-primary">{% trans "Apply" %}</button>
+                </div>
+            </div>
+        </form>
     </div>
-  </div>
-  {# /Selected objects list #}
+    {# /Edit form #}
 
+    {# Selected objects list #}
+    <div class="tab-pane" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
+        <div class="card">
+            <div class="table-responsive">
+                <c-table :table="table" />
+            </div>
+        </div>
+    </div>
+    {# /Selected objects list #}
 {% endblock content %}

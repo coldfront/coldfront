@@ -17,81 +17,98 @@ Context:
 {% endcomment %}
 
 {% block title %}
-  {% trans "Delete" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural"|bettertitle }}?
+    {% trans "Delete" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural"|bettertitle }}?
 {% endblock %}
 
 {% block tabs %}
-  <ul class="nav nav-tabs">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="delete-form-tab" data-bs-toggle="tab" data-bs-target="#delete-form" type="button" role="tab" aria-controls="delete-form" aria-selected="true">
-        {% trans "Bulk Delete" %}
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="object-list-tab" data-bs-toggle="tab" data-bs-target="#object-list" type="button" role="tab" aria-controls="object-list" aria-selected="false">
-        {% trans "Selected Objects" %}
-        <c-ui.badge value="{{ table.rows|length }}" />
-      </button>
-    </li>
-  </ul>
+    <ul class="nav nav-tabs">
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link active"
+                id="delete-form-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#delete-form"
+                type="button"
+                role="tab"
+                aria-controls="delete-form"
+                aria-selected="true"
+            >
+                {% trans "Bulk Delete" %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button
+                class="nav-link"
+                id="object-list-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#object-list"
+                type="button"
+                role="tab"
+                aria-controls="object-list"
+                aria-selected="false"
+            >
+                {% trans "Selected Objects" %}
+                <c-ui.badge value="{{ table.rows|length }}" />
+            </button>
+        </li>
+    </ul>
 {% endblock tabs %}
 
 {% block alerts %}
-<c-alert.messages :form="form" only />
+    <c-alert.messages :form="form" only />
 {% endblock %}
 
 {% block content %}
-
-  {# Confirmation form #}
-  <div class="tab-pane show active" id="delete-form" role="tabpanel" aria-labelledby="delete-form-tab">
-    <div class="alert alert-danger bg-danger-subtle" role="alert">
-      <div class="d-flex">
-        <div>
-          <i class="fa-solid fa-circle-exlamation p-2"></i>
+    {# Confirmation form #}
+    <div class="tab-pane show active" id="delete-form" role="tabpanel" aria-labelledby="delete-form-tab">
+        <div class="alert alert-danger bg-danger-subtle" role="alert">
+            <div class="d-flex">
+                <div>
+                    <i class="fa-solid fa-circle-exlamation p-2"></i>
+                </div>
+                <div>
+                    <h4 class="alert-title">{% trans "Confirm Bulk Deletion" %}</h4>
+                    {% blocktrans trimmed with count=table.rows|length type_plural=model|meta:"verbose_name_plural" %}
+                        The following operation will delete <strong>{{ count }}</strong> {{ type_plural }}. Please
+                        carefully review the selected objects and confirm this action.
+                    {% endblocktrans %}
+                </div>
+            </div>
         </div>
-        <div>
-          <h4 class="alert-title">{% trans "Confirm Bulk Deletion" %}</h4>
-          {% blocktrans trimmed with count=table.rows|length type_plural=model|meta:"verbose_name_plural" %}
-            The following operation will delete <strong>{{ count }}</strong> {{ type_plural }}. Please
-            carefully review the selected objects and confirm this action.
-          {% endblocktrans %}
+
+        <form action="" method="post" class="form form-horizontal mt-5">
+            <div id="form_fields">
+                {% csrf_token %}
+
+                {# Form fields #}
+                {% for field in form.hidden_fields %}
+                    {{ field|as_crispy_field }}
+                {% endfor %}
+
+                {# Meta fields #}
+                {% if form.changelog_message %}
+                    {{ form.changelog_message|as_crispy_field }}
+                {% endif %}
+
+                {# Form buttons #}
+                <div class="col-lg-9 text-end">
+                    <a href="{{ return_url }}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+                    <button type="submit" name="_confirm" class="btn btn-danger">
+                        {% trans "Delete" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural" }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {# /Confirmation form #}
+
+    {# Selected objects list #}
+    <div class="tab-pane" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
+        <div class="card">
+            <div class="table-responsive">
+                <c-table :table="table" />
+            </div>
         </div>
-      </div>
     </div>
-
-    <form action="" method="post" class="form form-horizontal mt-5">
-      <div id="form_fields">
-          {% csrf_token %}
-
-          {# Form fields #}
-          {% for field in form.hidden_fields %}
-          {{ field|as_crispy_field }}
-          {% endfor %}
-
-          {# Meta fields #}
-          {% if form.changelog_message %}
-          {{ form.changelog_message|as_crispy_field }}
-          {% endif %}
-
-          {# Form buttons #}
-          <div class="col-lg-9 text-end">
-          <a href="{{ return_url }}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
-          <button type="submit" name="_confirm" class="btn btn-danger">{% trans "Delete" %} {{ table.rows|length }} {{ model|meta:"verbose_name_plural" }}</button>
-          </div>
-
-      </div>
-    </form>
-  </div>
-  {# /Confirmation form #}
-
-  {# Selected objects list #}
-  <div class="tab-pane" id="object-list" role="tabpanel" aria-labelledby="object-list-tab">
-    <div class="card">
-      <div class="table-responsive">
-        <c-table :table="table" />
-      </div>
-    </div>
-  </div>
-  {# /Selected objects list #}
-
+    {# /Selected objects list #}
 {% endblock content %}

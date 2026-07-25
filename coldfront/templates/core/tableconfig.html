@@ -2,80 +2,80 @@
 {% load i18n %}
 
 {% block content %}
-<c-layout.panels>
-  <c-slot name="left">
-    <c-card.fields :object="object" only>
-      <c-card.fields.item label="{% trans 'Name' %}">
-        {{ object.name }}
-      </c-card.fields.item>
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields :object="object" only>
+                <c-card.fields.item label="{% trans 'Name' %}">
+                    {{ object.name }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Description' %}">
-        {{ object.description|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Description' %}">
+                    {{ object.description|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Object Type' %}">
-        {{ object.object_type }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Object Type' %}">
+                    {{ object.object_type }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Table' %}">
-        {{ object.table }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Table' %}">
+                    {{ object.table }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'User' %}">
-        {{ object.user|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'User' %}">
+                    {{ object.user|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Enabled' %}">
-        {% if object.enabled %}
-          <c-ui.badge bg_color="success" value="{% trans 'Yes' %}" />
-        {% else %}
-          <c-ui.badge bg_color="danger" value="{% trans 'No' %}" />
-        {% endif %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Enabled' %}">
+                    {% if object.enabled %}
+                        <c-ui.badge bg_color="success" value="{% trans 'Yes' %}" />
+                    {% else %}
+                        <c-ui.badge bg_color="danger" value="{% trans 'No' %}" />
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Shared' %}">
-        {% if object.shared %}
-          <c-ui.badge bg_color="success" value="{% trans 'Yes' %}" />
-        {% else %}
-          <c-ui.badge bg_color="danger" value="{% trans 'No' %}" />
-        {% endif %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Shared' %}">
+                    {% if object.shared %}
+                        <c-ui.badge bg_color="success" value="{% trans 'Yes' %}" />
+                    {% else %}
+                        <c-ui.badge bg_color="danger" value="{% trans 'No' %}" />
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Weight' %}">
-        {{ object.weight }}
-      </c-card.fields.item>
-    </c-card.fields>
-  </c-slot>
+                <c-card.fields.item label="{% trans 'Weight' %}">
+                    {{ object.weight }}
+                </c-card.fields.item>
+            </c-card.fields>
+        </c-slot>
 
-  <c-slot name="right">
-    <c-card.list header="{% trans 'Columns Displayed' %}" only>
-      {% for name in object.columns %}
-        <c-card.list.item>
-          {% with column=columns|dict_get:name %}
-            {{ column.verbose_name }}
-          {% endwith %}
-        </c-card.list.item>
-      {% endfor %}
-    </c-card.list>
+        <c-slot name="right">
+            <c-card.list header="{% trans 'Columns Displayed' %}" only>
+                {% for name in object.columns %}
+                    <c-card.list.item>
+                        {% with column=columns|dict_get:name %}
+                            {{ column.verbose_name }}
+                        {% endwith %}
+                    </c-card.list.item>
+                {% endfor %}
+            </c-card.list>
 
-    <c-card.list header="{% trans 'Ordering' %}" only>
-      {% for column_name, ascending in object.ordering_items %}
-        <c-card.list.item>
-          {% with column=columns|dict_get:column_name %}
-            {% if ascending %}
-              <i class="fa-solid fa-arrow-down"></i>
-            {% else %}
-              <i class="fa-solid fa-arrow-up"></i>
-            {% endif %}
-            {{ column.verbose_name }}
-          {% endwith %}
-        </c-card.list.item>
-      {% empty %}
-        <c-card.list.item>
-          <span class="text-muted">{% trans 'Default' %}</span>
-        </c-card.list.item>
-      {% endfor %}
-    </c-card.list>
-  </c-slot>
-</c-layout.panels>
+            <c-card.list header="{% trans 'Ordering' %}" only>
+                {% for column_name, ascending in object.ordering_items %}
+                    <c-card.list.item>
+                        {% with column=columns|dict_get:column_name %}
+                            {% if ascending %}
+                                <i class="fa-solid fa-arrow-down"></i>
+                            {% else %}
+                                <i class="fa-solid fa-arrow-up"></i>
+                            {% endif %}
+                            {{ column.verbose_name }}
+                        {% endwith %}
+                    </c-card.list.item>
+                {% empty %}
+                    <c-card.list.item>
+                        <span class="text-muted">{% trans 'Default' %}</span>
+                    </c-card.list.item>
+                {% endfor %}
+            </c-card.list>
+        </c-slot>
+    </c-layout.panels>
 {% endblock %}

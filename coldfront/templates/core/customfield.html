@@ -2,130 +2,130 @@
 {% load i18n %}
 
 {% block content %}
-<c-layout.panels>
-  <c-slot name="left">
-    <c-card.fields :object="object" only>
-      <c-card.fields.item label="{% trans 'Name' %}">
-          {{ object.name }}
-      </c-card.fields.item>
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields :object="object" only>
+                <c-card.fields.item label="{% trans 'Name' %}">
+                    {{ object.name }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Type' %}">
-          {{ object.get_type_display }}
-          {% if object.related_object_type %}
-            ({{ object.related_object_type.model|bettertitle }})
-          {% endif %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Type' %}">
+                    {{ object.get_type_display }}
+                    {% if object.related_object_type %}
+                        ({{ object.related_object_type.model|bettertitle }})
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Label' %}">
-          {{ object.label|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Label' %}">
+                    {{ object.label|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Group Name' %}">
-          {{ object.group_name|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Group Name' %}">
+                    {{ object.group_name|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Description' %}">
-          {{ object.description|markdown|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Description' %}">
+                    {{ object.description|markdown|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Required' %}">
-          <c-ui.checkmark :value="object.required" />
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Required' %}">
+                    <c-ui.checkmark :value="object.required" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Must be Unique' %}">
-          <c-ui.checkmark :value="object.unique" />
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Must be Unique' %}">
+                    <c-ui.checkmark :value="object.unique" />
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Cloneable' %}">
-          <c-ui.checkmark :value="object.is_cloneable" />
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Cloneable' %}">
+                    <c-ui.checkmark :value="object.is_cloneable" />
+                </c-card.fields.item>
 
-      {% if object.choice_set %}
-      <c-card.fields.item label="{% trans 'Choice Set' %}">
-        {{ object.choice_set|linkify }} ({{ object.choice_set.choices|length }} choices)
-      </c-card.fields.item>
-      {% endif %}
+                {% if object.choice_set %}
+                    <c-card.fields.item label="{% trans 'Choice Set' %}">
+                        {{ object.choice_set|linkify }} ({{ object.choice_set.choices|length }} choices)
+                    </c-card.fields.item>
+                {% endif %}
 
-      <c-card.fields.item label="{% trans 'Default Value' %}">
-          {{ object.default }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Default Value' %}">
+                    {{ object.default }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Related object filter' %}">
-        {% if object.related_object_filter %}
-          <pre>{{ object.related_object_filter|json }}</pre>
-        {% else %}
-          {{ ''|placeholder }}
-        {% endif %}
-      </c-card.fields.item>
-    </c-card.fields>
+                <c-card.fields.item label="{% trans 'Related object filter' %}">
+                    {% if object.related_object_filter %}
+                        <pre>{{ object.related_object_filter|json }}</pre>
+                    {% else %}
+                        {{ ''|placeholder }}
+                    {% endif %}
+                </c-card.fields.item>
+            </c-card.fields>
 
-    <c-card.fields header="{% trans 'Behavior' %}" only>
-      <c-card.fields.item label="{% trans 'Search Weight' %}">
-          {% if object.search_weight %}
-            {{ object.search_weight }}
-          {% else %}
-            <span class="text-muted">{% trans "Disabled" %}</span>
-          {% endif %}
-      </c-card.fields.item>
+            <c-card.fields header="{% trans 'Behavior' %}" only>
+                <c-card.fields.item label="{% trans 'Search Weight' %}">
+                    {% if object.search_weight %}
+                        {{ object.search_weight }}
+                    {% else %}
+                        <span class="text-muted">{% trans "Disabled" %}</span>
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Filter Logic' %}">
-          {{ object.get_filter_logic_display }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Filter Logic' %}">
+                    {{ object.get_filter_logic_display }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Display Weight' %}">
-          {{ object.weight }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Display Weight' %}">
+                    {{ object.weight }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'UI Visible' %}">
-          {{ object.get_ui_visible_display }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'UI Visible' %}">
+                    {{ object.get_ui_visible_display }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'UI Editable' %}">
-          {{ object.get_ui_editable_display }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'UI Editable' %}">
+                    {{ object.get_ui_editable_display }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Required Action' %}">
-          {{ object.required_action|placeholder }}
-      </c-card.fields.item>
-    </c-card.fields>
+                <c-card.fields.item label="{% trans 'Required Action' %}">
+                    {{ object.required_action|placeholder }}
+                </c-card.fields.item>
+            </c-card.fields>
 
-    <c-card.comments :object="object" />
-  </c-slot>
+            <c-card.comments :object="object" />
+        </c-slot>
 
-  <c-slot name="right">
-    <c-card.list header='{% trans "Object Types" %}' only>
-      {% for ct in object.object_types.all %}
-        <c-card.list.item>
-            {{ ct }}
-        </c-card.list.item>
-      {% endfor %}
-    </c-card.list>
+        <c-slot name="right">
+            <c-card.list header='{% trans "Object Types" %}' only>
+                {% for ct in object.object_types.all %}
+                    <c-card.list.item>
+                        {{ ct }}
+                    </c-card.list.item>
+                {% endfor %}
+            </c-card.list>
 
-    <c-card.fields header="{% trans 'Validation Rules' %}" only>
-      <c-card.fields.item label="{% trans 'Minimum Value' %}">
-          {{ object.validation_minimum|placeholder }}
-      </c-card.fields.item>
+            <c-card.fields header="{% trans 'Validation Rules' %}" only>
+                <c-card.fields.item label="{% trans 'Minimum Value' %}">
+                    {{ object.validation_minimum|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Maximum Value' %}">
-          {{ object.validation_maximum|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Maximum Value' %}">
+                    {{ object.validation_maximum|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Regular Expression' %}">
-          {% if object.validation_regex %}
-            <code>{{ object.validation_regex }}</code>
-          {% else %}
-            {{ ''|placeholder }}
-          {% endif %}
-      </c-card.fields.item>
-    </c-card.fields>
+                <c-card.fields.item label="{% trans 'Regular Expression' %}">
+                    {% if object.validation_regex %}
+                        <code>{{ object.validation_regex }}</code>
+                    {% else %}
+                        {{ ''|placeholder }}
+                    {% endif %}
+                </c-card.fields.item>
+            </c-card.fields>
 
-    <c-card.list header='{% trans "Related Objects" %}' only>
-      {% for qs in related_models %}
-        <c-card.list.item :count="qs.count">
-            {{ qs.model|meta:"verbose_name_plural"|bettertitle }}
-        </c-card.list.item>
-      {% endfor %}
-    </c-card>
-  </c-slot>
-</c-layout.panels>
+            <c-card.list header='{% trans "Related Objects" %}' only>
+                {% for qs in related_models %}
+                    <c-card.list.item :count="qs.count">
+                        {{ qs.model|meta:"verbose_name_plural"|bettertitle }}
+                    </c-card.list.item>
+                {% endfor %}
+            </c-card.list>
+        </c-slot>
+    </c-layout.panels>
 {% endblock %}

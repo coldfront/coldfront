@@ -252,6 +252,7 @@ dev = [
     { name = "coverage" },
     { name = "django-sslserver" },
     { name = "django-upgrade" },
+    { name = "djangofmt" },
     { name = "factory-boy" },
     { name = "faker" },
     { name = "pytest-django" },
@@ -325,6 +326,7 @@ dev = [
     { name = "coverage", extras = ["toml"], specifier = ">=7.13.4" },
     { name = "django-sslserver", specifier = ">=0.22" },
     { name = "django-upgrade", specifier = ">=1.29.1" },
+    { name = "djangofmt", specifier = ">=0.2.12" },
     { name = "factory-boy", specifier = ">=3.3.3" },
     { name = "faker", specifier = ">=37.1.0" },
     { name = "pytest-django", specifier = ">=4.11.1" },
@@ -829,6 +831,31 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/23/fe/4be07f538bbf9bf8bf73b045552ec2a1b4fba67e3176abb30490b643368e/django_vite-3.1.0.tar.gz", hash = "sha256:8b4ffe4a9fa81ff568bfb195e74dde8694aaf13fd4b656ae60bf59cce08b85e8", size = 25434, upload-time = "2025-02-23T15:32:07.914Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/30/59/7df4b1077fa41b43b4e542696d75138dbb86a65f44248c607b3e0f1014ce/django_vite-3.1.0-py3-none-any.whl", hash = "sha256:4e46572bd6b1ce70784be129205dc2ffcbc7a3c19fea50bebfb72b327bbde5fc", size = 23579, upload-time = "2025-02-23T15:32:06.603Z" },
+]
+
+[[package]]
+name = "djangofmt"
+version = "0.2.12"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6e/1b/fdeb6a086398567dba1e37819d43925e096aab4f91a45bd6deee60e6fc86/djangofmt-0.2.12.tar.gz", hash = "sha256:ff235af1a3a82958533d2321c0b68c84864f2c24369b5ecd180f8318dec1cccd", size = 116659, upload-time = "2026-07-15T12:10:39.83Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/a8/17f725c3ab3e213d397a8abcbe3e046b1b5fd0ae4f31dd05d762baa66257/djangofmt-0.2.12-py3-none-linux_armv6l.whl", hash = "sha256:636af351ba49810aa83f0855ea4ef1ba2e1bb6ae394d6067f9ebcb11a55842e5", size = 2481821, upload-time = "2026-07-15T12:10:11.802Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/d5/84a2cd0e19525b815e4fefd0b246484f990b5299622eb790172fd25b458e/djangofmt-0.2.12-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:66045c71f50a04ec6f396f8a25a7668009b423ee99631a3182a1df3761145866", size = 2628291, upload-time = "2026-07-15T12:10:13.549Z" },
+    { url = "https://files.pythonhosted.org/packages/38/36/1391ddfd9224cce0fe36eb760cb97aab1e193511e409593a32a825ad9ca1/djangofmt-0.2.12-py3-none-macosx_11_0_arm64.whl", hash = "sha256:94bb41a85c484e3e2e44d52d6cb7f57d429213cc477b75e4c0d8e098dddf2d24", size = 2484659, upload-time = "2026-07-15T12:10:15.012Z" },
+    { url = "https://files.pythonhosted.org/packages/be/10/36c92fc9fc16d3cded3080050a3743fcb8286a0dd330124afb7c2a5d775a/djangofmt-0.2.12-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d8bf35b229f73f145245d1e3a24bc983ddfe26a6777142bd2fd6e4b144d7862b", size = 2750592, upload-time = "2026-07-15T12:10:16.408Z" },
+    { url = "https://files.pythonhosted.org/packages/11/46/b87a88efd5cdefa11bd0b44738f96c5d597c7c850e891bfb9b2476d45f75/djangofmt-0.2.12-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:1aafe68f27c81c56ebfb99699228679a379a8e2611717d371a00785dc9249222", size = 2420751, upload-time = "2026-07-15T12:10:18.003Z" },
+    { url = "https://files.pythonhosted.org/packages/ec/58/aaa7b985e9641aa51826a864c85afad1992a057b8b0c22b546c478a7a675/djangofmt-0.2.12-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:850465aaa77a9d178370a25d6aae8b73287412211e6631229052345b0ea757bb", size = 2810739, upload-time = "2026-07-15T12:10:19.85Z" },
+    { url = "https://files.pythonhosted.org/packages/c3/6c/a9793a13349edd632b3e133baccb5cd1c1c83b5cfdacb6847b08d433edee/djangofmt-0.2.12-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:e3123a484bfcfee0ce347e140eb04bd16c5fd3577f16b9f9305ec8368ef77d0b", size = 3143427, upload-time = "2026-07-15T12:10:22.123Z" },
+    { url = "https://files.pythonhosted.org/packages/4b/ee/d7888c039e3a2ec6ab577f665d426a3bcd8d17ef7486d8c140f0b9a0a79f/djangofmt-0.2.12-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:155d5db37eb1657d75581b0c9d797cc477d334fa7540f75f6353bfb8c427824f", size = 2844830, upload-time = "2026-07-15T12:10:23.754Z" },
+    { url = "https://files.pythonhosted.org/packages/5e/2b/058c5dbf16072f32f0ea2396ab1005ccfe65a8852a23addafda330a08c29/djangofmt-0.2.12-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:945cfba7877a12f544d3e9dde59009fd70475a1ead6338610d319df978c8407e", size = 2902329, upload-time = "2026-07-15T12:10:25.555Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/ae/bacb0403a497a451c4a579709456cd1c4a3bc9e6e1bd9a01287d136496d9/djangofmt-0.2.12-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:de23878510e002f3cad3186009c20069d8296099a825168f7036262975a15597", size = 2854028, upload-time = "2026-07-15T12:10:27.558Z" },
+    { url = "https://files.pythonhosted.org/packages/23/8a/d8b5f972435b3438353c927e8f5cf8ddd928260776bd1edf68dd7ef17db9/djangofmt-0.2.12-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:0ea71364f691f27376c66da67c28d9748e608d9b0863ae3b6c3e1a18704aa1be", size = 2768632, upload-time = "2026-07-15T12:10:29.052Z" },
+    { url = "https://files.pythonhosted.org/packages/9e/c4/21fb336e0aabb691e8feff3dda0edb4f9d4f8fb3befbfc4fcbddb8bbea09/djangofmt-0.2.12-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:11211c400468ba26abcda2f97fef4a6c8ff238711495d66a65376b2d51babd2f", size = 2438037, upload-time = "2026-07-15T12:10:30.754Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/8b/952216b0977c45c639bd454f67ee81da88d1adbb34d8c8182d743b3ab2a9/djangofmt-0.2.12-py3-none-musllinux_1_2_i686.whl", hash = "sha256:965d91c842e45a2c6397104384e4193ca3d17dfabc452b4d67bde75e5643380f", size = 2720199, upload-time = "2026-07-15T12:10:32.372Z" },
+    { url = "https://files.pythonhosted.org/packages/45/b6/4c3612f5fcf50ab82dd60f53d7ce6a6189d5960d5fb5d1053fde35aaa847/djangofmt-0.2.12-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:755fb1c4d0b08a36c9b80e5f31a70cc51a0e0c989c8ff612d0745183f820cddf", size = 2991067, upload-time = "2026-07-15T12:10:33.964Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/de/c0ce7fe6fe7eb586f0a285a4c426f427cac2d1b3e6d8cbef2f663f74da9e/djangofmt-0.2.12-py3-none-win32.whl", hash = "sha256:fa8a6089e8acdd450ef68f832b04f2e819934e48f4c1acbf7b131fb3a626630b", size = 2348341, upload-time = "2026-07-15T12:10:35.665Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/8e/7d4e2b7833ee511b646b2db1fa95057142324d47251df694b41dce2100ad/djangofmt-0.2.12-py3-none-win_amd64.whl", hash = "sha256:14419567c98d2e243c2d6713fb5755da9fdacccea0f3ad35c5acd4497087df7c", size = 2645117, upload-time = "2026-07-15T12:10:37.076Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/05/2cb21f6b7a9f8b26e2e3e6ffd2c8d1d4f4d73702465b896667f3a2fff088/djangofmt-0.2.12-py3-none-win_arm64.whl", hash = "sha256:6d2bbc4815cd26b57857cefd9e9e28b436d604ecca18c4399ecdcc5abe76bc33", size = 2492918, upload-time = "2026-07-15T12:10:38.672Z" },
 ]
 
 [[package]]

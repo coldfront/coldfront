@@ -45,6 +45,19 @@ jobs:
       - name: Check formatting
         run: uv run ruff format --check
 
+      - name: Check django template formatting
+        run: uv run djangofmt coldfront
+
+      - name: Check django template formatting have been commited
+        run: |
+          if [[ `git status --porcelain` ]]; then
+            echo "Error: django templates have not been formatted. Run djangofmt"
+            git status
+            exit 1
+          else
+            echo "django template formatting check passed."
+          fi
+
       - name: Check frontend with eslint and prettier
         run: npm --prefix coldfront/static run check
 

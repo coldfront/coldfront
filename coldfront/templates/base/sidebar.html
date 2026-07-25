@@ -2,22 +2,24 @@
 
 <!-- Sidebar -->
 <aside class="sidebar d-flex flex-column bg-body-tertiary">
+    <!-- Sidebar Header -->
+    <div class="d-flex justify-content-center align-items-center p-1 mb-2">
+        {% include 'base/brand.html' %}
+    </div>
 
-  <!-- Sidebar Header -->
-  <div class="d-flex justify-content-center align-items-center p-1 mb-2">
-    {% include 'base/brand.html' %}
-  </div>
+    <!-- Sidebar Content -->
+    <div class="flex-grow-1 overflow-auto">
+        {% nav %}
+    </div>
 
-  <!-- Sidebar Content -->
-  <div class="flex-grow-1 overflow-auto">
-    {% nav %}
-  </div>
-
-  <!-- Sidebar Footer -->
-  <div class="text-center py-2 px-1">
-    <p class="mb-1 small text-muted">ColdFront v{{ settings.VERSION }}</p>
-    <a href="https://github.com/coldfront/coldfront" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center px-2 py-1">
-      <i class="fab fa-solid fa-github me-1"></i>GitHub
-    </a>
-  </div>
+    <!-- Sidebar Footer -->
+    <div class="text-center py-2 px-1">
+        <p class="mb-1 small text-muted">ColdFront v{{ settings.VERSION }}</p>
+        <a
+            href="https://github.com/coldfront/coldfront"
+            class="btn btn-outline-primary btn-sm d-inline-flex align-items-center px-2 py-1"
+        >
+            <i class="fab fa-solid fa-github me-1"></i>GitHub
+        </a>
+    </div>
 </aside>

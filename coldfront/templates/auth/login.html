@@ -1,81 +1,82 @@
 {% extends 'base/base.html' %}
 {% load i18n %}
 {% block title %}
-Login
+    Login
 {% endblock title %}
 
 {% block head %}
-  <style>
-    .bd-placeholder-img {
-      font-size: 1.125rem;
-      text-anchor: middle;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-    }
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
 
-    @media (min-width: 768px) {
-      .bd-placeholder-img-lg {
-        font-size: 3.5rem;
-      }
-    }
-    html,
-    body {
-      height: 100%;
-    }
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+        html,
+        body {
+            height: 100%;
+        }
 
-    body {
-      display: flex;
-      align-items: center;
-      padding-top: 40px;
-      padding-bottom: 40px;
-    }
+        body {
+            display: flex;
+            align-items: center;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
 
-    .form-signin {
-      width: 100%;
-      max-width: 430px;
-      padding: 15px;
-      margin: auto;
-    }
-
-  </style>
+        .form-signin {
+            width: 100%;
+            max-width: 430px;
+            margin: auto;
+            padding: 15px;
+        }
+    </style>
 {% endblock head %}
 
 {% block layout %}
-
-<main class="form-signin">
-    <div class="text-center">
-    <h1 class="h3 mb-3 fw-normal"><i class="fa-solid fa-snowflake fa-xl fa-fw me-2" style="color: #f39c12;"></i>ColdFront</h1>
-    </div>
-      <div class="card">
-        <div class="card-header text-center">
-          <h2 class="h5"><i class="fas fa-lock" aria-hidden="true"></i> Log In</h2>
+    <main class="form-signin">
+        <div class="text-center">
+            <h1 class="h3 mb-3 fw-normal">
+                <i class="fa-solid fa-snowflake fa-xl fa-fw me-2" style="color: #f39c12"></i>ColdFront
+            </h1>
         </div>
-        <div class="card-body">
-          {% include "auth/login_form.html" %}
-        </div>
-
-        {# SSO login #}
-        {% if auth_backends %}
-          {% if not login_form_hidden %}
-            <div class="text-center">{% trans "Or" context "Denotes an alternative option" %}</div>
-          {% endif %}
-          <div class="card-body">
-            {% if login_form_hidden %}
-              <h2 class="text-center mb-4">{% trans "Log In" %}</h2>
-            {% endif %}
-            <div class="row">
-              {% for backend in auth_backends %}
-                <div class="d-grid gap-2">
-                  <a href="{{ backend.url }}" class="btn btn-primary" role="button">{{ backend.display_name }}</a>
-                </div>
-              {% endfor %}
+        <div class="card">
+            <div class="card-header text-center">
+                <h2 class="h5"><i class="fas fa-lock" aria-hidden="true"></i> Log In</h2>
             </div>
-          </div>
-        {% endif %}
+            <div class="card-body">
+                {% include "auth/login_form.html" %}
+            </div>
 
-      </div>
-    </div>
-</main>
-
+            {# SSO login #}
+            {% if auth_backends %}
+                {% if not login_form_hidden %}
+                    <div class="text-center">{% trans "Or" context "Denotes an alternative option" %}</div>
+                {% endif %}
+                <div class="card-body">
+                    {% if login_form_hidden %}
+                        <h2 class="text-center mb-4">{% trans "Log In" %}</h2>
+                    {% endif %}
+                    <div class="row">
+                        {% for backend in auth_backends %}
+                            <div class="d-grid gap-2">
+                                <a
+                                    href="{{ backend.url }}"
+                                    class="btn btn-primary"
+                                    role="button"
+                                >{{ backend.display_name }}</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </main>
 {% endblock layout %}

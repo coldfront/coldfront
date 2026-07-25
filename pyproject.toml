@@ -88,6 +88,7 @@ dev = [
     "coverage[toml]>=7.13.4",
     "django-sslserver>=0.22",
     "django-upgrade>=1.29.1",
+    "djangofmt>=0.2.12",
     "factory-boy>=3.3.3",
     "faker>=37.1.0",
     "pytest-django>=4.11.1",
@@ -149,3 +150,10 @@ source = ["coldfront/"]
 
 [tool.uv.sources]
 coldfront-initializer = { url = "https://test-files.pythonhosted.org/packages/07/8f/0112b12e261d74bcb29facfc30e4fe205d7f5aa640bd6bc191e1cb8d97df/coldfront_initializer-0.0.4.tar.gz" }
+
+[tool.djangofmt]
+line-length = 120
+indent-width = 4
+profile = "django"
+preserve-unquoted-attrs = true
+html-void-self-closing = "never"

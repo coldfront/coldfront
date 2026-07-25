@@ -9,19 +9,19 @@
 {% cotton:vars table %}
 
 {% if table.rows %}
-<div class="htmx-container table-responsive" id="{{ id }}">
-  {% render_table table 'generic/table_htmx.html' %}
-  {% if show_paginator %}
-  <c-table.paginator htmx=True :table="table" :paginator="table.paginator" :page="table.page" only />
-  {% endif %}
-</div>
+    <div class="htmx-container table-responsive" id="{{ id }}">
+        {% render_table table 'generic/table_htmx.html' %}
+        {% if show_paginator %}
+            <c-table.paginator htmx=True :table="table" :paginator="table.paginator" :page="table.page" only />
+        {% endif %}
+    </div>
 {% else %}
-  <div class="htmx-container card-body text-muted">{% trans "None" %}</div>
+    <div class="htmx-container card-body text-muted">{% trans "None" %}</div>
 {% endif %}
 
 {% if request.htmx %}
-  {# Include the updated object count for display elsewhere on the page #}
-  {% if not table.embedded %}
-    <div hx-swap-oob="innerHTML:.total-object-count">{{ table.rows|length }}</div>
-  {% endif %}
+    {# Include the updated object count for display elsewhere on the page #}
+    {% if not table.embedded %}
+        <div hx-swap-oob="innerHTML:.total-object-count">{{ table.rows|length }}</div>
+    {% endif %}
 {% endif %}

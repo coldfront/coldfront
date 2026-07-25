@@ -4,54 +4,54 @@
 {% block title %}{% trans "Notification" %}{% endblock %}
 
 {% block tabs %}
-<div class="mb-3">
-  <div class="nav-tabs">
-    <ul class="nav nav-tabs" role="presentation">
-      <li class="nav-item" role="presentation">
-        <a class="nav-link" href="{% url 'account:notification_list' %}">
-          {% trans "Show All" %}
-        </a>
-      </li>
-    </ul>
-  </div>
-</div>
+    <div class="mb-3">
+        <div class="nav-tabs">
+            <ul class="nav nav-tabs" role="presentation">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" href="{% url 'account:notification_list' %}">
+                        {% trans "Show All" %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
 {% endblock %}
 
 {% block content %}
-<c-layout.panels>
-  <c-slot name="left">
-    <c-card.fields header="{% trans 'Notification Details' %}" only>
-      <c-card.fields.item label="{% trans 'Subject' %}">
-        {{ notification.get_subject }}
-      </c-card.fields.item>
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields header="{% trans 'Notification Details' %}" only>
+                <c-card.fields.item label="{% trans 'Subject' %}">
+                    {{ notification.get_subject }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Message' %}">
-        {{ notification.get_text }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Message' %}">
+                    {{ notification.get_text }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Type' %}">
-        {{ notification.notification_type }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Type' %}">
+                    {{ notification.notification_type }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Added' %}">
-        {{ notification.added|isodate }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Added' %}">
+                    {{ notification.added|isodate }}
+                </c-card.fields.item>
 
-      {% if notification.read %}
-      <c-card.fields.item label="{% trans 'Read At' %}">
-        {{ notification.read|isodatetime:"minutes" }}
-      </c-card.fields.item>
-      {% endif %}
+                {% if notification.read %}
+                    <c-card.fields.item label="{% trans 'Read At' %}">
+                        {{ notification.read|isodatetime:"minutes" }}
+                    </c-card.fields.item>
+                {% endif %}
 
-      {% if notification.url %}
-      <c-card.fields.item label="{% trans 'Link' %}">
-        <a href="{{ notification.url }}" class="btn btn-outline-primary btn-sm">
-          <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
-          {% trans "View Related" %}
-        </a>
-      </c-card.fields.item>
-      {% endif %}
-    </c-card.fields>
-  </c-slot>
-</c-layout.panels>
+                {% if notification.url %}
+                    <c-card.fields.item label="{% trans 'Link' %}">
+                        <a href="{{ notification.url }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                            {% trans "View Related" %}
+                        </a>
+                    </c-card.fields.item>
+                {% endif %}
+            </c-card.fields>
+        </c-slot>
+    </c-layout.panels>
 {% endblock %}

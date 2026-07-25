@@ -2,78 +2,78 @@
 {% load i18n %}
 
 {% block content %}
-<c-layout.panels>
-  <c-slot name="left">
-    <c-card.fields :object="object" only>
-      <c-card.fields.item label="{% trans 'Allocation' %}">
-        {{ object.allocation|placeholder }}
-      </c-card.fields.item>
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields :object="object" only>
+                <c-card.fields.item label="{% trans 'Allocation' %}">
+                    {{ object.allocation|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Storage Resource' %}">
-        {{ object.storage|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Storage Resource' %}">
+                    {{ object.storage|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Path' %}">
-        {{ object.path }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Path' %}">
+                    {{ object.path }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Owning User' %}">
-        {{ object.owning_user }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Owning User' %}">
+                    {{ object.owning_user }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Owning Group' %}">
-        {{ object.owning_group }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Owning Group' %}">
+                    {{ object.owning_group }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Path Mode' %}">
-        {{ object.path_mode }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Path Mode' %}">
+                    {{ object.path_mode }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Clusters' %}">
-        {% if object.clusters.all %}
-          {% for cluster in object.clusters.all %}
-            {{ cluster.name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
-        {% else %}
-          {% trans 'All clusters of storage resource' %}
-        {% endif %}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Clusters' %}">
+                    {% if object.clusters.all %}
+                        {% for cluster in object.clusters.all %}
+                            {{ cluster.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        {% trans 'All clusters of storage resource' %}
+                    {% endif %}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Hard Limit' %}">
-          {{ object.hard_limit|naturalsize }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Hard Limit' %}">
+                    {{ object.hard_limit|naturalsize }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Hard Limit Requested' %}">
-          {{ object.hard_limit_requested|naturalsize }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Hard Limit Requested' %}">
+                    {{ object.hard_limit_requested|naturalsize }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Soft Limit' %}">
-          {{ object.soft_limit|naturalsize }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Soft Limit' %}">
+                    {{ object.soft_limit|naturalsize }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Share Type' %}">
-        {{ object.share_type }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Share Type' %}">
+                    {{ object.share_type }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Used' %}">
-          {{ object.used|naturalsize }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'Used' %}">
+                    {{ object.used|naturalsize }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'State' %}">
-        {{ object.state|placeholder }}
-      </c-card.fields.item>
+                <c-card.fields.item label="{% trans 'State' %}">
+                    {{ object.state|placeholder }}
+                </c-card.fields.item>
 
-      <c-card.fields.item label="{% trans 'Snapshot Policy' %}">
-        {{ object.snapshot_policy|placeholder }}
-      </c-card.fields.item>
-    </c-card.fields>
+                <c-card.fields.item label="{% trans 'Snapshot Policy' %}">
+                    {{ object.snapshot_policy|placeholder }}
+                </c-card.fields.item>
+            </c-card.fields>
 
-    <c-card.tags :object="object" only />
-  </c-slot>
+            <c-card.tags :object="object" only />
+        </c-slot>
 
-  <c-slot name="right">
-    <c-card.custom_fields :object="object" only />
-    <c-card.related_objects :object="object" :models="related_models" only />
-  </c-slot>
-</c-layout.panels>
+        <c-slot name="right">
+            <c-card.custom_fields :object="object" only />
+            <c-card.related_objects :object="object" :models="related_models" only />
+        </c-slot>
+    </c-layout.panels>
 {% endblock %}

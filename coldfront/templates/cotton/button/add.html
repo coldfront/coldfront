@@ -3,4 +3,8 @@
 {% cotton:vars label="{% trans 'Add' %}" %}
 {% cotton:vars type="link" %}
 
-<c-button url="{{ url }}{% if return_url %}?return_url={{ return_url }}{% endif %}" css_class="btn-primary" icon="fa-solid fa-plus" />
+<c-button
+    url="{{ url }}{% if return_url %}?return_url={{ return_url }}{% endif %}"
+    css_class="btn-primary"
+    icon="fa-solid fa-plus"
+/>
