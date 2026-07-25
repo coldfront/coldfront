@@ -1,9 +1,12 @@
 {% load i18n %}
+{% load buttons %}
 
 <c-card header='{% trans "Comments" %}'>
     <div class="card-body">
-        {% if object.comments %}
-            {{ object.comments|markdown }}
+        {% if object.comments.count %}
+            <div class="d-flex justify-content-between align-items-center">
+                <span>{{ object.comments.count }} {% trans "comment(s)" %}</span>
+            </div>
         {% else %}
             <span class="text-muted">{% trans "None" %}</span>
         {% endif %}

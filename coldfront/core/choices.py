@@ -267,3 +267,19 @@ class JobNotificationChoices(ChoiceSet):
         (NOTIFICATION_ON_FAILURE, _("On failure")),
         (NOTIFICATION_NEVER, _("Never")),
     )
+
+
+class CommentKindChoices(ChoiceSet):
+    key = "CommentEntry.kind"
+
+    KIND_INFO = "info"
+    KIND_SUCCESS = "success"
+    KIND_WARNING = "warning"
+    KIND_DANGER = "danger"
+
+    CHOICES = [
+        (KIND_INFO, _("Info"), "info"),
+        (KIND_SUCCESS, _("Success"), "success"),
+        (KIND_WARNING, _("Warning"), "warning"),
+        (KIND_DANGER, _("Danger"), "danger"),
+    ]

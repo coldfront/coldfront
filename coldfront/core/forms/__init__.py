@@ -3,14 +3,22 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .bulk_edit import (
+    CommentEntryBulkEditForm,
     CustomFieldBulkEditForm,
     CustomFieldChoiceSetBulkEditForm,
     SavedFilterBulkEditForm,
     TableConfigBulkEditForm,
     TagBulkEditForm,
 )
-from .bulk_import import CustomFieldChoiceSetImportForm, CustomFieldImportForm, SavedFilterImportForm, TagImportForm
+from .bulk_import import (
+    CommentEntryImportForm,
+    CustomFieldChoiceSetImportForm,
+    CustomFieldImportForm,
+    SavedFilterImportForm,
+    TagImportForm,
+)
 from .filtersets import (
+    CommentEntryFilterForm,
     CustomFieldChoiceSetFilterForm,
     CustomFieldFilterForm,
     JobFilterForm,
@@ -20,9 +28,20 @@ from .filtersets import (
     TagFilterForm,
 )
 from .misc import RenderMarkdownForm
-from .model_forms import CustomFieldChoiceSetForm, CustomFieldForm, SavedFilterForm, TableConfigForm, TagForm
+from .model_forms import (
+    CommentEntryForm,
+    CustomFieldChoiceSetForm,
+    CustomFieldForm,
+    SavedFilterForm,
+    TableConfigForm,
+    TagForm,
+)
 
 __all__ = (
+    "CommentEntryForm",
+    "CommentEntryFilterForm",
+    "CommentEntryBulkEditForm",
+    "CommentEntryImportForm",
     "SavedFilterBulkEditForm",
     "SavedFilterForm",
     "SavedFilterImportForm",

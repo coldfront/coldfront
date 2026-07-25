@@ -8,7 +8,7 @@ from collections import defaultdict
 from functools import cached_property
 
 from django.conf import settings
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.core.validators import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -23,6 +23,22 @@ from coldfront.utils.jsonschema import validate_schema
 from coldfront.utils.serialization import serialize_object
 
 from .deletion import DeleteMixin
+
+
+class CommentingMixin(models.Model):
+    """
+    Enables support for object commenting. Adds a generic relation (`comments`)
+    to ColdFront's CommentEntry model.
+    """
+
+    comments = GenericRelation(
+        to="core.CommentEntry",
+        object_id_field="assigned_object_id",
+        content_type_field="assigned_object_type",
+    )
+
+    class Meta:
+        abstract = True
 
 
 class ChangeLoggingMixin(DeleteMixin, models.Model):
@@ -391,6 +407,7 @@ register_model_feature("cloning", lambda model: issubclass(model, CloningMixin))
 register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
 register_model_feature("custom_fields", lambda model: issubclass(model, CustomFieldsMixin))
 register_model_feature("allocatable_resource", lambda model: issubclass(model, AllocatableResourceMixin))
+register_model_feature("commenting", lambda model: issubclass(model, CommentingMixin))
 
 
 def register_models(*models):
@@ -399,7 +416,7 @@ def register_models(*models):
 
      - Determining whether the model is considered "public" (available for reference by other models)
      - Registering which features the model supports (e.g. bookmarks, custom fields, etc.)
-     - Registering any feature-specific views for the model (e.g. ObjectJournalView instances)
+     - Registering any feature-specific views for the model (e.g. ObjectCommentsView instances)
 
     register_model() should be called for each relevant model under the ready() of an app's AppConfig class.
     """
@@ -411,3 +428,5 @@ def register_models(*models):
             register_model_view(model, "changelog", kwargs={"model": model})(
                 "coldfront.views.generic.ObjectChangeLogView"
             )
+        if issubclass(model, CommentingMixin):
+            register_model_view(model, "comments", kwargs={"model": model})("coldfront.core.views.ObjectCommentsView")

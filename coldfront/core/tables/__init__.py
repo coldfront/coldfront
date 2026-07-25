@@ -4,6 +4,7 @@
 
 from .plugins import CatalogPluginTable, PluginVersionTable
 from .tables import (
+    CommentEntryTable,
     CustomFieldChoiceSetTable,
     CustomFieldTable,
     JobTable,
@@ -15,6 +16,7 @@ from .tables import (
 )
 
 __all__ = (
+    "CommentEntryTable",
     "TagTable",
     "TaggedItemTable",
     "ObjectChangeTable",

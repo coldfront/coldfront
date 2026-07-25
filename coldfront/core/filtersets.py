@@ -8,8 +8,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
-from coldfront.core.choices import JobStatusChoices
-from coldfront.core.models import Job
+from coldfront.core.choices import CommentKindChoices, JobStatusChoices
+from coldfront.core.models import CommentEntry, Job
 from coldfront.users.models import User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet, ChangeLoggedModelFilterSet
@@ -360,3 +360,38 @@ class JobFilterSet(ChangeLoggedModelFilterSet):
         if not value.strip():
             return queryset
         return queryset.filter(Q(name__icontains=value))
+
+
+class CommentEntryFilterSet(ChangeLoggedModelFilterSet):
+    created = django_filters.DateTimeFromToRangeFilter()
+    assigned_object_type = ContentTypeFilter()
+    assigned_object_type_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=ContentType.objects.all(),
+        distinct=False,
+    )
+    created_by_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=User.objects.all(),
+        distinct=False,
+        label=_("User (ID)"),
+    )
+    created_by = django_filters.ModelMultipleChoiceFilter(
+        field_name="created_by__username",
+        queryset=User.objects.all(),
+        distinct=False,
+        to_field_name="username",
+        label=_("User (name)"),
+    )
+    kind = django_filters.MultipleChoiceFilter(
+        choices=CommentKindChoices,
+        distinct=False,
+    )
+
+    class Meta:
+        model = CommentEntry
+        fields = ("id", "assigned_object_type_id", "assigned_object_id", "created", "kind")
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        q = Q(comments__icontains=value)
+        return queryset.filter(q)

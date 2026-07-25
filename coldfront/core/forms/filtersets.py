@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.constants import BOOLEAN_WITH_BLANK_CHOICES
 from coldfront.core.choices import (
+    CommentKindChoices,
     CustomFieldTypeChoices,
     CustomFieldUIEditableChoices,
     CustomFieldUIVisibleChoices,
@@ -15,6 +16,7 @@ from coldfront.core.choices import (
     ObjectChangeActionChoices,
 )
 from coldfront.core.models import (
+    CommentEntry,
     CustomField,
     CustomFieldChoiceSet,
     Job,
@@ -28,6 +30,7 @@ from coldfront.forms import PrimaryModelFilterSetForm
 from coldfront.forms.fields import (
     ContentTypeChoiceField,
     ContentTypeMultipleChoiceField,
+    DynamicModelMultipleChoiceField,
 )
 from coldfront.forms.layouts import DateTime
 from coldfront.users.models import User
@@ -293,5 +296,46 @@ class CustomFieldFilterForm(PrimaryModelFilterSetForm):
             "validation_minimum",
             "validation_maximum",
             "validation_regex",
+        ),
+    )
+
+
+class CommentEntryFilterForm(PrimaryModelFilterSetForm):
+    created_after = forms.DateTimeField(
+        required=False,
+        label=_("After"),
+    )
+    created_before = forms.DateTimeField(
+        required=False,
+        label=_("Before"),
+    )
+    created_by_id = DynamicModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        required=False,
+        label=_("User"),
+    )
+    assigned_object_type_id = ContentTypeMultipleChoiceField(
+        queryset=ObjectType.objects.with_feature("commenting"),
+        required=False,
+        label=_("Object Type"),
+    )
+    kind = forms.ChoiceField(
+        label=_("Kind"),
+        choices=add_blank_choice(CommentKindChoices),
+        required=False,
+    )
+
+    model = CommentEntry
+    fieldsets = (
+        Fieldset(
+            "Comment Entry",
+            DateTime("created_before"),
+            DateTime("created_after"),
+            "created_by_id",
+        ),
+        Fieldset(
+            "Attributes",
+            "assigned_object_type_id",
+            "kind",
         ),
     )

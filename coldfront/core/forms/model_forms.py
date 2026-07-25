@@ -11,9 +11,19 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_jsonform.models.fields import JSONFormField
 
-from coldfront.core.choices import CustomFieldTypeChoices
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, SavedFilter, TableConfig, Tag
+from coldfront.core.choices import CommentKindChoices, CustomFieldTypeChoices
+from coldfront.core.models import (
+    CommentEntry,
+    CustomField,
+    CustomFieldChoiceSet,
+    ObjectType,
+    SavedFilter,
+    TableConfig,
+    Tag,
+)
+from coldfront.forms import ColdFrontModelForm
 from coldfront.forms.fields import (
+    CommentField,
     ContentTypeChoiceField,
     ContentTypeMultipleChoiceField,
     DynamicModelChoiceField,
@@ -344,3 +354,35 @@ class CustomFieldForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelFor
             )
         else:
             del self.fields["choice_set"]
+
+
+class CommentEntryForm(ColdFrontModelForm):
+    kind = forms.ChoiceField(
+        label=_("Kind"),
+        choices=CommentKindChoices,
+    )
+    comments = CommentField(required=True)
+
+    class Meta:
+        model = CommentEntry
+        fields = [
+            "assigned_object_type",
+            "assigned_object_id",
+            "kind",
+            "comments",
+            "tags",
+        ]
+        widgets = {
+            "assigned_object_type": forms.HiddenInput,
+            "assigned_object_id": forms.HiddenInput,
+        }
+
+    fieldsets = (
+        Fieldset(
+            _("Add Comments"),
+            "assigned_object_type",
+            "assigned_object_id",
+            "kind",
+            "comments",
+        ),
+    )

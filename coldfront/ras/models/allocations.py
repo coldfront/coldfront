@@ -11,13 +11,14 @@ from django.utils.translation import gettext_lazy as _
 from jsonschema.exceptions import ValidationError as JSONValidationError
 
 from coldfront.models import PrimaryModel
+from coldfront.models.features import CommentingMixin
 from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import AllocationStatusChoices
 from coldfront.ras.flows import AllocationStatusFlow
 from coldfront.utils.strings import title
 
 
-class Allocation(PrimaryModel):
+class Allocation(CommentingMixin, PrimaryModel):
     """
     An Allocation provides users access to resources.
     """
@@ -73,10 +74,7 @@ class Allocation(PrimaryModel):
         blank=True,
         null=True,
     )
-    comments = models.TextField(
-        verbose_name=_("comments"),
-        blank=True,
-    )
+
     tenant = models.ForeignKey(
         to="tenancy.Tenant",
         on_delete=models.PROTECT,

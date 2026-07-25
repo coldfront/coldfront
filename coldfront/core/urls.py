@@ -22,6 +22,8 @@ urlpatterns = [
     path("custom-field-choices/<int:pk>/", include(get_model_urls("core", "customfieldchoiceset"))),
     path("custom-fields/", include(get_model_urls("core", "customfield", detail=False))),
     path("custom-fields/<int:pk>/", include(get_model_urls("core", "customfield"))),
+    path("comment-entries/", include(get_model_urls("core", "commententry", detail=False))),
+    path("comment-entries/<int:pk>/", include(get_model_urls("core", "commententry"))),
     path("jobs/", include(get_model_urls("core", "job", detail=False))),
     path("jobs/<int:pk>/", include(get_model_urls("core", "job"))),
     path("plugins/", views.PluginListView.as_view(), name="plugin_list"),

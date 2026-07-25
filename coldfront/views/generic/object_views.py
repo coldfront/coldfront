@@ -643,10 +643,7 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
         model = self.queryset.model
 
         initial_data = normalize_querydict(request.GET)
-        if issubclass(self.form, ColdFrontModelForm):
-            form = self.form(instance=obj, initial=initial_data, user=request.user)
-        else:
-            form = self.form(instance=obj, initial=initial_data)
+        form = self.form(instance=obj, initial=initial_data, user=request.user)
 
         restrict_form_fields(form, request.user)
 
@@ -703,10 +700,7 @@ class ObjectFlowView(GetReturnURLMixin, BaseObjectView):
 
         obj = self.alter_object(obj, request, args, kwargs)
 
-        if issubclass(self.form, ColdFrontModelForm):
-            form = self.form(data=request.POST, files=request.FILES, instance=obj, user=request.user)
-        else:
-            form = self.form(data=request.POST, files=request.FILES, instance=obj)
+        form = self.form(data=request.POST, files=request.FILES, instance=obj, user=request.user)
 
         restrict_form_fields(form, request.user)
 

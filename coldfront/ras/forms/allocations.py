@@ -9,7 +9,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.validators import EMPTY_VALUES
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.models import ObjectType
+from coldfront.core.choices import CommentKindChoices
+from coldfront.core.models import CommentEntry, ObjectType
 from coldfront.forms import (
     PrimaryModelForm,
     PrimaryModelImportForm,
@@ -187,12 +188,15 @@ class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
     )
     comments = CommentField()
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
     class Meta:
         model = Allocation
         fields = [
             "project",
             "owner",
-            "comments",
         ]
 
     @property
@@ -204,6 +208,23 @@ class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
                 "comments",
             ),
         ]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            self._create_comment_entry()
+        return instance
+
+    def _create_comment_entry(self):
+        comments = self.cleaned_data.get("comments")
+        if comments:
+            CommentEntry.objects.create(
+                assigned_object=self.instance,
+                created_by=getattr(self, "user", None),
+                kind=CommentKindChoices.KIND_INFO,
+                comments=comments,
+            )
 
 
 class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
@@ -228,13 +249,30 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             "start_date",
             "end_date",
             "status",
-            "comments",
             "description",
             "justification",
             "tags",
             "tenant",
             "tenant_group",
         ]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            self.save_m2m()
+            self._create_comment_entry()
+        return instance
+
+    def _create_comment_entry(self):
+        comments = self.cleaned_data.get("comments")
+        if comments:
+            CommentEntry.objects.create(
+                assigned_object=self.instance,
+                created_by=getattr(self, "user", None),
+                kind=CommentKindChoices.KIND_INFO,
+                comments=comments,
+            )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -297,10 +335,27 @@ class AllocationActivateForm(AllocationBaseForm, PrimaryModelForm):
             "owner",
             "start_date",
             "end_date",
-            "comments",
             "description",
             "justification",
         ]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            self.save_m2m()
+            self._create_comment_entry()
+        return instance
+
+    def _create_comment_entry(self):
+        comments = self.cleaned_data.get("comments")
+        if comments:
+            CommentEntry.objects.create(
+                assigned_object=self.instance,
+                created_by=getattr(self, "user", None),
+                kind=CommentKindChoices.KIND_INFO,
+                comments=comments,
+            )
 
     @property
     def fieldsets(self):

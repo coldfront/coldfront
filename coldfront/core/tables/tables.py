@@ -9,6 +9,7 @@ import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.models import (
+    CommentEntry,
     CustomField,
     CustomFieldChoiceSet,
     Job,
@@ -349,6 +350,65 @@ class SavedFilterTable(ColdFrontTable):
             "description",
             "enabled",
             "shared",
+        )
+
+
+class CommentEntryTable(ColdFrontTable):
+    created = columns.DateTimeColumn(
+        verbose_name=_("Created"),
+        timespec="minutes",
+        linkify=True,
+    )
+    assigned_object_type = columns.ContentTypeColumn(
+        verbose_name=_("Object Type"),
+    )
+    assigned_object = tables.Column(
+        linkify=True,
+        orderable=False,
+        verbose_name=_("Object"),
+    )
+    kind = columns.ChoiceFieldColumn(
+        verbose_name=_("Kind"),
+    )
+    comments = columns.MarkdownColumn(
+        verbose_name=_("Comments"),
+    )
+    comments_short = tables.TemplateColumn(
+        accessor=tables.A("comments"),
+        template_code="{{ value|markdown|truncatewords_html:50 }}",
+        verbose_name=_("Comments (Short)"),
+    )
+    created_by = tables.Column(
+        verbose_name=_("Created By"),
+        linkify=True,
+    )
+    tags = columns.TagColumn(
+        url_name="core:commententry_list",
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = CommentEntry
+        fields = (
+            "pk",
+            "id",
+            "created",
+            "assigned_object_type",
+            "assigned_object",
+            "kind",
+            "comments",
+            "comments_short",
+            "created_by",
+            "tags",
+            "actions",
+        )
+        default_columns = (
+            "pk",
+            "created",
+            "assigned_object_type",
+            "kind",
+            "comments_short",
+            "created_by",
+            "tags",
         )
 
 

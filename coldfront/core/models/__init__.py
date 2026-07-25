@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from .change_logging import ObjectChange
+from .commenting import CommentEntry
 from .customfields import CustomField, CustomFieldChoiceSet, CustomFieldManager
 from .jobs import Job, JobLogEntry
 from .object_types import ObjectType, ObjectTypeManager, ObjectTypeQuerySet
@@ -15,6 +16,7 @@ __all__ = (
     "ObjectTypeManager",
     "ObjectTypeQuerySet",
     "ObjectChange",
+    "CommentEntry",
     "Tag",
     "TaggedItem",
     "CustomFieldChoiceSet",

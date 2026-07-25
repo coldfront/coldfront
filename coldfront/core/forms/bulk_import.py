@@ -7,11 +7,12 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.core.choices import (
+    CommentKindChoices,
     CustomFieldTypeChoices,
     CustomFieldUIEditableChoices,
     CustomFieldUIVisibleChoices,
 )
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, ObjectType, SavedFilter, Tag
+from coldfront.core.models import CommentEntry, CustomField, CustomFieldChoiceSet, ObjectType, SavedFilter, Tag
 from coldfront.forms import CSVModelForm
 from coldfront.forms.fields import (
     CSVChoiceField,
@@ -20,6 +21,7 @@ from coldfront.forms.fields import (
     CSVMultipleContentTypeField,
     SlugField,
 )
+from coldfront.users.models import User
 
 
 class SavedFilterImportForm(CSVModelForm):
@@ -156,4 +158,43 @@ class TagImportForm(CSVModelForm):
             "weight",
             "description",
             "object_types",
+        )
+
+
+class CommentEntryImportForm(CSVModelForm):
+    kind = CSVChoiceField(
+        label=_("Kind"),
+        choices=CommentKindChoices,
+        required=False,
+        help_text=_("Comment entry kind"),
+    )
+    comments = forms.CharField(
+        label=_("Comments"),
+        required=True,
+    )
+    assigned_object_type = CSVContentTypeField(
+        label=_("Object type"),
+        queryset=ObjectType.objects.all(),
+        required=True,
+    )
+    assigned_object_id = forms.IntegerField(
+        label=_("Object ID"),
+        required=True,
+    )
+    created_by = CSVModelChoiceField(
+        label=_("Created by"),
+        queryset=User.objects.all(),
+        required=False,
+        to_field_name="username",
+        help_text=_("User who created this comment entry"),
+    )
+
+    class Meta:
+        model = CommentEntry
+        fields = (
+            "assigned_object_type",
+            "assigned_object_id",
+            "kind",
+            "comments",
+            "created_by",
         )

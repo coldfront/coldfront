@@ -9,7 +9,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import EmptyPage
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponse, HttpResponseBadRequest
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic import View
 from django_cotton import render_component
@@ -21,15 +22,25 @@ from coldfront.utils.data import shallow_compare_dict
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.htmx import htmx_partial
-from coldfront.views.object_actions import BulkDelete, BulkEdit, BulkExport, DeleteObject
-from coldfront.views.utils import ViewTab
+from coldfront.views.object_actions import BulkDelete, BulkEdit, BulkExport, BulkImport, DeleteObject
+from coldfront.views.utils import ViewTab, get_action_url
 
 from . import (
     filtersets,
     forms,
     tables,
 )
-from .models import CustomField, CustomFieldChoiceSet, Job, ObjectChange, SavedFilter, TableConfig, Tag, TaggedItem
+from .models import (
+    CommentEntry,
+    CustomField,
+    CustomFieldChoiceSet,
+    Job,
+    ObjectChange,
+    SavedFilter,
+    TableConfig,
+    Tag,
+    TaggedItem,
+)
 from .plugins import get_local_plugins
 from .tables import CatalogPluginTable, PluginVersionTable
 from .templatetags.builtins.filters import render_markdown
@@ -645,5 +656,143 @@ class AdminNotificationSendView(UserPassesTestMixin, View):
             self.template_name,
             {
                 "form": form,
+            },
+        )
+
+
+#
+# Comment Entry views
+#
+
+
+@register_model_view(CommentEntry, "list", path="", detail=False)
+class CommentEntryListView(generic.ObjectListView):
+    queryset = CommentEntry.objects.all()
+    filterset = filtersets.CommentEntryFilterSet
+    filterset_form = forms.CommentEntryFilterForm
+    table = tables.CommentEntryTable
+    actions = (BulkImport, BulkEdit, BulkDelete)
+
+
+@register_model_view(CommentEntry)
+class CommentEntryView(generic.ObjectView):
+    queryset = CommentEntry.objects.all()
+
+
+@register_model_view(CommentEntry, "add", detail=False)
+@register_model_view(CommentEntry, "edit")
+class CommentEntryEditView(generic.ObjectEditView):
+    queryset = CommentEntry.objects.all()
+    form = forms.CommentEntryForm
+
+    def alter_object(self, obj, request, args, kwargs):
+        if not obj.pk:
+            obj.created_by = request.user
+        return obj
+
+    def get_return_url(self, request, instance):
+        if not instance.assigned_object:
+            return reverse("core:commententry_list")
+        obj = instance.assigned_object
+        return get_action_url(obj, action="comments", kwargs={"pk": obj.pk})
+
+
+@register_model_view(CommentEntry, "delete")
+class CommentEntryDeleteView(generic.ObjectDeleteView):
+    queryset = CommentEntry.objects.all()
+
+    def get_return_url(self, request, instance):
+        obj = instance.assigned_object
+        return get_action_url(obj, action="comments", kwargs={"pk": obj.pk})
+
+
+@register_model_view(CommentEntry, "bulk_import", path="import", detail=False)
+class CommentEntryBulkImportView(generic.BulkImportView):
+    queryset = CommentEntry.objects.all()
+    model_form = forms.CommentEntryImportForm
+
+
+@register_model_view(CommentEntry, "bulk_edit", path="edit", detail=False)
+class CommentEntryBulkEditView(generic.BulkEditView):
+    queryset = CommentEntry.objects.all()
+    filterset = filtersets.CommentEntryFilterSet
+    table = tables.CommentEntryTable
+    form = forms.CommentEntryBulkEditForm
+
+
+@register_model_view(CommentEntry, "bulk_delete", path="delete", detail=False)
+class CommentEntryBulkDeleteView(generic.BulkDeleteView):
+    queryset = CommentEntry.objects.all()
+    filterset = filtersets.CommentEntryFilterSet
+    table = tables.CommentEntryTable
+
+
+class ObjectCommentsView(LoginRequiredMixin, View):
+    """
+    Show all comment entries for an object. The model class must be passed as a keyword argument when referencing this
+    view in a URL path. For example:
+
+        path("allocations/<int:pk>/comments/", ObjectCommentsView.as_view(), name="allocation_comments", kwargs={"model": Allocation}),
+
+    Attributes:
+        base_template: The name of the template to extend. If not provided, "{app}/{model}.html" will be used.
+    """
+
+    base_template = None
+    tab = ViewTab(
+        label=_("Comments"),
+        badge=lambda obj: obj.comments.count(),
+        permission="core.view_commententry",
+        weight=9000,
+    )
+
+    def get(self, request, model, **kwargs):
+
+        # Handle QuerySet restriction of parent object if needed
+        if hasattr(model.objects, "restrict"):
+            obj = get_object_or_404(model.objects.restrict(request.user, "view"), **kwargs)
+        else:
+            obj = get_object_or_404(model, **kwargs)
+
+        # Gather all comments for this object
+        content_type = ContentType.objects.get_for_model(model)
+        commententries = (
+            CommentEntry.objects.restrict(request.user, "view")
+            .prefetch_related("created_by")
+            .filter(
+                assigned_object_type=content_type,
+                assigned_object_id=obj.pk,
+            )
+        )
+        commententry_table = tables.CommentEntryTable(commententries)
+        commententry_table.configure(request)
+        commententry_table.columns.hide("assigned_object_type")
+        commententry_table.columns.hide("assigned_object")
+
+        if request.user.has_perm("core.add_commententry"):
+            form = forms.CommentEntryForm(
+                user=request.user,
+                initial={
+                    "assigned_object_type": ContentType.objects.get_for_model(obj),
+                    "assigned_object_id": obj.pk,
+                },
+            )
+        else:
+            form = None
+
+        # Default to using "<app>/<model>.html" as the template, if it exists. Otherwise,
+        # fall back to using base.html.
+        if self.base_template is None:
+            self.base_template = f"{model._meta.app_label}/{model._meta.model_name}.html"
+
+        return render(
+            request,
+            "core/object_comments.html",
+            {
+                "object": obj,
+                "form": form,
+                "table": commententry_table,
+                "base_template": self.base_template,
+                "tab": self.tab,
             },
         )

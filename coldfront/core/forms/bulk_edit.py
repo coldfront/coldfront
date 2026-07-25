@@ -6,9 +6,15 @@ from crispy_forms.layout import Fieldset
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from coldfront.core.choices import ColorChoices, CustomFieldUIEditableChoices, CustomFieldUIVisibleChoices
-from coldfront.core.models import CustomField, CustomFieldChoiceSet, SavedFilter, TableConfig, Tag
+from coldfront.core.choices import (
+    ColorChoices,
+    CommentKindChoices,
+    CustomFieldUIEditableChoices,
+    CustomFieldUIVisibleChoices,
+)
+from coldfront.core.models import CommentEntry, CustomField, CustomFieldChoiceSet, SavedFilter, TableConfig, Tag
 from coldfront.forms import ColdFrontModelBulkEditForm
+from coldfront.forms.fields import CommentField
 from coldfront.forms.widgets.select import BulkEditNullBooleanSelect
 from coldfront.utils.forms import add_blank_choice
 
@@ -241,5 +247,27 @@ class TableConfigBulkEditForm(ColdFrontModelBulkEditForm):
                 "weight",
                 "enabled",
                 "shared",
+            ),
+        ]
+
+
+class CommentEntryBulkEditForm(ColdFrontModelBulkEditForm):
+    kind = forms.ChoiceField(
+        label=_("Kind"),
+        choices=add_blank_choice(CommentKindChoices),
+        required=False,
+    )
+    comments = CommentField(required=False)
+
+    model = CommentEntry
+    nullable_fields = ()
+
+    @property
+    def fieldsets(self):
+        return [
+            Fieldset(
+                _("Comment Entry"),
+                "kind",
+                "comments",
             ),
         ]

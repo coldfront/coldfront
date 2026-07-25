@@ -193,12 +193,6 @@ class AllocationBulkEditForm(PrimaryModelBulkEditForm):
         required=False,
         label=_("Justification"),
     )
-    comments = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3}),
-        required=False,
-        label=_("Comments"),
-    )
-
     model = Allocation
     nullable_fields = (
         "tenant_group",
@@ -210,7 +204,6 @@ class AllocationBulkEditForm(PrimaryModelBulkEditForm):
         "start_date",
         "end_date",
         "justification",
-        "comments",
     )
 
     @property
@@ -231,6 +224,5 @@ class AllocationBulkEditForm(PrimaryModelBulkEditForm):
             Fieldset(
                 _("Text"),
                 "justification",
-                "comments",
             ),
         ]

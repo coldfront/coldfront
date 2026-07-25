@@ -129,7 +129,10 @@ ADMIN_MENU = Menu(
         ),
         MenuGroup(
             label=_("Logging"),
-            items=(get_model_item("core", "objectchange", _("Change Log"), actions=[]),),
+            items=(
+                get_model_item("core", "commententry", _("Comment Entires"), actions=[]),
+                get_model_item("core", "objectchange", _("Change Log"), actions=[]),
+            ),
         ),
     ),
 )
