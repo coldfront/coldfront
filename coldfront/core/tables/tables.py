@@ -12,6 +12,7 @@ from coldfront.core.models import (
     CommentEntry,
     CustomField,
     CustomFieldChoiceSet,
+    CustomLink,
     Job,
     ObjectChange,
     SavedFilter,
@@ -350,6 +351,50 @@ class SavedFilterTable(ColdFrontTable):
             "description",
             "enabled",
             "shared",
+        )
+
+
+class CustomLinkTable(ColdFrontTable):
+    name = tables.Column(
+        verbose_name=_("Name"),
+        linkify=True,
+    )
+    object_types = columns.ContentTypesColumn(
+        verbose_name=_("Object Types"),
+    )
+    enabled = columns.BooleanColumn(
+        verbose_name=_("Enabled"),
+    )
+    new_window = columns.BooleanColumn(
+        verbose_name=_("New Window"),
+        false_mark=None,
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = CustomLink
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "object_types",
+            "enabled",
+            "link_text",
+            "link_url",
+            "weight",
+            "group_name",
+            "button_class",
+            "new_window",
+            "created",
+            "last_updated",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "object_types",
+            "enabled",
+            "group_name",
+            "button_class",
+            "new_window",
         )
 
 

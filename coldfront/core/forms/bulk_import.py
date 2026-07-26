@@ -11,8 +11,17 @@ from coldfront.core.choices import (
     CustomFieldTypeChoices,
     CustomFieldUIEditableChoices,
     CustomFieldUIVisibleChoices,
+    CustomLinkButtonClassChoices,
 )
-from coldfront.core.models import CommentEntry, CustomField, CustomFieldChoiceSet, ObjectType, SavedFilter, Tag
+from coldfront.core.models import (
+    CommentEntry,
+    CustomField,
+    CustomFieldChoiceSet,
+    CustomLink,
+    ObjectType,
+    SavedFilter,
+    Tag,
+)
 from coldfront.forms import CSVModelForm
 from coldfront.forms.fields import (
     CSVChoiceField,
@@ -158,6 +167,34 @@ class TagImportForm(CSVModelForm):
             "weight",
             "description",
             "object_types",
+        )
+
+
+class CustomLinkImportForm(CSVModelForm):
+    object_types = CSVMultipleContentTypeField(
+        label=_("Object types"),
+        queryset=ObjectType.objects.public(),
+        help_text=_("One or more assigned object types"),
+    )
+    button_class = CSVChoiceField(
+        label=_("Button class"),
+        choices=CustomLinkButtonClassChoices,
+        required=False,
+        help_text=_("Button color class"),
+    )
+
+    class Meta:
+        model = CustomLink
+        fields = (
+            "name",
+            "object_types",
+            "enabled",
+            "link_text",
+            "link_url",
+            "weight",
+            "group_name",
+            "button_class",
+            "new_window",
         )
 
 

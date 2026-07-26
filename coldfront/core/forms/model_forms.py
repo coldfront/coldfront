@@ -16,6 +16,7 @@ from coldfront.core.models import (
     CommentEntry,
     CustomField,
     CustomFieldChoiceSet,
+    CustomLink,
     ObjectType,
     SavedFilter,
     TableConfig,
@@ -354,6 +355,43 @@ class CustomFieldForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelFor
             )
         else:
             del self.fields["choice_set"]
+
+
+class CustomLinkForm(HorizontalFormMixin, ChangelogMessageMixin, forms.ModelForm):
+    object_types = ContentTypeMultipleChoiceField(
+        label=_("Object types"),
+        queryset=ObjectType.objects.with_feature("custom_links"),
+    )
+
+    class Meta:
+        model = CustomLink
+        fields = "__all__"
+        widgets = {
+            "link_text": forms.Textarea(attrs={"class": "font-monospace"}),
+            "link_url": forms.Textarea(attrs={"class": "font-monospace"}),
+        }
+        help_texts = {
+            "link_text": _("Jinja2 template code for link text. Reference the object as {{ object }}."),
+            "link_url": _("Jinja2 template code for link URL. Reference the object as {{ object }}."),
+        }
+
+    fieldsets = (
+        Fieldset(
+            _("Custom Link"),
+            "name",
+            "object_types",
+            "weight",
+            "group_name",
+            "button_class",
+            "enabled",
+            "new_window",
+        ),
+        Fieldset(
+            _("Templates"),
+            "link_text",
+            "link_url",
+        ),
+    )
 
 
 class CommentEntryForm(ColdFrontModelForm):

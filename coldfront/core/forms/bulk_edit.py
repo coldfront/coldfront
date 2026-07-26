@@ -11,8 +11,17 @@ from coldfront.core.choices import (
     CommentKindChoices,
     CustomFieldUIEditableChoices,
     CustomFieldUIVisibleChoices,
+    CustomLinkButtonClassChoices,
 )
-from coldfront.core.models import CommentEntry, CustomField, CustomFieldChoiceSet, SavedFilter, TableConfig, Tag
+from coldfront.core.models import (
+    CommentEntry,
+    CustomField,
+    CustomFieldChoiceSet,
+    CustomLink,
+    SavedFilter,
+    TableConfig,
+    Tag,
+)
 from coldfront.forms import ColdFrontModelBulkEditForm
 from coldfront.forms.fields import CommentField
 from coldfront.forms.widgets.select import BulkEditNullBooleanSelect
@@ -247,6 +256,64 @@ class TableConfigBulkEditForm(ColdFrontModelBulkEditForm):
                 "weight",
                 "enabled",
                 "shared",
+            ),
+        ]
+
+
+class CustomLinkBulkEditForm(ColdFrontModelBulkEditForm):
+    enabled = forms.NullBooleanField(
+        label=_("Enabled"),
+        required=False,
+        widget=BulkEditNullBooleanSelect,
+    )
+    weight = forms.IntegerField(
+        label=_("Weight"),
+        required=False,
+    )
+    group_name = forms.CharField(
+        label=_("Group name"),
+        max_length=50,
+        required=False,
+    )
+    button_class = forms.ChoiceField(
+        choices=add_blank_choice(CustomLinkButtonClassChoices),
+        required=False,
+        label=_("Button class"),
+    )
+    new_window = forms.NullBooleanField(
+        label=_("New window"),
+        required=False,
+        widget=BulkEditNullBooleanSelect,
+    )
+    link_text = forms.CharField(
+        label=_("Link text"),
+        widget=forms.Textarea(attrs={"class": "font-monospace"}),
+        required=False,
+    )
+    link_url = forms.CharField(
+        label=_("Link URL"),
+        widget=forms.Textarea(attrs={"class": "font-monospace"}),
+        required=False,
+    )
+
+    model = CustomLink
+    nullable_fields = ("group_name", "link_text", "link_url")
+
+    @property
+    def fieldsets(self):
+        return [
+            Fieldset(
+                _("Custom Link"),
+                "enabled",
+                "weight",
+                "group_name",
+                "button_class",
+                "new_window",
+            ),
+            Fieldset(
+                _("Templates"),
+                "link_text",
+                "link_url",
             ),
         ]
 

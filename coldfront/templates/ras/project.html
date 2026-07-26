@@ -2,6 +2,7 @@
 {% load i18n %}
 
 {% block extra_controls %}
+    {{ block.super }}
     {% if perms.ras.request_allocation %}
         <c-button.request
             url="{% url 'ras:project_allocationrequest' pk=object.pk %}?return_url={% url 'ras:project_allocations' pk=object.pk %}"

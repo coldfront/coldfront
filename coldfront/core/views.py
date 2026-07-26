@@ -34,6 +34,7 @@ from .models import (
     CommentEntry,
     CustomField,
     CustomFieldChoiceSet,
+    CustomLink,
     Job,
     ObjectChange,
     SavedFilter,
@@ -796,3 +797,52 @@ class ObjectCommentsView(LoginRequiredMixin, View):
                 "tab": self.tab,
             },
         )
+
+
+#
+# Custom Link views
+#
+
+
+@register_model_view(CustomLink, "list", path="", detail=False)
+class CustomLinkListView(generic.ObjectListView):
+    queryset = CustomLink.objects.all()
+    filterset = filtersets.CustomLinkFilterSet
+    filterset_form = forms.CustomLinkFilterForm
+    table = tables.CustomLinkTable
+
+
+@register_model_view(CustomLink)
+class CustomLinkView(generic.ObjectView):
+    queryset = CustomLink.objects.all()
+
+
+@register_model_view(CustomLink, "add", detail=False)
+@register_model_view(CustomLink, "edit")
+class CustomLinkEditView(generic.ObjectEditView):
+    queryset = CustomLink.objects.all()
+    form = forms.CustomLinkForm
+
+
+@register_model_view(CustomLink, "delete")
+class CustomLinkDeleteView(generic.ObjectDeleteView):
+    queryset = CustomLink.objects.all()
+
+
+@register_model_view(CustomLink, "bulk_import", path="import", detail=False)
+class CustomLinkBulkImportView(generic.BulkImportView):
+    queryset = CustomLink.objects.all()
+    model_form = forms.CustomLinkImportForm
+
+
+@register_model_view(CustomLink, "bulk_edit", path="edit", detail=False)
+class CustomLinkBulkEditView(generic.BulkEditView):
+    queryset = CustomLink.objects.all()
+    filterset = filtersets.CustomLinkFilterSet
+    table = tables.CustomLinkTable
+    form = forms.CustomLinkBulkEditForm
+
+
+@register_model_view(CustomLink, "bulk_delete", path="delete", detail=False)
+class CustomLinkBulkDeleteView(generic.BulkDeleteView):
+    queryset = CustomLink.objects.all()

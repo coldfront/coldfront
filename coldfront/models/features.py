@@ -337,6 +337,15 @@ class CustomFieldsMixin(models.Model):
         super().save(*args, **kwargs)
 
 
+class CustomLinksMixin(models.Model):
+    """
+    Enables support for custom links.
+    """
+
+    class Meta:
+        abstract = True
+
+
 class AllocatableResourceMixin(models.Model):
     """
     Enables support for allocatable resources. Models inheriting from this mixin
@@ -408,6 +417,7 @@ register_model_feature("tags", lambda model: issubclass(model, TagsMixin))
 register_model_feature("custom_fields", lambda model: issubclass(model, CustomFieldsMixin))
 register_model_feature("allocatable_resource", lambda model: issubclass(model, AllocatableResourceMixin))
 register_model_feature("commenting", lambda model: issubclass(model, CommentingMixin))
+register_model_feature("custom_links", lambda model: issubclass(model, CustomLinksMixin))
 
 
 def register_models(*models):

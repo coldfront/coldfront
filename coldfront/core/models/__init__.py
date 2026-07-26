@@ -5,6 +5,7 @@
 from .change_logging import ObjectChange
 from .commenting import CommentEntry
 from .customfields import CustomField, CustomFieldChoiceSet, CustomFieldManager
+from .customlinks import CustomLink
 from .jobs import Job, JobLogEntry
 from .object_types import ObjectType, ObjectTypeManager, ObjectTypeQuerySet
 from .saved_filters import SavedFilter
@@ -17,6 +18,7 @@ __all__ = (
     "ObjectTypeQuerySet",
     "ObjectChange",
     "CommentEntry",
+    "CustomLink",
     "Tag",
     "TaggedItem",
     "CustomFieldChoiceSet",

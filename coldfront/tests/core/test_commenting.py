@@ -189,7 +189,7 @@ class AllocationFormCommentingTestCase(TestCase):
             kind=CommentKindChoices.KIND_INFO,
             comments="Test",
         )
-        self.assertEqual(entry.get_kind_color(), "cyan")
+        self.assertEqual(entry.get_kind_color(), "info")
 
     def test_comment_entry_str(self):
         """Verify __str__ includes date and kind."""

@@ -26,6 +26,8 @@ urlpatterns = [
     path("comment-entries/<int:pk>/", include(get_model_urls("core", "commententry"))),
     path("jobs/", include(get_model_urls("core", "job", detail=False))),
     path("jobs/<int:pk>/", include(get_model_urls("core", "job"))),
+    path("custom-links/", include(get_model_urls("core", "customlink", detail=False))),
+    path("custom-links/<int:pk>/", include(get_model_urls("core", "customlink"))),
     path("plugins/", views.PluginListView.as_view(), name="plugin_list"),
     path("plugins/<str:name>/", views.PluginView.as_view(), name="plugin"),
     # Admin notification sending

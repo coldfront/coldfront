@@ -269,6 +269,34 @@ class JobNotificationChoices(ChoiceSet):
     )
 
 
+class CustomLinkButtonClassChoices(ChoiceSet):
+    key = "CustomLink.button_class"
+
+    DEFAULT = "default"
+    BLUE = "blue"
+    INDIGO = "indigo"
+    PURPLE = "purple"
+    PINK = "pink"
+    RED = "red"
+    ORANGE = "orange"
+    YELLOW = "yellow"
+    GREEN = "green"
+    TEAL = "teal"
+    CYAN = "cyan"
+    GRAY = "gray"
+    GREY = "gray"
+    BLACK = "black"
+    WHITE = "white"
+    LINK = "ghost-dark"
+
+    CHOICES = list(
+        (
+            *ButtonColorChoices.CHOICES,
+            (LINK, _("Link")),
+        )
+    )
+
+
 class CommentKindChoices(ChoiceSet):
     key = "CommentEntry.kind"
 

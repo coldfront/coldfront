@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CommentKindChoices, JobStatusChoices
-from coldfront.core.models import CommentEntry, Job
+from coldfront.core.models import CommentEntry, CustomLink, Job
 from coldfront.users.models import User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet, ChangeLoggedModelFilterSet
@@ -360,6 +360,44 @@ class JobFilterSet(ChangeLoggedModelFilterSet):
         if not value.strip():
             return queryset
         return queryset.filter(Q(name__icontains=value))
+
+
+class CustomLinkFilterSet(ChangeLoggedModelFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    object_type_id = django_filters.ModelMultipleChoiceFilter(
+        queryset=ObjectType.objects.all(),
+        field_name="object_types",
+    )
+    object_type = ContentTypeFilter(
+        field_name="object_types",
+    )
+
+    class Meta:
+        model = CustomLink
+        fields = (
+            "id",
+            "name",
+            "enabled",
+            "link_text",
+            "link_url",
+            "weight",
+            "group_name",
+            "new_window",
+            "button_class",
+        )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(
+            Q(name__icontains=value)
+            | Q(link_text__icontains=value)
+            | Q(link_url__icontains=value)
+            | Q(group_name__icontains=value)
+        )
 
 
 class CommentEntryFilterSet(ChangeLoggedModelFilterSet):

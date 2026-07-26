@@ -1,5 +1,6 @@
 {% extends 'generic/base.html' %}
 {% load buttons %}
+{% load custom_links %}
 {% load plugins %}
 {% load humanize %}
 {% load i18n %}
@@ -64,11 +65,19 @@ Context:
         {# Add/edit/delete/etc. buttons #}
         {% block control-buttons %}
             {# Extra buttons #}
-            {% block extra_controls %}{% endblock %}
+            {% block extra_controls %}{% endblock extra_controls %}
 
             {# Default buttons #}
             {% action_buttons actions object %}
         {% endblock control-buttons %}
+    </div>
+    {# Custom links #}
+    <div class="d-flex justify-content-end">
+        <div class="btn-list">
+            {% block custom-links %}
+                {% custom_links object %}
+            {% endblock custom-links %}
+        </div>
     </div>
 {% endblock controls %}
 

@@ -7,6 +7,7 @@ from .tables import (
     CommentEntryTable,
     CustomFieldChoiceSetTable,
     CustomFieldTable,
+    CustomLinkTable,
     JobTable,
     ObjectChangeTable,
     SavedFilterTable,
@@ -17,6 +18,7 @@ from .tables import (
 
 __all__ = (
     "CommentEntryTable",
+    "CustomLinkTable",
     "TagTable",
     "TaggedItemTable",
     "ObjectChangeTable",
