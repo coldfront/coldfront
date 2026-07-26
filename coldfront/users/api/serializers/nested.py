@@ -11,6 +11,7 @@ from coldfront.users import models
 
 __all__ = (
     "NestedGroupSerializer",
+    "NestedRoleSerializer",
     "NestedUserSerializer",
 )
 
@@ -20,6 +21,13 @@ class NestedGroupSerializer(WritableNestedSerializer):
         model = models.Group
         fields = ["id", "url", "display_url", "display", "name"]
         brief_fields = ("id", "url", "display", "name")
+
+
+class NestedRoleSerializer(WritableNestedSerializer):
+    class Meta:
+        model = models.Role
+        fields = ["id", "url", "display_url", "display", "name", "weight"]
+        brief_fields = ("id", "url", "display", "name", "weight")
 
 
 class NestedUserSerializer(WritableNestedSerializer):

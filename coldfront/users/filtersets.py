@@ -11,7 +11,7 @@ from drf_spectacular.utils import extend_schema_field
 
 from coldfront.core.models import ObjectType
 from coldfront.ras.models import Allocation, Project
-from coldfront.users.models import Group, ObjectPermission, Token, User
+from coldfront.users.models import Group, ObjectPermission, Role, Token, User
 from coldfront.views.filters import ContentTypeFilter
 from coldfront.views.filtersets import BaseFilterSet
 
@@ -121,6 +121,27 @@ class UserFilterSet(BaseFilterSet):
             return queryset.filter(Q(projects__project_id=int(ids[0])) & ~Q(allocations__allocation_id=int(ids[1])))
         except ValueError:
             return queryset.none()
+
+
+class RoleFilterSet(BaseFilterSet):
+    q = django_filters.CharFilter(
+        method="search",
+        label=_("Search"),
+    )
+    permission_id = django_filters.ModelMultipleChoiceFilter(
+        field_name="object_permissions",
+        queryset=ObjectPermission.objects.all(),
+        label=_("Permission (ID)"),
+    )
+
+    class Meta:
+        model = Role
+        fields = ("id", "name", "description", "weight")
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(Q(name__icontains=value) | Q(description__icontains=value))
 
 
 class ObjectPermissionFilterSet(BaseFilterSet):

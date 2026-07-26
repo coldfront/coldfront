@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 
 from coldfront.tables import ColdFrontTable, columns
 
-from .models import Group, ObjectPermission, Token, User
+from .models import Group, ObjectPermission, Role, Token, User
 
 __all__ = (
     "GroupTable",
@@ -57,6 +57,48 @@ class GroupTable(ColdFrontTable):
     class Meta(ColdFrontTable.Meta):
         model = Group
         fields = ("pk", "id", "name", "users_count", "description")
+
+
+class RoleTable(ColdFrontTable):
+    name = tables.Column(verbose_name=_("Name"), linkify=True)
+    weight = tables.Column(verbose_name=_("Weight"))
+    users = columns.ManyToManyColumn(
+        verbose_name=_("Users"),
+        linkify_item=("users:user", {"pk": tables.A("pk")}),
+    )
+    groups = columns.ManyToManyColumn(
+        verbose_name=_("Groups"),
+        linkify_item=("users:group", {"pk": tables.A("pk")}),
+    )
+    permissions = columns.ManyToManyColumn(
+        verbose_name=_("Permissions"),
+        linkify_item=("users:objectpermission", {"pk": tables.A("pk")}),
+        accessor=tables.A("object_permissions"),
+    )
+    actions = columns.ActionsColumn(
+        actions=("edit", "delete"),
+    )
+
+    class Meta(ColdFrontTable.Meta):
+        model = Role
+        fields = (
+            "pk",
+            "id",
+            "name",
+            "weight",
+            "description",
+            "users",
+            "groups",
+            "object_permissions",
+        )
+        default_columns = (
+            "pk",
+            "name",
+            "weight",
+            "description",
+            "users",
+            "groups",
+        )
 
 
 class ObjectPermissionTable(ColdFrontTable):

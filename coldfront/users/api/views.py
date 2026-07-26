@@ -17,7 +17,7 @@ from rest_framework.viewsets import ViewSet
 
 from coldfront.api.viewsets import ColdFrontModelViewSet
 from coldfront.users import filtersets
-from coldfront.users.models import Group, ObjectPermission, Token, User, UserConfig
+from coldfront.users.models import Group, ObjectPermission, Role, Token, User, UserConfig
 from coldfront.users.querysets import RestrictedQuerySet
 from coldfront.utils.data import deepmerge
 
@@ -120,6 +120,17 @@ class UserConfigViewSet(ViewSet):
         userconfig.data = deepmerge(userconfig.data, request.data)
         userconfig.save()
         return Response(userconfig.data)
+
+
+#
+# Roles
+#
+
+
+class RoleViewSet(ColdFrontModelViewSet):
+    queryset = Role.objects.all()
+    serializer_class = serializers.RoleSerializer
+    filterset_class = filtersets.RoleFilterSet
 
 
 #

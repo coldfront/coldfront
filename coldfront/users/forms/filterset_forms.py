@@ -11,7 +11,7 @@ from coldfront.constants import BOOLEAN_WITH_BLANK_CHOICES
 from coldfront.forms import ColdFrontModelFilterSetForm
 from coldfront.forms.layouts import DateTime
 from coldfront.ras.models import Project
-from coldfront.users.models import Group, ObjectPermission, Token, User
+from coldfront.users.models import Group, ObjectPermission, Role, Token, User
 
 
 class GroupFilterSetForm(ColdFrontModelFilterSetForm):
@@ -67,6 +67,26 @@ class UserFilterSetForm(ColdFrontModelFilterSetForm):
             _("Status"),
             "is_active",
             "is_superuser",
+        ),
+    )
+
+
+class RoleFilterSetForm(ColdFrontModelFilterSetForm):
+    name = forms.CharField(
+        label=_("Name"),
+        required=False,
+    )
+    description = forms.CharField(
+        label=_("Description"),
+        required=False,
+    )
+
+    model = Role
+    fieldsets = (
+        Fieldset(
+            _("Role"),
+            "name",
+            "description",
         ),
     )
 

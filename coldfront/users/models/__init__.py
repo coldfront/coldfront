@@ -4,6 +4,7 @@
 
 from .permissions import ObjectPermission
 from .preferences import UserConfig
+from .role import Role
 from .tokens import Token
 from .users import Group, GroupManager, User, UserManager
 
@@ -13,6 +14,7 @@ __all__ = (
     "UserManager",
     "GroupManager",
     "ObjectPermission",
+    "Role",
     "Token",
     "UserConfig",
 )

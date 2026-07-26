@@ -94,6 +94,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         blank=True,
         related_name="users",
     )
+    roles = models.ManyToManyField(
+        to="users.Role",
+        blank=True,
+        related_name="users",
+    )
 
     objects = UserManager()
 
@@ -163,6 +168,11 @@ class Group(models.Model):
 
     object_permissions = models.ManyToManyField(
         to="users.ObjectPermission",
+        blank=True,
+        related_name="groups",
+    )
+    roles = models.ManyToManyField(
+        to="users.Role",
         blank=True,
         related_name="groups",
     )

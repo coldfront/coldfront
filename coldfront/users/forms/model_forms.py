@@ -20,7 +20,7 @@ from coldfront.forms.fields import (
 from coldfront.forms.layouts import CopyClipboard, DateTime
 from coldfront.forms.mixins import HorizontalFormMixin
 from coldfront.users.constants import CONSTRAINT_TOKEN_USER, OBJECTPERMISSION_OBJECT_TYPES
-from coldfront.users.models import Group, ObjectPermission, Token, User
+from coldfront.users.models import Group, ObjectPermission, Role, Token, User
 from coldfront.users.permissions import qs_filter_from_constraints
 
 
@@ -40,6 +40,11 @@ class UserForm(HorizontalFormMixin, forms.ModelForm):
         label=_("Groups"),
         required=False,
         queryset=Group.objects.all(),
+    )
+    roles = DynamicModelMultipleChoiceField(
+        label=_("Roles"),
+        required=False,
+        queryset=Role.objects.all(),
     )
     object_permissions = DynamicModelMultipleChoiceField(
         required=False,
@@ -67,6 +72,10 @@ class UserForm(HorizontalFormMixin, forms.ModelForm):
             "is_superuser",
         ),
         Fieldset(
+            _("Roles"),
+            "roles",
+        ),
+        Fieldset(
             _("Permissions"),
             "object_permissions",
         ),
@@ -80,6 +89,7 @@ class UserForm(HorizontalFormMixin, forms.ModelForm):
             "last_name",
             "email",
             "groups",
+            "roles",
             "object_permissions",
             "is_active",
             "is_superuser",
@@ -120,6 +130,11 @@ class GroupForm(HorizontalFormMixin, forms.ModelForm):
         required=False,
         queryset=User.objects.all(),
     )
+    roles = DynamicModelMultipleChoiceField(
+        label=_("Roles"),
+        required=False,
+        queryset=Role.objects.all(),
+    )
     object_permissions = DynamicModelMultipleChoiceField(
         required=False,
         label=_("Permissions"),
@@ -137,6 +152,10 @@ class GroupForm(HorizontalFormMixin, forms.ModelForm):
             "users",
         ),
         Fieldset(
+            _("Roles"),
+            "roles",
+        ),
+        Fieldset(
             _("Permissions"),
             "object_permissions",
         ),
@@ -148,6 +167,7 @@ class GroupForm(HorizontalFormMixin, forms.ModelForm):
             "name",
             "description",
             "users",
+            "roles",
             "object_permissions",
         ]
 
@@ -157,12 +177,14 @@ class GroupForm(HorizontalFormMixin, forms.ModelForm):
         # Populate assigned users and permissions
         if self.instance.pk:
             self.fields["users"].initial = self.instance.users.values_list("id", flat=True)
+            self.fields["roles"].initial = self.instance.roles.values_list("id", flat=True)
 
     def save(self, *args, **kwargs):
         instance = super().save(*args, **kwargs)
 
-        # Update assigned users
+        # Update assigned users and roles
         instance.users.set(self.cleaned_data["users"])
+        instance.roles.set(self.cleaned_data["roles"])
 
         return instance
 
@@ -315,6 +337,73 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
                     raise forms.ValidationError(
                         {"constraints": _("Invalid filter for {model}: {error}").format(model=model, error=e)}
                     )
+
+    def save(self, *args, **kwargs):
+        instance = super().save(*args, **kwargs)
+
+        # Update assigned users and groups
+        instance.users.set(self.cleaned_data["users"])
+        instance.groups.set(self.cleaned_data["groups"])
+
+        return instance
+
+
+class RoleForm(HorizontalFormMixin, forms.ModelForm):
+    object_permissions = DynamicModelMultipleChoiceField(
+        required=False,
+        label=_("Permissions"),
+        queryset=ObjectPermission.objects.all(),
+    )
+    users = DynamicModelMultipleChoiceField(
+        label=_("Users"),
+        required=False,
+        queryset=User.objects.all(),
+    )
+    groups = DynamicModelMultipleChoiceField(
+        label=_("Groups"),
+        required=False,
+        queryset=Group.objects.all(),
+    )
+
+    fieldsets = (
+        Fieldset(
+            _("Role"),
+            "name",
+            "description",
+            "weight",
+        ),
+        Fieldset(
+            _("Permissions"),
+            "object_permissions",
+        ),
+        Fieldset(
+            _("Users"),
+            "users",
+        ),
+        Fieldset(
+            _("Groups"),
+            "groups",
+        ),
+    )
+
+    class Meta:
+        model = Role
+        fields = [
+            "name",
+            "description",
+            "weight",
+            "object_permissions",
+            "users",
+            "groups",
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Populate assigned users, groups, and permissions when editing
+        if self.instance.pk:
+            self.fields["users"].initial = self.instance.users.values_list("id", flat=True)
+            self.fields["groups"].initial = self.instance.groups.values_list("id", flat=True)
 
     def save(self, *args, **kwargs):
         instance = super().save(*args, **kwargs)

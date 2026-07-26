@@ -14,6 +14,8 @@ urlpatterns = [
     path("users/<int:pk>/", include(get_model_urls("users", "user"))),
     path("groups/", include(get_model_urls("users", "group", detail=False))),
     path("groups/<int:pk>/", include(get_model_urls("users", "group"))),
+    path("roles/", include(get_model_urls("users", "role", detail=False))),
+    path("roles/<int:pk>/", include(get_model_urls("users", "role"))),
     path("permissions/", include(get_model_urls("users", "objectpermission", detail=False))),
     path("permissions/<int:pk>/", include(get_model_urls("users", "objectpermission"))),
     path("tokens/", include(get_model_urls("users", "token", detail=False))),

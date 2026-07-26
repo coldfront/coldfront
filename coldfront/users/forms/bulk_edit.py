@@ -10,7 +10,7 @@ from coldfront.forms import BulkEditForm
 from coldfront.forms.fields import DynamicModelMultipleChoiceField
 from coldfront.forms.mixins import HorizontalFormMixin
 from coldfront.forms.widgets import BulkEditNullBooleanSelect
-from coldfront.users.models import Group, ObjectPermission, Token, User
+from coldfront.users.models import Group, ObjectPermission, Role, Token, User
 
 #
 # Users
@@ -108,6 +108,35 @@ class GroupBulkEditForm(HorizontalFormMixin, BulkEditForm):
 #
 # ObjectPermissions
 #
+
+
+class RoleBulkEditForm(HorizontalFormMixin, BulkEditForm):
+    pk = forms.ModelMultipleChoiceField(
+        queryset=Role.objects.all(),
+        widget=forms.MultipleHiddenInput,
+    )
+    description = forms.CharField(
+        label=_("Description"),
+        max_length=200,
+        required=False,
+    )
+    weight = forms.IntegerField(
+        label=_("Weight"),
+        required=False,
+    )
+
+    model = Role
+    nullable_fields = ("description",)
+
+    @property
+    def fieldsets(self):
+        return [
+            Fieldset(
+                _("Role"),
+                "description",
+                "weight",
+            ),
+        ]
 
 
 class ObjectPermissionBulkEditForm(HorizontalFormMixin, BulkEditForm):

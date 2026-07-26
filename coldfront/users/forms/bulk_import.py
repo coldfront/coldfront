@@ -7,7 +7,7 @@ from django import forms
 from django.utils.translation import gettext as _
 
 from coldfront.forms import CSVModelForm
-from coldfront.users.models import Group, Token, User
+from coldfront.users.models import Group, Role, Token, User
 
 __all__ = (
     "GroupImportForm",
@@ -42,6 +42,12 @@ class UserImportForm(CSVModelForm):
             self.instance.set_unusable_password()
 
         return super().save(*args, **kwargs)
+
+
+class RoleImportForm(CSVModelForm):
+    class Meta:
+        model = Role
+        fields = ("name", "description", "weight")
 
 
 class TokenImportForm(CSVModelForm):

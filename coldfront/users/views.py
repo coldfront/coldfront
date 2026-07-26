@@ -11,7 +11,7 @@ from coldfront.registry import register_model_view
 from coldfront.views import generic
 
 from . import filtersets, forms, tables
-from .models import Group, ObjectPermission, Token, User
+from .models import Group, ObjectPermission, Role, Token, User
 
 #
 # Users
@@ -134,6 +134,61 @@ class GroupBulkDeleteView(generic.BulkDeleteView):
     queryset = Group.objects.annotate(users_count=Count("user")).order_by("name")
     filterset = filtersets.GroupFilterSet
     table = tables.GroupTable
+
+
+#
+# Roles
+#
+
+
+@register_model_view(Role, "list", path="", detail=False)
+class RoleListView(generic.ObjectListView):
+    queryset = Role.objects.all()
+    filterset = filtersets.RoleFilterSet
+    filterset_form = forms.RoleFilterSetForm
+    table = tables.RoleTable
+
+
+@register_model_view(Role)
+class RoleView(generic.ObjectView):
+    queryset = Role.objects.all()
+    template_name = "users/role.html"
+
+
+@register_model_view(Role, "add", detail=False)
+@register_model_view(Role, "edit")
+class RoleEditView(generic.ObjectEditView):
+    queryset = Role.objects.all()
+    form = forms.RoleForm
+
+
+@register_model_view(Role, "delete")
+class RoleDeleteView(generic.ObjectDeleteView):
+    queryset = Role.objects.all()
+
+
+@register_model_view(Role, "bulk_import", path="import", detail=False)
+class RoleBulkImportView(generic.BulkImportView):
+    queryset = Role.objects.all()
+    model_form = forms.RoleImportForm
+
+
+@register_model_view(Role, "bulk_edit", path="edit", detail=False)
+class RoleBulkEditView(generic.BulkEditView):
+    queryset = Role.objects.all()
+    filterset = filtersets.RoleFilterSet
+    table = tables.RoleTable
+    form = forms.RoleBulkEditForm
+
+    def post_save_operations(self, form, obj):
+        pass
+
+
+@register_model_view(Role, "bulk_delete", path="delete", detail=False)
+class RoleBulkDeleteView(generic.BulkDeleteView):
+    queryset = Role.objects.all()
+    filterset = filtersets.RoleFilterSet
+    table = tables.RoleTable
 
 
 #

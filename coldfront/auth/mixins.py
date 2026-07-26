@@ -31,7 +31,8 @@ class ObjectPermissionMixin:
         return user_obj._object_perm_cache
 
     def get_permission_filter(self, user_obj):
-        return Q(users=user_obj) | Q(groups__user=user_obj)
+        # Include permissions assigned via roles (both direct user roles and group-inherited roles)
+        return Q(users=user_obj) | Q(groups__user=user_obj) | Q(roles__users=user_obj) | Q(roles__groups__user=user_obj)
 
     def get_object_permissions(self, user_obj):
         """

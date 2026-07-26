@@ -10,9 +10,10 @@ from rest_framework import serializers
 
 from coldfront.api.serializers import ValidatedModelSerializer
 from coldfront.api.serializers.fields import SerializedPKRelatedField
-from coldfront.users.models import Group, ObjectPermission, User
+from coldfront.users.models import Group, ObjectPermission, Role, User
 
 from .permissions import ObjectPermissionSerializer
+from .role import RoleSerializer
 
 
 class GroupSerializer(ValidatedModelSerializer):
@@ -25,10 +26,17 @@ class GroupSerializer(ValidatedModelSerializer):
         required=False,
         many=True,
     )
+    roles = SerializedPKRelatedField(
+        queryset=Role.objects.all(),
+        serializer=RoleSerializer,
+        nested=True,
+        required=False,
+        many=True,
+    )
 
     class Meta:
         model = Group
-        fields = ("id", "url", "display_url", "display", "name", "description", "permissions", "user_count")
+        fields = ("id", "url", "display_url", "display", "name", "description", "permissions", "roles", "user_count")
         brief_fields = ("id", "url", "display", "name", "description")
 
 
@@ -36,6 +44,13 @@ class UserSerializer(ValidatedModelSerializer):
     groups = SerializedPKRelatedField(
         queryset=Group.objects.all(),
         serializer=GroupSerializer,
+        nested=True,
+        required=False,
+        many=True,
+    )
+    roles = SerializedPKRelatedField(
+        queryset=Role.objects.all(),
+        serializer=RoleSerializer,
         nested=True,
         required=False,
         many=True,
@@ -65,6 +80,7 @@ class UserSerializer(ValidatedModelSerializer):
             "date_joined",
             "last_login",
             "groups",
+            "roles",
             "permissions",
         )
         brief_fields = ("id", "url", "display", "username", "first_name", "last_name", "email")
