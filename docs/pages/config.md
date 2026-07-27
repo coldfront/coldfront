@@ -281,7 +281,7 @@ For more info on [ColdFront plugins](plugin/existing_plugins.md) (Django apps)
 | SLURM_IGNORE_CLUSTERS            | Internal use only                                                   | yes         | no                       |
 | SLURM_SPECS_ATTRIBUTE_NAME       | Internal use only                                                   | yes         | no                       |
 | SLURM_USER_SPECS_ATTRIBUTE_NAME  | Internal use only                                                   | yes         | no                       |
-| SLURM_SUBMISSION_INFO            | List of options to display in the slurm help text. Default `["account"]` | yes    | yes                      |
+| SLURM_SUBMISSION_INFO            | List of options to display in the slurm help text. Turn help boxes on by setting variable to a list of slurm options to display. For example: `["account", "clusters", "partition"]` | yes    | yes                      |
 | SLURM_DISPLAY_SHORT_OPTION_NAMES | Enable/disable using the shortened names of the options. Default False   | yes    | yes                      |
 | SLURM_SHORT_OPTION_NAMES         | Short names of each option, if one isn't provided the full name is used. Default `{"qos": "q", "account": "A", "clusters": "M", "partition": "p"}`| yes | yes |
 

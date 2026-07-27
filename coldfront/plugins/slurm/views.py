@@ -9,7 +9,7 @@ from django.shortcuts import render
 from coldfront.core.allocation.models import Allocation, AllocationAttribute
 from coldfront.core.utils.common import import_from_settings
 
-SLURM_SUBMISSION_INFO = import_from_settings("SLURM_SUBMISSION_INFO", ["account"])
+SLURM_SUBMISSION_INFO = import_from_settings("SLURM_SUBMISSION_INFO", [])
 SLURM_DISPLAY_SHORT_OPTION_NAMES = import_from_settings("SLURM_DISPLAY_SHORT_OPTION_NAMES", False)
 SLURM_SHORT_OPTION_NAMES = import_from_settings("SLURM_SHORT_OPTION_NAMES", {})
 

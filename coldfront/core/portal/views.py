@@ -21,6 +21,8 @@ from coldfront.core.utils.common import import_from_settings
 
 ALLOCATION_EULA_ENABLE = import_from_settings("ALLOCATION_EULA_ENABLE", False)
 
+SLURM_SUBMISSION_INFO = import_from_settings("SLURM_SUBMISSION_INFO", [])
+
 
 def home(request):
     context = {}
@@ -104,6 +106,8 @@ def home(request):
         from coldfront.plugins.system_monitor.utils import get_system_monitor_context
 
         context.update(get_system_monitor_context())
+
+    context["display_slurm_help"] = "coldfront.plugins.slurm" in settings.INSTALLED_APPS and len(SLURM_SUBMISSION_INFO) > 0
 
     return render(request, template_name, context)
 

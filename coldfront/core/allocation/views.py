@@ -99,6 +99,8 @@ EMAIL_ALLOCATION_EULA_CONFIRMATIONS_CC_MANAGERS = import_from_settings(
 )
 EMAIL_ALLOCATION_EULA_INCLUDE_ACCEPTED_EULA = import_from_settings("EMAIL_ALLOCATION_EULA_INCLUDE_ACCEPTED_EULA", False)
 
+SLURM_SUBMISSION_INFO = import_from_settings("SLURM_SUBMISSION_INFO", [])
+
 logger = logging.getLogger(__name__)
 
 
@@ -172,7 +174,8 @@ class AllocationDetailView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
         context["attributes_with_usage"] = attributes_with_usage
         context["attributes"] = attributes
         context["allocation_changes"] = allocation_changes
-        context["display_slurm_help"] = "coldfront.plugins.slurm" in settings.INSTALLED_APPS
+        
+        context["display_slurm_help"] = "coldfront.plugins.slurm" in settings.INSTALLED_APPS and len(SLURM_SUBMISSION_INFO) > 0
 
         # Can the user update the project?
         context["is_allowed_to_update_project"] = allocation_obj.project.has_perm(
