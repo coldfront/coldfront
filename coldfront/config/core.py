@@ -44,6 +44,14 @@ FIELD_CHOICES = ENV.dict("FIELD_CHOICES", cast={"value": parse_choices_from_env}
 AUTO_SLUG_FUNC = ENV.str("AUTO_SLUG_FUNC", default="coldfront.models.utils.auto_generate_slug")
 ALLOCATION_WORKFLOW = ENV.str("ALLOCATION_WORKFLOW", default="coldfront.ras.flows.AllocationStatusFlow")
 
+# ------------------------------------------------------------------------------
+# System notifications
+# ------------------------------------------------------------------------------
+# Recipients for system notifications beyond superusers.
+# Superusers always receive system notifications.
+SYSTEM_NOTIFICATION_USERS = ENV.list("SYSTEM_NOTIFICATION_USERS", default=[])
+SYSTEM_NOTIFICATION_GROUPS = ENV.list("SYSTEM_NOTIFICATION_GROUPS", default=[])
+
 DEFAULT_USER_PREFERENCES = ENV.dict("DEFAULT_PERMISSIONS", default={})
 
 DEFAULT_PERMISSIONS = ENV.dict(

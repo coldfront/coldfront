@@ -283,11 +283,17 @@ def on_allocation_expired(allocation, *, source, target):
 
     # Update capacity tracking
     if quota.hard_limit:
-        StorageResource.objects.filter(pk=quota.storage_id).update(
+        StorageResource.objects.filter(
+            pk=quota.storage_id,
+            allocated_bytes__gte=quota.hard_limit,
+        ).update(
             allocated_bytes=F("allocated_bytes") - quota.hard_limit,
         )
         for cluster in target_clusters:
-            StorageCluster.objects.filter(pk=cluster.pk).update(
+            StorageCluster.objects.filter(
+                pk=cluster.pk,
+                allocated_bytes__gte=quota.hard_limit,
+            ).update(
                 allocated_bytes=F("allocated_bytes") - quota.hard_limit,
             )
 
@@ -314,11 +320,17 @@ def on_allocation_revoked(allocation, *, source, target):
 
     # Update capacity tracking
     if quota.hard_limit:
-        StorageResource.objects.filter(pk=quota.storage_id).update(
+        StorageResource.objects.filter(
+            pk=quota.storage_id,
+            allocated_bytes__gte=quota.hard_limit,
+        ).update(
             allocated_bytes=F("allocated_bytes") - quota.hard_limit,
         )
         for cluster in target_clusters:
-            StorageCluster.objects.filter(pk=cluster.pk).update(
+            StorageCluster.objects.filter(
+                pk=cluster.pk,
+                allocated_bytes__gte=quota.hard_limit,
+            ).update(
                 allocated_bytes=F("allocated_bytes") - quota.hard_limit,
             )
 

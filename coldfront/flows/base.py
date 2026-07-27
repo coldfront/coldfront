@@ -4,6 +4,8 @@
 
 import logging
 
+from coldfront.core.notifications import send_system_notification
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,11 +69,29 @@ class ColdFrontFlow(object):
         for callback in self._target_callbacks.get(target, []):
             try:
                 callback(obj, source=source, target=target)
-            except Exception:
+            except Exception as e:
                 logger.exception(
                     "Error in callback %r for target state %r",
                     callback.__name__ if hasattr(callback, "__name__") else callback,
                     target,
+                )
+
+                # Notify admins about the callback failure
+                cb_name = (
+                    callback.__name__
+                    if hasattr(callback, "__name__")
+                    else repr(callback)
+                )
+                url = getattr(obj, "get_absolute_url", lambda: None)()
+                send_system_notification(
+                    target=obj,
+                    subject=f"Callback failed: {cb_name}",
+                    text=(
+                        f"A transition callback '{cb_name}' for target state "
+                        f"'{target}' failed on {type(obj).__name__} {obj}.\n\n"
+                        f"Error: {e}"
+                    ),
+                    url=url,
                 )
 
     def _check_permission_callbacks(self, transition_slug, obj, user):
