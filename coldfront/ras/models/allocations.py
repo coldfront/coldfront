@@ -100,6 +100,15 @@ class Allocation(CommentingMixin, PrimaryModel):
         verbose_name = _("allocation")
         verbose_name_plural = _("allocations")
         indexes = (models.Index(fields=("resource_object_type", "resource_object_id")),)
+        permissions = (
+            ("request", _("Request allocation")),
+            ("approve", _("Approve allocation")),
+            ("deny", _("Deny allocation")),
+            ("activate", _("Activate allocation")),
+            ("expire", _("Expire allocation")),
+            ("revoke", _("Revoke allocation")),
+            ("renew", _("Renew allocation")),
+        )
 
     def get_status_color(self):
         return AllocationStatusChoices.colors.get(self.status)

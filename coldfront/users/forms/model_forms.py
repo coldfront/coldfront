@@ -19,7 +19,8 @@ from coldfront.forms.fields import (
 )
 from coldfront.forms.layouts import CopyClipboard, DateTime
 from coldfront.forms.mixins import HorizontalFormMixin
-from coldfront.users.constants import CONSTRAINT_TOKEN_USER, OBJECTPERMISSION_OBJECT_TYPES
+from coldfront.registry import registry
+from coldfront.users.constants import CONSTRAINT_TOKEN_USER, OBJECTPERMISSION_OBJECT_TYPES, RESERVED_ACTIONS
 from coldfront.users.models import Group, ObjectPermission, Role, Token, User
 from coldfront.users.permissions import qs_filter_from_constraints
 
@@ -270,6 +271,57 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Build dynamic BooleanFields for registered actions (deduplicated, sorted by name)
+        seen = {}
+        for model_actions in registry["model_actions"].values():
+            for action in model_actions:
+                if action.name not in seen:
+                    seen[action.name] = action
+        registered_action_names = sorted(seen)
+
+        action_field_names = []
+        for action_name in registered_action_names:
+            field_name = f"action_{action_name}"
+            self.fields[field_name] = forms.BooleanField(
+                required=False,
+                label=action_name,
+                help_text=seen[action_name].help_text,
+            )
+            action_field_names.append(field_name)
+
+        # Rebuild the Actions fieldset to include dynamic fields
+        if action_field_names:
+            self.fieldsets = (
+                Fieldset(
+                    _("Permission"),
+                    "name",
+                    "description",
+                    "enabled",
+                ),
+                Fieldset(
+                    _("Actions"),
+                    "can_view",
+                    "can_add",
+                    "can_change",
+                    "can_delete",
+                    *action_field_names,
+                    "actions",
+                ),
+                Fieldset(
+                    _("Objects"),
+                    "object_types",
+                ),
+                Fieldset(
+                    _("Assignment"),
+                    "groups",
+                    "users",
+                ),
+                Fieldset(
+                    _("Constraints"),
+                    "constraints",
+                ),
+            )
+
         # Make the actions field optional since the form uses it only for non-CRUD actions
         self.fields["actions"].required = False
 
@@ -279,11 +331,23 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
             self.fields["groups"].initial = self.instance.groups.values_list("id", flat=True)
             self.fields["users"].initial = self.instance.users.values_list("id", flat=True)
 
-            # Check the appropriate checkboxes when editing an existing ObjectPermission
-            for action in ["view", "add", "change", "delete"]:
-                if action in self.instance.actions:
+            # Work with a copy to avoid mutating the instance
+            remaining_actions = list(self.instance.actions)
+
+            # Check the appropriate CRUD checkboxes
+            for action in RESERVED_ACTIONS:
+                if action in remaining_actions:
                     self.fields[f"can_{action}"].initial = True
-                    self.instance.actions.remove(action)
+                    remaining_actions.remove(action)
+
+            # Pre-select registered action checkboxes
+            for action_name in registered_action_names:
+                if action_name in remaining_actions:
+                    self.fields[f"action_{action_name}"].initial = True
+                    remaining_actions.remove(action_name)
+
+            # Remaining actions go to the additional actions field
+            self.initial["actions"] = remaining_actions
 
         # Populate initial data for a new ObjectPermission
         elif self.initial:
@@ -293,10 +357,15 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
                 if isinstance(self.initial["actions"], str):
                     self.initial["actions"] = [self.initial["actions"]]
                 if cloned_actions := self.initial["actions"]:
-                    for action in ["view", "add", "change", "delete"]:
+                    for action in RESERVED_ACTIONS:
                         if action in cloned_actions:
                             self.fields[f"can_{action}"].initial = True
                             self.initial["actions"].remove(action)
+                    # Pre-select registered action checkboxes from cloned data
+                    for action_name in registered_action_names:
+                        if action_name in cloned_actions:
+                            self.fields[f"action_{action_name}"].initial = True
+                            self.initial["actions"].remove(action_name)
             # Convert data delivered via initial data to JSON data
             if "constraints" in self.initial:
                 if type(self.initial["constraints"]) is str:
@@ -308,12 +377,24 @@ class ObjectPermissionForm(HorizontalFormMixin, forms.ModelForm):
         object_types = self.cleaned_data.get("object_types")
         constraints = self.cleaned_data.get("constraints")
 
-        # Append any of the selected CRUD checkboxes to the actions list
-        if not self.cleaned_data.get("actions"):
-            self.cleaned_data["actions"] = list()
-        for action in ["view", "add", "change", "delete"]:
-            if self.cleaned_data[f"can_{action}"] and action not in self.cleaned_data["actions"]:
-                self.cleaned_data["actions"].append(action)
+        # Merge all actions: registered action checkboxes, CRUD checkboxes, and additional
+        final_actions = []
+        for key, value in self.cleaned_data.items():
+            if key.startswith("action_") and value:
+                action_name = key[7:]
+                if action_name not in final_actions:
+                    final_actions.append(action_name)
+
+        for action in RESERVED_ACTIONS:
+            if self.cleaned_data.get(f"can_{action}") and action not in final_actions:
+                final_actions.append(action)
+
+        if additional_actions := self.cleaned_data.get("actions"):
+            for action in additional_actions:
+                if action not in final_actions:
+                    final_actions.append(action)
+
+        self.cleaned_data["actions"] = final_actions
 
         # At least one action must be specified
         if not self.cleaned_data["actions"]:

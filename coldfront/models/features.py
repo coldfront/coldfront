@@ -19,6 +19,7 @@ from coldfront.core.choices import CustomFieldUIVisibleChoices, ObjectChangeActi
 from coldfront.core.models.change_logging import ObjectChange
 from coldfront.core.utils import CustomFieldJSONEncoder, is_taggable
 from coldfront.registry import register_model_feature, register_model_view
+from coldfront.users.permissions import ModelAction, register_model_actions
 from coldfront.utils.jsonschema import validate_schema
 from coldfront.utils.serialization import serialize_object
 
@@ -440,3 +441,9 @@ def register_models(*models):
             )
         if issubclass(model, CommentingMixin):
             register_model_view(model, "comments", kwargs={"model": model})("coldfront.core.views.ObjectCommentsView")
+
+        # Auto-register custom permission actions declared in Meta.permissions
+        if meta_permissions := getattr(model._meta, "permissions", None):
+            actions = [ModelAction(codename, help_text=_(name)) for codename, name in meta_permissions]
+            if actions:
+                register_model_actions(model, actions)

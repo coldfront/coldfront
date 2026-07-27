@@ -35,6 +35,7 @@ class Registry(dict):
 # Initialize the global registry
 registry = Registry(
     {
+        "model_actions": collections.defaultdict(set),
         "model_features": dict(),
         "request_processors": list(),
         "plugins": dict(),

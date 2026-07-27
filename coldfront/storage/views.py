@@ -200,7 +200,9 @@ class StorageQuotaRequestView(AllocatableResourceRequestView):
     allocation_fk = "allocation"
 
     def get_required_permission(self):
-        return get_permission_for_model(self.queryset.model, "request")
+        from coldfront.ras.models import Allocation
+
+        return get_permission_for_model(Allocation, "request")
 
 
 #
