@@ -16,10 +16,10 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("core", "0009_rename_core_job_created_idx_core_job_created_efa7cb_idx_and_more"),
-        ("ras", "0001_initial"),
+        ("core", "0014_customlink"),
+        ("ras", "0004_alter_allocation_options"),
         ("tenancy", "0003_tenant_custom_field_data_and_more"),
-        ("users", "0006_alter_token_pepper_id"),
+        ("users", "0008_role"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -427,6 +427,12 @@ class Migration(migrations.Migration):
             model_name="storagesnapshotpolicy",
             constraint=models.UniqueConstraint(
                 fields=("cluster", "name"), name="storage_storagesnapshotpolicy_unique_cluster_name"
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="storagequota",
+            constraint=models.UniqueConstraint(
+                fields=("path", "storage"), name="storage_storagequota_unique_path_per_storage"
             ),
         ),
     ]

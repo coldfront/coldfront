@@ -4,7 +4,7 @@
 
 from django.contrib.contenttypes.models import ContentType
 
-from coldfront.ras.choices import ResourceStatusChoices
+from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
     Project,
@@ -194,6 +194,7 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "owner": user.pk,
             "project": project.pk,
             "resource_object": f"{resource_ct.pk}:{resources[0].pk}",
+            "status": AllocationStatusChoices.STATUS_NEW,
             "tags": [t.pk for t in tags],
         }
 

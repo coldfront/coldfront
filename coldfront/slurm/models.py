@@ -188,6 +188,8 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
         "classification",
     )
 
+    required_bridge_models = ("slurm.SlurmAssociation",)
+
     class Meta:
         ordering = ["name"]
         verbose_name = _("slurm cluster")
@@ -405,6 +407,7 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
     )
 
     prerequisite_models = ("slurm.SlurmCluster",)
+    required_bridge_models = ("slurm.SlurmAssociation",)
 
     class Meta:
         ordering = ["cluster__name", "name"]

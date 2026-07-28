@@ -10,12 +10,12 @@ def auto_generate_slug(model_instance=None):
 
     from coldfront.ras.models import Allocation, Project
 
-    prefix = "cf-"
+    prefix = "cf"
 
     if model_instance is not None:
         if issubclass(model_instance.__class__, Project):
-            prefix = "proj-"
+            prefix = "p"
         elif issubclass(model_instance.__class__, Allocation):
-            prefix = "alloc-"
+            prefix = "a"
 
     return prefix + ShortUUID(alphabet="0123456789").random(length=7)

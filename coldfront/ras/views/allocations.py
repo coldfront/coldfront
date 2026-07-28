@@ -9,6 +9,7 @@ from coldfront.ras import filtersets, flows, forms, tables
 from coldfront.ras import object_actions as actions
 from coldfront.ras.flows import get_permitted_transition_actions
 from coldfront.ras.models import Allocation, Project
+from coldfront.ras.utils import get_missing_bridge_models
 from coldfront.registry import register_model_view
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
@@ -44,6 +45,7 @@ class AllocationView(GetRelatedModelsMixin, generic.ObjectView):
             "transitions": transitions,
             "related_models": self.get_related_models(request, instance),
             "allocation_request_url": allocation_request_url,
+            "missing_bridge_models": get_missing_bridge_models(instance),
         }
 
 

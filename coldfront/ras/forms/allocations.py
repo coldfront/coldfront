@@ -277,9 +277,9 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Disable allocation status as this managed by the AlocationStatusFlow
-        self.fields["status"].widget.attrs["disabled"] = True
-        self.fields["status"].required = False
-        self.fields["status"].disabled = True
+        # self.fields["status"].widget.attrs["disabled"] = True
+        # self.fields["status"].required = False
+        # self.fields["status"].disabled = True
 
         # Only admins can modify slug
         if hasattr(self, "user") and self.user and self.user.is_authenticated and self.user.is_superuser:

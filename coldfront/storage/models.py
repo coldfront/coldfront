@@ -78,6 +78,8 @@ class StorageResource(AllocatableResourceMixin, PrimaryModel):
         "capacity_bytes",
     )
 
+    required_bridge_models = ("storage.StorageQuota",)
+
     class Meta:
         ordering = ["name"]
         verbose_name = _("storage resource")
@@ -367,6 +369,12 @@ class StorageQuota(PrimaryModel):
         ordering = ["allocation__slug"]
         verbose_name = _("storage quota")
         verbose_name_plural = _("storage quotas")
+        constraints = (
+            models.UniqueConstraint(
+                fields=("path", "storage"),
+                name="%(app_label)s_%(class)s_unique_path_per_storage",
+            ),
+        )
 
     def __str__(self):
         return f"Quota {self.path} -> {self.allocation}"

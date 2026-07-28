@@ -366,6 +366,13 @@ class AllocatableResourceMixin(models.Model):
         verbose_name=_("schema"),
     )
 
+    required_bridge_models: tuple[str, ...] = (
+        # Each entry is an "app_label.ModelName" string indicating a bridge
+        # model that should exist for allocations on this resource.  The
+        # allocation detail page warns if any are missing (e.g., admin
+        # created the allocation outside the workflow).
+    )
+
     locked = models.BooleanField(
         verbose_name=_("locked"),
         default=False,

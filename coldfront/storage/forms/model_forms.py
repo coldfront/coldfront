@@ -199,7 +199,7 @@ class StorageQuotaForm(PrimaryModelForm):
 
     owning_group = forms.ModelChoiceField(
         queryset=Group.objects.all(),
-        required=False,
+        required=True,
         label=_("Owning Group"),
     )
 
