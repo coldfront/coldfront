@@ -10,8 +10,10 @@ from viewflow import fsm, this
 from coldfront.flows import ColdFrontFlow
 from coldfront.ras import object_actions as actions
 from coldfront.ras.choices import AllocationStatusChoices
+from coldfront.ras.models import Allocation
 from coldfront.ras.notifications import AllocationsNotificationType
 from coldfront.ras.signals import allocation_status_change
+from coldfront.users.permissions import get_permission_for_model
 
 
 class AllocationStatusFlow(ColdFrontFlow):
@@ -202,3 +204,36 @@ class AllocationStatusFlow(ColdFrontFlow):
         if not self._check_permission_callbacks("revoke", self.allocation, user):
             return False
         return True
+
+
+def get_permitted_transition_actions(allocation, user):
+    """
+    Return a list of ObjectAction instances the user may perform on the given
+    allocation, based on its current state.  Checks both Django model
+    permissions and FSM plugin permission callbacks.
+    """
+    if not allocation.status:
+        return []
+
+    outgoing = AllocationStatusFlow.status.get_outgoing_transitions(allocation.status)
+    action_classes = AllocationStatusFlow.get_actions(
+        [t.slug for t in outgoing]
+    )
+
+    permitted = []
+    flow = AllocationStatusFlow(allocation)
+    for action in action_classes:
+        # Gate 1: Django model permission
+        required_perms = [
+            get_permission_for_model(Allocation, p)
+            for p in action.permissions_required
+        ]
+        if required_perms and not user.has_perms(required_perms):
+            continue
+        # Gate 2: FSM plugin callbacks
+        transition_func = getattr(flow, action.transition)
+        if not transition_func.has_perm(user):
+            continue
+        permitted.append(action)
+
+    return permitted

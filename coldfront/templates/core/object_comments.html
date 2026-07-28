@@ -7,7 +7,7 @@
         <form action="{% url 'core:commententry_add' %}" method="post" class="form form-horizontal mt-5">
             {% csrf_token %}
             <div id="form_fields">
-                <c-form :form="form" only />
+                <c-form :form="form" />
                 <div class="col-lg-9 text-end">
                     <button type="submit" class="btn btn-primary">{% trans "Save" %}</button>
                     <a href="{{ object.get_absolute_url }}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>

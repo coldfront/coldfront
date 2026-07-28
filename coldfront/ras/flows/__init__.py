@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .allocations import AllocationStatusFlow
+from .allocations import AllocationStatusFlow, get_permitted_transition_actions
 
-__all__ = ("AllocationStatusFlow",)
+__all__ = ("AllocationStatusFlow", "get_permitted_transition_actions")

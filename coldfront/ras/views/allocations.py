@@ -2,24 +2,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ImproperlyConfigured, PermissionDenied
 from django.shortcuts import get_object_or_404
-from django.utils.module_loading import import_string
 
 from coldfront.ras import filtersets, flows, forms, tables
 from coldfront.ras import object_actions as actions
-from coldfront.ras.flows import AllocationStatusFlow
+from coldfront.ras.flows import get_permitted_transition_actions
 from coldfront.ras.models import Allocation, Project
 from coldfront.registry import register_model_view
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
-
-try:
-    ALLOCATION_WORKFLOW = import_string(settings.ALLOCATION_WORKFLOW)
-except ImportError:
-    raise ImproperlyConfigured("ALLOCATION_WORKFLOW was set but cannot be imported. Please check your config settings.")
 
 #
 # Allocations
@@ -41,8 +33,7 @@ class AllocationView(GetRelatedModelsMixin, generic.ObjectView):
 
     def get_extra_context(self, request, instance):
         # Get the outgoing transitions for the current status so we can display the appropriate buttons
-        actions = AllocationStatusFlow.get_actions(instance.get_outgoing_transitions())
-        transitions = self.get_permitted_actions(request.user, model=Allocation, actions=actions) if actions else None
+        transitions = get_permitted_transition_actions(instance, request.user)
 
         # Check if the resource provides a custom post-request form URL
         allocation_request_url = None
@@ -103,7 +94,7 @@ class AllocationBulkDeleteView(generic.BulkDeleteView):
 class BaseAllocationFlowView(generic.ObjectFlowView):
     queryset = Allocation.objects.all()
     form = forms.AllocationReviewForm
-    flow = ALLOCATION_WORKFLOW
+    flow = flows.AllocationStatusFlow
 
 
 # Allocations are requested from a project
@@ -118,11 +109,6 @@ class AllocationRequestView(BaseAllocationFlowView):
         return Allocation(project=project, tenant=project.tenant)
 
     def alter_object(self, obj, request, url_args, url_kwargs):
-        # Check to ensure allocations requests are allowed
-        flow = self.flow(obj)
-        if not flow.can_request(request.user):
-            raise PermissionDenied
-
         obj.owner = request.user
         return obj
 

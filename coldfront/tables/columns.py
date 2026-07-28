@@ -347,12 +347,16 @@ class ActionsColumn(tables.Column):
                 f"</span>"
             )
 
-        # Render any extra buttons from template code
+        # Render any extra buttons from template code or a callable
         if self.extra_buttons:
-            template = Template(self.extra_buttons)
-            context = getattr(table, "context", Context())
-            context.update({"record": record})
-            html = template.render(context) + html
+            if callable(self.extra_buttons):
+                extra_html = self.extra_buttons(record, user, request)
+            else:
+                template = Template(self.extra_buttons)
+                context = getattr(table, "context", Context())
+                context.update({"record": record})
+                extra_html = template.render(context)
+            html = extra_html + html
 
         return mark_safe(html)
 

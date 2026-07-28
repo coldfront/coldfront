@@ -2,19 +2,50 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from urllib.parse import quote
+
 import django_tables2 as tables
 from django.utils.translation import gettext_lazy as _
+from django_cotton import render_component
 
+from coldfront.ras.flows import get_permitted_transition_actions
 from coldfront.ras.models import Allocation
 from coldfront.tables import PrimaryModelTable, columns
 from coldfront.tenancy.tables import TenancyColumnsMixin
 
-from .template_code import ALLOCATION_STATUS_ACTIONS
+ALLOWED_TABLE_BUTTONS = {"approve", "deny", "activate"}
+
+
+def _render_table_action_buttons(record, user, request):
+    """
+    Render approve/deny/activate buttons for an allocation row.
+    """
+    actions = get_permitted_transition_actions(record, user)
+    html = ""
+    return_url = quote(request.get_full_path())
+
+    for action in actions:
+        if action.name not in ALLOWED_TABLE_BUTTONS:
+            continue
+        url = action.get_url(record)
+        if not url:
+            continue
+        url += f"?return_url={return_url}"
+        html += render_component(
+            request,
+            action.template_name,
+            url=url,
+            title=action.label,
+            small=True,
+            type="link",
+        )
+
+    return html
 
 
 class AllocationTable(TenancyColumnsMixin, PrimaryModelTable):
     actions = columns.ActionsColumn(
-        extra_buttons=ALLOCATION_STATUS_ACTIONS,
+        extra_buttons=_render_table_action_buttons,
     )
 
     slug = tables.Column(

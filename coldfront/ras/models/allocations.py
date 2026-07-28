@@ -14,7 +14,6 @@ from coldfront.models import PrimaryModel
 from coldfront.models.features import CommentingMixin
 from coldfront.models.fields import AutoSlugField
 from coldfront.ras.choices import AllocationStatusChoices
-from coldfront.ras.flows import AllocationStatusFlow
 from coldfront.utils.strings import title
 
 
@@ -112,12 +111,6 @@ class Allocation(CommentingMixin, PrimaryModel):
 
     def get_status_color(self):
         return AllocationStatusChoices.colors.get(self.status)
-
-    def get_outgoing_transitions(self):
-        if not self.status:
-            return []
-
-        return [t.slug for t in AllocationStatusFlow.status.get_outgoing_transitions(self.status)]
 
     def __str__(self):
         return self.slug
