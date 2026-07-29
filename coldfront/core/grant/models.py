@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
+import logging
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MaxValueValidator, MinLengthValidator, RegexValidator
 from django.db import models
@@ -9,6 +11,8 @@ from model_utils.models import TimeStampedModel
 from simple_history.models import HistoricalRecords
 
 from coldfront.core.project.models import Project
+
+logger = logging.getLogger(__name__)
 
 
 class GrantFundingAgency(TimeStampedModel):
@@ -88,7 +92,7 @@ class PercentField(models.CharField):
                 if float(value) > 100:
                     raise ValidationError("Percent credit should be less than 100")
             except ValueError:
-                pass
+                logger.warning("Value %(value)s cannot be converted into a float.", {"value": value})
         return value
 
 
