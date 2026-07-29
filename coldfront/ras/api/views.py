@@ -5,7 +5,9 @@
 from rest_framework.routers import APIRootView
 
 from coldfront.api.viewsets import ColdFrontModelViewSet
+from coldfront.api.viewsets.mixins import WorkflowViewSetMixin
 from coldfront.ras import filtersets
+from coldfront.ras.flows import AllocationStatusFlow
 from coldfront.ras.models import (
     Allocation,
     Project,
@@ -65,7 +67,8 @@ class ResourceTypeViewSet(ColdFrontModelViewSet):
 #
 
 
-class AllocationViewSet(ColdFrontModelViewSet):
+class AllocationViewSet(WorkflowViewSetMixin, ColdFrontModelViewSet):
     queryset = Allocation.objects.all()
     serializer_class = serializers.AllocationSerializer
     filterset_class = filtersets.AllocationFilterSet
+    flow_class = AllocationStatusFlow

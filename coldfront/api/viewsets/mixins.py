@@ -5,7 +5,9 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import router, transaction
+from django.http import Http404
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from coldfront.api.serializers.features import BulkOperationSerializer
@@ -15,6 +17,7 @@ __all__ = (
     "CustomFieldsMixin",
     "ObjectValidationMixin",
     "SequentialBulkCreatesMixin",
+    "WorkflowViewSetMixin",
 )
 
 
@@ -169,3 +172,99 @@ class BulkDestroyModelMixin:
                     obj.snapshot()
                 obj._changelog_message = changelog_messages.get(obj.pk)
                 self.perform_destroy(obj)
+
+
+class WorkflowViewSetMixin:
+    """
+    Mixin for ViewSets that manage workflow-enabled models.
+
+    Adds ``@action`` endpoints for each transition defined in ``flow_class.actions``.
+    Each endpoint accepts POST and runs the transition, returning the updated object.
+
+    Usage::
+
+        class AllocationViewSet(WorkflowViewSetMixin, ColdFrontModelViewSet):
+            queryset = Allocation.objects.all()
+            serializer_class = AllocationSerializer
+            flow_class = AllocationStatusFlow
+
+    The mixin automatically registers POST /{pk}/{transition_name}/ for each
+    transition (e.g., approve, deny, activate).
+    """
+
+    flow_class = None
+    # Override to specify a custom permission check per transition
+    _transition_permissions = {}
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if cls.flow_class is not None:
+            cls._register_flow_actions()
+
+    @classmethod
+    def _register_flow_actions(cls):
+        """Dynamically create @action endpoints for each transition in flow_class.actions."""
+        for action_obj in cls.flow_class.actions:
+            name = action_obj.name
+            if hasattr(cls, name):
+                continue  # don't override an existing method
+
+            # Bind name as a default arg to avoid closure mutation issues
+            def make_handler(transition_name):
+                @action(detail=True, methods=["post"], url_path=transition_name, url_name=transition_name)
+                def handler(self, request, *args, **kwargs):
+                    return self._execute_transition(request, transition_name)
+                handler.__name__ = transition_name
+                handler.__qualname__ = f"{cls.__name__}.{transition_name}"
+                handler.__module__ = cls.__module__
+                return handler
+
+            setattr(cls, name, make_handler(name))
+
+    def _execute_transition(self, request, transition_name):
+        """
+        Execute a workflow transition via the API.
+
+        Loads the object, instantiates the flow, validates the transition
+        (FSM + permissions), runs it inside a transaction, and returns the
+        updated object.
+        """
+        # Resolve the object (standard DRF lookup)
+        pk = request.resolver_match.kwargs.get("pk")
+        if pk is None:
+            raise Http404
+        obj = self.get_object()
+
+        # Instantiate the flow
+        flow = self.flow_class(obj)
+
+        # Get the transition function
+        transition_func = getattr(flow, transition_name, None)
+        if transition_func is None:
+            return Response(
+                {"error": f"Transition '{transition_name}' is not defined"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Gate 1: FSM validation — can the transition proceed?
+        if not transition_func.can_proceed():
+            return Response(
+                {"error": f"Cannot {transition_name} allocation in current status"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # Gate 2: FSM permission callbacks
+        if not transition_func.has_perm(request.user):
+            return Response(
+                {"error": f"You do not have permission to {transition_name} this allocation"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Run the transition inside a transaction
+        with transaction.atomic(using=router.db_for_write(self.queryset.model)):
+            transition_func()
+            obj.refresh_from_db()
+
+        # Return the updated object
+        serializer = self.get_serializer(obj)
+        return Response(serializer.data, status=status.HTTP_200_OK)
