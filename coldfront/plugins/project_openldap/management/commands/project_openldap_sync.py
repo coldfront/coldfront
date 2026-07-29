@@ -150,26 +150,31 @@ class Command(BaseCommand):
             self.stdout.write("WRITE_TO_ARCHIVE is required to make changes, please supply: -z or --writearchive")
         # if sync and writing to archive permitted, perform action, add directly to archive OU
         if sync and write_to_archive:
-            try:
-                # notify
+            # notify
+            self.stdout.write(
+                f"Adding archived project {archive_posixgroup_dn} to OpenLDAP - SYNC is {sync} - WRITING TO Openldap"
+            )
+
+            # create ou
+            if add_per_project_ou_to_openldap(project, archive_ou_dn, archive_openldap_ou_description, write=True):
+                self.stdout.write(f"Added OpenLDAP project archive OU entry - DN: {archive_ou_dn}")
+            else:
                 self.stdout.write(
-                    f"Adding archived project {archive_posixgroup_dn} to OpenLDAP - SYNC is {sync} - WRITING TO Openldap"
+                    f"Failed adding OpenLDAP project archive OU entry - DN: {archive_ou_dn}, see log file"
                 )
 
-                # create ou
-                self.stdout.write(f"Adding OpenLDAP project archive OU entry - DN: {archive_ou_dn}")
-                add_per_project_ou_to_openldap(project, archive_ou_dn, archive_openldap_ou_description, write=True)
-
-                # create posixgroup
-                self.stdout.write(f"Adding OpenLDAP project archive posixgroup entry - DN: {archive_posixgroup_dn}")
-                add_posixgroup_to_openldap(
-                    archive_posixgroup_dn,
-                    archive_openldap_posixgroup_description,
-                    archive_gid,
-                    write=True,
+            # create posixgroup
+            if add_posixgroup_to_openldap(
+                archive_posixgroup_dn,
+                archive_openldap_posixgroup_description,
+                archive_gid,
+                write=True,
+            ):
+                self.stdout.write(f"Added OpenLDAP project archive posixgroup entry - DN: {archive_posixgroup_dn}")
+            else:
+                self.stdout.write(
+                    f"Failed adding OpenLDAP project archive posixgroup entry - DN: {archive_posixgroup_dn}, see log file"
                 )
-            except Exception as e:
-                self.stdout.write(f"Exception adding {archive_posixgroup_dn} to OpenLDAP: {e}")
 
     def handle_project_in_openldap_but_not_archive(
         self, project, project_ou_dn, archive_dn, sync=False, write_to_archive=False
@@ -190,15 +195,14 @@ class Command(BaseCommand):
         # if sync and writing to archive permitted, perform action, move to archive OU
         if sync and write_to_archive:
             # current_dn (ou_dn), relative_dn, ARCHIVE_OU need supplied - where relative_dn is the project's own ou
-            try:
-                relative_dn = construct_per_project_ou_relative_dn_str(project)
-                move_dn_in_openldap(project_ou_dn, relative_dn, PROJECT_OPENLDAP_ARCHIVE_OU, write=True)
+            relative_dn = construct_per_project_ou_relative_dn_str(project)
+            if move_dn_in_openldap(project_ou_dn, relative_dn, PROJECT_OPENLDAP_ARCHIVE_OU, write=True):
                 self.stdout.write(
-                    f"Moving project to archive OU, DN: {archive_dn} in OpenLDAP - SYNC is {sync} - WRITING TO Openldap"
+                    f"Moved project to archive OU, DN: {archive_dn} in OpenLDAP - SYNC is {sync} - WRITING TO Openldap"
                 )
-            except Exception as e:
+            else:
                 self.stdout.write(
-                    f"Exception moving project {project.project_code} to archive OU, DN: {archive_dn} in OpenLDAP: {e}"
+                    f"Failed moving project {project.project_code} to archive OU, DN: {archive_dn} in OpenLDAP, see log file"
                 )
 
     def handle_project_removal_if_needed(self, project, project_ou_dn, sync=False):
@@ -211,14 +215,13 @@ class Command(BaseCommand):
                     )
                     self.stdout.write("Sync is required to make this change, please supply: -s or --sync")
                 if sync:
-                    try:
-                        remove_project(project)
+                    if remove_project(project):
                         self.stdout.write(
                             f"Removed inactive project {project.project_code} from OpenLDAP - SYNC is {sync}"
                         )
-                    except Exception as e:
+                    else:
                         self.stdout.write(
-                            f"Exception removing {project.project_code}, DN: {project_ou_dn} in OpenLDAP: {e}"
+                            f"Failed removing {project.project_code}, DN: {project_ou_dn} in OpenLDAP, see log file"
                         )
 
     def handle_description_update(
@@ -333,12 +336,11 @@ class Command(BaseCommand):
                 self.stdout.write("sync is required to make changes, please supply: -s or --sync")
             if sync:
                 if ldapsearch_project_result:
-                    try:
-                        remove_members_from_openldap_posixgroup(member_change_dn, missing_in_cf, write=True)
+                    if remove_members_from_openldap_posixgroup(member_change_dn, missing_in_cf, write=True):
                         self.stdout.write(f"SYNC {sync} - Removed members {missing_in_cf}")
-                    except Exception as e:
+                    else:
                         self.stdout.write(
-                            f"Exception Removing members {missing_in_cf} in OpenLDAP DN {member_change_dn}: {e}"
+                            f"Failed Removing members {missing_in_cf} in OpenLDAP DN {member_change_dn}, see log file"
                         )
                 elif ldapsearch_project_result_archive:
                     if not write_to_archive:
@@ -346,12 +348,11 @@ class Command(BaseCommand):
                             "WRITE_TO_ARCHIVE is required to make changes, please supply: -z or --writearchive"
                         )
                     elif write_to_archive:
-                        try:
-                            remove_members_from_openldap_posixgroup(member_change_dn, missing_in_cf, write=True)
+                        if remove_members_from_openldap_posixgroup(member_change_dn, missing_in_cf, write=True):
                             self.stdout.write(f"SYNC {sync} - Removed members {missing_in_cf}")
-                        except Exception as e:
+                        else:
                             self.stdout.write(
-                                f"Exception Removing members {missing_in_cf} in OpenLDAP DN {member_change_dn}: {e}"
+                                f"Failed Removing members {missing_in_cf} in OpenLDAP DN {member_change_dn}, see log file"
                             )
 
         if len(missing_in_openldap) > 0:
@@ -362,12 +363,11 @@ class Command(BaseCommand):
                 self.stdout.write("sync is required to make changes, please supply: -s or --sync")
             if sync:
                 if ldapsearch_project_result:
-                    try:
-                        add_members_to_openldap_posixgroup(member_change_dn, missing_in_openldap, write=True)
+                    if add_members_to_openldap_posixgroup(member_change_dn, missing_in_openldap, write=True):
                         self.stdout.write(f"SYNC {sync} - Added members {missing_in_openldap}")
-                    except Exception as e:
+                    else:
                         self.stdout.write(
-                            f"Exception Adding members {missing_in_openldap} in OpenLDAP DN {member_change_dn}: {e}"
+                            f"Failed adding members {missing_in_openldap} in OpenLDAP DN {member_change_dn}, see log file"
                         )
                 elif ldapsearch_project_result_archive:
                     if not write_to_archive:
@@ -375,12 +375,11 @@ class Command(BaseCommand):
                             "WRITE_TO_ARCHIVE is required to make changes, please supply: -z or --writearchive"
                         )
                     elif write_to_archive:
-                        try:
-                            add_members_to_openldap_posixgroup(member_change_dn, missing_in_openldap, write=True)
+                        if add_members_to_openldap_posixgroup(member_change_dn, missing_in_openldap, write=True):
                             self.stdout.write(f"SYNC {sync} - Added members {missing_in_openldap}")
-                        except Exception as e:
+                        else:
                             self.stdout.write(
-                                f"Exception Adding members {missing_in_openldap} in OpenLDAP DN {member_change_dn}: {e}"
+                                f"Failed Adding members {missing_in_openldap} in OpenLDAP DN {member_change_dn}, see log file"
                             )
 
     # N.B. this is the main function to check projects...
