@@ -221,13 +221,13 @@ class GenerateClusterDumpTestCase(TestCase):
             resource_object_type=ct,
             resource_object_id=resource.pk,
         )
-        # Use the flow to trigger lifecycle callbacks
-        flow = AllocationStatusFlow(alloc)
-        flow.request()
-        assoc = SlurmAssociation.objects.get(allocation=alloc)
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        assoc = SlurmAssociation.objects.create(allocation=alloc)
         if account:
             assoc.slurm_account = account
             assoc.save()
+        flow = AllocationStatusFlow(alloc)
+        flow.request()
         flow.approve()
         AllocationStatusFlow._transition_permission_callbacks = {}
         flow.activate()
@@ -383,13 +383,13 @@ class GenerateClusterDumpTestCase(TestCase):
             resource_object_type=ct,
             resource_object_id=self.cluster.pk,
         )
-        flow = AllocationStatusFlow(alloc)
-        flow.request()
-        assoc = SlurmAssociation.objects.get(allocation=alloc)
+        assoc = SlurmAssociation.objects.create(allocation=alloc)
         assoc.slurm_account = self.acct_a
         assoc.max_jobs = 10
         assoc.max_wall_duration_per_job = timedelta(hours=48)
         assoc.save()
+        flow = AllocationStatusFlow(alloc)
+        flow.request()
         flow.approve()
         AllocationStatusFlow._transition_permission_callbacks = {}
         flow.activate()
@@ -439,12 +439,12 @@ class GenerateClusterDumpTestCase(TestCase):
             resource_object_type=ct,
             resource_object_id=self.cluster.pk,
         )
-        flow = AllocationStatusFlow(alloc)
-        flow.request()
-        assoc = SlurmAssociation.objects.get(allocation=alloc)
+        assoc = SlurmAssociation.objects.create(allocation=alloc)
         assoc.slurm_account = self.acct_a
         assoc.parent = parent_acct
         assoc.save()
+        flow = AllocationStatusFlow(alloc)
+        flow.request()
         flow.approve()
         AllocationStatusFlow._transition_permission_callbacks = {}
         flow.activate()
@@ -696,7 +696,7 @@ class GenerateClusterDumpEdgeCaseTestCase(TestCase):
             status=AllocationStatusChoices.STATUS_ACTIVE,
         )
         # Get the association, then delete the resource so resource_object is None
-        assoc = SlurmAssociation.objects.get(allocation=alloc)
+        assoc = SlurmAssociation.objects.create(allocation=alloc)
         assoc.slurm_account = account
         assoc.save()
         # resource_object is still valid, so _format_user_lines will process it
@@ -728,7 +728,7 @@ class GenerateClusterDumpEdgeCaseTestCase(TestCase):
             resource_object_id=cluster.pk,
             status=AllocationStatusChoices.STATUS_ACTIVE,
         )
-        assoc = SlurmAssociation.objects.get(allocation=alloc)
+        assoc = SlurmAssociation.objects.create(allocation=alloc)
         assoc.slurm_account = account
         assoc.save()
 

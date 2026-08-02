@@ -15,58 +15,6 @@ from coldfront.storage.sync import enqueue_activate_allocation, enqueue_deactiva
 logger = logging.getLogger(__name__)
 
 
-def _auto_generate_path(allocation, resource):
-    """Generate a storage path from the resource's path_template.
-
-    Supports ``{project.slug}``, ``{resource.<field>}``, and
-    ``{allocation.id}`` variable syntax.
-    """
-    template = resource.path_template
-    if not template:
-        return f"/home/groups/{allocation.project.slug}/{allocation.pk}"
-
-    result = template.replace("{project.slug}", allocation.project.slug or "")
-    result = result.replace("{allocation.id}", str(allocation.pk))
-
-    # Resolve {resource.<field>} — look up the field by name on the resource
-    import re
-
-    for match in re.finditer(r"{resource\.(\w+)}", result):
-        field_name = match.group(1)
-        value = getattr(resource, field_name, "")
-        result = result.replace(match.group(0), str(value) if value else "")
-
-    return result
-
-
-def _resolve_owning_group(allocation):
-    """Resolve the owning Group for a StorageQuota.
-
-    If the project has a ``group`` FK set, use that directly.
-    Otherwise fall back to matching by project slug or owner
-    username, creating a placeholder if nothing matches.
-    """
-    from coldfront.users.models import Group
-
-    # Check the project's explicit group FK first
-    group = allocation.project.group
-    if group:
-        return group
-
-    slug = allocation.project.slug
-    try:
-        return Group.objects.get(name=slug)
-    except Group.DoesNotExist:
-        # Fall back to a group matching the owner username
-        try:
-            return Group.objects.get(name=allocation.project.owner.username)
-        except Group.DoesNotExist:
-            # Create a placeholder group if nothing matches
-            group = Group(name=slug)
-            group.save()
-            return group
-
-
 def _get_target_clusters(quota, resource):
     """Return the list of clusters a quota should apply to.
 
@@ -81,30 +29,6 @@ def _get_target_clusters(quota, resource):
 # ---------------------------------------------------------------------------
 # Callbacks
 # ---------------------------------------------------------------------------
-
-
-@register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_NEW)
-def on_allocation_requested(allocation, *, source, target):
-    """
-    On allocation request: create StorageQuota skeleton so the
-    post-request form can be rendered.  The storage resource is
-    set here; clusters is left empty (meaning all clusters) so
-    the admin can narrow it before activation.  Limits are set
-    by the user on the post-request form.
-    """
-    resource = allocation.resource_object
-    if not isinstance(resource, StorageResource):
-        return
-
-    StorageQuota.objects.get_or_create(
-        allocation=allocation,
-        defaults={
-            "storage": resource,
-            "path": _auto_generate_path(allocation, resource),
-            "owning_user": allocation.project.owner,
-            "owning_group": _resolve_owning_group(allocation),
-        },
-    )
 
 
 @register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_APPROVED)

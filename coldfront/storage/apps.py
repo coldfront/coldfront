@@ -21,7 +21,6 @@ class StorageConfig(AppConfig):
 
         discover_backends()
 
-        # Import views (including cross-app views) and register callbacks/signals
         from . import (
             listeners,  # noqa: F401
             signals,  # noqa: F401

@@ -16,7 +16,13 @@ from .bulk_edit import (
     ResourceBulkEditForm,
     ResourceTypeBulkEditForm,
 )
+from .change_requests import (
+    AllocationChangeRequestApplyForm,
+    AllocationChangeRequestForm,
+    AllocationChangeRequestReviewForm,
+)
 from .filterset_forms import (
+    AllocationChangeRequestFilterSetForm,
     AllocationFilterSetForm,
     ProjectFilterSetForm,
     ProjectUserFilterSetForm,
@@ -33,6 +39,10 @@ __all__ = (
     "AllocationReviewForm",
     "AllocationRequestForm",
     "AllocationImportForm",
+    "AllocationChangeRequestApplyForm",
+    "AllocationChangeRequestForm",
+    "AllocationChangeRequestFilterSetForm",
+    "AllocationChangeRequestReviewForm",
     "AllocationFilterSetForm",
     "ProjectBulkEditForm",
     "ProjectForm",

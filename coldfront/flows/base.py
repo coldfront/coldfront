@@ -32,6 +32,12 @@ class ColdFrontFlow(object):
     #   Returns True to allow the transition, False to deny.
     _transition_permission_callbacks: dict = {}
 
+    def __init_subclass__(cls, **kwargs):
+        """Ensure each subclass gets its own callback registries."""
+        super().__init_subclass__(**kwargs)
+        cls._target_callbacks = {}
+        cls._transition_permission_callbacks = {}
+
     @classmethod
     def register_target_callback(cls, target_state, callback):
         """
@@ -77,11 +83,7 @@ class ColdFrontFlow(object):
                 )
 
                 # Notify admins about the callback failure
-                cb_name = (
-                    callback.__name__
-                    if hasattr(callback, "__name__")
-                    else repr(callback)
-                )
+                cb_name = callback.__name__ if hasattr(callback, "__name__") else repr(callback)
                 url = getattr(obj, "get_absolute_url", lambda: None)()
                 send_system_notification(
                     target=obj,
@@ -158,22 +160,19 @@ def register_target_callback(flow_cls, target_state):
 
 def register_transition_permission_callback(flow_cls, transition_slug):
     """
-    Decorator factory: register a permission callback with a flow class for a
-    given transition slug.
+    Decorator factory: register a permission callback function with a flow
+    class for a given transition slug.
 
-    The decorated function receives (obj, user) and returns True to allow the
-    transition or False to deny it.
+    The callback receives (obj, user) and returns True to allow the
+    transition or False to deny it.  If any registered callback returns
+    False, the transition is blocked.
 
     Usage:
-        @register_transition_permission_callback(AllocationStatusFlow, "activate")
-        def can_activate_check(allocation, user):
-            ...
-
-    This is equivalent to:
-        AllocationStatusFlow.register_transition_permission_callback(
-            "activate",
-            can_activate_check,
+        @register_transition_permission_callback(
+            AllocationStatusFlow, "activate"
         )
+        def on_activate_check(allocation, user):
+            ...
     """
 
     def decorator(func):

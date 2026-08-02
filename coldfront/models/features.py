@@ -366,13 +366,6 @@ class AllocatableResourceMixin(models.Model):
         verbose_name=_("schema"),
     )
 
-    required_bridge_models: tuple[str, ...] = (
-        # Each entry is an "app_label.ModelName" string indicating a bridge
-        # model that should exist for allocations on this resource.  The
-        # allocation detail page warns if any are missing (e.g., admin
-        # created the allocation outside the workflow).
-    )
-
     locked = models.BooleanField(
         verbose_name=_("locked"),
         default=False,
@@ -385,38 +378,6 @@ class AllocatableResourceMixin(models.Model):
     def allocatable(self, user):
         """Checks if this resource is allocatable. Override to provide custom checks"""
         return not self.locked
-
-    def allocation_request_form_help_message(self):
-        """
-        Return a message to be displayed on the allocation request form.
-
-        Displayed above the allocation request form. Override this on resource
-        subclasses to provide any customized help text messaging to the user
-        about the resource being requested. For example, text indicating that
-        more data is to be collected on the next page, redirected to via
-        `allocation_request_url`.
-
-        Returning ``None`` (the default) shows no message.
-        """
-        return None
-
-    def allocation_request_url(self, allocation):
-        """
-        Return a URL for a resource-specific post-request form, or None.
-
-        Called after an Allocation is created via ``AllocationRequestView``
-        and the request workflow transition has completed. The allocation's
-        ``resource_object`` is ``self``.
-
-        Override this on resource subclasses to redirect users to a custom
-        form for collecting resource-specific data after the initial
-        allocation request. Typically this returns the edit URL for the
-        bridge model linked to this allocation.
-
-        Returning ``None`` (the default) means the user is redirected to the
-        allocation detail page after requesting, matching the standard flow.
-        """
-        return None
 
 
 register_model_feature("change_logging", lambda model: issubclass(model, ChangeLoggingMixin))

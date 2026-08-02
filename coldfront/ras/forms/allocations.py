@@ -24,7 +24,7 @@ from coldfront.forms.fields import (
     DynamicModelChoiceField,
 )
 from coldfront.forms.layouts import DateTime
-from coldfront.forms.mixins import HorizontalFormMixin
+from coldfront.forms.mixins import AllocationExtensionFormMixin, HorizontalFormMixin
 from coldfront.forms.widgets import HTMXSelectWidget
 from coldfront.ras.choices import get_resource_object_choices
 from coldfront.ras.models import Allocation, Project
@@ -34,7 +34,7 @@ from coldfront.utils.forms import get_field_value
 from coldfront.utils.jsonschema import JSONSchemaProperty
 
 
-class AllocationBaseForm(PrimaryModelForm):
+class AllocationBaseForm(AllocationExtensionFormMixin, PrimaryModelForm):
     resource_object = forms.ChoiceField(
         choices=[],
         label=_("Resource"),
@@ -65,6 +65,40 @@ class AllocationBaseForm(PrimaryModelForm):
             self.fields[field_name] = form_field
             if self.instance.attribute_data:
                 self.fields[field_name].initial = self.instance.attribute_data.get(attr)
+
+        # Build extension fields from the selected resource
+        # For existing allocations, use the instance; for new allocations,
+        # derive the resource from POST/initial data (HTMX-driven)
+        allocation = self.instance if self.instance.pk else None
+        if allocation is None:
+            allocation = self._resolve_allocation_from_resource_object()
+        self._build_extension_fields(allocation)
+
+    def _resolve_allocation_from_resource_object(self):
+        """
+        Derive a minimal allocation-like object from the resource_object field
+        so extension fields can be built even before the allocation is saved.
+
+        Uses POST data or the field's initial value to resolve the resource.
+        Returns an Allocation instance with only resource_object set, or None.
+        """
+        ro = get_field_value(self, "resource_object")
+        if not ro:
+            return None
+        try:
+            ct_id, object_id = ro.split(":")
+            ct = ContentType.objects.get(pk=int(ct_id))
+            ct.get_object_for_this_type(pk=int(object_id))
+            # Create a temporary allocation with resource_object fields set
+            from coldfront.ras.models import Allocation
+
+            alloc = Allocation(
+                resource_object_type=ct,
+                resource_object_id=int(object_id),
+            )
+            return alloc
+        except (ValueError, ContentType.DoesNotExist, ObjectDoesNotExist, TypeError):
+            return None
 
     def _get_schema(self):
         if ro := get_field_value(self, "resource_object"):
@@ -101,6 +135,9 @@ class AllocationBaseForm(PrimaryModelForm):
                 for name in self.attr_fields
                 if self.cleaned_data.get(name) not in EMPTY_VALUES
             }
+
+        # Collect extension data for creation after save
+        self.instance._extension_create_data = self._collect_extension_data()
 
         return super()._post_clean()
 
@@ -160,9 +197,31 @@ class AllocationRequestForm(AllocationBaseForm):
             "justification",
         ]
 
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            # Create extension instances from collected data
+            self._create_extensions(instance)
+        return instance
+
+    def _create_extensions(self, allocation):
+        """Create extension instances for the allocation."""
+        extension_data = getattr(allocation, "_extension_create_data", {}) or {}
+        if not extension_data:
+            return
+
+        # Build a lookup from path → model class from _extension_field_map
+        path_to_model = {e["model_path"]: e["model"] for e in self._extension_field_map}
+
+        for ext_path, values in extension_data.items():
+            model = path_to_model.get(ext_path)
+            if model is not None:
+                model.create_for_allocation(allocation, values=values)
+
     @property
     def fieldsets(self):
-        return [
+        fieldsets = [
             Fieldset(
                 "Allocation Request",
                 "project",
@@ -171,6 +230,13 @@ class AllocationRequestForm(AllocationBaseForm):
                 "justification",
             ),
         ]
+        # Add extension fieldsets
+        for entry in self._extension_field_map:
+            header = _(f"{entry['model']._meta.verbose_name.title()} Details")
+            field_names = [f"ext_{entry['model']._meta.model_name}_{fn}" for fn in entry["field_names"]]
+            if field_names:
+                fieldsets.append(Fieldset(header, *field_names))
+        return fieldsets
 
 
 class AllocationReviewForm(HorizontalFormMixin, forms.ModelForm):
@@ -262,7 +328,23 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
             instance.save()
             self.save_m2m()
             self._create_comment_entry()
+            # Create extension instances from collected data
+            self._create_extensions(instance)
         return instance
+
+    def _create_extensions(self, allocation):
+        """Create extension instances for the allocation."""
+        extension_data = getattr(allocation, "_extension_create_data", {}) or {}
+        if not extension_data:
+            return
+
+        # Build a lookup from path → model class from _extension_field_map
+        path_to_model = {e["model_path"]: e["model"] for e in self._extension_field_map}
+
+        for ext_path, values in extension_data.items():
+            model = path_to_model.get(ext_path)
+            if model is not None:
+                model.create_for_allocation(allocation, values=values)
 
     def _create_comment_entry(self):
         comments = self.cleaned_data.get("comments")
@@ -291,7 +373,7 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
 
     @property
     def fieldsets(self):
-        return [
+        fieldsets = [
             Fieldset(
                 _("Resource"),
                 "resource_object",
@@ -313,6 +395,13 @@ class AllocationForm(AllocationBaseForm, TenancyForm, PrimaryModelForm):
                 "comments",
             ),
         ]
+        # Add extension fieldsets
+        for entry in self._extension_field_map:
+            header = _(f"{entry['model']._meta.verbose_name.title()} Details")
+            field_names = [f"ext_{entry['model']._meta.model_name}_{fn}" for fn in entry["field_names"]]
+            if field_names:
+                fieldsets.append(Fieldset(header, *field_names))
+        return fieldsets
 
 
 class AllocationActivateForm(AllocationBaseForm, PrimaryModelForm):
@@ -345,7 +434,23 @@ class AllocationActivateForm(AllocationBaseForm, PrimaryModelForm):
             instance.save()
             self.save_m2m()
             self._create_comment_entry()
+            # Create extension instances from collected data
+            self._create_extensions(instance)
         return instance
+
+    def _create_extensions(self, allocation):
+        """Create extension instances for the allocation."""
+        extension_data = getattr(allocation, "_extension_create_data", {}) or {}
+        if not extension_data:
+            return
+
+        # Build a lookup from path → model class from _extension_field_map
+        path_to_model = {e["model_path"]: e["model"] for e in self._extension_field_map}
+
+        for ext_path, values in extension_data.items():
+            model = path_to_model.get(ext_path)
+            if model is not None:
+                model.create_for_allocation(allocation, values=values)
 
     def _create_comment_entry(self):
         comments = self.cleaned_data.get("comments")
@@ -359,7 +464,7 @@ class AllocationActivateForm(AllocationBaseForm, PrimaryModelForm):
 
     @property
     def fieldsets(self):
-        return [
+        fieldsets = [
             Fieldset(
                 _("Resource"),
                 "resource_object",
@@ -379,6 +484,13 @@ class AllocationActivateForm(AllocationBaseForm, PrimaryModelForm):
                 "comments",
             ),
         ]
+        # Add extension fieldsets
+        for entry in self._extension_field_map:
+            header = _(f"{entry['model']._meta.verbose_name.title()} Details")
+            field_names = [f"ext_{entry['model']._meta.model_name}_{fn}" for fn in entry["field_names"]]
+            if field_names:
+                fieldsets.append(Fieldset(header, *field_names))
+        return fieldsets
 
 
 class AllocationImportForm(TenancyImportForm, PrimaryModelImportForm):

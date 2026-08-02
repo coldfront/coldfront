@@ -2,11 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .base import ChangeLoggedModel, ColdFrontModel, NestedGroupModel, OrganizationalModel, PrimaryModel
+from .base import BaseModel, ChangeLoggedModel, ColdFrontModel, NestedGroupModel, OrganizationalModel, PrimaryModel
 
 __all__ = (
     "ColdFrontModel",
     "PrimaryModel",
+    "BaseModel",
     "OrganizationalModel",
     "NestedGroupModel",
     "ChangeLoggedModel",

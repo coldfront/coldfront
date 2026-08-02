@@ -8,13 +8,189 @@ import time
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout
 from django import forms
+from django.core.validators import EMPTY_VALUES
 from django.db.models import Q
 from django.utils.translation import gettext as _
 
 from coldfront.core.choices import CustomFieldUIEditableChoices
 from coldfront.core.models import CustomField, ObjectType, SavedFilter, Tag
 from coldfront.forms.fields import DynamicModelMultipleChoiceField
+from coldfront.registry import get_allocation_extensions
 from coldfront.users.permissions import get_permission_for_model
+
+
+class AllocationExtensionFormMixin:
+    """
+    Mixin for forms that need dynamic fields for allocation extensions.
+
+    Adds form fields for each ``requestable_fields`` on every extension
+    registered for the allocation's resource.  Stores field-to-extension
+    mapping in ``self._extension_field_map`` for use in save logic.
+
+    Usage:
+        class MyForm(AllocationExtensionFormMixin, PrimaryModelForm):
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                self._build_extension_fields()
+    """
+
+    def __init__(self, *args, **kwargs):
+        self._extension_field_map = []
+        super().__init__(*args, **kwargs)
+
+    def _get_allocation(self):
+        """
+        Resolve the allocation from the form instance or POST data.
+        Override on forms where the allocation is determined differently.
+        """
+        if self.instance and self.instance.pk:
+            return getattr(self.instance, "allocation", None)
+        return None
+
+    def _get_resource_model_path(self, allocation):
+        """
+        Return the dotted model path of the allocation's resource object.
+        """
+        if allocation is None:
+            return None
+        resource = allocation.resource_object
+        if resource is None:
+            return None
+        return resource._meta.label_lower
+
+    def _build_extension_fields(self, allocation=None):
+        """
+        Add form fields for each extension's ``requestable_fields``.
+
+        Stores the field mapping in ``self._extension_field_map`` for use
+        by ``_collect_extension_data()`` and ``save()``.
+        """
+        self._extension_field_map = []
+
+        resource_path = self._get_resource_model_path(allocation)
+        if not resource_path:
+            return
+
+        for model in get_allocation_extensions(resource_path):
+            if model is None:
+                continue
+
+            requestable = model.requestable_fields()
+            if not requestable:
+                continue
+
+            # Fetch the current extension instance for pre-filling
+            extension_instance = None
+            if allocation and allocation.pk:
+                related_name = model._meta.default_related_name or f"{model._meta.model_name}_set"
+                try:
+                    extension_instance = getattr(allocation, related_name).first()
+                except (AttributeError, ValueError):
+                    pass
+
+            field_names = []
+            for field_name in requestable:
+                # Find the corresponding model field
+                model_field = None
+                for f in model._meta.local_fields:
+                    if f.name == field_name:
+                        model_field = f
+                        break
+                if model_field is None:
+                    continue
+
+                # Build a Django form field
+                form_field = self._form_field_for_model_field(model_field, extension_instance)
+                if form_field is not None:
+                    self.fields[f"ext_{model._meta.model_name}_{field_name}"] = form_field
+                    field_names.append(field_name)
+
+            if field_names:
+                self._extension_field_map.append(
+                    {
+                        "model_path": f"{model._meta.app_label}.{model._meta.model_name}",
+                        "model": model,
+                        "field_names": field_names,
+                    }
+                )
+
+    def _form_field_for_model_field(self, model_field, extension_instance=None):
+        """
+        Build a Django form field from a model field definition.
+        Pre-fills with the current extension instance value if available.
+
+        Checks ``requestable_fields_overrides()`` on the extension model class
+        first; if a custom field is registered for this field name, it is used
+        instead of the auto-generated field.
+        """
+        from django.db import models as dj_models
+
+        field_name = model_field.name
+
+        # Check for a custom field override registered on the extension model
+        extension_model_class = model_field.model
+        overrides = extension_model_class.requestable_fields_overrides()
+        if field_name in overrides:
+            custom_field = overrides[field_name]
+            if custom_field is not None:
+                # Pre-fill with current value if available
+                if extension_instance is not None:
+                    current_value = getattr(extension_instance, field_name, None)
+                    if current_value is not None:
+                        custom_field.initial = current_value
+                return custom_field
+            return None  # Explicit None means skip this field
+
+        current_value = None
+        if extension_instance is not None:
+            current_value = getattr(extension_instance, field_name, None)
+
+        verbose_name = (
+            str(model_field.verbose_name).capitalize() if hasattr(model_field, "verbose_name") else field_name
+        )
+        kwargs = {
+            "label": verbose_name,
+            "required": False,
+            "initial": current_value,
+        }
+
+        if isinstance(model_field, (dj_models.PositiveBigIntegerField, dj_models.PositiveIntegerField)):
+            return forms.IntegerField(**kwargs, min_value=0)
+        elif isinstance(model_field, dj_models.IntegerField):
+            return forms.IntegerField(**kwargs)
+        elif isinstance(model_field, dj_models.DurationField):
+            return forms.CharField(
+                label=verbose_name,
+                required=False,
+                initial=str(current_value) if current_value else None,
+                help_text=_("Duration (e.g. 3:00:00 or 3 days, 0:00:00)"),
+            )
+        elif isinstance(model_field, dj_models.BooleanField):
+            return forms.BooleanField(**kwargs)
+        elif isinstance(model_field, dj_models.CharField):
+            return forms.CharField(**kwargs)
+        else:
+            return None
+
+    def _collect_extension_data(self):
+        """
+        Return a dict mapping extension model paths (strings) to dicts of
+        cleaned field values collected from the form.
+
+        Called in ``_post_clean`` or ``save`` to gather extension values.
+        """
+        result = {}
+        for entry in self._extension_field_map:
+            path = entry["model_path"]
+            model_name = entry["model"]._meta.model_name
+            values = {}
+            for field_name in entry["field_names"]:
+                value = self.cleaned_data.get(f"ext_{model_name}_{field_name}")
+                if value not in EMPTY_VALUES:
+                    values[field_name] = value
+            if values:
+                result[path] = values
+        return result
 
 
 class HorizontalFormMixin:

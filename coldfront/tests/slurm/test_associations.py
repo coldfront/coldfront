@@ -106,13 +106,18 @@ class SlurmAssociationLifecycleTest(TestCase):
         super().tearDown()
 
     def _create_allocation(self, resource, resource_ct):
-        return Allocation.objects.create(
+        allocation = Allocation.objects.create(
             justification="Need compute resources",
             project=self.project,
             owner=self.user1,
             resource_object_type=resource_ct,
             resource_object_id=resource.pk,
         )
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        # Only create for slurm resources (SlurmCluster / SlurmPartition).
+        if isinstance(resource, (SlurmCluster, SlurmPartition)):
+            SlurmAssociation.objects.create(allocation=allocation)
+        return allocation
 
     # ---------- Step 1: On allocation requested ----------
 
@@ -398,11 +403,12 @@ class ProjectUserSignalTest(TestCase):
             resource_object_type=resource_ct,
             resource_object_id=resource.pk,
         )
-        flow = AllocationStatusFlow(allocation)
-        flow.request()
-        association = SlurmAssociation.objects.get(allocation=allocation)
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        association = SlurmAssociation.objects.create(allocation=allocation)
         association.slurm_account = account
         association.save()
+        flow = AllocationStatusFlow(allocation)
+        flow.request()
         flow.approve()
         # Bypass permission callbacks for activation
         AllocationStatusFlow._transition_permission_callbacks = {}
@@ -474,9 +480,8 @@ class ProjectUserSignalTest(TestCase):
             resource_object_id=self.cluster1.pk,
             status=AllocationStatusChoices.STATUS_NEW,
         )
-        # The on_allocation_created signal creates a SlurmAssociation automatically.
-        # Set the account on it.
-        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        assoc = SlurmAssociation.objects.create(allocation=allocation)
         assoc.slurm_account = self.account_a
         assoc.save()
 
@@ -621,11 +626,12 @@ class SlurmAssociationSignalTest(TestCase):
             resource_object_type=self.cluster_ct,
             resource_object_id=self.cluster.pk,
         )
-        flow = AllocationStatusFlow(allocation)
-        flow.request()
-        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        assoc = SlurmAssociation.objects.create(allocation=allocation)
         assoc.slurm_account = self.account_a
         assoc.save()
+        flow = AllocationStatusFlow(allocation)
+        flow.request()
         flow.approve()
         AllocationStatusFlow._transition_permission_callbacks = {}
         flow.activate()
@@ -669,8 +675,8 @@ class SlurmAssociationSignalTest(TestCase):
             resource_object_id=self.cluster.pk,
             status=AllocationStatusChoices.STATUS_NEW,
         )
-        # The on_allocation_created signal creates a SlurmAssociation
-        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        assoc = SlurmAssociation.objects.create(allocation=allocation)
         assoc.slurm_account = self.account_a
         assoc.save()
 
@@ -740,9 +746,10 @@ class SlurmAssociationSignalTest(TestCase):
             resource_object_type=self.cluster_ct,
             resource_object_id=self.cluster.pk,
         )
+        # SlurmAssociation is now created via the allocation form, not automatically.
+        assoc = SlurmAssociation.objects.create(allocation=allocation)
         flow = AllocationStatusFlow(allocation)
         flow.request()
-        assoc = SlurmAssociation.objects.get(allocation=allocation)
         # Don't set slurm_account yet
         flow.approve()
         AllocationStatusFlow._transition_permission_callbacks = {}
@@ -799,7 +806,7 @@ class SlurmAccountValidationTest(TestCase):
             resource_object_type=resource_ct,
             resource_object_id=resource.pk,
         )
-        assoc = SlurmAssociation.objects.get(allocation=allocation)
+        assoc = SlurmAssociation.objects.create(allocation=allocation)
         if account is not None:
             assoc.slurm_account = account
             assoc.save()

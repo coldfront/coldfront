@@ -214,6 +214,7 @@ class WorkflowViewSetMixin:
                 @action(detail=True, methods=["post"], url_path=transition_name, url_name=transition_name)
                 def handler(self, request, *args, **kwargs):
                     return self._execute_transition(request, transition_name)
+
                 handler.__name__ = transition_name
                 handler.__qualname__ = f"{cls.__name__}.{transition_name}"
                 handler.__module__ = cls.__module__

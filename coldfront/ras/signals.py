@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 # Signals the allocation status has changed
 allocation_status_change = Signal()
 
+# Signals the allocation change request status has changed
+allocation_change_request_status_change = Signal()
+
 
 def _connect_project_group_signals():  # noqa: N802
     """Connect signals for Project group FK change tracking.

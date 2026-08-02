@@ -51,6 +51,38 @@ class AllocationStatusChoices(ChoiceSet):
     ]
 
 
+class AllocationChangeRequestStatusChoices(ChoiceSet):
+    key = "AllocationChangeRequest.status"
+
+    STATUS_REQUESTED = "requested"
+    STATUS_APPROVED = "approved"
+    STATUS_DENIED = "denied"
+    STATUS_APPLIED = "applied"
+
+    CHOICES = [
+        (STATUS_REQUESTED, _("Requested"), "primary"),
+        (STATUS_APPROVED, _("Approved"), "success"),
+        (STATUS_DENIED, _("Denied"), "danger"),
+        (STATUS_APPLIED, _("Applied"), "success"),
+    ]
+
+
+class AllocationChangeRequestExtensionChoices(ChoiceSet):
+    key = "AllocationChangeRequest.extension"
+
+    EXTENSION_7 = 7
+    EXTENSION_30 = 30
+    EXTENSION_90 = 90
+    EXTENSION_365 = 365
+
+    CHOICES = [
+        (EXTENSION_7, _("7 days")),
+        (EXTENSION_30, _("30 days")),
+        (EXTENSION_90, _("90 days")),
+        (EXTENSION_365, _("1 year")),
+    ]
+
+
 def get_resource_object_choices(user):
     """
     Build a list of optgroup choices for all objects with the "allocatable_resource" feature.

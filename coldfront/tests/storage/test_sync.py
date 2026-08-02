@@ -28,13 +28,10 @@ from django.test import TestCase
 from coldfront.ras.choices import AllocationStatusChoices
 from coldfront.ras.models import Allocation, Project
 from coldfront.storage.listeners import (
-    _auto_generate_path,
-    _resolve_owning_group,
     on_allocation_activated,
     on_allocation_approved,
     on_allocation_denied,
     on_allocation_expired,
-    on_allocation_requested,
     on_allocation_revoked,
 )
 from coldfront.storage.models import StorageCluster, StorageQuota, StorageResource
@@ -422,62 +419,20 @@ class TestCallbacks(TestCase):
             owner=self.owner,
             status=AllocationStatusChoices.STATUS_NEW,
         )
+        self.quota = StorageQuota.objects.create(
+            allocation=self.allocation,
+            storage=self.resource,
+            path="/home/groups/sig-project/1",
+            owning_user=self.owner,
+            owning_group=self.group,
+            hard_limit=1073741824,
+        )
 
         # Reset allocated_bytes for the resource and cluster
         StorageResource.objects.filter(pk=self.resource.pk).update(allocated_bytes=0)
         StorageCluster.objects.filter(pk=self.cluster.pk).update(allocated_bytes=0)
 
-    def test_on_allocation_requested_creates_quota(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
-        quota = StorageQuota.objects.get(allocation=self.allocation)
-        assert quota.storage == self.resource
-        assert quota.path == "/home/groups/cb-project/1"
-        assert quota.owning_user == self.owner
-
-    def test_on_allocation_requested_non_storage_resource(self):
-        # Create an allocation whose resource_object is NOT a StorageResource
-        # Use a StorageCluster (which is not a StorageResource) as the resource
-        cluster = StorageCluster.objects.create(
-            name="non-storage",
-            backend_path="coldfront.storage.backends.dummy.DummyBackend",
-        )
-        self.allocation.resource_object = cluster
-        self.allocation.save()
-
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
-        # No StorageQuota should be created
-        assert StorageQuota.objects.filter(allocation=self.allocation).count() == 0
-
-    def test_on_allocation_requested_idempotent(self):
-        # First call creates
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
-        # Second call should not duplicate
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
-        assert StorageQuota.objects.filter(allocation=self.allocation).count() == 1
-
-    def test_on_allocation_approved_noop_without_quota(self):
-        # No StorageQuota exists yet — should log warning and return
-        with mock.patch("coldfront.storage.listeners.logger") as mock_logger:
-            on_allocation_approved(
-                self.allocation,
-                source=AllocationStatusChoices.STATUS_NEW,
-                target=AllocationStatusChoices.STATUS_APPROVED,
-            )
-            mock_logger.warning.assert_called_once()
-
     def test_on_allocation_activated_enqueues_per_cluster(self):
-        # Create quota first (as done by on_allocation_requested)
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
 
@@ -490,9 +445,6 @@ class TestCallbacks(TestCase):
             mock_enqueue.assert_called_once()
 
     def test_on_allocation_activated_updates_allocated_bytes(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
@@ -510,9 +462,6 @@ class TestCallbacks(TestCase):
         assert resource.allocated_bytes == 1073741824
 
     def test_on_allocation_expired_enqueues_deactivate(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
@@ -536,9 +485,6 @@ class TestCallbacks(TestCase):
             mock_enqueue.assert_called_once()
 
     def test_on_allocation_expired_updates_allocated_bytes(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
@@ -565,9 +511,6 @@ class TestCallbacks(TestCase):
         assert resource.allocated_bytes == 0
 
     def test_on_allocation_revoked_enqueues_deactivate(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
@@ -591,9 +534,6 @@ class TestCallbacks(TestCase):
             mock_enqueue.assert_called_once()
 
     def test_on_allocation_revoked_updates_allocated_bytes(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
@@ -618,9 +558,6 @@ class TestCallbacks(TestCase):
         assert resource.allocated_bytes == 0
 
     def test_on_allocation_denied_deletes_quota(self):
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         assert StorageQuota.objects.filter(allocation=self.allocation).count() == 1
 
         on_allocation_denied(
@@ -640,9 +577,6 @@ class TestCallbacks(TestCase):
         self.allocation.save()
 
         # None of these should raise or create objects
-        on_allocation_requested(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_NEW
-        )
         on_allocation_approved(
             self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_APPROVED
         )
@@ -783,7 +717,7 @@ class TestSignal(TestCase):
 
 
 class TestAutoGeneratePath(TestCase):
-    """Test _auto_generate_path template resolution."""
+    """Test auto_generate_path template resolution."""
 
     @classmethod
     def setUpTestData(cls):
@@ -791,7 +725,7 @@ class TestAutoGeneratePath(TestCase):
         cls.project = Project.objects.create(name="Path Project", slug="path-project", owner=cls.owner)
         cls.resource = StorageResource.objects.create(
             name="Path Resource",
-            path_template="/home/groups/{project.slug}/{allocation.id}",
+            path_template="/home/groups/{{ allocation.project.slug }}/{{ allocation.id }}",
         )
 
     def setUp(self):
@@ -802,40 +736,11 @@ class TestAutoGeneratePath(TestCase):
         )
 
     def test_default_template(self):
-        path = _auto_generate_path(self.allocation, self.resource)
+        path = self.resource.auto_generate_path(self.allocation)
         assert path == f"/home/groups/path-project/{self.allocation.pk}"
 
     def test_custom_template_with_resource_attr(self):
-        self.resource.path_template = "{resource.name}/{project.slug}"
+        self.resource.path_template = "{{ resource.name }}/{{ allocation.project.slug }}"
         self.resource.save()
-        path = _auto_generate_path(self.allocation, self.resource)
+        path = self.resource.auto_generate_path(self.allocation)
         assert path == "Path Resource/path-project"
-
-
-class TestResolveOwningGroup(TestCase):
-    """Test _resolve_owning_group fallback logic."""
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.owner = User.objects.create(username="resolve-owner")
-        cls.project = Project.objects.create(name="Resolve Project", slug="resolve-project", owner=cls.owner)
-        cls.group = Group.objects.create(name="resolve-project")
-
-    def test_resolve_by_slug(self):
-        allocation = Allocation.objects.create(
-            resource_object=StorageResource.objects.create(name="R"),
-            project=self.project,
-            owner=self.owner,
-        )
-        group = _resolve_owning_group(allocation)
-        assert group.name == "resolve-project"
-
-    def test_fallback_creates_group(self):
-        project2 = Project.objects.create(name="No Group Project", slug="no-group-slug", owner=self.owner)
-        allocation = Allocation.objects.create(
-            resource_object=StorageResource.objects.create(name="R2"),
-            project=project2,
-            owner=self.owner,
-        )
-        group = _resolve_owning_group(allocation)
-        assert group.name == "no-group-slug"

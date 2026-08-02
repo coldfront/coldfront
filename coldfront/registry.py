@@ -41,8 +41,53 @@ registry = Registry(
         "plugins": dict(),
         "tables": collections.defaultdict(dict),
         "views": collections.defaultdict(dict),
+        "allocation_extensions": collections.defaultdict(list),
     }
 )
+
+
+def register_allocation_extension(model, extension=None):
+    """
+    Register an allocation extension model for a given resource model.
+
+    Can be used as a decorator::
+
+        @register_allocation_extension(StorageResource)
+        class StorageQuota(PrimaryModel): ...
+
+    Or as a direct function call::
+
+        register_allocation_extension(StorageResource, StorageQuota)
+
+    Args:
+        model: A Django model class for the resource.
+        extension: A Django model class for the extension (optional).
+            If omitted, the decorator derives it from the decorated class.
+    """
+    resource_path = model._meta.label_lower
+
+    def _register(cls):
+        registry["allocation_extensions"][resource_path].append(extension if extension is not None else cls)
+        return cls
+
+    if extension is not None:
+        registry["allocation_extensions"][resource_path].append(extension)
+        return
+    else:
+        return _register
+
+
+def get_allocation_extensions(model_or_path):
+    """
+    Return a list of extension model classes registered for a resource model.
+
+    Accepts a model class or dotted string path.
+    """
+    if hasattr(model_or_path, "_meta"):
+        path = model_or_path._meta.label_lower
+    else:
+        path = str(model_or_path)
+    return list(registry["allocation_extensions"].get(path, []))
 
 
 def register_model_feature(name, func=None):

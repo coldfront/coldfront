@@ -1,0 +1,111 @@
+{% extends 'ras/base.html' %}
+{% load buttons %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+    {% if object.allocation.tenant %}
+        <li class="breadcrumb-item">
+            <a
+                href="{% url 'ras:project_list' %}?tenant_id={{ object.allocation.tenant.id }}"
+            >{{ object.allocation.tenant }}</a>
+        </li>
+    {% elif object.allocation.project.tenant %}
+        <li class="breadcrumb-item">
+            <a
+                href="{% url 'ras:project_list' %}?tenant_id={{ object.allocatin.project.tenant.id }}"
+            >{{ object.allocatin.project.tenant }}</a>
+        </li>
+    {% endif %}
+    <li class="breadcrumb-item">{{ object.allocation.project|linkify }}</li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'ras:project_allocations' pk=object.allocation.project.pk %}">Allocations</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{% url 'ras:allocation_change_requests' pk=object.allocation.pk %}">Change Requests</a>
+    </li>
+{% endblock %}
+
+{% block extra_controls %}
+    {% if transitions %}
+        {% action_buttons transitions object %}
+    {% endif %}
+{% endblock extra_controls %}
+
+{% block content %}
+    <c-layout.panels>
+        <c-slot name="left">
+            <c-card.fields only>
+                <c-slot name="header">
+                    {% trans "Change Request" %}
+                    <c-ui.badge value="{{ object.status|title }}" :bg_color="object.get_status_color" />
+                </c-slot>
+
+                <c-card.fields.item label="{% trans 'Allocation' %}">
+                    {{ object.allocation|linkify }}
+                </c-card.fields.item>
+
+                <c-card.fields.item label="{% trans 'Requested by' %}">
+                    {{ object.requested_by }}
+                </c-card.fields.item>
+
+                <c-card.fields.item label="{% trans 'Reviewer' %}">
+                    {{ object.reviewer|placeholder }}
+                </c-card.fields.item>
+
+                <c-card.fields.item label="{% trans 'Justification' %}">
+                    {{ object.justification|placeholder }}
+                </c-card.fields.item>
+            </c-card.fields>
+        </c-slot>
+
+        <c-slot name="right">
+            <c-card.custom_fields :object="object" only />
+            <c-card.tags :object="object" only />
+        </c-slot>
+    </c-layout.panels>
+
+    {# ---- Proposed Changes Diff ---- #}
+    <c-layout.row>
+        <c-layout.col>
+            <c-card
+                header="{% if object.status == "applied" %}{% trans 'Original values' %}{% else %}{% trans 'Current Values' %}{% endif %}"
+                only
+            >
+                <div class="card-body">
+                    {% if pre_change_data %}
+                        {% spaceless %}
+                            <pre class="change-data">
+                                {% for k, v in pre_change_data.items %}
+                                    <span{% if k in diff_removed %} class="removed"{% endif %}>{{ k }}: {{ v|json }}</span>
+                                {% endfor %}
+                            </pre>
+                        {% endspaceless %}
+                    {% else %}
+                        <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}
+                </div>
+            </c-card>
+        </c-layout.col>
+
+        <c-layout.col>
+            <c-card
+                header="{% if object.status == "applied" %}{% trans 'Changed values' %}{% else %}{% trans 'Requested Changes' %}{% endif %}"
+                only
+            >
+                <div class="card-body">
+                    {% if post_change_data %}
+                        {% spaceless %}
+                            <pre class="change-data">
+                                {% for k, v in post_change_data.items %}
+                                    <span{% if k in diff_added %} class="added"{% endif %}>{{ k }}: {{ v|json }}</span>
+                                {% endfor %}
+                            </pre>
+                        {% endspaceless %}
+                    {% else %}
+                        <span class="text-muted">{% trans "None" %}</span>
+                    {% endif %}
+                </div>
+            </c-card>
+        </c-layout.col>
+    </c-layout.row>
+{% endblock %}

@@ -103,3 +103,45 @@ class ReviewObject(ObjectAction):
     url_kwargs = ["pk"]
     permissions_required = {"change"}
     template_name = "button.review"
+
+
+class ApproveChange(ObjectAction):
+    """
+    Perform an Approve transition on an AllocationChangeRequest.
+    """
+
+    name = "approve"
+    label = _("Approve Change")
+    multi = False
+    transition = "approve"
+    url_kwargs = ["pk"]
+    permissions_required = {"approve"}
+    template_name = "button.approve"
+
+
+class DenyChange(ObjectAction):
+    """
+    Perform a Deny transition on an AllocationChangeRequest.
+    """
+
+    name = "deny"
+    label = _("Deny Change")
+    multi = False
+    transition = "deny"
+    url_kwargs = ["pk"]
+    permissions_required = {"deny"}
+    template_name = "button.deny"
+
+
+class ApplyChange(ObjectAction):
+    """
+    Perform an Apply transition on an AllocationChangeRequest.
+    """
+
+    name = "apply"
+    label = _("Apply Change")
+    multi = False
+    transition = "apply"
+    url_kwargs = ["pk"]
+    permissions_required = {"apply"}
+    template_name = "button.apply"

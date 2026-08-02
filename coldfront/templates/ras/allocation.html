@@ -25,20 +25,6 @@
 {% endblock extra_controls %}
 
 {% block content %}
-    {% if missing_bridge_models %}
-        {% for bridge_model in missing_bridge_models %}
-            <c-alert type="warning">
-                <span class="flex-fill">
-                    {% blocktrans trimmed with bridge_model=bridge_model|meta:"verbose_name" %}
-                        This allocation requires a <strong>{{ bridge_model }}</strong>, but one was not created because
-                        the allocation workflow was bypassed.
-                    {% endblocktrans %}
-                </span>
-                {% action_url bridge_model 'add' as add_url %}
-                <c-button.add url="{{ add_url }}?allocation={{ object.pk }}&amp;return_url={{ request.path }}" only />
-            </c-alert>
-        {% endfor %}
-    {% endif %}
     <c-layout.panels>
         <c-slot name="left">
             <c-card.fields only>
@@ -74,14 +60,6 @@
                         />
                     </div>
                 </c-card.fields.item>
-
-                {% if allocation_request_url %}
-                    <c-card.fields.item label="{% trans 'Request Details' %}">
-                        <a href="{{ allocation_request_url }}" class="btn btn-sm btn-outline-primary">
-                            {% trans "Edit Request Details" %}
-                        </a>
-                    </c-card.fields.item>
-                {% endif %}
 
                 <c-card.fields.item label="{% trans 'Description' %}">
                     {{ object.description|placeholder }}

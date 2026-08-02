@@ -260,26 +260,6 @@ def on_association_qos_changed(action, instance, pk_set, **kwargs):
     _sync_association_qos(instance, cluster)
 
 
-@receiver(post_save, sender=Allocation)
-def on_allocation_created(instance, created, **kwargs):
-    """
-    When an allocation is created: create a SlurmAssociation record linking to the
-    allocation if one doesn't already exist.
-    """
-    if not created:
-        return
-
-    resource = instance.resource_object
-    if resource is None:
-        return
-    if not isinstance(resource, (SlurmCluster, SlurmPartition)):
-        return
-
-    # Create a SlurmAssociation if one doesn't already exist
-    if not SlurmAssociation.objects.filter(allocation=instance).exists():
-        SlurmAssociation.objects.create(allocation=instance)
-
-
 @register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_ACTIVE)
 def on_allocation_activated(allocation, *, source, target):
     """

@@ -15,7 +15,7 @@ from coldfront.forms.fields import (
     TagFilterField,
 )
 from coldfront.forms.layouts import Date
-from coldfront.ras.choices import AllocationStatusChoices, ResourceStatusChoices
+from coldfront.ras.choices import AllocationChangeRequestStatusChoices, AllocationStatusChoices, ResourceStatusChoices
 from coldfront.ras.models import (
     Allocation,
     Project,
@@ -23,6 +23,7 @@ from coldfront.ras.models import (
     Resource,
     ResourceType,
 )
+from coldfront.ras.models.change_requests import AllocationChangeRequest
 from coldfront.tenancy.forms import TenancyFilterSetForm
 from coldfront.users.models import Group, User
 
@@ -157,6 +158,34 @@ class AllocationFilterSetForm(TenancyFilterSetForm, PrimaryModelFilterSetForm):
             _("Tenant"),
             "tenant_group_id",
             "tenant_id",
+        ),
+    )
+
+
+class AllocationChangeRequestFilterSetForm(PrimaryModelFilterSetForm):
+    model = AllocationChangeRequest
+    allocation_id = forms.ModelChoiceField(
+        queryset=Allocation.objects.all(),
+        required=False,
+        label=_("Allocation"),
+    )
+    status = forms.MultipleChoiceField(
+        label=_("Status"),
+        choices=AllocationChangeRequestStatusChoices,
+        required=False,
+    )
+    requested_by_id = forms.ModelChoiceField(
+        queryset=User.objects.all(),
+        label=_("Requested by"),
+        required=False,
+    )
+
+    fieldsets = (
+        Fieldset(
+            _("Change Request"),
+            "allocation_id",
+            "status",
+            "requested_by_id",
         ),
     )
 

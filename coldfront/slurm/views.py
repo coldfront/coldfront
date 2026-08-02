@@ -21,6 +21,7 @@ from coldfront.slurm.models import (
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
+from coldfront.views.object_actions import EditObject
 from coldfront.views.utils import ViewTab, get_action_url
 
 #
@@ -404,7 +405,7 @@ class AllocationSlurmAssociationView(generic.ObjectView):
     template_name = "slurm/allocation/slurm_association.html"
     tab = ViewTab(
         label=_("Slurm Association"),
-        visible=lambda obj: obj.slurm_associations.exists(),
+        visible=lambda obj: obj.slurm_slurmassociation_extensions.exists(),
         permission="slurm.view_slurmassociation",
         weight=500,
     )
@@ -413,10 +414,10 @@ class AllocationSlurmAssociationView(generic.ObjectView):
         # Actions target the SlurmAssociation, not the Allocation
         from coldfront.slurm.models import SlurmAssociation
 
-        return super().get_permitted_actions(request, model=SlurmAssociation, actions=actions)
+        return super().get_permitted_actions(request, model=SlurmAssociation, actions=(EditObject,))
 
     def get_extra_context(self, request, instance):
-        slurm_association = instance.slurm_associations.first()
+        slurm_association = instance.slurm_slurmassociation_extensions.first()
         return_url = get_action_url(instance, action="slurm-association", kwargs={"pk": instance.pk})
         return {
             "slurm_association": slurm_association,

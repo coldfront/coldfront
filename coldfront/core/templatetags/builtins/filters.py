@@ -11,6 +11,7 @@ import humanize
 from django import template
 from django.conf import settings
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import NoReverseMatch, reverse
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -137,7 +138,7 @@ def render_json(value):
 
         {{ data_dict|json }}
     """
-    return json.dumps(value, ensure_ascii=False, indent=4, sort_keys=True)
+    return json.dumps(value, ensure_ascii=False, indent=4, sort_keys=True, cls=DjangoJSONEncoder)
 
 
 @register.filter(name="split")
@@ -231,6 +232,28 @@ def dict_get(dictionary, key):
     Get a value from a dictionary by key.
     """
     return dictionary.get(key)
+
+
+@register.filter()
+def add_days(value, days):
+    """
+    Add the given number of days to a date or datetime and return the result.
+    Days must be coercible to int.
+    """
+    from datetime import timedelta
+
+    try:
+        n = int(days)
+    except (ValueError, TypeError):
+        return value
+
+    if value is None:
+        return value
+
+    try:
+        return value + timedelta(days=n)
+    except TypeError:
+        return value
 
 
 @register.filter()

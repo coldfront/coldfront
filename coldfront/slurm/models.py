@@ -11,6 +11,8 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import OrganizationalModel, PrimaryModel
 from coldfront.models.features import AllocatableResourceMixin
+from coldfront.ras.models.mixins import AllocationExtensionMixin
+from coldfront.registry import register_allocation_extension
 from coldfront.slurm.choices import (
     SlurmAdminLevelChoices,
     SlurmPartitionStateChoices,
@@ -187,8 +189,6 @@ class SlurmCluster(AllocatableResourceMixin, PrimaryModel):
         "features",
         "classification",
     )
-
-    required_bridge_models = ("slurm.SlurmAssociation",)
 
     class Meta:
         ordering = ["name"]
@@ -407,7 +407,6 @@ class SlurmPartition(AllocatableResourceMixin, PrimaryModel):
     )
 
     prerequisite_models = ("slurm.SlurmCluster",)
-    required_bridge_models = ("slurm.SlurmAssociation",)
 
     class Meta:
         ordering = ["cluster__name", "name"]
@@ -511,23 +510,24 @@ class SlurmAccount(PrimaryModel):
         return "green"
 
 
-class SlurmAssociation(PrimaryModel):
+@register_allocation_extension(SlurmCluster)
+@register_allocation_extension(SlurmPartition)
+class SlurmAssociation(AllocationExtensionMixin, PrimaryModel):
     """
-    Bridges an Allocation to its SlurmAccount, carrying all per-association
-    limits. This matches Slurm's assoc_table where each (cluster, account,
-    user, partition) row carries its own limits, fairshare, and hierarchy.
-    Created when an allocation is requested (via ViewFlow callback), and the
-    SlurmAccount is set later by an admin or automated process before the
-    allocation is approved.
+    Carries resource-specific association data for an allocation on a
+    ``SlurmCluster`` or ``SlurmPartition``.  Created when the allocation is
+    created, and updated via change requests.
+
+    Each (cluster, account, user, partition) row carries its own limits,
+    fairshare, and hierarchy.
     """
 
-    allocation = models.ForeignKey(
-        to="ras.Allocation",
-        on_delete=models.PROTECT,
-        related_name="slurm_associations",
-        unique=True,
-        verbose_name=_("allocation"),
-    )
+    _requestable_fields = ["fairshare", "max_jobs", "max_submit_jobs", "max_wall_duration_per_job"]
+
+    class Meta:
+        ordering = ["allocation__slug"]
+        verbose_name = _("slurm association")
+        verbose_name_plural = _("slurm associations")
 
     slurm_account = models.ForeignKey(
         to="slurm.SlurmAccount",
@@ -712,11 +712,6 @@ class SlurmAssociation(PrimaryModel):
     )
 
     prerequisite_models = ("ras.Allocation",)
-
-    class Meta:
-        ordering = ["allocation__slug"]
-        verbose_name = _("slurm association")
-        verbose_name_plural = _("slurm associations")
 
     def __str__(self):
         acct = self.slurm_account

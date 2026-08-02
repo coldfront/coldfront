@@ -40,6 +40,11 @@ PAGINATE_COUNT = ENV.int("PAGINATE_COUNT", default=50)
 MAX_PAGE_SIZE = ENV.int("MAX_PAGE_SIZE", default=1000)
 FILTERS_NULL_CHOICE_LABEL = "None"
 FILTERS_NULL_CHOICE_VALUE = "null"
+ALLOCATION_EXTENSION_REQUESTABLE_FIELDS = ENV.dict(
+    "ALLOCATION_EXTENSION_REQUESTABLE_FIELDS",
+    cast={"value": tuple},
+    default={},
+)
 FIELD_CHOICES = ENV.dict("FIELD_CHOICES", cast={"value": parse_choices_from_env}, default={})
 AUTO_SLUG_FUNC = ENV.str("AUTO_SLUG_FUNC", default="coldfront.models.utils.auto_generate_slug")
 # ------------------------------------------------------------------------------

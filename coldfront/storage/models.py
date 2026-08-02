@@ -8,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import PrimaryModel
 from coldfront.models.features import AllocatableResourceMixin
+from coldfront.ras.models.mixins import AllocationExtensionMixin
+from coldfront.registry import register_allocation_extension
 
 from .choices import StorageShareTypeChoices, StorageSnapshotIntervalChoices
 
@@ -41,7 +43,7 @@ class StorageResource(AllocatableResourceMixin, PrimaryModel):
     path_template = models.CharField(
         verbose_name=_("path template"),
         max_length=500,
-        default="/home/groups/{project.slug}/{allocation.id}",
+        default="/mnt/{{project.slug}}/{{allocation.slug}}",
         help_text=_(
             "Template for auto-generating storage paths. Supports "
             "{project.<attr>}, {resource.<attr>}, and {allocation.id}."
@@ -78,8 +80,6 @@ class StorageResource(AllocatableResourceMixin, PrimaryModel):
         "capacity_bytes",
     )
 
-    required_bridge_models = ("storage.StorageQuota",)
-
     class Meta:
         ordering = ["name"]
         verbose_name = _("storage resource")
@@ -97,21 +97,22 @@ class StorageResource(AllocatableResourceMixin, PrimaryModel):
     def get_status_color(self):
         return "green"
 
-    def allocation_request_form_help_message(self):
-        return "You will be asked to provide a quota amount on the next page"
+    def auto_generate_path(self, allocation):
+        """Generate a storage path from the resource's path_template.
 
-    def allocation_request_url(self, allocation):
+        Uses Django's template engine for rendering. The template may
+        reference ``{{ allocation }}``, ``{{ allocation.project.slug }}``,
+        ``{{ allocation.id }}``, ``{{ resource.<field> }}``, etc.
         """
-        Redirect to the StorageQuota request form after creating an
-        allocation so the user can specify their requested quota limit.
-        """
-        try:
-            quota = StorageQuota.objects.get(allocation=allocation)
-        except StorageQuota.DoesNotExist:
-            return None
-        from django.urls import reverse
+        from django.template import Context, Template
 
-        return reverse("storage:storagequota_request", kwargs={"pk": quota.pk})
+        tpl = self.path_template
+        if not tpl:
+            return f"/mnt/{allocation.project.slug}/{allocation.slug}"
+
+        context = Context({"allocation": allocation, "resource": self})
+        template = Template(tpl)
+        return template.render(context)
 
 
 class StorageCluster(PrimaryModel):
@@ -209,24 +210,30 @@ class StorageCluster(PrimaryModel):
         return "green"
 
 
-class StorageQuota(PrimaryModel):
+@register_allocation_extension(StorageResource)
+class StorageQuota(AllocationExtensionMixin, PrimaryModel):
     """
-    Bridges an ``Allocation`` to a ``StorageResource`` and optionally to specific
-    ``StorageCluster`` instances.  Created on request, removed when expired or
-    revoked.  Carries the path, ownership, and all quota limits.
+    Carries resource-specific quota data for an allocation on a
+    ``StorageResource``.  Created when the allocation is created, and
+    updated via change requests.
 
     The ``clusters`` M2M is nullable:
     - If empty — the quota applies to ALL clusters associated with ``quota.storage.clusters``
     - If set — the quota applies only to the selected clusters
     """
 
-    allocation = models.ForeignKey(
-        to="ras.Allocation",
-        on_delete=models.PROTECT,
-        unique=True,
-        related_name="storage_quotas",
-        verbose_name=_("allocation"),
-    )
+    _requestable_fields = ["hard_limit", "soft_limit", "hard_limit_files", "soft_limit_files"]
+
+    class Meta:
+        ordering = ["allocation__slug"]
+        verbose_name = _("storage quota")
+        verbose_name_plural = _("storage quotas")
+        constraints = (
+            models.UniqueConstraint(
+                fields=("path", "storage"),
+                name="%(app_label)s_%(class)s_unique_path_per_storage",
+            ),
+        )
 
     storage = models.ForeignKey(
         to="storage.StorageResource",
@@ -252,6 +259,8 @@ class StorageQuota(PrimaryModel):
         on_delete=models.PROTECT,
         related_name="storage_quotas_as_owner",
         verbose_name=_("owning user"),
+        blank=True,
+        null=True,
     )
 
     owning_group = models.ForeignKey(
@@ -259,6 +268,8 @@ class StorageQuota(PrimaryModel):
         on_delete=models.PROTECT,
         related_name="storage_quotas",
         verbose_name=_("owning group"),
+        blank=True,
+        null=True,
     )
 
     path_mode = models.PositiveSmallIntegerField(
@@ -365,22 +376,39 @@ class StorageQuota(PrimaryModel):
         "storage.StorageResource",
     )
 
-    class Meta:
-        ordering = ["allocation__slug"]
-        verbose_name = _("storage quota")
-        verbose_name_plural = _("storage quotas")
-        constraints = (
-            models.UniqueConstraint(
-                fields=("path", "storage"),
-                name="%(app_label)s_%(class)s_unique_path_per_storage",
-            ),
-        )
-
     def __str__(self):
         return f"Quota {self.path} -> {self.allocation}"
 
     def get_status_color(self):
         return "green"
+
+    @classmethod
+    def create_for_allocation(cls, allocation, values=None):
+        """
+        Create a StorageQuota instance for the given allocation.
+        """
+        resource = allocation.resource_object
+        if not isinstance(resource, StorageResource):
+            # XXX This should never happen but what todo?
+            return
+
+        kwargs = {}
+        kwargs["storage"] = resource
+        kwargs["path"] = resource.auto_generate_path(allocation)
+        kwargs["owning_user"] = allocation.project.owner
+
+        if allocation.project.group:
+            kwargs["owning_group"] = allocation.project.group
+
+        if values is not None:
+            for field_name in cls.requestable_fields():
+                if field_name in values:
+                    kwargs[field_name] = values[field_name]
+
+        instance = StorageQuota(allocation=allocation, **kwargs)
+        instance.full_clean()
+        instance.save()
+        return instance
 
 
 class StorageSnapshotPolicy(PrimaryModel):

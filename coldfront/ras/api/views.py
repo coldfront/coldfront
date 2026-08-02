@@ -10,6 +10,7 @@ from coldfront.ras import filtersets
 from coldfront.ras.flows import AllocationStatusFlow
 from coldfront.ras.models import (
     Allocation,
+    AllocationChangeRequest,
     Project,
     ProjectUser,
     Resource,
@@ -72,3 +73,14 @@ class AllocationViewSet(WorkflowViewSetMixin, ColdFrontModelViewSet):
     serializer_class = serializers.AllocationSerializer
     filterset_class = filtersets.AllocationFilterSet
     flow_class = AllocationStatusFlow
+
+
+#
+# Change Requests
+#
+
+
+class AllocationChangeRequestViewSet(ColdFrontModelViewSet):
+    queryset = AllocationChangeRequest.objects.all()
+    serializer_class = serializers.AllocationChangeRequestSerializer
+    filterset_class = filtersets.AllocationChangeRequestFilterSet

@@ -216,18 +216,13 @@ def get_permitted_transition_actions(allocation, user):
         return []
 
     outgoing = AllocationStatusFlow.status.get_outgoing_transitions(allocation.status)
-    action_classes = AllocationStatusFlow.get_actions(
-        [t.slug for t in outgoing]
-    )
+    action_classes = AllocationStatusFlow.get_actions([t.slug for t in outgoing])
 
     permitted = []
     flow = AllocationStatusFlow(allocation)
     for action in action_classes:
         # Gate 1: Django model permission
-        required_perms = [
-            get_permission_for_model(Allocation, p)
-            for p in action.permissions_required
-        ]
+        required_perms = [get_permission_for_model(Allocation, p) for p in action.permissions_required]
         if required_perms and not user.has_perms(required_perms):
             continue
         # Gate 2: FSM plugin callbacks

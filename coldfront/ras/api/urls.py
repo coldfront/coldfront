@@ -20,6 +20,9 @@ router.register("resource-types", views.ResourceTypeViewSet)
 # Allocations
 router.register("allocations", views.AllocationViewSet)
 
+# Change Requests
+router.register("change-requests", views.AllocationChangeRequestViewSet)
+
 
 app_name = "ras-api"
 urlpatterns = router.urls

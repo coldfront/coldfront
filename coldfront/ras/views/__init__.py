@@ -17,6 +17,16 @@ from .allocations import (
     AllocationRevokeView,
     AllocationView,
 )
+from .change_requests import (
+    AllocationChangeRequestApplyView,
+    AllocationChangeRequestApproveView,
+    AllocationChangeRequestDeleteView,
+    AllocationChangeRequestDenyView,
+    AllocationChangeRequestEditView,
+    AllocationChangeRequestListView,
+    AllocationChangeRequestTabView,
+    AllocationChangeRequestView,
+)
 from .generic import AllocatableResourceRequestView
 from .projects import (
     ProjectAllocationTabView,
@@ -60,6 +70,14 @@ __all__ = (
     "AllocationBulkDeleteView",
     "AllocationBulkEditView",
     "AllocationBulkImportView",
+    "AllocationChangeRequestApplyView",
+    "AllocationChangeRequestApproveView",
+    "AllocationChangeRequestDenyView",
+    "AllocationChangeRequestDeleteView",
+    "AllocationChangeRequestEditView",
+    "AllocationChangeRequestListView",
+    "AllocationChangeRequestTabView",
+    "AllocationChangeRequestView",
     "AllocationDeleteView",
     "AllocationDenyView",
     "AllocationEditView",

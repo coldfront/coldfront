@@ -35,7 +35,10 @@ ALLOCATIONS_MENU = Menu(
     groups=(
         MenuGroup(
             label=_("Allocations"),
-            items=(get_model_item("ras", "allocation", _("Allocations")),),
+            items=(
+                get_model_item("ras", "allocation", _("Allocations")),
+                get_model_item("ras", "allocationchangerequest", _("Change Requests"), actions=("add",)),
+            ),
         ),
         MenuGroup(
             label=_("Projects"),

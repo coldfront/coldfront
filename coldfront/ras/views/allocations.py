@@ -2,14 +2,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
 
 from coldfront.ras import filtersets, flows, forms, tables
 from coldfront.ras import object_actions as actions
 from coldfront.ras.flows import get_permitted_transition_actions
 from coldfront.ras.models import Allocation, Project
-from coldfront.ras.utils import get_missing_bridge_models
 from coldfront.registry import register_model_view
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
@@ -36,16 +34,9 @@ class AllocationView(GetRelatedModelsMixin, generic.ObjectView):
         # Get the outgoing transitions for the current status so we can display the appropriate buttons
         transitions = get_permitted_transition_actions(instance, request.user)
 
-        # Check if the resource provides a custom post-request form URL
-        allocation_request_url = None
-        if instance.resource_object:
-            allocation_request_url = instance.resource_object.allocation_request_url(instance)
-
         return {
             "transitions": transitions,
             "related_models": self.get_related_models(request, instance),
-            "allocation_request_url": allocation_request_url,
-            "missing_bridge_models": get_missing_bridge_models(instance),
         }
 
 
@@ -116,32 +107,7 @@ class AllocationRequestView(BaseAllocationFlowView):
 
     def get_extra_context(self, request, instance):
         context = super().get_extra_context(request, instance)
-
-        # Determine if the selected resource provides a custom
-        # post-request form message
-        help_message = None
-        resource_value = request.GET.get("resource_object")
-        if resource_value:
-            try:
-                ct_id, obj_id = resource_value.split(":", 1)
-                ct = ContentType.objects.get_for_id(int(ct_id))
-                resource = ct.get_object_for_this_type(pk=int(obj_id))
-                help_message = resource.allocation_request_form_help_message()
-            except (ValueError, TypeError, AttributeError):
-                pass
-
-        context["form_message"] = help_message
-
         return context
-
-    def get_return_url(self, request, obj=None):
-        # Check if the resource provides a custom redirect for the
-        # post-request form (e.g., to collect resource-specific data)
-        if obj is not None and obj.pk and obj.resource_object:
-            url = obj.resource_object.allocation_request_url(obj)
-            if url:
-                return url
-        return super().get_return_url(request, obj)
 
 
 @register_model_view(Allocation, "approve")
