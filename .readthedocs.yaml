@@ -23,4 +23,7 @@ build:
       - uv sync --group docs
     build:
       html:
-        - NO_COLOR=1 uv run mkdocs build --clean --config-file docs/mkdocs.yml --site-dir $READTHEDOCS_OUTPUT/html
+        - NO_COLOR=1 uv run zensical build
+    post_build:
+      - mkdir -p $READTHEDOCS_OUTPUT/html/
+      - cp --recursive site/* $READTHEDOCS_OUTPUT/html/

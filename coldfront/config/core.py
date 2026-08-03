@@ -18,9 +18,6 @@ CENTER_HELP_URL = ENV.str("CENTER_HELP_URL", default="")
 CENTER_PROJECT_RENEWAL_HELP_URL = ENV.str("CENTER_PROJECT_RENEWAL_HELP_URL", default="")
 CENTER_BASE_URL = ENV.str("CENTER_BASE_URL", default="")
 
-# This is in days
-ALLOCATION_DEFAULT_ALLOCATION_LENGTH = ENV.int("ALLOCATION_DEFAULT_ALLOCATION_LENGTH", default=365)
-
 # Number of days to retain ObjectChange records before PruneChangeLogJob deletes
 # them.  Set to 0 (or a negative value) to never delete changelog entries.
 CHANGELOG_RETENTION = ENV.int("CHANGELOG_RETENTION", default=90)

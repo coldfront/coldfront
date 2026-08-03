@@ -104,6 +104,7 @@ docs = [
     "mkdocstrings-python>=1.16.10",
     "pygments",
     "pymdown-extensions",
+    "zensical>=0.0.52",
 ]
 
 [[tool.uv.index]]
