@@ -38,8 +38,8 @@ class StorageQuotaDTO:
     state: Optional[str] = None
     used: Optional[int] = None  # bytes
     used_files: Optional[int] = None
-    hard_limit: Optional[int] = None  # bytes
-    soft_limit: Optional[int] = None  # bytes
+    hard_limit_bytes: Optional[int] = None  # bytes
+    soft_limit_bytes: Optional[int] = None  # bytes
     hard_limit_files: Optional[int] = None
     soft_limit_files: Optional[int] = None
     grace_period: Optional[str] = None
@@ -79,7 +79,7 @@ class StorageBackend(ABC):
         self,
         path: str,
         share_type: str,
-        hard_limit: Optional[int],
+        hard_limit_bytes: Optional[int],
         files_limit: Optional[int],
         grace: Optional[str],
     ) -> dict:
@@ -96,7 +96,7 @@ class StorageBackend(ABC):
         """
 
     @abstractmethod
-    def update_quota(self, quota_id: int, hard_limit: Optional[int], files_limit: Optional[int]) -> None:
+    def update_quota(self, quota_id: int, hard_limit_bytes: Optional[int], files_limit: Optional[int]) -> None:
         """Update an existing quota's limits."""
 
     @abstractmethod

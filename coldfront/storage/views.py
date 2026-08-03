@@ -6,7 +6,6 @@
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.ras.models import Allocation
-from coldfront.ras.views import AllocatableResourceRequestView
 from coldfront.registry import register_model_view
 from coldfront.storage import filtersets, forms, tables
 from coldfront.storage.models import (
@@ -15,7 +14,6 @@ from coldfront.storage.models import (
     StorageResource,
     StorageSnapshotPolicy,
 )
-from coldfront.users.permissions import get_permission_for_model
 from coldfront.utils.query import count_related
 from coldfront.views import generic
 from coldfront.views.mixins import GetRelatedModelsMixin
@@ -192,18 +190,6 @@ class StorageQuotaBulkDeleteView(generic.BulkDeleteView):
     queryset = StorageQuota.objects.all()
     filterset = filtersets.StorageQuotaFilterSet
     table = tables.StorageQuotaTable
-
-
-@register_model_view(StorageQuota, "request", path="request")
-class StorageQuotaRequestView(AllocatableResourceRequestView):
-    queryset = StorageQuota.objects.all()
-    form = forms.StorageQuotaRequestForm
-    allocation_fk = "allocation"
-
-    def get_required_permission(self):
-        from coldfront.ras.models import Allocation
-
-        return get_permission_for_model(Allocation, "request")
 
 
 #

@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from coldfront.storage.forms import StorageResourceForm
 from coldfront.storage.models import (
     StorageCluster,
     StorageQuota,
@@ -42,13 +43,10 @@ class StorageResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
 
         cls.form_data = {
             "name": "Resource X",
-            "tenant_group": None,
-            "tenant": None,
             "description": "A new storage resource",
             "locked": False,
             "clusters": [clusters[0].pk, clusters[1].pk],
             "path_template": "/home/groups/{project.slug}/{allocation.id}",
-            "capacity_bytes": None,
             "tags": [t.pk for t in tags],
         }
 
@@ -70,6 +68,45 @@ class StorageResourceTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "description": "Updated resource",
             "locked": True,
         }
+
+    def test_capacity_bytes_accepts_human_readable(self):
+        form = StorageResourceForm(
+            data={
+                "name": "New Storage Resource",
+                "clusters": [StorageCluster.objects.first().pk],
+                "tenant": None,
+                "path_template": "/mnt",
+                "capacity_bytes": "10 TB",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.save())
+
+    def test_capacity_bytes_accepts_plain_integer_string(self):
+        form = StorageResourceForm(
+            data={
+                "name": "New Storage Resource",
+                "clusters": [StorageCluster.objects.first().pk],
+                "tenant": None,
+                "path_template": "/mnt",
+                "capacity_bytes": "100000000000000000",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        self.assertTrue(form.save())
+
+    def test_capacity_bytes_invalid(self):
+        form = StorageResourceForm(
+            data={
+                "name": "New Storage Resource",
+                "clusters": [StorageCluster.objects.first().pk],
+                "tenant": None,
+                "path_template": "/mnt",
+                "capacity_bytes": "asdfasdfaasdf",
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("capacity_bytes", form.errors)
 
 
 class StorageClusterTestCase(ViewTestCases.PrimaryObjectViewTestCase):
@@ -233,9 +270,8 @@ class StorageQuotaTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "owning_user": owning_user.pk,
             "owning_group": owning_group.pk,
             "path_mode": 2770,
-            "hard_limit": 1073741824,  # 1 GB
-            "hard_limit_requested": 1073741824,
-            "soft_limit": None,
+            "hard_limit_bytes": 1073741824,  # 1 GB
+            "soft_limit_bytes": None,
             "hard_limit_files": None,
             "soft_limit_files": None,
             "grace_period": None,
@@ -245,14 +281,14 @@ class StorageQuotaTestCase(ViewTestCases.PrimaryObjectViewTestCase):
         }
 
         cls.csv_data = (
-            "allocation,storage,path,owning_user,owning_group,path_mode,hard_limit,share_type",
+            "allocation,storage,path,owning_user,owning_group,path_mode,hard_limit_bytes,share_type",
             f"{allocations[3].pk},Test Resource,/test/4,testuser4,testgroup4,2770,1073741824,posix",
             f"{allocations[4].pk},Test Resource,/test/5,testuser5,testgroup5,2770,1073741824,posix",
             f"{allocations[5].pk},Test Resource,/test/6,testuser6,testgroup6,2770,1073741824,posix",
         )
 
         cls.csv_update_data = (
-            "id,allocation,storage,path,owning_user,owning_group,path_mode,hard_limit,share_type",
+            "id,allocation,storage,path,owning_user,owning_group,path_mode,hard_limit_bytes,share_type",
             f"{quotas[0].pk},{allocations[0].pk},Test Resource,/test/7,testuser7,testgroup7,2770,1073741824,posix",
             f"{quotas[1].pk},{allocations[1].pk},Test Resource,/test/8,testuser8,testgroup8,2770,1073741824,posix",
             f"{quotas[2].pk},{allocations[2].pk},Test Resource,/test/9,testuser9,testgroup9,2770,1073741824,posix",

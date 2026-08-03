@@ -16,22 +16,22 @@ logger = logging.getLogger(__name__)
 
 @receiver(post_save, sender=StorageQuota)
 def on_storagequota_hard_limit_changed(sender, instance, **kwargs):
-    """Detect hard_limit changes on active quotas and adjust allocated_bytes.
+    """Detect hard_limit_bytes changes on active quotas and adjust allocated_bytes.
 
-    When an admin changes ``hard_limit`` on a ``StorageQuota`` whose
+    When an admin changes ``hard_limit_bytes`` on a ``StorageQuota`` whose
     allocation is ACTIVE, update ``allocated_bytes`` on both the resource
     and its clusters by the delta.
     """
     if kwargs.get("raw", False):
         return
 
-    # Detect hard_limit change using the saved model's previous value
+    # Detect hard_limit_bytes change using the saved model's previous value
     try:
         prev = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
         return
 
-    delta = (instance.hard_limit or 0) - (prev.hard_limit or 0)
+    delta = (instance.hard_limit_bytes or 0) - (prev.hard_limit_bytes or 0)
     if delta == 0:
         return
 

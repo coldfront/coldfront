@@ -141,7 +141,7 @@ class StorageResourceAPITestCase(APIViewTestCases.APIViewTestCase):
 
 class StorageQuotaAPITestCase(APIViewTestCases.APIViewTestCase):
     model = StorageQuota
-    brief_fields = ["allocation", "display", "hard_limit", "id", "path", "share_type", "storage", "url"]
+    brief_fields = ["allocation", "display", "hard_limit_bytes", "id", "path", "share_type", "storage", "url"]
     bulk_update_data = None  # Set in setUpTestData
 
     @classmethod
@@ -203,21 +203,21 @@ class StorageQuotaAPITestCase(APIViewTestCases.APIViewTestCase):
                 "owning_user": api_user.pk,
                 "owning_group": api_group.pk,
                 "path_mode": 2770,
-                "hard_limit": 1073741824,
+                "hard_limit_bytes": 1073741824,
                 "share_type": "posix",
                 "tags": [t.pk for t in tags],
             },
         ]
 
         cls.update_data = {
-            "hard_limit": 2147483648,
+            "hard_limit_bytes": 2147483648,
             "path": "/api/test/5",
             "owning_user": api_user.pk,
             "owning_group": api_group.pk,
         }
 
         cls.bulk_update_data = {
-            "hard_limit": 2147483648,  # 2 GB
+            "hard_limit_bytes": 2147483648,  # 2 GB
             "owning_user": api_user.pk,
             "owning_group": api_group.pk,
         }

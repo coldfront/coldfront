@@ -15,7 +15,7 @@ Organized by test class:
 - ``TestFullSync`` — ``run_sync`` integration
 - ``TestRecalculateUsedBytes`` — ``_recalculate_used_bytes``
 - ``TestCallbacks`` — ViewFlow callbacks (request, approve, activate, expire, revoke, deny)
-- ``TestSignal`` — post_save signal for hard_limit changes
+- ``TestSignal`` — post_save signal for hard_limit_bytes changes
 """
 
 from __future__ import annotations
@@ -166,7 +166,7 @@ class TestActivateAllocation(TestCase):
             path="/home/groups/test-project/1",
             owning_user=cls.owner,
             owning_group=cls.group,
-            hard_limit=1073741824,
+            hard_limit_bytes=1073741824,
         )
 
     def test_missing_quota(self):
@@ -236,7 +236,7 @@ class TestDeactivateAllocation(TestCase):
             path="/home/groups/test-project-2/1",
             owning_user=cls.owner,
             owning_group=cls.group,
-            hard_limit=1073741824,
+            hard_limit_bytes=1073741824,
         )
 
     def test_missing_quota(self):
@@ -305,7 +305,7 @@ class TestFullSync(TestCase):
             path="/home/groups/sync-project/1",
             owning_user=self.owner,
             owning_group=self.group,
-            hard_limit=1073741824,
+            hard_limit_bytes=1073741824,
         )
         reports = run_sync(cluster_id=self.cluster.pk)
         assert len(reports) == 1
@@ -360,7 +360,7 @@ class TestRecalculateUsedBytes(TestCase):
             path="/home/groups/used-project/1",
             owning_user=cls.owner,
             owning_group=cls.group,
-            hard_limit=1073741824,
+            hard_limit_bytes=1073741824,
             used=500 * 1024 * 1024,  # 500 MB
         )
 
@@ -425,7 +425,7 @@ class TestCallbacks(TestCase):
             path="/home/groups/sig-project/1",
             owning_user=self.owner,
             owning_group=self.group,
-            hard_limit=1073741824,
+            hard_limit_bytes=1073741824,
         )
 
         # Reset allocated_bytes for the resource and cluster
@@ -448,7 +448,7 @@ class TestCallbacks(TestCase):
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
-        quota.hard_limit = 1073741824
+        quota.hard_limit_bytes = 1073741824
         quota.save()
 
         with mock.patch("coldfront.storage.listeners.enqueue_activate_allocation"):
@@ -465,15 +465,15 @@ class TestCallbacks(TestCase):
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
-        quota.hard_limit = 1073741824
+        quota.hard_limit_bytes = 1073741824
         quota.save()
 
         # Seed allocated_bytes so the F()-subtract doesn't violate CHECK
         StorageResource.objects.filter(pk=self.resource.pk).update(
-            allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") + quota.hard_limit_bytes,
         )
         StorageCluster.objects.filter(pk=self.cluster.pk).update(
-            allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") + quota.hard_limit_bytes,
         )
 
         with mock.patch("coldfront.storage.listeners.enqueue_deactivate_allocation") as mock_enqueue:
@@ -488,7 +488,7 @@ class TestCallbacks(TestCase):
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
-        quota.hard_limit = 1073741824
+        quota.hard_limit_bytes = 1073741824
         quota.save()
 
         # First activate to add allocated_bytes
@@ -514,15 +514,15 @@ class TestCallbacks(TestCase):
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
-        quota.hard_limit = 1073741824
+        quota.hard_limit_bytes = 1073741824
         quota.save()
 
         # Seed allocated_bytes so the F()-subtract doesn't violate CHECK
         StorageResource.objects.filter(pk=self.resource.pk).update(
-            allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") + quota.hard_limit_bytes,
         )
         StorageCluster.objects.filter(pk=self.cluster.pk).update(
-            allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") + quota.hard_limit_bytes,
         )
 
         with mock.patch("coldfront.storage.listeners.enqueue_deactivate_allocation") as mock_enqueue:
@@ -537,7 +537,7 @@ class TestCallbacks(TestCase):
         self.allocation.status = AllocationStatusChoices.STATUS_ACTIVE
         self.allocation.save()
         quota = StorageQuota.objects.get(allocation=self.allocation)
-        quota.hard_limit = 1073741824
+        quota.hard_limit_bytes = 1073741824
         quota.save()
 
         with mock.patch("coldfront.storage.listeners.enqueue_activate_allocation"):
@@ -602,7 +602,7 @@ class TestCallbacks(TestCase):
 
 
 class TestSignal(TestCase):
-    """Test post_save signal for hard_limit changes."""
+    """Test post_save signal for hard_limit_bytes changes."""
 
     @classmethod
     def setUpTestData(cls):
@@ -632,14 +632,14 @@ class TestSignal(TestCase):
             path="/home/groups/sig-project/1",
             owning_user=self.owner,
             owning_group=self.group,
-            hard_limit=1073741824,
+            hard_limit_bytes=1073741824,
         )
-        # Simulate what on_allocation_activated does: add hard_limit to allocated_bytes
+        # Simulate what on_allocation_activated does: add hard_limit_bytes to allocated_bytes
         StorageResource.objects.filter(pk=self.resource.pk).update(
-            allocated_bytes=F("allocated_bytes") + self.quota.hard_limit
+            allocated_bytes=F("allocated_bytes") + self.quota.hard_limit_bytes
         )
         StorageCluster.objects.filter(pk=self.cluster.pk).update(
-            allocated_bytes=F("allocated_bytes") + self.quota.hard_limit
+            allocated_bytes=F("allocated_bytes") + self.quota.hard_limit_bytes
         )
         # Refresh instances
         self.resource.refresh_from_db()
@@ -653,7 +653,7 @@ class TestSignal(TestCase):
         assert initial.allocated_bytes == 1073741824
 
         # Directly invoke the signal handler to test the logic
-        self.quota.hard_limit = 2 * 1073741824
+        self.quota.hard_limit_bytes = 2 * 1073741824
         on_storagequota_hard_limit_changed(
             sender=StorageQuota,
             instance=self.quota,
@@ -669,7 +669,7 @@ class TestSignal(TestCase):
     def test_hard_limit_decrease_adjusts_allocated_bytes(self):
         from coldfront.storage.signals import on_storagequota_hard_limit_changed
 
-        self.quota.hard_limit = 500 * 1024 * 1024  # 500 MB
+        self.quota.hard_limit_bytes = 500 * 1024 * 1024  # 500 MB
         on_storagequota_hard_limit_changed(
             sender=StorageQuota,
             instance=self.quota,
@@ -683,7 +683,7 @@ class TestSignal(TestCase):
         from coldfront.storage.signals import on_storagequota_hard_limit_changed
 
         # Re-save with same value — no delta
-        self.quota.save(update_fields=["hard_limit"])  # noqa: B033
+        self.quota.save(update_fields=["hard_limit_bytes"])  # noqa: B033
         on_storagequota_hard_limit_changed(
             sender=StorageQuota,
             instance=self.quota,
@@ -699,7 +699,7 @@ class TestSignal(TestCase):
         self.allocation.status = AllocationStatusChoices.STATUS_EXPIRED
         self.allocation.save()
 
-        self.quota.hard_limit = 2 * 1073741824
+        self.quota.hard_limit_bytes = 2 * 1073741824
         on_storagequota_hard_limit_changed(
             sender=StorageQuota,
             instance=self.quota,

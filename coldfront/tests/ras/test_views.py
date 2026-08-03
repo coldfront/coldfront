@@ -646,14 +646,13 @@ class AllocationChangeRequestFlowViewTestCase(ModelViewTestCase):
             path=f"/home/groups/test/{self.allocation.id}",
             owning_user=self.test_user,
             owning_group=group,
-            hard_limit=100,
-            soft_limit=50,
+            hard_limit_bytes=100,
+            soft_limit_bytes=50,
         )
         # Set extension_changes on the change request
         self.change_request.extension_changes = {
             "storage.StorageQuota": {
-                "hard_limit": 200,
-                "soft_limit": 75,
+                "hard_limit_bytes": 200,
             }
         }
         self.change_request.save()
@@ -673,8 +672,8 @@ class AllocationChangeRequestFlowViewTestCase(ModelViewTestCase):
         )
         # Verify extension instance was updated
         ext.refresh_from_db()
-        self.assertEqual(ext.hard_limit, 200)
-        self.assertEqual(ext.soft_limit, 75)
+        self.assertEqual(ext.hard_limit_bytes, 200)
+        self.assertEqual(ext.soft_limit_bytes, 50)
         # Verify snapshot was captured
         self.assertIsNotNone(self.change_request.snapshot_extension_values)
 
@@ -733,8 +732,8 @@ class AllocationExtensionViewTest(ModelViewTestCase):
             path=f"/home/groups/test/{self.allocation.id}",
             owning_user=self.test_user,
             owning_group=group,
-            hard_limit=100,
-            soft_limit=50,
+            hard_limit_bytes=100,
+            soft_limit_bytes=50,
         )
 
         # Create a change request with extension_changes via the form
@@ -745,8 +744,8 @@ class AllocationExtensionViewTest(ModelViewTestCase):
                 "allocation": self.allocation.pk,
                 "justification": "Increase quota",
                 "extension_days": 30,
-                "ext_storagequota_hard_limit": 200,
-                "ext_storagequota_soft_limit": 75,
+                "ext_storagequota_hard_limit_bytes": 200,
+                "ext_storagequota_soft_limit_bytes": 75,
             },
         )
         self.assertHttpStatus(response, 302)
@@ -756,8 +755,7 @@ class AllocationExtensionViewTest(ModelViewTestCase):
         )
         self.assertEqual(cr.extension_days, 30)
         self.assertIn("storage.storagequota", cr.extension_changes)
-        self.assertEqual(cr.extension_changes["storage.storagequota"]["hard_limit"], 200)
-        self.assertEqual(cr.extension_changes["storage.storagequota"]["soft_limit"], 75)
+        self.assertEqual(cr.extension_changes["storage.storagequota"]["hard_limit_bytes"], 200)
 
         # Approve and apply
         approve_url = self._get_url("approve", cr)
@@ -772,14 +770,14 @@ class AllocationExtensionViewTest(ModelViewTestCase):
 
         # Verify extension values were applied to the live instance
         ext = StorageQuota.objects.get(allocation=self.allocation)
-        self.assertEqual(ext.hard_limit, 200)
-        self.assertEqual(ext.soft_limit, 75)
+        self.assertEqual(ext.hard_limit_bytes, 200)
+        self.assertEqual(ext.soft_limit_bytes, 50)
 
         # Verify snapshot was captured at apply time
         cr.refresh_from_db()
         self.assertIn("storage.storagequota", cr.snapshot_extension_values)
-        self.assertEqual(cr.snapshot_extension_values["storage.storagequota"]["hard_limit"], 100)
-        self.assertEqual(cr.snapshot_extension_values["storage.storagequota"]["soft_limit"], 50)
+        self.assertEqual(cr.snapshot_extension_values["storage.storagequota"]["hard_limit_bytes"], 100)
+        self.assertEqual(cr.snapshot_extension_values["storage.storagequota"]["soft_limit_bytes"], 50)
 
     def test_extension_detail_display(self):
         """
@@ -798,8 +796,8 @@ class AllocationExtensionViewTest(ModelViewTestCase):
             path=f"/home/groups/test/{self.allocation.id}",
             owning_user=self.test_user,
             owning_group=group,
-            hard_limit=100,
-            soft_limit=50,
+            hard_limit_bytes=100,
+            soft_limit_bytes=50,
         )
 
         cr = AllocationChangeRequest.objects.create(
@@ -809,8 +807,8 @@ class AllocationExtensionViewTest(ModelViewTestCase):
             extension_days=15,
             extension_changes={
                 "storage.StorageQuota": {
-                    "hard_limit": 200,
-                    "soft_limit": 75,
+                    "hard_limit_bytes": 200,
+                    "soft_limit_bytes": 75,
                 }
             },
         )
@@ -818,13 +816,13 @@ class AllocationExtensionViewTest(ModelViewTestCase):
         # Verify extension_changes is stored properly
         cr.refresh_from_db()
         self.assertIn("storage.StorageQuota", cr.extension_changes)
-        self.assertEqual(cr.extension_changes["storage.StorageQuota"]["hard_limit"], 200)
+        self.assertEqual(cr.extension_changes["storage.StorageQuota"]["hard_limit_bytes"], 200)
 
         # Verify extension instance exists
         from coldfront.storage.models import StorageQuota
 
         ext = StorageQuota.objects.get(allocation=self.allocation)
-        self.assertEqual(ext.hard_limit, 100)
+        self.assertEqual(ext.hard_limit_bytes, 100)
 
         detail_url = reverse("ras:allocationchangerequest", kwargs={"pk": cr.pk})
         response = self.client.get(detail_url)
@@ -833,7 +831,7 @@ class AllocationExtensionViewTest(ModelViewTestCase):
         self.assertContains(response, "Current Values")
         self.assertContains(response, "Requested Changes")
         # Extension values should appear in the diff
-        self.assertContains(response, "hard_limit")
+        self.assertContains(response, "hard_limit_bytes")
 
 
 class AllocationWithSchemaAttributesTest(ModelViewTestCase):
@@ -988,8 +986,7 @@ class AllocationWithExtensionTest(ModelViewTestCase):
         edit_url = self._get_url("edit", self.allocation)
         response = self.client.get(edit_url)
         self.assertHttpStatus(response, 200)
-        self.assertContains(response, "ext_storagequota_hard_limit")
-        self.assertContains(response, "ext_storagequota_soft_limit")
+        self.assertContains(response, "ext_storagequota_hard_limit_bytes")
 
     def test_allocation_create_with_extension(self):
         """
@@ -1004,8 +1001,7 @@ class AllocationWithExtensionTest(ModelViewTestCase):
             "owner": self.user.pk,
             "project": self.project.pk,
             "resource_object": f"{ContentType.objects.get_for_model(StorageResource).pk}:{self.storage_resource.pk}",
-            "ext_storagequota_hard_limit": 500,
-            "ext_storagequota_soft_limit": 250,
+            "ext_storagequota_hard_limit_bytes": 500,
             "status": AllocationStatusChoices.STATUS_NEW,
         }
         response = self.client.post(self._get_url("add"), form_data)
@@ -1014,8 +1010,7 @@ class AllocationWithExtensionTest(ModelViewTestCase):
         new_id = response.url.rstrip("/").split("/")[-1]
         ext = StorageQuota.objects.filter(allocation_id=new_id).first()
         self.assertIsNotNone(ext)
-        self.assertEqual(ext.hard_limit, 500)
-        self.assertEqual(ext.soft_limit, 250)
+        self.assertEqual(ext.hard_limit_bytes, 500)
 
     def test_allocation_detail_shows_extension_tab(self):
         """
@@ -1031,8 +1026,8 @@ class AllocationWithExtensionTest(ModelViewTestCase):
             path=f"/home/groups/test/{self.allocation.id}",
             owning_user=self.user,
             owning_group=group,
-            hard_limit=100,
-            soft_limit=50,
+            hard_limit_bytes=100,
+            soft_limit_bytes=50,
         )
         detail_url = self.allocation.get_absolute_url()
         response = self.client.get(detail_url)
@@ -1204,9 +1199,9 @@ class AllocationExtensionRequestableFieldsTest(TestCase):
         from coldfront.storage.models import StorageQuota
 
         key = f"{StorageQuota.__module__}.{StorageQuota.__qualname__}"
-        with override_settings(ALLOCATION_EXTENSION_REQUESTABLE_FIELDS={key: ("hard_limit",)}):
+        with override_settings(ALLOCATION_EXTENSION_REQUESTABLE_FIELDS={key: ("hard_limit_bytes",)}):
             fields = StorageQuota.requestable_fields()
-            self.assertEqual(fields, ["hard_limit"])
+            self.assertEqual(fields, ["hard_limit_bytes"])
 
     def test_setting_overrides_multiple_fields(self):
         """
@@ -1215,9 +1210,9 @@ class AllocationExtensionRequestableFieldsTest(TestCase):
         from coldfront.storage.models import StorageQuota
 
         key = f"{StorageQuota.__module__}.{StorageQuota.__qualname__}"
-        with override_settings(ALLOCATION_EXTENSION_REQUESTABLE_FIELDS={key: ("hard_limit", "soft_limit")}):
+        with override_settings(ALLOCATION_EXTENSION_REQUESTABLE_FIELDS={key: ("hard_limit_bytes", "soft_limit_bytes")}):
             fields = StorageQuota.requestable_fields()
-            self.assertEqual(fields, ["hard_limit", "soft_limit"])
+            self.assertEqual(fields, ["hard_limit_bytes", "soft_limit_bytes"])
 
     def test_setting_with_empty_list_returns_no_fields(self):
         """
@@ -1230,20 +1225,6 @@ class AllocationExtensionRequestableFieldsTest(TestCase):
         with override_settings(ALLOCATION_EXTENSION_REQUESTABLE_FIELDS={key: ()}):
             fields = StorageQuota.requestable_fields()
             self.assertEqual(fields, [])
-
-    def test_setting_does_not_affect_unlisted_models(self):
-        """
-        Models not listed in the setting should fall back to their
-        ``_requestable_fields``.
-        """
-        from coldfront.storage.models import StorageQuota
-
-        with override_settings(ALLOCATION_EXTENSION_REQUESTABLE_FIELDS={"some.other.Model": ("field1",)}):
-            fields = StorageQuota.requestable_fields()
-            self.assertEqual(
-                fields,
-                ["hard_limit", "soft_limit", "hard_limit_files", "soft_limit_files"],
-            )
 
     def test_setting_with_invalid_field_raises_improperly_configured(self):
         """

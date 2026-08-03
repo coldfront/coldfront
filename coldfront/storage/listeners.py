@@ -35,11 +35,10 @@ def _get_target_clusters(quota, resource):
 def on_allocation_approved(allocation, *, source, target):
     """
     On allocation approved: StorageQuota already exists (created on
-    request).  The admin reviews and sets the final hard_limit
-    (which may differ from the user's hard_limit_requested), path,
+    request).  The admin reviews and sets the final hard_limit_bytes, path,
     owning_user, owning_group, and cluster selection before activation.
 
-    Validate that the proposed hard_limit doesn't exceed resource or
+    Validate that the proposed hard_limit_bytes doesn't exceed resource or
     cluster capacity.
     """
     resource = allocation.resource_object
@@ -52,10 +51,10 @@ def on_allocation_approved(allocation, *, source, target):
         logger.warning("StorageQuota not found for allocation %s — skipping", allocation.pk)
         return
 
-    # Capacity validation against the user's requested amount
-    # (advisory — admin can still approve).  The final hard_limit
+    # Capacity validation against the hard_limit_bytes
+    # (advisory — admin can still approve).  The final hard_limit_bytes
     # is validated later in on_allocation_activated.
-    requested = quota.hard_limit_requested or quota.hard_limit
+    requested = quota.hard_limit_bytes
     if requested:
         target_clusters = _get_target_clusters(quota, resource)
 
@@ -108,21 +107,21 @@ def on_allocation_activated(allocation, *, source, target):
 
     target_clusters = _get_target_clusters(quota, resource)
 
-    # Capacity validation against the final hard_limit
-    if quota.hard_limit:
+    # Capacity validation against the final hard_limit_bytes
+    if quota.hard_limit_bytes:
         if resource.capacity_bytes:
-            projected = resource.allocated_bytes + quota.hard_limit
+            projected = resource.allocated_bytes + quota.hard_limit_bytes
             if projected > resource.capacity_bytes:
                 logger.warning(
                     "Activation of allocation %s exceeds resource capacity: %d / %d bytes allocated, +%d activating",
                     allocation.pk,
                     resource.allocated_bytes,
                     resource.capacity_bytes,
-                    quota.hard_limit,
+                    quota.hard_limit_bytes,
                 )
         for cluster in target_clusters:
             if cluster.capacity_bytes:
-                projected = cluster.allocated_bytes + quota.hard_limit
+                projected = cluster.allocated_bytes + quota.hard_limit_bytes
                 if projected > cluster.capacity_bytes:
                     logger.warning(
                         "Activation of allocation %s exceeds cluster %s capacity: "
@@ -131,7 +130,7 @@ def on_allocation_activated(allocation, *, source, target):
                         cluster.name,
                         cluster.allocated_bytes,
                         cluster.capacity_bytes,
-                        quota.hard_limit,
+                        quota.hard_limit_bytes,
                     )
 
     for cluster in target_clusters:
@@ -175,13 +174,13 @@ def on_allocation_activated(allocation, *, source, target):
                         )
 
     # Update resource and cluster capacity tracking
-    if quota.hard_limit:
+    if quota.hard_limit_bytes:
         StorageResource.objects.filter(pk=quota.storage_id).update(
-            allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") + quota.hard_limit_bytes,
         )
         for cluster in target_clusters:
             StorageCluster.objects.filter(pk=cluster.pk).update(
-                allocated_bytes=F("allocated_bytes") + quota.hard_limit,
+                allocated_bytes=F("allocated_bytes") + quota.hard_limit_bytes,
             )
 
 
@@ -206,19 +205,19 @@ def on_allocation_expired(allocation, *, source, target):
         enqueue_deactivate_allocation(allocation.pk, cluster_id=cluster.pk)
 
     # Update capacity tracking
-    if quota.hard_limit:
+    if quota.hard_limit_bytes:
         StorageResource.objects.filter(
             pk=quota.storage_id,
-            allocated_bytes__gte=quota.hard_limit,
+            allocated_bytes__gte=quota.hard_limit_bytes,
         ).update(
-            allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") - quota.hard_limit_bytes,
         )
         for cluster in target_clusters:
             StorageCluster.objects.filter(
                 pk=cluster.pk,
-                allocated_bytes__gte=quota.hard_limit,
+                allocated_bytes__gte=quota.hard_limit_bytes,
             ).update(
-                allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+                allocated_bytes=F("allocated_bytes") - quota.hard_limit_bytes,
             )
 
 
@@ -243,19 +242,19 @@ def on_allocation_revoked(allocation, *, source, target):
         enqueue_deactivate_allocation(allocation.pk, cluster_id=cluster.pk)
 
     # Update capacity tracking
-    if quota.hard_limit:
+    if quota.hard_limit_bytes:
         StorageResource.objects.filter(
             pk=quota.storage_id,
-            allocated_bytes__gte=quota.hard_limit,
+            allocated_bytes__gte=quota.hard_limit_bytes,
         ).update(
-            allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+            allocated_bytes=F("allocated_bytes") - quota.hard_limit_bytes,
         )
         for cluster in target_clusters:
             StorageCluster.objects.filter(
                 pk=cluster.pk,
-                allocated_bytes__gte=quota.hard_limit,
+                allocated_bytes__gte=quota.hard_limit_bytes,
             ).update(
-                allocated_bytes=F("allocated_bytes") - quota.hard_limit,
+                allocated_bytes=F("allocated_bytes") - quota.hard_limit_bytes,
             )
 
 

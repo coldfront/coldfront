@@ -251,7 +251,7 @@ def _sync_cluster(cluster: StorageCluster) -> SyncReport:
                 backend.create_quota(
                     path=path,
                     share_type=quota.share_type,
-                    hard_limit=quota.hard_limit,
+                    hard_limit_bytes=quota.hard_limit_bytes,
                     files_limit=quota.hard_limit_files,
                     grace=str(quota.grace_period) if quota.grace_period else None,
                 )
@@ -276,16 +276,16 @@ def _sync_cluster(cluster: StorageCluster) -> SyncReport:
 
         else:
             # Quota exists on backend — check if limits need updating
-            new_hard = quota.hard_limit
+            new_hard = quota.hard_limit_bytes
             new_files = quota.hard_limit_files
-            current_hard = backend_q.hard_limit
+            current_hard = backend_q.hard_limit_bytes
             current_files = backend_q.hard_limit_files
 
             if new_hard != current_hard or new_files != current_files:
                 try:
                     backend.update_quota(
                         quota_id=backend_q.id,
-                        hard_limit=new_hard,
+                        hard_limit_bytes=new_hard,
                         files_limit=new_files,
                     )
                     report.quotas_updated += 1
@@ -415,7 +415,7 @@ def _run_activate_allocation(
         backend.create_quota(
             path=path,
             share_type=share_type,
-            hard_limit=quota.hard_limit,
+            hard_limit_bytes=quota.hard_limit_bytes,
             files_limit=quota.hard_limit_files,
             grace=str(quota.grace_period) if quota.grace_period else None,
         )

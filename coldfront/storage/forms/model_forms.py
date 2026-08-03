@@ -10,12 +10,21 @@ from django.utils.translation import gettext_lazy as _
 
 from coldfront.forms import PrimaryModelForm, PrimaryModelImportForm, TenancyForm, TenancyImportForm
 from coldfront.forms.fields import CSVModelChoiceField, CSVModelMultipleChoiceField, DynamicModelChoiceField, JSONField
+from coldfront.forms.fields.bytes import BytesField
 from coldfront.ras.models import Allocation
 from coldfront.storage.models import StorageCluster, StorageQuota, StorageResource, StorageSnapshotPolicy
 from coldfront.users.models import Group, User
 
 
 class StorageResourceForm(TenancyForm, PrimaryModelForm):
+    capacity_bytes = BytesField(
+        label=_("Capacity"),
+        required=False,
+        help_text=_(
+            "Maximum total allocation across all quotas on this resource. "
+            "Leave empty for unlimited.  Accepts human-readable sizes (e.g. 10 TB)."
+        ),
+    )
     schema = JSONField(
         label=_("Schema"),
         required=False,
@@ -46,11 +55,6 @@ class StorageResourceForm(TenancyForm, PrimaryModelForm):
                 "description",
                 "locked",
                 "schema",
-            ),
-            Fieldset(
-                _("Tenancy"),
-                "tenant_group",
-                "tenant",
             ),
             Fieldset(
                 _("Backend"),
@@ -85,6 +89,14 @@ class StorageResourceImportForm(TenancyImportForm, PrimaryModelImportForm):
         required=False,
         label=_("Clusters"),
     )
+    capacity_bytes = BytesField(
+        label=_("Capacity"),
+        required=False,
+        help_text=_(
+            "Maximum total allocation across all quotas on this resource. "
+            "Leave empty for unlimited.  Accepts human-readable sizes (e.g. 10 TB)."
+        ),
+    )
 
     class Meta:
         model = StorageResource
@@ -101,6 +113,15 @@ class StorageResourceImportForm(TenancyImportForm, PrimaryModelImportForm):
 
 
 class StorageClusterForm(PrimaryModelForm):
+    capacity_bytes = BytesField(
+        label=_("Capacity"),
+        required=False,
+        help_text=_(
+            "Total storage capacity of this cluster in bytes. "
+            "Leave empty for unlimited.  Accepts human-readable sizes (e.g. 10 TB)."
+        ),
+    )
+
     class Meta:
         model = StorageCluster
         fields = [
@@ -147,6 +168,15 @@ class StorageClusterForm(PrimaryModelForm):
 
 
 class StorageClusterImportForm(PrimaryModelImportForm):
+    capacity_bytes = BytesField(
+        label=_("Capacity"),
+        required=False,
+        help_text=_(
+            "Total storage capacity of this cluster in bytes. "
+            "Leave empty for unlimited.  Accepts human-readable sizes (e.g. 10 TB)."
+        ),
+    )
+
     class Meta:
         model = StorageCluster
         fields = [
@@ -203,6 +233,17 @@ class StorageQuotaForm(PrimaryModelForm):
         label=_("Owning Group"),
     )
 
+    hard_limit_bytes = BytesField(
+        label=_("Hard Limit"),
+        required=False,
+        help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+    )
+    soft_limit_bytes = BytesField(
+        label=_("Soft Limit"),
+        required=False,
+        help_text=_("Soft quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+    )
+
     class Meta:
         model = StorageQuota
         fields = [
@@ -213,9 +254,8 @@ class StorageQuotaForm(PrimaryModelForm):
             "owning_user",
             "owning_group",
             "path_mode",
-            "hard_limit",
-            "hard_limit_requested",
-            "soft_limit",
+            "hard_limit_bytes",
+            "soft_limit_bytes",
             "hard_limit_files",
             "soft_limit_files",
             "grace_period",
@@ -239,9 +279,8 @@ class StorageQuotaForm(PrimaryModelForm):
             ),
             Fieldset(
                 _("Limits"),
-                "hard_limit",
-                "hard_limit_requested",
-                "soft_limit",
+                "hard_limit_bytes",
+                "soft_limit_bytes",
                 "hard_limit_files",
                 "soft_limit_files",
                 "grace_period",
@@ -299,6 +338,17 @@ class StorageQuotaImportForm(PrimaryModelImportForm):
         label=_("Owning Group"),
     )
 
+    hard_limit_bytes = BytesField(
+        label=_("Hard Limit"),
+        required=False,
+        help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+    )
+    soft_limit_bytes = BytesField(
+        label=_("Soft Limit"),
+        required=False,
+        help_text=_("Soft quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+    )
+
     class Meta:
         model = StorageQuota
         fields = [
@@ -308,34 +358,14 @@ class StorageQuotaImportForm(PrimaryModelImportForm):
             "owning_user",
             "owning_group",
             "path_mode",
-            "hard_limit",
-            "hard_limit_requested",
-            "soft_limit",
+            "hard_limit_bytes",
+            "soft_limit_bytes",
             "hard_limit_files",
             "soft_limit_files",
             "grace_period",
             "share_type",
             "snapshot_policy",
             "tags",
-        ]
-
-
-class StorageQuotaRequestForm(PrimaryModelForm):
-    """Form shown on the post-request page; user specifies requested quota."""
-
-    class Meta:
-        model = StorageQuota
-        fields = [
-            "hard_limit_requested",
-        ]
-
-    @property
-    def fieldsets(self):
-        return [
-            Fieldset(
-                _("Requested Quota"),
-                "hard_limit_requested",
-            ),
         ]
 
 

@@ -193,15 +193,14 @@ class AllocationChangeRequestFlowTest(TestCase):
             path=f"/home/groups/flow/{self.allocation.id}",
             owning_user=self.allocation.owner,
             owning_group=group,
-            hard_limit=100,
-            soft_limit=50,
+            hard_limit_bytes=100,
+            soft_limit_bytes=50,
         )
 
         # Set extension_changes on the change request
         self.change_request.extension_changes = {
             "storage.StorageQuota": {
-                "hard_limit": 200,
-                "soft_limit": 75,
+                "hard_limit_bytes": 200,
             }
         }
         self.change_request.save()
@@ -216,13 +215,13 @@ class AllocationChangeRequestFlowTest(TestCase):
         )
         # Verify extension instance was updated
         ext = StorageQuota.objects.get(allocation=self.allocation)
-        self.assertEqual(ext.hard_limit, 200)
-        self.assertEqual(ext.soft_limit, 75)
+        self.assertEqual(ext.hard_limit_bytes, 200)
+        self.assertEqual(ext.soft_limit_bytes, 50)
         # Verify snapshot was captured
         self.assertIsNotNone(self.change_request.snapshot_extension_values)
         self.assertIn("storage.StorageQuota", self.change_request.snapshot_extension_values)
         self.assertEqual(
-            self.change_request.snapshot_extension_values["storage.StorageQuota"]["hard_limit"],
+            self.change_request.snapshot_extension_values["storage.StorageQuota"]["hard_limit_bytes"],
             100,
         )
 

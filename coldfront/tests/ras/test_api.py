@@ -497,8 +497,8 @@ class AllocationChangeRequestTest(APIViewTestCases.APIViewTestCase):
             path=f"/home/groups/Project 1/{allocation.id}",
             owning_user=user,
             owning_group=group,
-            hard_limit=100,
-            soft_limit=50,
+            hard_limit_bytes=100,
+            soft_limit_bytes=50,
         )
 
         obj_perm = ObjectPermission(name="Test permission", actions=["add"])
@@ -513,8 +513,7 @@ class AllocationChangeRequestTest(APIViewTestCases.APIViewTestCase):
             "extension_days": 30,
             "extension_changes": {
                 "storage.StorageQuota": {
-                    "hard_limit": 200,
-                    "soft_limit": 75,
+                    "hard_limit_bytes": 200,
                 }
             },
         }
@@ -527,7 +526,7 @@ class AllocationChangeRequestTest(APIViewTestCases.APIViewTestCase):
         self.assertEqual(instance.extension_days, 30)
         self.assertIn("storage.StorageQuota", instance.extension_changes)
         self.assertEqual(
-            instance.extension_changes["storage.StorageQuota"]["hard_limit"],
+            instance.extension_changes["storage.StorageQuota"]["hard_limit_bytes"],
             200,
         )
 
@@ -589,8 +588,8 @@ class AllocationChangeRequestTest(APIViewTestCases.APIViewTestCase):
             path=f"/home/groups/Project 1/{allocation.id}",
             owning_user=user,
             owning_group=group,
-            hard_limit=500,
-            soft_limit=250,
+            hard_limit_bytes=500,
+            soft_limit_bytes=250,
         )
 
         # Create a change request with proposed extension changes
@@ -601,8 +600,7 @@ class AllocationChangeRequestTest(APIViewTestCases.APIViewTestCase):
             extension_days=30,
             extension_changes={
                 "storage.storagequota": {
-                    "hard_limit": 1000,
-                    "soft_limit": 500,
+                    "hard_limit_bytes": 1000,
                 }
             },
         )
@@ -619,8 +617,8 @@ class AllocationChangeRequestTest(APIViewTestCases.APIViewTestCase):
         ext_data = response.data["extension_changes"]["storage.storagequota"]
         self.assertIn("proposed", ext_data)
         self.assertIn("current", ext_data)
-        self.assertEqual(ext_data["proposed"]["hard_limit"], 1000)
-        self.assertEqual(ext_data["current"]["hard_limit"], 500)
+        self.assertEqual(ext_data["proposed"]["hard_limit_bytes"], 1000)
+        self.assertEqual(ext_data["current"]["hard_limit_bytes"], 500)
 
     # --- Schema attribute API tests ---
 

@@ -11,6 +11,7 @@ from coldfront.forms import (
     PrimaryModelBulkEditForm,
 )
 from coldfront.forms.fields import JSONField
+from coldfront.forms.fields.bytes import BytesField
 from coldfront.forms.widgets import BulkEditNullBooleanSelect
 from coldfront.storage.choices import StorageShareTypeChoices
 from coldfront.storage.models import StorageCluster, StorageQuota, StorageResource, StorageSnapshotPolicy
@@ -33,10 +34,13 @@ class StorageResourceBulkEditForm(AllocatableResourceBulkEditForm, PrimaryModelB
         required=False,
         label=_("Path Template"),
     )
-    capacity_bytes = forms.IntegerField(
-        required=False,
+    capacity_bytes = BytesField(
         label=_("Capacity"),
-        help_text=_("Maximum total allocation across all quotas on this resource. Leave empty for unlimited."),
+        required=False,
+        help_text=_(
+            "Maximum total allocation across all quotas on this resource. "
+            "Leave empty for unlimited.  Accepts human-readable sizes (e.g. 10 TB)."
+        ),
     )
 
     model = StorageResource
@@ -94,10 +98,10 @@ class StorageClusterBulkEditForm(PrimaryModelBulkEditForm):
         label=_("Sync Interval"),
         help_text=_("Minutes between automatic syncs."),
     )
-    capacity_bytes = forms.IntegerField(
-        required=False,
+    capacity_bytes = BytesField(
         label=_("Capacity"),
-        help_text=_("Total storage capacity of this cluster in bytes."),
+        required=False,
+        help_text=_("Total storage capacity of this cluster in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
     )
 
     model = StorageCluster
@@ -166,20 +170,15 @@ class StorageQuotaBulkEditForm(PrimaryModelBulkEditForm):
         required=False,
         label=_("Path Mode"),
     )
-    hard_limit = forms.IntegerField(
-        required=False,
+    hard_limit_bytes = BytesField(
         label=_("Hard Limit"),
-        help_text=_("Approved quota limit in bytes."),
-    )
-    hard_limit_requested = forms.IntegerField(
         required=False,
-        label=_("Hard Limit Requested"),
-        help_text=_("User's requested quota limit in bytes."),
+        help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
     )
-    soft_limit = forms.IntegerField(
-        required=False,
+    soft_limit_bytes = BytesField(
         label=_("Soft Limit"),
-        help_text=_("Soft quota limit in bytes."),
+        required=False,
+        help_text=_("Soft quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
     )
     hard_limit_files = forms.IntegerField(
         required=False,
@@ -214,9 +213,8 @@ class StorageQuotaBulkEditForm(PrimaryModelBulkEditForm):
         "owning_user",
         "owning_group",
         "path_mode",
-        "hard_limit",
-        "hard_limit_requested",
-        "soft_limit",
+        "hard_limit_bytes",
+        "soft_limit_bytes",
         "hard_limit_files",
         "soft_limit_files",
         "grace_period",
@@ -236,9 +234,8 @@ class StorageQuotaBulkEditForm(PrimaryModelBulkEditForm):
             ),
             Fieldset(
                 _("Limits"),
-                "hard_limit",
-                "hard_limit_requested",
-                "soft_limit",
+                "hard_limit_bytes",
+                "soft_limit_bytes",
                 "hard_limit_files",
                 "soft_limit_files",
                 "grace_period",

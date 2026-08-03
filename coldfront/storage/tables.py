@@ -79,9 +79,8 @@ class StorageQuotaTable(PrimaryModelTable):
     tags = columns.TagColumn(
         url_name="storage:storagequota_list",
     )
-    hard_limit = columns.BytesColumn()
-    hard_limit_requested = columns.BytesColumn()
-    soft_limit = columns.BytesColumn()
+    hard_limit_bytes = columns.BytesColumn()
+    soft_limit_bytes = columns.BytesColumn()
 
     class Meta(PrimaryModelTable.Meta):
         model = StorageQuota
@@ -95,9 +94,8 @@ class StorageQuotaTable(PrimaryModelTable):
             "owning_user",
             "owning_group",
             "path_mode",
-            "hard_limit",
-            "hard_limit_requested",
-            "soft_limit",
+            "hard_limit_bytes",
+            "soft_limit_bytes",
             "hard_limit_files",
             "soft_limit_files",
             "share_type",
@@ -109,7 +107,7 @@ class StorageQuotaTable(PrimaryModelTable):
             "created",
             "last_updated",
         )
-        default_columns = ("pk", "path", "storage", "allocation", "hard_limit", "used", "state")
+        default_columns = ("pk", "path", "storage", "allocation", "hard_limit_bytes", "used", "state")
 
 
 class StorageSnapshotPolicyTable(PrimaryModelTable):

@@ -28,31 +28,31 @@ class DummyBackend(StorageBackend):
 
     def get_quota(self, path: str) -> StorageQuotaDTO:
         logger.info("get_quota(path=%r)", path)
-        return StorageQuotaDTO(id=0, path=path, used=0, hard_limit=None)
+        return StorageQuotaDTO(id=0, path=path, used=0, hard_limit_bytes=None)
 
     def create_quota(
         self,
         path: str,
         share_type: str,
-        hard_limit: Optional[int],
+        hard_limit_bytes: Optional[int],
         files_limit: Optional[int],
         grace: Optional[str],
     ) -> dict:
         logger.info(
-            "create_quota(path=%r, share_type=%r, hard_limit=%r, files_limit=%r, grace=%r)",
+            "create_quota(path=%r, share_type=%r, hard_limit_bytes=%r, files_limit=%r, grace=%r)",
             path,
             share_type,
-            hard_limit,
+            hard_limit_bytes,
             files_limit,
             grace,
         )
         return {"id": 0, "path": path}
 
-    def update_quota(self, quota_id: int, hard_limit: Optional[int], files_limit: Optional[int]) -> None:
+    def update_quota(self, quota_id: int, hard_limit_bytes: Optional[int], files_limit: Optional[int]) -> None:
         logger.info(
-            "update_quota(quota_id=%r, hard_limit=%r, files_limit=%r)",
+            "update_quota(quota_id=%r, hard_limit_bytes=%r, files_limit=%r)",
             quota_id,
-            hard_limit,
+            hard_limit_bytes,
             files_limit,
         )
 

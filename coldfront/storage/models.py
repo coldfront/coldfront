@@ -62,7 +62,7 @@ class StorageResource(AllocatableResourceMixin, PrimaryModel):
         default=0,
         editable=False,
         verbose_name=_("allocated"),
-        help_text=_("Sum of hard_limit for all active quotas. Updated automatically."),
+        help_text=_("Sum of hard_limit_bytes for all active quotas. Updated automatically."),
     )
 
     used_bytes = models.PositiveBigIntegerField(
@@ -174,7 +174,7 @@ class StorageCluster(PrimaryModel):
         default=0,
         editable=False,
         verbose_name=_("allocated"),
-        help_text=_("Sum of hard_limit for all active quotas on this cluster. Updated automatically."),
+        help_text=_("Sum of hard_limit_bytes for all active quotas on this cluster. Updated automatically."),
     )
 
     used_bytes = models.PositiveBigIntegerField(
@@ -222,7 +222,26 @@ class StorageQuota(AllocationExtensionMixin, PrimaryModel):
     - If set — the quota applies only to the selected clusters
     """
 
-    _requestable_fields = ["hard_limit", "soft_limit", "hard_limit_files", "soft_limit_files"]
+    _requestable_fields = ["hard_limit_bytes", "hard_limit_files"]
+
+    @classmethod
+    def requestable_fields_overrides(cls):
+        """
+        Use ``BytesField`` for byte-size fields so users can input
+        human-readable sizes like ``"10 TB"`` instead of raw integers.
+        """
+        from coldfront.forms.fields.bytes import BytesField
+
+        return {
+            "hard_limit_bytes": BytesField(
+                label=_("Hard Limit"),
+                help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+            ),
+            "soft_limit_bytes": BytesField(
+                label=_("Soft Limit"),
+                help_text=_("Soft quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+            ),
+        }
 
     class Meta:
         ordering = ["allocation__slug"]
@@ -277,21 +296,14 @@ class StorageQuota(AllocationExtensionMixin, PrimaryModel):
         default=2770,
     )
 
-    hard_limit = models.PositiveBigIntegerField(
+    hard_limit_bytes = models.PositiveBigIntegerField(
         blank=True,
         null=True,
         verbose_name=_("hard limit"),
         help_text=_("Approved quota limit in bytes."),
     )
 
-    hard_limit_requested = models.PositiveBigIntegerField(
-        blank=True,
-        null=True,
-        verbose_name=_("hard limit requested"),
-        help_text=_("User's requested quota limit in bytes."),
-    )
-
-    soft_limit = models.PositiveBigIntegerField(
+    soft_limit_bytes = models.PositiveBigIntegerField(
         blank=True,
         null=True,
         verbose_name=_("soft limit"),
@@ -361,9 +373,8 @@ class StorageQuota(AllocationExtensionMixin, PrimaryModel):
         "owning_user",
         "owning_group",
         "path_mode",
-        "hard_limit",
-        "hard_limit_requested",
-        "soft_limit",
+        "hard_limit_bytes",
+        "soft_limit_bytes",
         "hard_limit_files",
         "soft_limit_files",
         "grace_period",

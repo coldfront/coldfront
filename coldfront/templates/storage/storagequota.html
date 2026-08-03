@@ -40,15 +40,11 @@
                 </c-card.fields.item>
 
                 <c-card.fields.item label="{% trans 'Hard Limit' %}">
-                    {{ object.hard_limit|naturalsize }}
-                </c-card.fields.item>
-
-                <c-card.fields.item label="{% trans 'Hard Limit Requested' %}">
-                    {{ object.hard_limit_requested|naturalsize }}
+                    {{ object.hard_limit_bytes|naturalsize }}
                 </c-card.fields.item>
 
                 <c-card.fields.item label="{% trans 'Soft Limit' %}">
-                    {{ object.soft_limit|naturalsize }}
+                    {{ object.soft_limit_bytes|naturalsize }}
                 </c-card.fields.item>
 
                 <c-card.fields.item label="{% trans 'Share Type' %}">
