@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from django import forms
 from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
@@ -235,11 +236,11 @@ class StorageQuota(AllocationExtensionMixin, PrimaryModel):
         return {
             "hard_limit_bytes": BytesField(
                 label=_("Hard Limit"),
-                help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+                help_text=_("Quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
             ),
-            "soft_limit_bytes": BytesField(
-                label=_("Soft Limit"),
-                help_text=_("Soft quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+            "hard_limit_files": forms.IntegerField(
+                label=_("Hard Limit Files"),
+                help_text=_("Hard limit on the number of files."),
             ),
         }
 
@@ -300,7 +301,7 @@ class StorageQuota(AllocationExtensionMixin, PrimaryModel):
         blank=True,
         null=True,
         verbose_name=_("hard limit"),
-        help_text=_("Approved quota limit in bytes."),
+        help_text=_("Quota limit in bytes."),
     )
 
     soft_limit_bytes = models.PositiveBigIntegerField(

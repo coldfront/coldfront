@@ -66,7 +66,7 @@ class TargetCallbackTest(TestCase):
         callback.assert_called_once()
         args, kwargs = callback.call_args
         self.assertEqual(args[0], allocation)
-        self.assertEqual(kwargs["source"], AllocationStatusChoices.STATUS_NEW)
+        self.assertEqual(kwargs["source"], AllocationStatusChoices.STATUS_REQUESTED)
         self.assertEqual(kwargs["target"], AllocationStatusChoices.STATUS_APPROVED)
 
     def test_registered_callback_invoked_on_expire(self):
@@ -102,7 +102,7 @@ class TargetCallbackTest(TestCase):
         callback.assert_called_once()
         args, kwargs = callback.call_args
         self.assertEqual(args[0], allocation)
-        self.assertEqual(kwargs["source"], AllocationStatusChoices.STATUS_NEW)
+        self.assertEqual(kwargs["source"], AllocationStatusChoices.STATUS_REQUESTED)
         self.assertEqual(kwargs["target"], AllocationStatusChoices.STATUS_DENIED)
 
     def test_registered_callback_invoked_on_revoke(self):

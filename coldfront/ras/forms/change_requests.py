@@ -61,7 +61,6 @@ class AllocationChangeRequestForm(AllocationExtensionFormMixin, PrimaryModelForm
         if resource and hasattr(resource, "schema") and resource.schema:
             schema = resource.schema
             properties = schema.get("properties", {})
-            required_fields = schema.get("required", [])
 
             for attr_name, options in properties.items():
                 prop = JSONSchemaProperty(**options)
@@ -79,7 +78,7 @@ class AllocationChangeRequestForm(AllocationExtensionFormMixin, PrimaryModelForm
 
                 field_name = f"attr_{attr_name}"
                 self.attr_fields.append(field_name)
-                form_field = prop.to_form_field(attr_name, required=attr_name in required_fields)
+                form_field = prop.to_form_field(attr_name, required=False)
                 self.fields[field_name] = form_field
 
                 # Pre-fill with current allocation attribute value only when editing

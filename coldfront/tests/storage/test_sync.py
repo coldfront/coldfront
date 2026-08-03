@@ -417,7 +417,7 @@ class TestCallbacks(TestCase):
             resource_object=self.resource,
             project=self.project,
             owner=self.owner,
-            status=AllocationStatusChoices.STATUS_NEW,
+            status=AllocationStatusChoices.STATUS_REQUESTED,
         )
         self.quota = StorageQuota.objects.create(
             allocation=self.allocation,
@@ -561,13 +561,17 @@ class TestCallbacks(TestCase):
         assert StorageQuota.objects.filter(allocation=self.allocation).count() == 1
 
         on_allocation_denied(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_DENIED
+            self.allocation,
+            source=AllocationStatusChoices.STATUS_REQUESTED,
+            target=AllocationStatusChoices.STATUS_DENIED,
         )
         assert StorageQuota.objects.filter(allocation=self.allocation).count() == 0
 
     def test_on_allocation_denied_non_storage_resource(self):
         on_allocation_denied(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_DENIED
+            self.allocation,
+            source=AllocationStatusChoices.STATUS_REQUESTED,
+            target=AllocationStatusChoices.STATUS_DENIED,
         )
         # No StorageQuota should exist, no error
         assert StorageQuota.objects.filter(allocation=self.allocation).count() == 0
@@ -578,7 +582,9 @@ class TestCallbacks(TestCase):
 
         # None of these should raise or create objects
         on_allocation_approved(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_APPROVED
+            self.allocation,
+            source=AllocationStatusChoices.STATUS_REQUESTED,
+            target=AllocationStatusChoices.STATUS_APPROVED,
         )
         on_allocation_activated(
             self.allocation,
@@ -592,7 +598,9 @@ class TestCallbacks(TestCase):
             self.allocation, source=AllocationStatusChoices.STATUS_ACTIVE, target=AllocationStatusChoices.STATUS_REVOKED
         )
         on_allocation_denied(
-            self.allocation, source=AllocationStatusChoices.STATUS_NEW, target=AllocationStatusChoices.STATUS_DENIED
+            self.allocation,
+            source=AllocationStatusChoices.STATUS_REQUESTED,
+            target=AllocationStatusChoices.STATUS_DENIED,
         )
 
 

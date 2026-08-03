@@ -50,7 +50,7 @@ class Allocation(CommentingMixin, PrimaryModel):
         verbose_name=_("status"),
         max_length=50,
         choices=AllocationStatusChoices,
-        default=AllocationStatusChoices.STATUS_NEW,
+        default=AllocationStatusChoices.STATUS_REQUESTED,
     )
     start_date = models.DateTimeField(
         verbose_name=_("start date"),

@@ -133,6 +133,8 @@ class AllocationExtensionFormMixin:
         if field_name in overrides:
             custom_field = overrides[field_name]
             if custom_field is not None:
+                # Extension fields are always optional
+                custom_field.required = False
                 # Pre-fill with current value if available
                 if extension_instance is not None:
                     current_value = getattr(extension_instance, field_name, None)

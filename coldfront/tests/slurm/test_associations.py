@@ -148,7 +148,7 @@ class SlurmAssociationLifecycleTest(TestCase):
 
         flow = AllocationStatusFlow(allocation)
         flow.request()
-        flow.request()  # second call — self-loop on STATUS_NEW
+        flow.request()  # second call — self-loop on STATUS_REQUESTED
 
         associations = SlurmAssociation.objects.filter(allocation=allocation)
         self.assertEqual(associations.count(), 1)
@@ -478,7 +478,7 @@ class ProjectUserSignalTest(TestCase):
             owner=self.user1,
             resource_object_type=self.cluster_ct,
             resource_object_id=self.cluster1.pk,
-            status=AllocationStatusChoices.STATUS_NEW,
+            status=AllocationStatusChoices.STATUS_REQUESTED,
         )
         # SlurmAssociation is now created via the allocation form, not automatically.
         assoc = SlurmAssociation.objects.create(allocation=allocation)
@@ -666,14 +666,14 @@ class SlurmAssociationSignalTest(TestCase):
     def test_slurm_association_account_change_ignores_non_active_allocation(self):
         """Changing slurm_account on an association for a non-active allocation
         should not update SlurmUser records."""
-        # Create a non-active allocation (STATUS_NEW)
+        # Create a non-active allocation (STATUS_REQUESTED)
         allocation = Allocation.objects.create(
             justification="Pending",
             project=self.project,
             owner=self.user1,
             resource_object_type=self.cluster_ct,
             resource_object_id=self.cluster.pk,
-            status=AllocationStatusChoices.STATUS_NEW,
+            status=AllocationStatusChoices.STATUS_REQUESTED,
         )
         # SlurmAssociation is now created via the allocation form, not automatically.
         assoc = SlurmAssociation.objects.create(allocation=allocation)

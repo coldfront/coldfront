@@ -236,7 +236,7 @@ class StorageQuotaForm(PrimaryModelForm):
     hard_limit_bytes = BytesField(
         label=_("Hard Limit"),
         required=False,
-        help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+        help_text=_("Quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
     )
     soft_limit_bytes = BytesField(
         label=_("Soft Limit"),
@@ -341,7 +341,7 @@ class StorageQuotaImportForm(PrimaryModelImportForm):
     hard_limit_bytes = BytesField(
         label=_("Hard Limit"),
         required=False,
-        help_text=_("Approved quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
+        help_text=_("Quota limit in bytes. Accepts human-readable sizes (e.g. 10 TB)."),
     )
     soft_limit_bytes = BytesField(
         label=_("Soft Limit"),

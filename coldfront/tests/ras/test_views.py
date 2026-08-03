@@ -206,7 +206,7 @@ class AllocationTestCase(ViewTestCases.PrimaryObjectViewTestCase):
             "owner": user.pk,
             "project": project.pk,
             "resource_object": f"{resource_ct.pk}:{resources[0].pk}",
-            "status": AllocationStatusChoices.STATUS_NEW,
+            "status": AllocationStatusChoices.STATUS_REQUESTED,
             "tags": [t.pk for t in tags],
         }
 
@@ -927,7 +927,7 @@ class AllocationWithSchemaAttributesTest(ModelViewTestCase):
             "resource_object": f"{ContentType.objects.get_for_model(Resource).pk}:{self.resource.pk}",
             "attr_gpu": "A100",
             "attr_memory": 4096,
-            "status": AllocationStatusChoices.STATUS_NEW,
+            "status": AllocationStatusChoices.STATUS_REQUESTED,
         }
         response = self.client.post(self._get_url("add"), form_data)
         self.assertHttpStatus(response, 302)
@@ -1002,7 +1002,7 @@ class AllocationWithExtensionTest(ModelViewTestCase):
             "project": self.project.pk,
             "resource_object": f"{ContentType.objects.get_for_model(StorageResource).pk}:{self.storage_resource.pk}",
             "ext_storagequota_hard_limit_bytes": 500,
-            "status": AllocationStatusChoices.STATUS_NEW,
+            "status": AllocationStatusChoices.STATUS_REQUESTED,
         }
         response = self.client.post(self._get_url("add"), form_data)
         self.assertHttpStatus(response, 302)

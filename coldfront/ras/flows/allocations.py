@@ -21,7 +21,7 @@ class AllocationStatusFlow(ColdFrontFlow):
     Allocation Status workflow defines the transitions between the statuses of an Allocation.
     """
 
-    status = fsm.State(AllocationStatusChoices, default=AllocationStatusChoices.STATUS_NEW)
+    status = fsm.State(AllocationStatusChoices, default=AllocationStatusChoices.STATUS_REQUESTED)
     label = "Allocation"
     actions = (
         actions.ApproveObject,
@@ -73,8 +73,8 @@ class AllocationStatusFlow(ColdFrontFlow):
         self._dispatch_target_callbacks(self.allocation, source=source, target=target)
 
     @status.transition(
-        source=AllocationStatusChoices.STATUS_NEW,
-        target=AllocationStatusChoices.STATUS_NEW,
+        source=AllocationStatusChoices.STATUS_REQUESTED,
+        target=AllocationStatusChoices.STATUS_REQUESTED,
         label=_("Request"),
         permission=this.can_request,
     )
@@ -83,7 +83,7 @@ class AllocationStatusFlow(ColdFrontFlow):
 
     @status.transition(
         source={
-            AllocationStatusChoices.STATUS_NEW,
+            AllocationStatusChoices.STATUS_REQUESTED,
             AllocationStatusChoices.STATUS_RENEW,
         },
         target=AllocationStatusChoices.STATUS_APPROVED,
@@ -95,7 +95,7 @@ class AllocationStatusFlow(ColdFrontFlow):
 
     @status.transition(
         source={
-            AllocationStatusChoices.STATUS_NEW,
+            AllocationStatusChoices.STATUS_REQUESTED,
             AllocationStatusChoices.STATUS_RENEW,
         },
         target=AllocationStatusChoices.STATUS_DENIED,

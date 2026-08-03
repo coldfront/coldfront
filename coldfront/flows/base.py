@@ -140,13 +140,13 @@ def register_target_callback(flow_cls, target_state):
     after a transition successfully reaches target_state.
 
     Usage:
-        @register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_NEW)
+        @register_target_callback(AllocationStatusFlow, AllocationStatusChoices.STATUS_REQUESTED)
         def on_allocation_requested(allocation, *, source, target):
             ...
 
     This is equivalent to:
         AllocationStatusFlow.register_target_callback(
-            AllocationStatusChoices.STATUS_NEW,
+            AllocationStatusChoices.STATUS_REQUESTED,
             on_allocation_requested,
         )
     """

@@ -32,7 +32,7 @@ class ResourceStatusChoices(ChoiceSet):
 class AllocationStatusChoices(ChoiceSet):
     key = "Allocation.status"
 
-    STATUS_NEW = "new"
+    STATUS_REQUESTED = "requested"
     STATUS_ACTIVE = "active"
     STATUS_DENIED = "denied"
     STATUS_EXPIRED = "expired"
@@ -41,7 +41,7 @@ class AllocationStatusChoices(ChoiceSet):
     STATUS_RENEW = "renew"
 
     CHOICES = [
-        (STATUS_NEW, _("New"), "info"),
+        (STATUS_REQUESTED, _("Requested"), "info"),
         (STATUS_ACTIVE, _("Active"), "success"),
         (STATUS_DENIED, _("Denied"), "danger"),
         (STATUS_EXPIRED, _("Expired"), "warning"),

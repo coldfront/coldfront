@@ -42,7 +42,7 @@ class AllocationStatusFlowTest(TestCase):
         flow = AllocationStatusFlow(allocation)
 
         flow.request()
-        self.assertEqual(allocation.status, AllocationStatusChoices.STATUS_NEW)
+        self.assertEqual(allocation.status, AllocationStatusChoices.STATUS_REQUESTED)
 
         flow.approve()
         self.assertEqual(allocation.status, AllocationStatusChoices.STATUS_APPROVED)

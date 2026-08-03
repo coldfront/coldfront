@@ -28,14 +28,14 @@ class AllocatableResourceRequestView(ObjectEditView):
     def get_editable_statuses(self):
         """
         Return the list of allocation statuses in which the form should be
-        editable.  Defaults to ``[AllocationStatusChoices.STATUS_NEW,
+        editable.  Defaults to ``[AllocationStatusChoices.STATUS_REQUESTED,
         AllocationStatusChoices.STATUS_RENEW]``.
         """
         if self.editable_statuses is not None:
             return self.editable_statuses
         from coldfront.ras.choices import AllocationStatusChoices
 
-        return [AllocationStatusChoices.STATUS_NEW, AllocationStatusChoices.STATUS_RENEW]
+        return [AllocationStatusChoices.STATUS_REQUESTED, AllocationStatusChoices.STATUS_RENEW]
 
     def get_allocation(self, obj):
         """
