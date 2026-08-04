@@ -97,15 +97,27 @@ class AllocationChangeRequestView(generic.ObjectView):
 
                 proposed_ext = instance.extension_changes.get(ext_path, {})
 
+                # Apply form-field display formatting for fields with overrides
+                overrides = model.requestable_fields_overrides()
+
                 for field_name in requestable:
                     key = f"{ext_path}.{field_name}"
                     cur = current_ext.get(field_name)
                     prop = proposed_ext.get(field_name, cur)
+
                     # Convert timedelta to string for readable JSON output
                     if isinstance(cur, timedelta):
                         cur = str(cur)
                     if isinstance(prop, timedelta):
                         prop = str(prop)
+
+                    # Use the override field's prepare_value for human-readable display
+                    if field_name in overrides:
+                        override_field = overrides[field_name]
+                        if override_field is not None and hasattr(override_field, "prepare_value"):
+                            cur = override_field.prepare_value(cur)
+                            prop = override_field.prepare_value(prop)
+
                     pre[key] = cur
                     post[key] = prop
 

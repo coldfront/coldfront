@@ -15,10 +15,10 @@
               document.documentElement.setAttribute('data-bs-theme', theme || (prefersDark ? 'dark' : 'light'));
             })();
         </script>
-        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'common/images/apple-touch-icon.png' %}">
-        <link rel="shortcut icon" type="image/png" href="{% static 'common/images/favicon.ico' %}">
-        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'common/images/favicon-32x32.png' %}">
-        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'common/images/favicon-16x16.png' %}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/apple-touch-icon.png' %}">
+        <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon-32x32.png' %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/favicon-16x16.png' %}">
         {% if settings.DJANGO_VITE.default.dev_mode %}
             {% vite_hmr_client %}
             {% vite_asset "coldfront.ts" %}
@@ -26,8 +26,8 @@
             <link rel="stylesheet" href='{% static "coldfront.css" %}?v={{ settings.VERSION }}'>
             <script type="module" crossorigin="" src='{% static "coldfront.js" %}?v={{ settings.VERSION }}'></script>
         {% endif %}
-        <link rel="manifest" href="{% static 'common/site.webmanifest' %}">
-        <link rel="stylesheet" href="{% static 'common/css/common.css' %}">
+        <link rel="manifest" href="{% static 'site.webmanifest' %}">
+        <link rel="stylesheet" href="{% static 'css/coldfront-site.css' %}">
         {% django_htmx_script %}
 
         <script type="text/javascript">

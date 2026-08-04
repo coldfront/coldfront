@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+@use 'variables';
 @use 'overrides/fontawesome';
 @use '~bootstrap/dist/css/bootstrap.min';
 @use '~tomselect/dist/css/tom-select.bootstrap5.css';
 @use 'flatpickr/dist/flatpickr.min';
 
-@use 'navigation';
-
-// Custom styles
+// ColdFront styles
+@use 'custom/navigation';
 @use 'custom/portal';

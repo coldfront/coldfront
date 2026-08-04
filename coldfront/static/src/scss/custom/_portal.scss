@@ -54,13 +54,13 @@ pre.change-data {
     min-width: fit-content;
 
     &.added {
-      color: var(--tblr-dark);
-      background-color: #2fb344;
+      color: var(--bs-body-color);
+      background-color: rgba(47, 179, 68, 0.15);
     }
 
     &.removed {
-      color: var(--tblr-dark);
-      background-color: #d63939;
+      color: var(--bs-body-color);
+      background-color: rgba(214, 57, 57, 0.15);
     }
   }
 }
@@ -70,13 +70,13 @@ pre.change-diff {
   border-color: transparent;
 
   &.change-added {
-    color: var(--tblr-dark);
-    background-color: #2fb344;
+    color: var(--bs-body-color);
+    background-color: rgba(47, 179, 68, 0.15);
   }
 
   &.change-removed {
-    color: var(--tblr-dark);
-    background-color: #d63939;
+    color: var(--bs-body-color);
+    background-color: rgba(214, 57, 57, 0.15);
   }
 }
 
