@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: (C) DigitalOcean, LLC
+// SPDX-FileCopyrightText: (C) University at Buffalo
+//
+// SPDX-License-Identifier: Apache-2.0
+
 import { Toast } from 'bootstrap';
 
 /**

@@ -9,8 +9,8 @@ path = [
     ".dockerignore",
     ".env.testing",
     "MANIFEST.in",
-    "docs/pages/.pages",
     "pyproject.toml",
+    "zensical.toml",
     "**.yaml",
     "**.yml",
     "**.md",
@@ -26,20 +26,20 @@ path = [
     "**.mo",
     "**.webmanifest",
 ]
-SPDX-FileCopyrightText = "(C) ColdFront Authors"
+SPDX-FileCopyrightText = "(C) University at Buffalo"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
 path = [
-    "docs/pages/images/*",
-    "docs/pages/assets/*",
+    "docs/assets/**",
     "**.ico",
 ]
-SPDX-FileCopyrightText = "(C) ColdFront Authors"
+SPDX-FileCopyrightText = "(C) University at Buffalo"
 SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
 
 [[annotations]]
 path = [
+    "NOTICE",
     "uv.lock",
     "coldfront/static/package-lock.json",
     "coldfront/static/bundles/manifest.json",
@@ -59,3 +59,10 @@ path = [
 ]
 SPDX-FileCopyrightText = "Copyright (c) 2011-2025 The Bootstrap Authors"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = [
+    "coldfront/tests/slurm/specs/openapi_spec*",
+]
+SPDX-FileCopyrightText = "Copyright (C) SchedMD LLC"
+SPDX-License-Identifier = "GPL-2.0-or-later"
