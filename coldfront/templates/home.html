@@ -7,48 +7,354 @@
 {% endblock %}
 
 {% block content %}
-    <c-layout.panels>
-        <c-slot name="left">
-            <c-card.list header='{% trans "My Projects" %}' only>
-                {% for project in projects %}
-                    <c-card.list.item link="{{ project.get_absolute_url }}" :count="project.allocations.count">
-                        {{ project.name }}
-                    </c-card.list.item>
-                {% empty %}
-                    <c-card.list.item>
-                        {% trans "None" %}
-                    </c-card.list.item>
-                {% endfor %}
-            </c-card.list>
-        </c-slot>
-
-        <c-slot name="right">
-            <c-card.list header='{% trans "My Allocations" %}' only>
-                {% for allocation in allocations %}
-                    <c-card.list.item
-                        link="{{ allocation.get_absolute_url }}"
-                        count="{% if not allocation.end_date %}Never{% else %}{{ allocation.end_date|naturaltime }}{% endif %}"
-                    >
-                        {{ allocation.resource_object }}
-                    </c-card.list.item>
-                {% empty %}
-                    <c-card.list.item>
-                        {% trans "None" %}
-                    </c-card.list.item>
-                {% endfor %}
-            </c-card.list>
-        </c-slot>
-    </c-layout.panels>
+    {# ---- Welcome & Summary Bar ---- #}
     <c-layout.row>
-        {% for resource_type,resource_list in resources.items %}
-            <c-layout.col>
-                <c-card.list :header="resource_type" only>
-                    {% for resource in resource_list %}
-                        <c-card.list.item link="{{ resource.link }}">
-                            {{ resource.name }}
+        <c-layout.col>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                <div>
+                    <h4 class="mb-1">
+                        {% trans "Hello" %}
+                        {% if user.get_full_name %}
+                            {{ user.get_full_name }}
+                        {% else %}
+                            {{ user.username }}
+                        {% endif %}
+                        👋
+                    </h4>
+                    <p class="text-muted mb-0">{% trans "Welcome to ColdFront" %}</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <c-ui.badge
+                        value="{% blocktrans count count=projects|length %}{{ count }} Project{% plural %}{{ count }} Projects{% endblocktrans %}"
+                        bg_color="primary"
+                    />
+                    <c-ui.badge
+                        value="{% blocktrans count count=active_allocations|length %}{{ count }} Active Allocation{% plural %}{{ count }} Active Allocations{% endblocktrans %}"
+                        bg_color="success"
+                    />
+                    {% if pending_change_requests %}
+                        <c-ui.badge
+                            value="{% blocktrans count count=pending_change_requests|length %}{{ count }} Pending Change{% plural %}{{ count }} Pending Changes{% endblocktrans %}"
+                            bg_color="warning"
+                        />
+                    {% endif %}
+                    {% if expiring_soon %}
+                        <c-ui.badge
+                            value="{% blocktrans count count=expiring_soon|length %}{{ count }} Expiring Soon{% plural %}{{ count }} Expiring Soon{% endblocktrans %}"
+                            bg_color="danger"
+                        />
+                    {% endif %}
+                </div>
+            </div>
+        </c-layout.col>
+    </c-layout.row>
+
+    {# ---- Main Content Grid ---- #}
+    {% if is_admin %}
+        {# --- Admin view --- #}
+        <c-layout.panels>
+            <c-slot name="left">
+                <c-card>
+                    <h2 class="card-header">{% trans "Pending Allocations" %}</h2>
+                    <div class="card-body">
+                        {% if admin_pending_allocations %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Allocation" %}</th>
+                                            <th>{% trans "Project" %}</th>
+                                            <th>{% trans "Resource" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "Created" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for a in admin_pending_allocations %}
+                                            <tr>
+                                                <td><a href="{{ a.get_absolute_url }}">{{ a.slug }}</a></td>
+                                                <td>
+                                                    <a href="{{ a.project.get_absolute_url }}">{{ a.project.name }}</a>
+                                                </td>
+                                                <td>{{ a.resource_object }}</td>
+                                                <td>
+                                                    <c-ui.badge
+                                                        value="{{ a.status|title }}"
+                                                        :bg_color="a.get_status_color"
+                                                    />
+                                                </td>
+                                                <td>{{ a.created|naturaltime }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endif %}
+                    </div>
+                </c-card>
+
+                <c-card class="mt-3">
+                    <h2 class="card-header">{% trans "Pending Change Requests" %}</h2>
+                    <div class="card-body">
+                        {% if admin_pending_change_requests %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Change Request" %}</th>
+                                            <th>{% trans "Allocation" %}</th>
+                                            <th>{% trans "Resource" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "Created" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for cr in admin_pending_change_requests %}
+                                            <tr>
+                                                <td><a href="{{ cr.get_absolute_url }}">{{ cr.slug }}</a></td>
+                                                <td>
+                                                    <a
+                                                        href="{{ cr.allocation.get_absolute_url }}"
+                                                    >{{ cr.allocation.slug }}</a>
+                                                </td>
+                                                <td>{{ cr.allocation.resource_object }}</td>
+                                                <td>
+                                                    <c-ui.badge
+                                                        value="{{ cr.status|title }}"
+                                                        :bg_color="cr.get_status_color"
+                                                    />
+                                                </td>
+                                                <td>{{ cr.created|naturaltime }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endif %}
+                    </div>
+                </c-card>
+            </c-slot>
+
+            <c-slot name="right">
+                <c-card>
+                    <h2 class="card-header">{% trans "Expired Allocations" %}</h2>
+                    <div class="card-body">
+                        {% if admin_expired_allocations %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Allocation" %}</th>
+                                            <th>{% trans "Project" %}</th>
+                                            <th>{% trans "Resource" %}</th>
+                                            <th>{% trans "Expired" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for a in admin_expired_allocations %}
+                                            <tr>
+                                                <td><a href="{{ a.get_absolute_url }}">{{ a.slug }}</a></td>
+                                                <td>
+                                                    <a href="{{ a.project.get_absolute_url }}">{{ a.project.name }}</a>
+                                                </td>
+                                                <td>{{ a.resource_object }}</td>
+                                                <td>{{ a.end_date|naturaltime }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endif %}
+                    </div>
+                </c-card>
+
+                {# Show PI-specific content for admins who also own projects #}
+                {% if is_pi %}
+                    {% include 'home/_pi_pending.html' %}
+                {% endif %}
+            </c-slot>
+        </c-layout.panels>
+    {% elif is_pi %}
+        {# --- PI view --- #}
+        <c-layout.panels>
+            <c-slot name="left">
+                <c-card.list header='{% trans "My Projects" %}' only>
+                    {% for project in projects %}
+                        {% if project.owner == user %}
+                            <c-card.list.item
+                                link="{{ project.get_absolute_url }}"
+                                :count="project.allocations.count"
+                            >
+                                {{ project.name }}
+                            </c-card.list.item>
+                        {% endif %}
+                    {% empty %}
+                        <c-card.list.item>
+                            {% trans "None" %}
                         </c-card.list.item>
                     {% endfor %}
                 </c-card.list>
+
+                <c-card class="mt-3">
+                    <h2 class="card-header">{% trans "Recent Allocations" %}</h2>
+                    <div class="card-body">
+                        {% if allocations %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Allocation" %}</th>
+                                            <th>{% trans "Resource" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "End Date" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for a in allocations|slice:":5" %}
+                                            <tr>
+                                                <td><a href="{{ a.get_absolute_url }}">{{ a.slug }}</a></td>
+                                                <td>{{ a.resource_object }}</td>
+                                                <td>
+                                                    <c-ui.badge
+                                                        value="{{ a.status|title }}"
+                                                        :bg_color="a.get_status_color"
+                                                    />
+                                                </td>
+                                                <td>{{ a.end_date|naturaltime }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endif %}
+                    </div>
+                </c-card>
+            </c-slot>
+
+            <c-slot name="right">
+                {% include 'home/_pi_pending.html' %}
+
+                <c-card class="mt-3">
+                    <h2 class="card-header">{% trans "Available Resources" %}</h2>
+                    <div class="card-body">
+                        {% for resource_type, resource_list in resources.items %}
+                            <h6 class="mt-2 mb-1">{{ resource_type }}</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for resource in resource_list %}
+                                    <a href="{{ resource.link }}" class="btn btn-outline-primary btn-sm">
+                                        {{ resource.name }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% empty %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endfor %}
+                    </div>
+                </c-card>
+            </c-slot>
+        </c-layout.panels>
+    {% else %}
+        {# --- Regular user view --- #}
+        <c-layout.panels>
+            <c-slot name="left">
+                <c-card.list header='{% trans "My Projects" %}' only>
+                    {% for project in projects %}
+                        <c-card.list.item link="{{ project.get_absolute_url }}" :count="project.allocations.count">
+                            {{ project.name }}
+                        </c-card.list.item>
+                    {% empty %}
+                        <c-card.list.item>
+                            {% trans "None" %}
+                        </c-card.list.item>
+                    {% endfor %}
+                </c-card.list>
+
+                <c-card class="mt-3">
+                    <h2 class="card-header">{% trans "My Access" %}</h2>
+                    <div class="card-body">
+                        {% if active_allocations %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Allocation" %}</th>
+                                            <th>{% trans "Resource" %}</th>
+                                            <th>{% trans "Project" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "End Date" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for a in active_allocations|slice:":5" %}
+                                            <tr>
+                                                <td><a href="{{ a.get_absolute_url }}">{{ a.slug }}</a></td>
+                                                <td>{{ a.resource_object }}</td>
+                                                <td>
+                                                    <a href="{{ a.project.get_absolute_url }}">{{ a.project.name }}</a>
+                                                </td>
+                                                <td>
+                                                    <c-ui.badge
+                                                        value="{{ a.status|title }}"
+                                                        :bg_color="a.get_status_color"
+                                                    />
+                                                </td>
+                                                <td>{{ a.end_date|naturaltime }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endif %}
+                    </div>
+                </c-card>
+            </c-slot>
+
+            <c-slot name="right">
+                <c-card>
+                    <h2 class="card-header">{% trans "Available Resources" %}</h2>
+                    <div class="card-body">
+                        {% for resource_type, resource_list in resources.items %}
+                            <h6 class="mt-2 mb-1">{{ resource_type }}</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for resource in resource_list %}
+                                    <a href="{{ resource.link }}" class="btn btn-outline-primary btn-sm">
+                                        {{ resource.name }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% empty %}
+                            <span class="text-muted">{% trans "None" %}</span>
+                        {% endfor %}
+                    </div>
+                </c-card>
+            </c-slot>
+        </c-layout.panels>
+    {% endif %}
+
+    {# ---- Resource Explorer (common to all) ---- #}
+    <c-layout.row class="mt-3">
+        {% for resource_type, resource_list in resources.items %}
+            <c-layout.col>
+                <c-card>
+                    <h2 class="card-header">{{ resource_type }}</h2>
+                    <div class="card-body">
+                        {% for resource in resource_list %}
+                            <a href="{{ resource.link }}" class="btn btn-outline-primary mb-1 w-100 text-start">
+                                {{ resource.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </c-card>
             </c-layout.col>
         {% endfor %}
     </c-layout.row>

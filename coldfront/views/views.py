@@ -2,11 +2,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+from datetime import timedelta
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from django.shortcuts import render
+from django.utils import timezone
 from django.utils.module_loading import import_string
 from django.views.generic import View
 
@@ -16,22 +19,40 @@ class HomeView(LoginRequiredMixin, View):
 
     def get(self, request):
         from coldfront.core.models import ObjectType
+        from coldfront.ras.choices import (
+            AllocationChangeRequestStatusChoices,
+            AllocationStatusChoices,
+        )
+        from coldfront.ras.models import Allocation, AllocationChangeRequest
         from coldfront.users.querysets import RestrictedQuerySet
 
+        user = request.user
+        now = timezone.now()
+
+        # --- Role detection ---
+        is_pi = user.owned_projects.exists()
+        is_admin = user.is_staff or user.has_perm("ras.change_allocation")
+
+        # --- Common data ---
         projects = []
         allocations = []
         resources = {}
 
-        if request.user.is_authenticated:
-            for p in request.user.owned_projects.all():
+        # --- PI / member projects and allocations ---
+        if user.is_authenticated:
+            for p in user.owned_projects.all():
                 projects.append(p)
                 for a in p.allocations.all():
                     allocations.append(a)
-            for p in request.user.projects.all():
-                for a in p.project.allocations.all():
+            for pu in user.projects.all():
+                p = pu.project
+                if p not in projects:
+                    projects.append(p)
+                for a in p.allocations.all():
                     if a not in allocations:
                         allocations.append(a)
 
+        # --- Allocatable resources ---
         for ot in ObjectType.objects.with_feature("allocatable_resource").order_by("app_label", "model"):
             model_class = ot.model_class()
             if model_class is None:
@@ -39,7 +60,7 @@ class HomeView(LoginRequiredMixin, View):
 
             qs = model_class.objects.all()
             if issubclass(qs.__class__, RestrictedQuerySet):
-                qs = qs.restrict(request.user, "view")
+                qs = qs.restrict(user, "view")
 
             if qs.exists():
                 group = model_class._meta.verbose_name_plural.title()
@@ -48,8 +69,68 @@ class HomeView(LoginRequiredMixin, View):
                 resources[group] = resources.get(group, [])
 
             for obj in qs:
-                if obj.allocatable(request.user):
+                if obj.allocatable(user):
                     resources[group].append({"name": str(obj), "link": obj.get_absolute_url()})
+
+        # --- Summary stats ---
+        active_allocations = [a for a in allocations if a.status == AllocationStatusChoices.STATUS_ACTIVE]
+        expiring_soon = [
+            a
+            for a in allocations
+            if a.end_date
+            and a.status == AllocationStatusChoices.STATUS_ACTIVE
+            and a.end_date <= now + timedelta(days=30)
+            and a.end_date > now
+        ]
+
+        # --- PI-specific data ---
+        pending_change_requests = []
+        if is_pi:
+            owned_project_ids = user.owned_projects.values_list("pk", flat=True)
+            pending_change_requests = list(
+                AllocationChangeRequest.objects.filter(
+                    allocation__project_id__in=owned_project_ids,
+                    status__in=[
+                        AllocationChangeRequestStatusChoices.STATUS_REQUESTED,
+                        AllocationChangeRequestStatusChoices.STATUS_APPROVED,
+                    ],
+                )
+                .select_related("allocation")
+                .order_by("-created")[:10]
+            )
+
+        # --- Admin-specific data ---
+        admin_pending_allocations = []
+        admin_pending_change_requests = []
+        admin_expired_allocations = []
+        if is_admin:
+            admin_pending_allocations = list(
+                Allocation.objects.filter(
+                    status__in=[
+                        AllocationStatusChoices.STATUS_REQUESTED,
+                        AllocationStatusChoices.STATUS_APPROVED,
+                    ],
+                )
+                .select_related("project")
+                .order_by("-created")[:10]
+            )
+            admin_pending_change_requests = list(
+                AllocationChangeRequest.objects.filter(
+                    status__in=[
+                        AllocationChangeRequestStatusChoices.STATUS_REQUESTED,
+                        AllocationChangeRequestStatusChoices.STATUS_APPROVED,
+                    ],
+                )
+                .select_related("allocation")
+                .order_by("-created")[:10]
+            )
+            admin_expired_allocations = list(
+                Allocation.objects.filter(
+                    status=AllocationStatusChoices.STATUS_EXPIRED,
+                )
+                .select_related("project")
+                .order_by("-end_date")[:10]
+            )
 
         return render(
             request,
@@ -58,6 +139,14 @@ class HomeView(LoginRequiredMixin, View):
                 "projects": projects,
                 "resources": resources,
                 "allocations": allocations,
+                "active_allocations": active_allocations,
+                "expiring_soon": expiring_soon,
+                "is_pi": is_pi,
+                "is_admin": is_admin,
+                "pending_change_requests": pending_change_requests,
+                "admin_pending_allocations": admin_pending_allocations,
+                "admin_pending_change_requests": admin_pending_change_requests,
+                "admin_expired_allocations": admin_expired_allocations,
             },
         )
 

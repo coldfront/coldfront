@@ -80,6 +80,7 @@ To register a callback:
 from coldfront.ras.flows.allocations import AllocationStatusFlow
 from coldfront.registry import register_target_callback
 
+
 @register_target_callback(AllocationStatusFlow, "active")
 def on_allocation_activated(allocation, *, source, target):
     # Run code when an allocation has been activated

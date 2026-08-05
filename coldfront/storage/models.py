@@ -5,6 +5,7 @@
 from django import forms
 from django.db import models
 from django.db.models import Q
+from django.template import Context, Template
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.models import PrimaryModel
@@ -102,16 +103,21 @@ class StorageResource(AllocatableResourceMixin, PrimaryModel):
         """Generate a storage path from the resource's path_template.
 
         Uses Django's template engine for rendering. The template may
-        reference ``{{ allocation }}``, ``{{ allocation.project.slug }}``,
+        reference ``{{ allocation }}``, ``{{ project.slug }}``,
         ``{{ allocation.id }}``, ``{{ resource.<field> }}``, etc.
         """
-        from django.template import Context, Template
 
         tpl = self.path_template
         if not tpl:
             return f"/mnt/{allocation.project.slug}/{allocation.slug}"
 
-        context = Context({"allocation": allocation, "resource": self})
+        context = Context(
+            {
+                "project": allocation.project,
+                "allocation": allocation,
+                "resource": self,
+            }
+        )
         template = Template(tpl)
         return template.render(context)
 

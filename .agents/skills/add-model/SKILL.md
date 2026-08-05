@@ -31,8 +31,7 @@ All defined in `coldfront/models/base.py`. Feature mixins are in `coldfront/mode
 ### Feature Mixins (applied before the base class)
 
 ```python
-class MyModel(AllocatableResourceMixin, PrimaryModel):
-    ...
+class MyModel(AllocatableResourceMixin, PrimaryModel): ...
 ```
 
 | Mixin | Purpose |
@@ -101,6 +100,7 @@ class MyModel(AllocatableResourceMixin, PrimaryModel):
 
 ```python
 from coldfront.choices import ChoiceSet
+
 
 class MyModelStatusChoices(ChoiceSet):
     STATUS_ACTIVE = "active"
@@ -326,10 +326,17 @@ class MyModelSerializer(PrimaryModelSerializer):
     class Meta:
         model = MyModel
         fields = [
-            "id", "url", "display_url", "display",
-            "name", "some_fk",
-            "description", "tags", "custom_fields",
-            "created", "last_updated",
+            "id",
+            "url",
+            "display_url",
+            "display",
+            "name",
+            "some_fk",
+            "description",
+            "tags",
+            "custom_fields",
+            "created",
+            "last_updated",
         ]
         brief_fields = ("id", "url", "display", "name", "description")
 ```
@@ -378,7 +385,7 @@ Skip `prefetch_related()` — `ColdFrontModelViewSet` resolves prefetches dynami
 Find the relevant `MenuGroup` and add:
 
 ```python
-get_model_item("<app>", "mymodel", _("My Models")),
+(get_model_item("<app>", "mymodel", _("My Models")),)
 ```
 
 The model name must be lowercase (not the URL slug). This auto-links to the list view.

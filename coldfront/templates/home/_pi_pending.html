@@ -1,0 +1,34 @@
+{% load i18n %}
+<c-card>
+    <h2 class="card-header">{% trans "Pending Change Requests" %}</h2>
+    <div class="card-body">
+        {% if pending_change_requests %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>{% trans "Change" %}</th>
+                            <th>{% trans "Allocation" %}</th>
+                            <th>{% trans "Resource" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Created" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cr in pending_change_requests %}
+                            <tr>
+                                <td><a href="{{ cr.get_absolute_url }}">{{ cr.slug }}</a></td>
+                                <td><a href="{{ cr.allocation.get_absolute_url }}">{{ cr.allocation.slug }}</a></td>
+                                <td>{{ cr.allocation.resource_object }}</td>
+                                <td><c-ui.badge value="{{ cr.status|title }}" :bg_color="cr.get_status_color" /></td>
+                                <td>{{ cr.created|isodatetime }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <span class="text-muted">{% trans "None" %}</span>
+        {% endif %}
+    </div>
+</c-card>

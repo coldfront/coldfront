@@ -4,11 +4,13 @@
 
 from datetime import timedelta
 
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from coldfront.ras import filtersets, forms, tables
 from coldfront.ras import object_actions as actions
+from coldfront.ras.choices import AllocationChangeRequestStatusChoices
 from coldfront.ras.flows.change_requests import (
     AllocationChangeRequestFlow,
     get_permitted_transition_actions,
@@ -18,7 +20,14 @@ from coldfront.ras.models.change_requests import AllocationChangeRequest
 from coldfront.registry import get_allocation_extensions, register_model_view
 from coldfront.utils.data import shallow_compare_dict
 from coldfront.views import ViewTab, generic
-from coldfront.views.object_actions import AddObject, BulkDelete, BulkExport, BulkImport
+from coldfront.views.object_actions import (
+    AddObject,
+    BulkDelete,
+    BulkExport,
+    BulkImport,
+    CloneObject,
+    EditObject,
+)
 
 #
 # AllocationChangeRequest list + detail
@@ -38,6 +47,13 @@ class AllocationChangeRequestListView(generic.ObjectListView):
 class AllocationChangeRequestView(generic.ObjectView):
     queryset = AllocationChangeRequest.objects.all()
     flow = AllocationChangeRequestFlow
+
+    def get_permitted_actions(self, user, model=None, actions=None):
+        permitted = super().get_permitted_actions(user, model, actions)
+        if model is not None and model.pk is not None:
+            if model.status == AllocationChangeRequestStatusChoices.STATUS_APPLIED:
+                permitted = [a for a in permitted if a not in (EditObject, CloneObject)]
+        return permitted
 
     def get_extra_context(self, request, instance):
         transitions = get_permitted_transition_actions(instance, request.user)
@@ -144,6 +160,17 @@ class AllocationChangeRequestEditView(generic.ObjectEditView):
         if not obj.pk:
             obj.requested_by = request.user
         return super().alter_object(obj, request, url_args, url_kwargs)
+
+    def alter_form(self, form, request, obj):
+        if obj.pk and obj.status == AllocationChangeRequestStatusChoices.STATUS_APPLIED:
+            for f in form.fields.values():
+                f.disabled = True
+
+    def post(self, request, *args, **kwargs):
+        obj = self.get_object(**kwargs)
+        if obj.pk and obj.status == AllocationChangeRequestStatusChoices.STATUS_APPLIED:
+            raise PermissionDenied(_("This change request has already been applied and is no longer editable."))
+        return super().post(request, *args, **kwargs)
 
 
 @register_model_view(AllocationChangeRequest, "delete")

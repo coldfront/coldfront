@@ -81,7 +81,7 @@ When Slurm releases a new API version (e.g., `v0.0.46`):
        "v0.0.43",
        "v0.0.44",
        "v0.0.45",
-       "v0.0.46",   # <-- add here
+       "v0.0.46",  # <-- add here
    ]
    ```
 

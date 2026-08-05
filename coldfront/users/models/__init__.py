@@ -4,7 +4,7 @@
 
 from .permissions import ObjectPermission
 from .preferences import UserConfig
-from .role import Role
+from .roles import Role
 from .tokens import Token
 from .users import Group, GroupManager, User, UserManager
 
