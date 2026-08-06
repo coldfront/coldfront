@@ -143,6 +143,20 @@ def qs_filter_from_constraints(constraints, tokens=None):
     """
     Construct a Q filter object from an iterable of ObjectPermission constraints.
 
+    Supports ``$queryset`` expressions for dynamic subquery constraints:
+    constraints can include dict values with a ``$queryset`` key that specifies
+    a model and filter to resolve as a Django QuerySet. This enables filtering
+    through GenericForeignKey relationships and other scenarios requiring
+    subqueries.
+
+    Example YAML::
+
+        assigned_object_id__in:
+          $queryset:
+            model: ras.allocation
+            filter:
+              project__owner: $user
+
     Args:
         tokens: A dictionary mapping string tokens to be replaced with a value.
     """
@@ -154,9 +168,28 @@ def qs_filter_from_constraints(constraints, tokens=None):
         if token == CONSTRAINT_TOKEN_USER and isinstance(value, User):
             tokens[token] = value.id
 
+    def _resolve_queryset(value, tokens):
+        """Resolve a ``$queryset`` dict to a Django QuerySet of PKs."""
+        qs_config = value["$queryset"]
+        app_label, model_name = qs_config["model"].split(".")
+        try:
+            model = apps.get_model(app_label, model_name)
+        except LookupError as e:
+            raise ValueError(
+                _("Unknown model '{model}' in $queryset constraint").format(model=qs_config["model"])
+            ) from e
+        if model is None:
+            raise ValueError(_("Unknown model '{model}' in $queryset constraint").format(model=qs_config["model"]))
+        resolved = {}
+        for k, v in qs_config.get("filter", {}).items():
+            resolved[k] = _replace_tokens(v, tokens)
+        return model.objects.filter(**resolved).values_list("pk", flat=True)
+
     def _replace_tokens(value, tokens):
         if type(value) is list:
-            return list(map(lambda v: tokens.get(v, v), value))
+            return list(map(lambda v: _replace_tokens(v, tokens), value))
+        if isinstance(value, dict) and "$queryset" in value:
+            return _resolve_queryset(value, tokens)
         return tokens.get(value, value)
 
     params = Q()

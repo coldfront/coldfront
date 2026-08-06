@@ -34,17 +34,18 @@ ALLOCATIONS_MENU = Menu(
     icon_class="fa-solid fa-list-check",
     groups=(
         MenuGroup(
-            label=_("Allocations"),
-            items=(
-                get_model_item("ras", "allocation", _("Allocations")),
-                get_model_item("ras", "allocationchangerequest", _("Change Requests"), actions=("add",)),
-            ),
-        ),
-        MenuGroup(
             label=_("Projects"),
             items=(
                 get_model_item("ras", "project", _("Projects")),
                 get_model_item("ras", "projectuser", _("Project Users")),
+            ),
+        ),
+        MenuGroup(
+            label=_("Allocations"),
+            items=(
+                get_model_item("ras", "allocation", _("Allocations")),
+                get_model_item("ras", "allocationchangerequest", _("Change Requests"), actions=("add",)),
+                get_model_item("core", "commententry", _("Comment Entires"), actions=[]),
             ),
         ),
     ),
@@ -134,10 +135,7 @@ ADMIN_MENU = Menu(
         ),
         MenuGroup(
             label=_("Logging"),
-            items=(
-                get_model_item("core", "commententry", _("Comment Entires"), actions=[]),
-                get_model_item("core", "objectchange", _("Change Log"), actions=[]),
-            ),
+            items=(get_model_item("core", "objectchange", _("Change Log"), actions=[]),),
         ),
     ),
 )
