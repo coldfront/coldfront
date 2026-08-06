@@ -65,6 +65,7 @@ class AllocationTable(TenancyColumnsMixin, PrimaryModelTable):
         verbose_name=_("Resource"),
         linkify=True,
         accessor=tables.A("resource_object"),
+        order_by=("resource_object_type__model", "resource_object_id"),
     )
 
     start_date = columns.DateColumn(
