@@ -1,7 +1,7 @@
 # Slurm
 
-ColdFront has a Slurm app (`coldfront.slurm`) that integrates with
-[Slurm](https://slurm.schedmd.com/) workload manager accounting. The
+ColdFront has a Slurm app (`coldfront.slurm`) that integrates with the
+[Slurm](https://slurm.schedmd.com/) workload manager. The
 integration maps ColdFront allocations to Slurm accounting entities and
 synchronizes them using the Slurm REST API.
 
@@ -36,14 +36,13 @@ The Slurm integration uses a hybrid approach:
 
 2. **Periodic batch sync** — A scheduled job runs a full reconciliation
    using `POST /slurmdb/{version}/config` to upsert the complete
-   accounting state. This catches changes that targeted handlers missed.
+   accounting state. This catches any drift or manual changes that targeted handlers missed.
 
 ## REST API
 
 The integration communicates with `slurmrestd` over HTTP using JWT
-authentication. Each cluster has connection settings defined in the
-Django configuration. The client supports API versions v0.0.41 through
-v0.0.45 with a single set of serializers.
+authentication. The client supports API versions v0.0.41 through v0.0.45 with a
+single set of serializers.
 
 ## Dump Generation
 
