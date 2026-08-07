@@ -1,5 +1,3 @@
-![ColdFront](docs/pages/images/logo-lg.png)
-
 # ColdFront - Resource Allocation System
 
 [![Documentation Status](https://readthedocs.org/projects/coldfront/badge/?version=latest)](https://coldfront.readthedocs.io/en/latest/?badge=latest)
@@ -14,7 +12,7 @@ From new database:
 ```
 $ git clone https://github.com/coldfront/coldfront.git
 $ cd coldfront
-$ git checkout feature/v2-poc
+$ git checkout dev/2.0.x
 $ uv sync --group docs --group dev --extra initializer
 $ DEBUG=True uv run coldfront initial_setup
 $ DEBUG=True PLUGINS="coldfront_initializer" uv run coldfront load_test_data
@@ -24,57 +22,15 @@ $ DEBUG=True uv run coldfront runserver
 $ COLDFRONT_ENV=.env.testing uv run -m coverage run -m pytest
 ```
 
-From existing database (note: proceed with extreme caution):
-```
-$ git clone https://github.com/coldfront/coldfront.git
-$ cd coldfront
-$ git checkout feature/v2-poc
-$ uv sync --group docs --group dev
-$ uv run coldfront dbshell < scripts/upgrade-v2.0.0-user-model.sql
-$ uv run coldfront migrate
-$ uv run coldfront upgrade_v2
-```
-How to write a plugin: [see example](https://github.com/coldfront/coldfront-project-review)
-
-```
-$ uv init --lib coldfront-my-plugin
-$ cd coldfront-my-plugin
-$ edit src/coldfront_my_plugin/__init__.py
-
-from coldfront.plugins import PluginConfig
-
-from .version import __version__
-
-
-class ColdFrontMyPluginConfig(PluginConfig):
-    name = "coldfront_my_plugin"
-    verbose_name = "ColdFront My Plugin"
-    version = __version__
-    description = "Add your description here"
-    author = "My Name"
-    author_email = "my email"
-    base_url = "my_plugin"
-    min_version = "2.0.0"
-    default_settings = {}
-
-config = ColdFrontMyPluginConfig
-```
-
-## Features
-
-- Allocation based system for managing access to resources
-- Self-service portal for users to request access to resources for their research group
-- Ability to define custom attributes on resources and allocations 
-- Integration with 3rd party systems for automation, access control, and other system provisioning tasks
-
 ## Getting Started
 
 * [Official documentation](https://docs.coldfront.dev)
 * [Wiki](https://github.com/coldfront/coldfront/wiki)
+* [Get Involed](https://coldfront.dev/community/)
 
 ## Credits
 
-ColdFront (as of v2.0.0) is a derivative of [NetBox](https://github.com/netbox-community/netbox) and would not exist without their excellent open source code base to start from. We specifically adopted NetBox's underlying data model, generic views, plugin system, tagging, custom fields, and object based permission system and ported it for use with ColdFront's resource allocation system.
+ColdFront (as of v2.0.0) includes code adopted from [NetBox](https://github.com/netbox-community/netbox). See the NOTICE file. 
 
 ## License
 

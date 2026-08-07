@@ -77,8 +77,7 @@ class StorageResourceForm(TenancyForm, PrimaryModelForm):
             total = clusters.aggregate(total=Sum("capacity_bytes"))["total"]
             if total and capacity > total:
                 raise ValidationError(
-                    _("Resource capacity (%s) cannot exceed the total capacity of its clusters (%s).")
-                    % (capacity, total)
+                    _(f"Resource capacity ({capacity}) cannot exceed the total capacity of its clusters ({total}).")
                 )
 
 

@@ -1,4 +1,8 @@
-# ColdFront User Guide
+---
+icon: lucide/user
+---
+
+# User Guide
 
 !!! warning "TODO WRITE ME"
 

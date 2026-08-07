@@ -1,6 +1,0 @@
-Dear {{center_name}} user,
-
-This is a reminder that access to the resource {{resource}} requires agreeing to the EULA at {{url}}.
-
-Thank you,
-{{signature}}

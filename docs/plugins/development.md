@@ -1,7 +1,3 @@
----
-icon: lucide/code
----
-
 # Plugin Development
 
 This guide describes how to develop a plugin for ColdFront. Plugins are

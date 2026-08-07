@@ -59,7 +59,7 @@ class UserFilterSetForm(ColdFrontModelFilterSetForm):
     model = User
     fieldsets = (
         Fieldset(
-            _(""),
+            _("User"),
             "group_id",
             "project_id",
         ),

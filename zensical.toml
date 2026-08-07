@@ -32,7 +32,7 @@ repo_name = "coldfront/coldfront"
 #
 # Read more: https://zensical.org/docs/setup/basics/#copyright
 copyright = """
-Copyright &copy; University at Buffalo Center for Computational Research
+Copyright &copy; University at Buffalo
 """
 
 # Zensical supports both implicit navigation and explicitly defined navigation.
@@ -42,14 +42,47 @@ Copyright &copy; University at Buffalo Center for Computational Research
 # can be defined using TOML syntax.
 #
 # Read more: https://zensical.org/docs/setup/navigation/
-#nav = [
-#  { "Wrangle Your Resources" = "index.md" },
-#  {"Install &amp; Upgrade" = [
-#     "installation/index.md",
-#     "installation/upgrading.md"
-#  ]},
-#  { "Admin Guide" = "admin-guide/index.md" }
-#]
+nav = [
+  { "Wrangle Your Resources" = "index.md" },
+  {"Features" = [
+     "features/index.md",
+     "features/allocations.md",
+     "features/background-jobs.md",
+     "features/change-logging.md",
+     "features/customization.md",
+     "features/notifications.md",
+     "features/permissions.md",
+     "features/projects.md",
+     "features/resources.md",
+     "features/slurm.md",
+     "features/storage.md",
+     "features/tenancy.md",
+     "features/user-preferences.md",
+  ]},
+  {"Install &amp; Upgrade" = [
+     "installation/index.md",
+     "installation/upgrading.md",
+     "installation/upgrade-v1.md",
+     "installation/deploy.md",
+  ]},
+  {"Configuration" = [
+     "configuration/index.md",
+  ]},
+  {"Plugins" = [
+     "plugins/index.md",
+     "plugins/development.md",
+  ]},
+  {"Admin Guide" = [
+     "admin-guide/index.md",
+     "admin-guide/permissions.md",
+     "admin-guide/allocations.md",
+     "admin-guide/slurm.md",
+  ]},
+  {"User Guide" = [
+     "user-guide/index.md",
+  ]},
+  { "Get Involved" = "community.md" },
+]
 
 # With the "extra_css" option you can add your own CSS styling to customize
 # your Zensical project according to your needs. You can add any number of
@@ -85,7 +118,7 @@ Copyright &copy; University at Buffalo Center for Computational Research
 # Read more:
 # - https://zensical.org/docs/customization/#extending-the-theme
 #
-#custom_dir = "overrides"
+custom_dir = "docs/_theme"
 
 # With the "favicon" option you can set your own image to use as the icon
 # browsers will use in the browser title bar or tab bar. The path provided
@@ -118,7 +151,7 @@ features = [
     # Zensical includes an announcement bar. This feature allows users to
     # dismiss it when they have read the announcement.
     # https://zensical.org/docs/setup/header/#announcement-bar
-    "announce.dismiss",
+    #"announce.dismiss",
 
     # If you have a repository configured and turn on this feature, Zensical
     # will generate an edit button for the page. This works for common
@@ -212,12 +245,12 @@ features = [
     # When sections are enabled, top-level sections are rendered as groups in
     # the sidebar for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-sections
-    "navigation.sections",
+    #"navigation.sections",
 
     # When tabs are enabled, top-level sections are rendered in a menu layer
     # below the header for viewports above 1220px, but remain as-is on mobile.
     # https://zensical.org/docs/setup/navigation/#navigation-tabs
-    "navigation.tabs",
+    #"navigation.tabs",
 
     # When sticky tabs are enabled, navigation tabs will lock below the header
     # and always remain visible when scrolling down.
@@ -243,7 +276,7 @@ features = [
     # When anchor following for the table of contents is enabled, the sidebar
     # is automatically scrolled so that the active anchor is always visible.
     # https://zensical.org/docs/setup/navigation/#anchor-following
-    "toc.follow",
+    #"toc.follow",
 
     # When navigation integration for the table of contents is enabled, it is
     # always rendered as part of the navigation sidebar on the left.

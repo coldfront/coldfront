@@ -1,15 +1,15 @@
 ---
-icon: lucide/asterisk
+icon: lucide/layout-grid
 ---
 
-# Capabilities
+# Features
 
-ColdFront provides many capabilities to help HPC centers manage resources.
-This section describes each capability and how to use it.
+ColdFront provides many features to help HPC centers manage resources.
+This section describes each feature and how to use it.
 
-## Available Capabilities
+## Available Features
 
-| Capability | Description |
+| Features | Description |
 |---|---|
 | [Allocation Workflow](allocations.md) | Manage allocation requests from start to finish |
 | [Projects](projects.md) | Organize research groups and their users |

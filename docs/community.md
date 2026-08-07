@@ -1,8 +1,8 @@
 ---
-icon: lucide/users
+icon: lucide/handshake
 ---
 
-# Community
+# Join the Community
 
 ## Monthly Community Meetups
 

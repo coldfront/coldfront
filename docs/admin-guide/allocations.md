@@ -416,18 +416,20 @@ is denied with the standard "permission denied" response.
 from coldfront.registry import register_target_callback
 from coldfront.registry import register_transition_permission_callback
 
+
 @register_target_callback(AllocationStatusFlow, "active")
-def my_callback(allocation, *, source, target):
-    ...
+def my_callback(allocation, *, source, target): ...
+
 
 @register_transition_permission_callback(AllocationStatusFlow, "activate")
-def my_permission_check(allocation, user):
-    ...
+def my_permission_check(allocation, user): ...
+
 
 # Direct method form (equivalent)
 AllocationStatusFlow.register_target_callback("active", my_callback)
 AllocationStatusFlow.register_transition_permission_callback(
-    "activate", my_permission_check,
+    "activate",
+    my_permission_check,
 )
 ```
 

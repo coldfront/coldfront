@@ -7,6 +7,7 @@ import json
 from urllib.parse import quote
 
 from django import template
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -182,6 +183,8 @@ def get_selected_values(form, filter_name):
     """
     try:
         value = form.cleaned_data.get(filter_name)
+        if isinstance(value, QuerySet):
+            return [str(v) for v in value]
         if isinstance(value, (list, tuple)):
             return [str(v) for v in value]
         return [str(value)]

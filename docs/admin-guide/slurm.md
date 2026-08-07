@@ -9,22 +9,18 @@ matching Slurm's data model and allows for automated provisioning and deprovisio
 
 ## How Slurm Associations Work (Background)
 
-Slurm's accounting data model has four core tables per cluster:
+Slurm's accounting data model has four main entities: cluster, account, user, partition
 
-1. **cluster_table** — One row per cluster (name, classification, features).
-2. **acct_table** — One row per account (name, description, organization).
-   Accounts are lean named containers — no users, no limits.
-3. **user_table** — One row per user (name, admin_level). Users are standalone
-   entities — no account membership, no limits.
-4. **assoc_table** (named `<cluster>_assoc_table`) — The core table. Each row
-   represents a **(cluster, account, user, partition)** tuple with a unique
-   constraint on `(user, acct, partition)`. This row carries all the limits,
-   fairshare shares, QOS references, and hierarchy pointers.
+- Accounts are just named containers (name, description, org). They are NOT
+  linked to users directly
+- Users are just named entities (name, admin_level). They have a default
+  account but the actual account membership comes from associations
 
-The association is the fundamental entity. An **account-level association**
-has `user=""` and serves as a hierarchy parent. A **user-level association**
-has both `user="<username>"` and `account="<account>"` and is a leaf node in
-the hierarchy tree.
+A Slurm Association is a tuple (cluster, account, user, partition) that carries
+all the limits, fairshare, and QOS. An **account-level association** has no
+`user=` and serves as a hierarchy parent. A **user-level association** has
+both `user="<username>"` and `account="<account>"` and is a leaf node in the
+hierarchy tree.
 
 ### The Default Account
 
@@ -309,9 +305,10 @@ for any given resource wins.
 
 ## REST API Integration
 
-ColdFront communicates with `slurmrestd` over HTTP using JWT authentication.
-The client supports API versions v0.0.41 through v0.0.45 with a single set of
-serializers — all entity schemas are stable across these versions.
+ColdFront includes a custom slurm client which communicates with `slurmrestd`
+over HTTP using JWT authentication. The client supports API versions v0.0.41
+through v0.0.45 with a single set of serializers — all entity schemas are stable
+across these versions.
 
 ### Connection Configuration
 
