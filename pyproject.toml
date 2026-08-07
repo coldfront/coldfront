@@ -150,7 +150,7 @@ branch = true
 source = ["coldfront/"]
 
 [tool.uv.sources]
-coldfront-initializer = { url = "https://test-files.pythonhosted.org/packages/07/8f/0112b12e261d74bcb29facfc30e4fe205d7f5aa640bd6bc191e1cb8d97df/coldfront_initializer-0.0.4.tar.gz" }
+coldfront-initializer = { git = "https://github.com/coldfront/coldfront-initializer", branch = "main" }
 
 [tool.djangofmt]
 line-length = 120
