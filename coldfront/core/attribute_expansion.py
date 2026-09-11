@@ -268,9 +268,9 @@ def process_attribute_parameter_operation(opcode, oldvalue, argument, error_text
         logger.error("Unrecognized operation {}= in {}, returning None".format(opcode, error_text))
     except Exception:
         logger.warning(
-            "Error performing operator {op}= on oldvalue='{old}' and argument={arg} in {errtext}".format(
-                op=opcode, old=oldvalue, arg=argument, errtext=error_text
-            )
+            "Error performing operator %(op)s= on oldvalue='%(old)s' and argument=%(arg)s in %(errtext)s",
+            {"op": opcode, "old": oldvalue, "arg": argument, "errtext": error_text},
+            exc_info=True,
         )
         return None
 

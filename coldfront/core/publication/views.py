@@ -4,6 +4,7 @@
 
 import ast
 import io
+import logging
 import re
 import uuid
 
@@ -30,6 +31,8 @@ from coldfront.core.publication.forms import (
     PublicationSearchForm,
 )
 from coldfront.core.publication.models import Publication, PublicationSource
+
+logger = logging.getLogger(__name__)
 
 MANUAL_SOURCE = "manual"
 
@@ -111,6 +114,11 @@ class PublicationSearchResultView(LoginRequiredMixin, UserPassesTestMixin, Templ
                     matching_source_obj = source
                     break
                 except Exception:
+                    logger.warning(
+                        "Failed to get publication with publication source %(source)s and id %(id)s:",
+                        {"source": source, "id": unique_id},
+                        exc_info=True,
+                    )
                     continue
 
             elif source.name == "adsabs":
@@ -125,6 +133,11 @@ class PublicationSearchResultView(LoginRequiredMixin, UserPassesTestMixin, Templ
                     matching_source_obj = source
                     break
                 except Exception:
+                    logger.warning(
+                        "Failed to get publication with publication source %(source)s and id %(id)s:",
+                        {"source": source, "id": unique_id},
+                        exc_info=True,
+                    )
                     continue
 
         if not matching_source_obj:
