@@ -662,6 +662,7 @@ def _sync_cluster(client: SlurmClient, cluster: SlurmCluster) -> SyncReport:
     # Build set of expected (account, user, partition) tuples from active
     # associations in ColdFront
     expected = _build_expected_tuples(cluster)
+    managed_accounts = {account for account, _user, _partition in expected}
 
     # Delete orphaned associations
     for assoc in existing.get("associations", []):
@@ -669,6 +670,12 @@ def _sync_cluster(client: SlurmClient, cluster: SlurmCluster) -> SyncReport:
         user = assoc.get("user", "")
         partition = assoc.get("partition", "")
         key = (acct, user, partition)
+
+        if not user:
+            continue
+        if acct not in managed_accounts:
+            continue
+
         if key in expected:
             continue
 
