@@ -472,7 +472,7 @@ def _run_deactivate_allocation(*, allocation_id: int) -> SyncReport:
         if partition_name:
             delete_params["partition"] = partition_name
         try:
-            client.delete_associations(delete_params)
+            client.delete_associations(**delete_params)
             report.associations_deleted += 1
         except Exception as exc:
             report.errors.append(f"Failed to delete association for {user.username}: {exc}")
@@ -574,7 +574,7 @@ def _run_remove_project_user(*, project_id: int, user_id: int) -> SyncReport:
         if partition_name:
             delete_params["partition"] = partition_name
         try:
-            client.delete_associations(delete_params)
+            client.delete_associations(**delete_params)
             report.associations_deleted += 1
         except Exception as exc:
             report.errors.append(f"Failed to delete association for {user.username}: {exc}")
@@ -689,7 +689,7 @@ def _sync_cluster(client: SlurmClient, cluster: SlurmCluster) -> SyncReport:
             }
             if partition:
                 delete_params["partition"] = partition
-            client.delete_associations(delete_params)
+            client.delete_associations(**delete_params)
             report.associations_deleted += 1
         except Exception as exc:
             report.errors.append(
