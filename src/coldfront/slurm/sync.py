@@ -653,7 +653,7 @@ def _sync_cluster(client: SlurmClient, cluster: SlurmCluster) -> SyncReport:
 
     # ---- Step 3: Find and delete orphaned associations ----
     try:
-        existing = client.get_associations(params={"cluster": cluster.name, "with_deleted": "false"})
+        existing = client.get_associations(cluster=cluster.name, with_deleted=False)
     except Exception as exc:
         report.errors.append(f"Failed to query existing associations: {exc}")
         report.duration_ms = int((timezone.now() - start).total_seconds() * 1000)
