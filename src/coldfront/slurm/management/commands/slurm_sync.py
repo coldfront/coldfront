@@ -73,7 +73,7 @@ class Command(BaseCommand):
 
         start = timezone.now()
         self.stdout.write(
-            self.style.NOTICE("Starting Slurm sync%s", "" if cluster_id is None else f" (cluster={cluster_id})")
+            self.style.NOTICE(f"Starting Slurm sync{'' if cluster_id is None else f' (cluster={cluster_id})'}")
         )
 
         reports = run_sync(cluster_id=cluster_id)
