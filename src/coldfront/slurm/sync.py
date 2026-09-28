@@ -1003,8 +1003,6 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
     cluster_payload = {
         "name": cluster.name,
     }
-    if cluster.default_qos:
-        cluster_payload["defaultqos"] = cluster.default_qos.name
 
     return {
         "clusters": [cluster_payload],
