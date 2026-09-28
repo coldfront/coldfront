@@ -1280,7 +1280,7 @@ def _kill_user_jobs(
 def _reconfigure(client: SlurmClient) -> None:
     """Trigger slurmctld to reload its cached association data."""
     try:
-        client._request("GET", client._slurm_path("reconfigure/"))
+        client._request("GET", client._slurm_path("reconfigure"))
     except Exception as exc:
         logger.warning("Slurmctld reconfigure failed: %s", exc)
 
