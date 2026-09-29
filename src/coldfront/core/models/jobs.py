@@ -568,7 +568,11 @@ class Job(models.Model):
             # ``JobRunner.handle`` is a classmethod (bound method). Unwrap it:
             # use ``func.__func__`` (the raw function) and pass the class via
             # ``_runner_cls`` kwarg so the worker can reconstruct the call.
-            if inspect.isfunction(func):
+            if isinstance(func, str):
+                task_func = import_string(func)
+            elif isinstance(func, TASK_CLASSES):
+                task_func = func.func
+            elif inspect.isfunction(func):
                 task_func = func
             elif hasattr(func, "__func__") and hasattr(func, "__self__"):
                 # Bound method (e.g., ``cls.handle`` from ``JobRunner``).
@@ -581,6 +585,11 @@ class Job(models.Model):
                 kwargs.setdefault(
                     "_runner_cls_path",
                     cls.__module__ + "." + cls.__qualname__,
+                )
+            else:
+                raise TypeError(
+                    "Job.enqueue() expects a callable, dotted import path str, or Task instance; "
+                    f"got {type(func).__name__}."
                 )
 
             t = Task(
