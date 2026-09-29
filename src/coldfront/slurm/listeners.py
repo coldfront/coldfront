@@ -117,6 +117,29 @@ def on_project_user_saved(instance, created, **kwargs):
     if created:
         _sync_slurm_users_for_user(instance.user)
 
+        allocations = Allocation.objects.filter(
+            project=instance.project,
+            status=AllocationStatusChoices.STATUS_ACTIVE,
+        ).select_related("resource_object_type")
+        
+        for allocation in allocations:
+            resource = allocation.resource_object
+            if resource is None:
+                continue
+            
+            if isinstance(resource, SlurmPartition):
+                cluster = resource.cluster
+            elif isinstance(resource, SlurmCluster):
+                cluster = resource
+            else:
+                continue
+            
+            association = SlurmAssociation.objects.filter(allocation=allocation).first()
+            if association is None or association.slurm_account is None:
+                continue
+            
+            enqueue_activate_allocation(allocation.pk, cluster_id=cluster.pk)
+
 
 @receiver(post_delete, sender=ProjectUser)
 def on_project_user_deleted(instance, **kwargs):
