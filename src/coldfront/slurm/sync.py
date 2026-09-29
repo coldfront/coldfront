@@ -207,6 +207,7 @@ def enqueue_activate_allocation(allocation_id: int, cluster_id: int | None = Non
         args=(),
         kwargs={"allocation_id": allocation_id},
         priority=3,
+        name=f"SlurmActivate:allocation-{allocation_id}",
     )
 
 
@@ -232,6 +233,7 @@ def enqueue_deactivate_allocation(allocation_id: int, cluster_id: int | None = N
         args=(),
         kwargs={"allocation_id": allocation_id},
         priority=3,
+        name=f"SlurmDeactivate:allocation-{allocation_id}",
     )
 
 
@@ -280,6 +282,7 @@ def enqueue_remove_project_user(project_id: int, user_id: int, cluster_ids: list
             "user_id": user_id,
         },
         priority=3,
+        name=f"SlurmRemoveProjectUser:project-{project_id}:user-{user_id}",
     )
 
 
