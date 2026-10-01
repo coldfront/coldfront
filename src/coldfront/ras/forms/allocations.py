@@ -154,7 +154,21 @@ class AllocationBaseForm(AllocationExtensionFormMixin, PrimaryModelForm):
             if model is None:
                 continue
             values = extension_data.get(entry["model_path"], {})
-            model.create_for_allocation(allocation, values=values)
+
+            existing = model.objects.filter(allocation=allocation).first()
+            if existing is None:
+                model.create_for_allocation(allocation, values=values)
+                continue
+
+            updated = False
+            for field_name, value in values.items():
+                if getattr(existing, field_name) != value:
+                    setattr(existing, field_name, value)
+                    updated = True
+
+            if updated:
+                existing.full_clean()
+                existing.save()
 
     def _get_attr_form_fields(self):
         """
