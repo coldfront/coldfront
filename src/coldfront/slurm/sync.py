@@ -346,6 +346,7 @@ def _run_activate_allocation(*, allocation_id: int) -> SyncReport:
                 {
                     "name": slurm_account.name,
                     "description": slurm_account.description or "",
+                    "organization": "",
                 }
             ]
         )
@@ -981,6 +982,7 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
         {
             "name": acct.name,
             "description": acct.description or "",
+            "organization": "",
         }
         for acct in accounts
     ]
