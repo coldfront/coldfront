@@ -961,13 +961,10 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
                 if pu.user:
                     user_set.add(pu.user.pk)
 
-    users = SlurmUser.objects.filter(
-        cluster=cluster,
-        user_id__in=user_set,
-    ).select_related("user", "default_account")
-
     # Build association payloads
     assoc_payloads = []
+    user_payloads = []
+    seen_user_ids: set[int] = set()
     for a in active:
         allocation = a.allocation
         if not allocation:
@@ -979,6 +976,13 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
         for pu in allocation.project.users.all():
             if not pu.user:
                 continue
+
+            if pu.user_id not in seen_user_ids:
+                user_payload = _build_user_payload(pu.user, cluster, a.slurm_account)
+                if user_payload is not None:
+                    user_payloads.append(user_payload)
+                    seen_user_ids.add(pu.user_id)
+
             assoc_payloads.append(_build_assoc_payload(a, pu.user, cluster, resource))
 
     # Build account payloads
@@ -995,19 +999,6 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
         account_assoc_payload = _build_account_assoc_payload(acct, cluster)
         if account_assoc_payload:
             assoc_payloads.append(account_assoc_payload)
-
-    # Build user payloads
-    user_payloads = []
-    for su in users:
-        user_payloads.append(
-            {
-                "name": su.user.username,
-                "default": {
-                    "account": su.default_account.name,
-                    "wckey": su.default_wckey or "",
-                },
-            }
-        )
 
     # Build cluster payload
     cluster_payload = {
@@ -1090,6 +1081,37 @@ def _build_assoc_payload(
     if qoslevel:
         payload["qoslevel"] = qoslevel
 
+    return payload
+
+
+def _build_user_payload(
+        user: Any,
+        cluster: SlurmCluster,
+        fallback_account: SlurmAccount | None,
+) -> dict[str, Any] | None:
+    """Build a Slurm user payload for full sync.
+
+    Full sync should converge from current project membership even when a
+    corresponding ``SlurmUser`` row has not yet been created locally. When no
+    ``SlurmUser`` exists, fall back to the active association's account so the
+    user record is still sent to slurmdbd before the association upsert.
+    """
+    slurm_user = SlurmUser.objects.filter(user=user, cluster=cluster).select_related(
+        "default_account",
+        "default_qos",
+    ).first()
+
+    default_account = slurm_user.default_account if slurm_user and slurm_user.default_account else fallback_account
+    if default_account is None:
+        return None
+
+    payload = {"name": user.username, "default": {"account": default_account.name, "wckey": ""}}
+    if slurm_user and slurm_user.default_wckey:
+        payload["default"]["wckey"] = slurm_user.default_wckey
+    if slurm_user and slurm_user.default_qos:
+        payload["default"]["qos"] = slurm_user.default_qos.name
+    if slurm_user and slurm_user.admin_level:
+        payload["administrator_level"] = slurm_user.admin_level
     return payload
 
 
