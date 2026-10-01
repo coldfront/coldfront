@@ -952,15 +952,6 @@ def _build_config_payload(cluster: SlurmCluster) -> dict[str, Any] | None:
 
     accounts = SlurmAccount.objects.filter(pk__in=account_ids)
 
-    # Collect unique users across all project members
-    user_set: set[int] = set()
-    for a in active:
-        allocation = a.allocation
-        if allocation and allocation.project:
-            for pu in allocation.project.users.all():
-                if pu.user:
-                    user_set.add(pu.user.pk)
-
     # Build association payloads
     assoc_payloads = []
     user_payloads = []
