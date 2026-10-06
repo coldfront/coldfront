@@ -2,6 +2,7 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% load common_tags %}
+{% load djmoney %}
 {% load humanize %}
 
 {% block title %}
@@ -53,10 +54,28 @@ Center Summary
         <canvas id="grant-summary-chart" data-url="{% url 'grant-summary-data' %}"></canvas>
     </div>
     <hr>
-    <strong> Grants Total:</strong> ${{grant_total}} <br>
-    <strong> Grants Total PI Only:</strong> ${{grant_total_pi_only}} <br>
-    <strong> Grants Total CoPI Only:</strong> ${{grant_total_copi_only}} <br>
-    <strong> Grants Total Senior Personnel Only:</strong> ${{grant_total_sp_only}}
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Grant Totals</th>
+            {% for currency in grant_totals.currencies %}
+            <th>{{ currency }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in grant_totals.rows %}
+          <tr>
+            <th>{{ row.title }}</th>
+            {% for total, currency in row.totals %}
+            <td>{% money_localize total currency %}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 <!-- End Grants -->

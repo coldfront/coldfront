@@ -1,5 +1,6 @@
 {% extends "common/base.html" %}
 {% load crispy_forms_tags %}
+{% load crispy_forms_field %}
 {% load static %}
 
 
@@ -8,13 +9,25 @@ Create Grant
 {% endblock %}
 
 
-
 {% block content %}
 <h2>Creating grant for project: {{ project.title }}</h2>
-  <form method="post">{% csrf_token %}
-    {{ form|crispy }}
-    <input class="btn btn-primary" type="submit" value="Save" />
-    <a class="btn btn-secondary" href="{% url 'project-detail' project.pk %}" role="button">Cancel</a><br>
+<form method="post">
+  {% csrf_token %}
+  {{ form.title|as_crispy_field }}
+  {{ form.grant_number|as_crispy_field }}
+  {{ form.role|as_crispy_field }}
+  {{ form.grant_pi_full_name|as_crispy_field }}
+  {{ form.funding_agency|as_crispy_field }}
+  {{ form.other_funding_agency|as_crispy_field }}
+  {{ form.other_award_number|as_crispy_field }}
+  {{ form.grant_start|as_crispy_field }}
+  {{ form.grant_end|as_crispy_field }}
+  {% crispy_addon form.percent_credit append="%" %}
+  {{ form.direct_funding|as_crispy_field }}
+  {{ form.total_amount_awarded|as_crispy_field }}
+  {{ form.status|as_crispy_field }}
+  <input class="btn btn-primary" type="submit" value="Save" />
+  <a class="btn btn-secondary" href="{{ project.get_absolute_url }}" role="button">Cancel</a><br>
 </form>
 
 {% endblock %}
