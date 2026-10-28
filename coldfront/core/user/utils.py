@@ -4,6 +4,7 @@
 
 import abc
 import logging
+import re
 
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -12,6 +13,15 @@ from django.utils.module_loading import import_string
 from coldfront.core.utils.common import import_from_settings
 
 logger = logging.getLogger(__name__)
+
+
+def split_usernames(user_search_string):
+    """The usernames in a search box, split on commas and any whitespace.
+
+    Accepts a list pasted straight from ``getent group <group>``, which is
+    comma-separated, as well as one name per line or space-separated names.
+    """
+    return [name for name in re.split(r"[,\s]+", user_search_string) if name]
 
 
 class UserSearch(abc.ABC):
@@ -24,11 +34,12 @@ class UserSearch(abc.ABC):
         pass
 
     def search(self):
-        if len(self.user_search_string.split()) > 1:
+        usernames = split_usernames(self.user_search_string)
+        if len(usernames) > 1:
             search_by = "username_only"
             matches = []
 
-            user_search_string = sorted(list(set(self.user_search_string.split())))
+            user_search_string = sorted(set(usernames))
             for username in user_search_string:
                 match = self.search_a_user(username, search_by)
                 if match:
@@ -101,12 +112,11 @@ class CombinedUserSearch:
                     usernames_found.append(username)
                     matches.append(user)
 
-        if len(self.user_search_string.split()) > 1:
-            number_of_usernames_searched = len(self.user_search_string.split())
+        usernames = split_usernames(self.user_search_string)
+        if len(usernames) > 1:
+            number_of_usernames_searched = len(usernames)
             number_of_usernames_found = len(usernames_found)
-            usernames_not_found = list(
-                set(self.user_search_string.split()) - set(usernames_found) - set(self.usernames_names_to_exclude)
-            )
+            usernames_not_found = list(set(usernames) - set(usernames_found) - set(self.usernames_names_to_exclude))
         else:
             number_of_usernames_searched = None
             number_of_usernames_found = None

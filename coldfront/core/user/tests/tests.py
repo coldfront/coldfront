@@ -2,10 +2,11 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase
 
 from coldfront.core.test_helpers.factories import UserFactory
 from coldfront.core.user.models import UserProfile
+from coldfront.core.user.utils import CombinedUserSearch, split_usernames
 
 
 class TestUserProfile(TestCase):
@@ -49,3 +50,37 @@ class TestUserProfile(TestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(pk=profile_obj.pk)
         self.assertEqual(0, len(UserProfile.objects.all()))
+
+
+class TestSplitUsernames(SimpleTestCase):
+    def test_splits_on_commas_and_any_whitespace(self):
+        self.assertEqual(split_usernames("alice,bob carol\tdave\neve"), ["alice", "bob", "carol", "dave", "eve"])
+
+    def test_drops_empty_names(self):
+        self.assertEqual(split_usernames("  alice, ,bob,\n"), ["alice", "bob"])
+
+    def test_single_name(self):
+        self.assertEqual(split_usernames("alice"), ["alice"])
+
+    def test_empty_string(self):
+        self.assertEqual(split_usernames(""), [])
+
+
+class TestCombinedUserSearchSeparators(TestCase):
+    def setUp(self):
+        for username in ("alice", "bob", "carol"):
+            UserFactory(username=username)
+
+    def test_a_comma_separated_list_finds_every_user(self):
+        context = CombinedUserSearch("alice,bob,carol", "all_fields").search()
+
+        self.assertEqual(sorted(match["username"] for match in context["matches"]), ["alice", "bob", "carol"])
+        self.assertEqual(context["number_of_usernames_searched"], 3)
+        self.assertEqual(context["number_of_usernames_found"], 3)
+        self.assertEqual(context["usernames_not_found"], [])
+
+    def test_a_getent_style_list_reports_the_missing_name(self):
+        context = CombinedUserSearch("alice, bob,\tnobody", "all_fields").search()
+
+        self.assertEqual(sorted(match["username"] for match in context["matches"]), ["alice", "bob"])
+        self.assertEqual(context["usernames_not_found"], ["nobody"])
