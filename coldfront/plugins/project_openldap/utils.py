@@ -63,7 +63,7 @@ def add_members_to_openldap_posixgroup(dn, list_memberuids, write=True):
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(Connection.modify, dn, {"memberUid": [(MODIFY_ADD, list_memberuids)]}, write=write)
+    return _ldap_write_wrapper(Connection.modify, dn, {"memberUid": [(MODIFY_ADD, list_memberuids)]}, write=write)
 
 
 def remove_members_from_openldap_posixgroup(dn, list_memberuids, write=True):
@@ -73,7 +73,7 @@ def remove_members_from_openldap_posixgroup(dn, list_memberuids, write=True):
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(Connection.modify, dn, {"memberUid": [(MODIFY_DELETE, list_memberuids)]}, write=write)
+    return _ldap_write_wrapper(Connection.modify, dn, {"memberUid": [(MODIFY_DELETE, list_memberuids)]}, write=write)
 
 
 def add_per_project_ou_to_openldap(project_obj, dn, openldap_ou_description, write=True):
@@ -83,7 +83,7 @@ def add_per_project_ou_to_openldap(project_obj, dn, openldap_ou_description, wri
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(
+    return _ldap_write_wrapper(
         Connection.add,
         dn,
         ["top", "organizationalUnit"],
@@ -99,7 +99,7 @@ def add_posixgroup_to_openldap(dn, openldap_description, gid_int, write=True):
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(
+    return _ldap_write_wrapper(
         Connection.add,
         dn,
         "posixGroup",
@@ -116,7 +116,7 @@ def remove_dn_from_openldap(dn, write=True):
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(Connection.delete, dn, write=write)
+    return _ldap_write_wrapper(Connection.delete, dn, write=write)
 
 
 # Update the project title in OpenLDAP
@@ -127,7 +127,9 @@ def update_posixgroup_description_in_openldap(dn, openldap_description, write=Tr
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(Connection.modify, dn, {"description": [(MODIFY_REPLACE, [openldap_description])]}, write=write)
+    return _ldap_write_wrapper(
+        Connection.modify, dn, {"description": [(MODIFY_REPLACE, [openldap_description])]}, write=write
+    )
 
 
 # MOVE the project to an archive OU - defined as env var
@@ -138,7 +140,7 @@ def move_dn_in_openldap(current_dn, relative_dn, destination_ou, write=True):
     * Should not raise any exceptions
     * returns `True` if skipped or successful, `False` if failed
     """
-    _ldap_write_wrapper(Connection.modify_dn, current_dn, relative_dn, new_superior=destination_ou, write=write)
+    return _ldap_write_wrapper(Connection.modify_dn, current_dn, relative_dn, new_superior=destination_ou, write=write)
 
 
 def ldapsearch_check_project_dn(dn):
