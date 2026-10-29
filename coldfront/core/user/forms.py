@@ -21,7 +21,7 @@ class UserSearchForm(forms.Form):
         label="Search String",
         min_length=2,
         widget=forms.Textarea(attrs={"rows": 4}),
-        help_text="Copy paste usernames separated by space or newline for multiple username searches!",
+        help_text="Copy paste usernames separated by commas, spaces or newlines for multiple username searches!",
     )
     search_by = forms.ChoiceField(choices=CHOICES, widget=forms.RadioSelect(), initial="username_only")
 
