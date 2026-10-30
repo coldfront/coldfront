@@ -17,7 +17,7 @@ import jQuery from 'jquery';
 
 Object.assign(window, {
   getCookie: function (name: string) {
-    getCookie(name);
+    return getCookie(name);
   },
   $: jQuery,
   jQuery,
