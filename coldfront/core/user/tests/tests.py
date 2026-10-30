@@ -59,6 +59,9 @@ class TestSplitUsernames(SimpleTestCase):
     def test_drops_empty_names(self):
         self.assertEqual(split_usernames("  alice, ,bob,\n"), ["alice", "bob"])
 
+    def test_keeps_a_repeated_name_once_in_first_place(self):
+        self.assertEqual(split_usernames("bob, alice\nbob alice"), ["bob", "alice"])
+
     def test_single_name(self):
         self.assertEqual(split_usernames("alice"), ["alice"])
 
@@ -77,6 +80,13 @@ class TestCombinedUserSearchSeparators(TestCase):
         self.assertEqual(sorted(match["username"] for match in context["matches"]), ["alice", "bob", "carol"])
         self.assertEqual(context["number_of_usernames_searched"], 3)
         self.assertEqual(context["number_of_usernames_found"], 3)
+        self.assertEqual(context["usernames_not_found"], [])
+
+    def test_a_repeated_name_is_counted_once(self):
+        context = CombinedUserSearch("alice, bob, alice", "all_fields").search()
+
+        self.assertEqual(context["number_of_usernames_searched"], 2)
+        self.assertEqual(context["number_of_usernames_found"], 2)
         self.assertEqual(context["usernames_not_found"], [])
 
     def test_a_getent_style_list_reports_the_missing_name(self):

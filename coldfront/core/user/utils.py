@@ -20,8 +20,11 @@ def split_usernames(user_search_string):
 
     Accepts a list pasted straight from ``getent group <group>``, which is
     comma-separated, as well as one name per line or space-separated names.
+    A name given twice is kept once, in the place it first appears, so the
+    searched and found counts agree.
     """
-    return [name for name in re.split(r"[,\s]+", user_search_string) if name]
+    names = (name for name in re.split(r"[,\s]+", user_search_string) if name)
+    return list(dict.fromkeys(names))
 
 
 class UserSearch(abc.ABC):
