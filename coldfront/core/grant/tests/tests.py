@@ -7,6 +7,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from djmoney.utils import MONEY_CLASSES
 
 from coldfront.core.grant.models import Grant
 from coldfront.core.test_helpers.factories import (
@@ -37,9 +38,9 @@ class TestGrant(TestCase):
                 "funding_agency": grantFundingAgency,
                 "grant_start": start_date,
                 "grant_end": end_date,
-                "percent_credit": "20.0",
-                "direct_funding": "200000.0",
-                "total_amount_awarded": "1000000.0",
+                "percent_credit": 20.0,
+                "direct_funding": 200000.0,
+                "total_amount_awarded": 1000000.0,
                 "status": grantStatusChoice,
             }
 
@@ -62,7 +63,10 @@ class TestGrant(TestCase):
             (field, initial_value) = item
             with self.subTest(item=item):
                 saved_value = getattr(retrieved_fos, field)
-                self.assertEqual(initial_value, saved_value)
+                if type(saved_value) in MONEY_CLASSES:
+                    self.assertEqual(initial_value, saved_value.amount)
+                else:
+                    self.assertEqual(initial_value, saved_value)
         self.assertEqual(grant_obj, retrieved_fos)
 
     def test_title_minlength(self):
@@ -222,7 +226,7 @@ class TestGrant(TestCase):
 
     def test_percent_credit_maxvalue(self):
         exceeds_maximum_value = "101"
-        normal_value = "100"
+        normal_value = 100
 
         grant_obj = self.data.unsaved_object
 
