@@ -89,6 +89,12 @@ class TestCombinedUserSearchSeparators(TestCase):
         self.assertEqual(context["number_of_usernames_found"], 2)
         self.assertEqual(context["usernames_not_found"], [])
 
+    def test_one_name_with_a_stray_comma_or_repeated_is_still_found(self):
+        for search in ("alice,", "alice, alice", " alice ,\n"):
+            context = CombinedUserSearch(search, "all_fields").search()
+
+            self.assertIn("alice", [match["username"] for match in context["matches"]], search)
+
     def test_a_getent_style_list_reports_the_missing_name(self):
         context = CombinedUserSearch("alice, bob,\tnobody", "all_fields").search()
 

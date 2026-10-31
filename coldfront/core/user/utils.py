@@ -48,7 +48,10 @@ class UserSearch(abc.ABC):
                 if match:
                     matches.extend(match)
         else:
-            matches = self.search_a_user(self.user_search_string, self.search_by)
+            # One name left once separators and repeats are dropped ("sfoster," or
+            # "sfoster, sfoster") is searched as that name, not as the raw text.
+            search_string = usernames[0] if usernames else self.user_search_string
+            matches = self.search_a_user(search_string, self.search_by)
 
         return matches
 
