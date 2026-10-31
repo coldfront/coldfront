@@ -59,7 +59,7 @@ from coldfront.core.project.utils import determine_automated_institution_choice,
 from coldfront.core.publication.models import Publication
 from coldfront.core.research_output.models import ResearchOutput
 from coldfront.core.user.forms import UserSearchForm
-from coldfront.core.user.utils import CombinedUserSearch
+from coldfront.core.user.utils import CombinedUserSearch, split_usernames
 from coldfront.core.utils.common import get_domain_url, import_from_settings
 from coldfront.core.utils.mail import send_email, send_email_template
 
@@ -761,9 +761,10 @@ class ProjectAddUsersSearchResultsView(LoginRequiredMixin, UserPassesTestMixin, 
             context["user_search_string"] = user_search_string
             context["search_by"] = search_by
 
-        if len(user_search_string.split()) > 1:
+        usernames = split_usernames(user_search_string)
+        if len(usernames) > 1:
             users_already_in_project = []
-            for ele in user_search_string.split():
+            for ele in usernames:
                 if ele in users_to_exclude:
                     users_already_in_project.append(ele)
             context["users_already_in_project"] = users_already_in_project
