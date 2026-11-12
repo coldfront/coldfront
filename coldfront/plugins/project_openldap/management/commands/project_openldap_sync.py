@@ -483,6 +483,11 @@ class Command(BaseCommand):
         elif project.status.name in ["New", "Active"]:
             if not ldapsearch_project_result:
                 self.handle_missing_project_in_openldap_new_active(project, sync)
+                # this isn't likely to occur in prod because the signal/task updates ldap instantly
+                # the mgmt command is only needed if something has gone wrong like if openldap was down
+                # if we remove the `return`, `local_get_openldap_members` will fail in dry-run mode
+                self.stdout.write(f"Note: Project {project.project_code} has been created but group members have not yet been synced.")
+                self.stdout.write(f"Run this command again to sync members.")
                 return
             else:
                 self.stdout.write(f"Project {project.project_code} is a new or active project - found {project_dn}")
