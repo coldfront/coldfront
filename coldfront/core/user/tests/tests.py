@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 from django.test import TestCase
+from django.urls import reverse
 
+from coldfront.core.test_helpers import utils
 from coldfront.core.test_helpers.factories import UserFactory
 from coldfront.core.user.models import UserProfile
 
@@ -49,3 +51,24 @@ class TestUserProfile(TestCase):
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(pk=profile_obj.pk)
         self.assertEqual(0, len(UserProfile.objects.all()))
+
+
+class TestUserUpgradeAccount(TestCase):
+    def setUp(self):
+        self.url = reverse("user-upgrade")
+
+    def test_logged_out_redirects_to_login(self):
+        utils.test_logged_out_redirect_to_login(self, self.url)
+
+    def test_superuser_redirects_to_profile(self):
+        self.client.force_login(UserFactory(username="admin", is_superuser=True))
+        response = self.client.get(self.url)
+        self.assertRedirects(response, reverse("user-profile"), fetch_redirect_response=False)
+
+    def test_pi_redirects_to_profile(self):
+        user = UserFactory(username="pi")
+        user.userprofile.is_pi = True
+        user.userprofile.save()
+        self.client.force_login(user)
+        response = self.client.get(self.url)
+        self.assertRedirects(response, reverse("user-profile"), fetch_redirect_response=False)

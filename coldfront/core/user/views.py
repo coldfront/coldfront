@@ -206,6 +206,9 @@ class UserUpgradeAccount(LoginRequiredMixin, UserPassesTestMixin, View):
         return True
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
         if request.user.is_superuser:
             messages.error(request, "You are already a super user")
             return HttpResponseRedirect(reverse("user-profile"))
