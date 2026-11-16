@@ -7,17 +7,18 @@ import datetime
 # import the logging library
 import logging
 
+from django.urls import reverse
+
 from coldfront.core.allocation.models import Allocation, AllocationStatusChoice
 from coldfront.core.user.models import User
 from coldfront.core.utils.common import import_from_settings
-from coldfront.core.utils.mail import send_email_template
+from coldfront.core.utils.mail import build_link, send_email_template
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 
 CENTER_NAME = import_from_settings("CENTER_NAME")
-CENTER_BASE_URL = import_from_settings("CENTER_BASE_URL")
 CENTER_PROJECT_RENEWAL_HELP_URL = import_from_settings("CENTER_PROJECT_RENEWAL_HELP_URL")
 EMAIL_SENDER = import_from_settings("EMAIL_SENDER")
 EMAIL_OPT_OUT_INSTRUCTION_URL = import_from_settings("EMAIL_OPT_OUT_INSTRUCTION_URL")
@@ -33,6 +34,7 @@ EMAIL_ADMINS_ON_ALLOCATION_EXPIRE = import_from_settings("EMAIL_ADMINS_ON_ALLOCA
 EMAIL_ADMIN_LIST = import_from_settings("EMAIL_ADMIN_LIST")
 
 EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT = import_from_settings("EMAIL_ALLOCATION_EULA_IGNORE_OPT_OUT")
+ALLOCATION_EULA_ENABLE = import_from_settings("ALLOCATION_EULA_ENABLE", False)
 
 
 def update_statuses():
@@ -54,6 +56,9 @@ def update_statuses():
 
 
 def send_eula_reminders():
+    if not ALLOCATION_EULA_ENABLE:
+        return
+
     for allocation in Allocation.objects.all():
         if not allocation.get_eula():
             continue
@@ -65,7 +70,7 @@ def send_eula_reminders():
 
         template_context = {
             "resource": allocation.get_parent_resource,
-            "url": f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/review-eula",
+            "url": build_link(reverse("allocation-review-eula", kwargs={"pk": allocation.pk})),
         }
 
         send_email_template(
@@ -93,12 +98,12 @@ def send_expiry_emails():
                 if (allocation.status.name in ["Active", "Payment Pending", "Payment Requested", "Unpaid"]) and (
                     allocation.end_date == expring_in_days
                 ):
-                    project_url = f"{CENTER_BASE_URL.strip('/')}/{'project'}/{allocation.project.pk}/"
+                    project_url = build_link(reverse("project-detail", kwargs={"pk": allocation.project.pk}))
 
                     if allocation.status.name in ["Payment Pending", "Payment Requested", "Unpaid"]:
-                        allocation_renew_url = f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/"
+                        allocation_renew_url = build_link(reverse("allocation-detail", kwargs={"pk": allocation.pk}))
                     else:
-                        allocation_renew_url = f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/{'renew'}/"
+                        allocation_renew_url = build_link(reverse("allocation-renew", kwargs={"pk": allocation.pk}))
 
                     resource_name = allocation.get_parent_resource.name
 
@@ -171,11 +176,11 @@ def send_expiry_emails():
             allocation = allocationuser.allocation
 
             if allocation.end_date == expring_in_days:
-                project_url = f"{CENTER_BASE_URL.strip('/')}/{'project'}/{allocation.project.pk}/"
+                project_url = build_link(reverse("project-detail", kwargs={"pk": allocation.project.pk}))
 
-                allocation_renew_url = f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/{'renew'}/"
+                allocation_renew_url = build_link(reverse("allocation-renew", kwargs={"pk": allocation.pk}))
 
-                allocation_url = f"{CENTER_BASE_URL.strip('/')}/{'allocation'}/{allocation.pk}/"
+                allocation_url = build_link(reverse("allocation-detail", kwargs={"pk": allocation.pk}))
 
                 resource_name = allocation.get_parent_resource.name
 

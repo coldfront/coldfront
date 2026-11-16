@@ -4,7 +4,7 @@
 
 import logging
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from coldfront.core.project.models import ProjectUserStatusChoice
 from coldfront.core.test_helpers import utils
@@ -102,6 +102,13 @@ class ProjectDetailViewTest(ProjectViewTestBase):
         utils.page_contains_for_user(self, self.pi_user.user, self.url, button_text)
         # non-manager user cannot see request allocation button
         utils.page_does_not_contain_for_user(self, self.project_user.user, self.url, button_text)
+
+    @override_settings(ROOT_URLCONF="coldfront.core.test_helpers.base_path_urls")
+    def test_projectdetail_email_notification_url_includes_base_path(self):
+        url = f"/coldfront/project/{self.project.pk}/"
+        utils.page_contains_for_user(
+            self, self.pi_user.user, url, 'url: "/coldfront/project/project-user-update-email-notification/"'
+        )
 
     def test_projectdetail_edituser_button_visibility(self):
         """Test visibility of projectdetail edit button across user levels"""

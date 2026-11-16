@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
       $.ajax({
         headers: { 'X-CSRFToken': getCookie('csrftoken') },
         type: "POST",
-        url: "/project/project-user-update-email-notification/",
+        url: "{% url 'project-user-update-email-notification' %}",
         data: {
           user_project_id: user_project_id,
           checked: checked
