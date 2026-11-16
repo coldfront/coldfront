@@ -424,6 +424,7 @@ tufts = [
     { name = "coldfront-account-signup-plugin" },
     { name = "coldfront-allocation-blueprint" },
     { name = "coldfront-billing" },
+    { name = "coldfront-rest-api-plugin" },
     { name = "coldfront-storage-plugin", extra = ["starfish", "truenas", "vast"] },
     { name = "coldfront-ticketing" },
     { name = "coldfront-user-management-plugin" },
@@ -456,6 +457,7 @@ requires-dist = [
     { name = "coldfront-account-signup-plugin", marker = "extra == 'tufts'", git = "ssh://git@github.com/Tufts-Technology-Services/coldfront-account-signup-plugin.git" },
     { name = "coldfront-allocation-blueprint", marker = "extra == 'tufts'", git = "https://github.com/Tufts-Technology-Services/coldfront-allocation-blueprint.git" },
     { name = "coldfront-billing", marker = "extra == 'tufts'", git = "ssh://git@github.com/TuftsRT/coldfront-billing-plugin.git" },
+    { name = "coldfront-rest-api-plugin", marker = "extra == 'tufts'", git = "https://github.com/Tufts-Technology-Services/coldfront-rest-api-plugin.git" },
     { name = "coldfront-storage-plugin", extras = ["starfish", "vast", "truenas"], marker = "extra == 'tufts'", git = "https://github.com/Tufts-Technology-Services/coldfront-storage-plugin.git?rev=feature-pyinfra" },
     { name = "coldfront-ticketing", marker = "extra == 'tufts'", git = "https://github.com/Tufts-Technology-Services/coldfront-ticketing-plugin.git" },
     { name = "coldfront-user-management-plugin", marker = "extra == 'tufts'", git = "https://github.com/Tufts-Technology-Services/coldfront-user-management-plugin.git" },
@@ -546,6 +548,16 @@ dependencies = [
     { name = "coldfront-utils" },
     { name = "email-validator" },
     { name = "pydantic" },
+]
+
+[[package]]
+name = "coldfront-rest-api-plugin"
+version = "0.1.0"
+source = { git = "https://github.com/Tufts-Technology-Services/coldfront-rest-api-plugin.git#2416e77214ec18a1af4490f336a3efe71b54989b" }
+dependencies = [
+    { name = "coldfront" },
+    { name = "django-filter" },
+    { name = "djangorestframework" },
 ]
 
 [[package]]

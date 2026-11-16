@@ -99,6 +99,8 @@ tufts = [
     # app: coldfront_billing. Private repo under the TuftsRT org: ssh remote.
     "coldfront-billing@git+ssh://git@github.com/TuftsRT/coldfront-billing-plugin.git",
     "coldfront-ticketing@git+https://github.com/Tufts-Technology-Services/coldfront-ticketing-plugin.git",
+    # app: rest_api, the REST API at /api/v2/. It replaces ColdFront's own API (PLUGIN_API).
+    "coldfront-rest-api-plugin@git+https://github.com/Tufts-Technology-Services/coldfront-rest-api-plugin.git",
 ]
 
 [dependency-groups]
