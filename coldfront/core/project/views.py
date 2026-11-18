@@ -570,6 +570,9 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         if self.request.user.userprofile.is_pi:
             return True
 
+        messages.error(self.request, "You must be a PI to create a project.")
+        return False
+
     def form_valid(self, form):
         project_obj = form.save(commit=False)
         form.instance.pi = self.request.user
